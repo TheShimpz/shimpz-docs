@@ -1,6 +1,6 @@
 # shimpz-docs
 
-The public developer docs for **[Shimpz](https://shimpz.com)** — how to build and sell a Shimpz.
+The public developer docs for **[Shimpz](https://shimpz.com)** — how to build Shimpz Apps.
 Served at **docs.shimpz.com**. A prerendered SvelteKit site reusing the Shimpz design system.
 
 ```sh

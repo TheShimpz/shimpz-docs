@@ -20,8 +20,7 @@
     </a>
     <span class="hidden text-sm dim sm:inline">· docs</span>
     <nav class="ml-auto flex items-center gap-1 text-sm">
-      <a href="https://shimpz.com" class="rounded-lg px-3 py-1.5 dim transition hover:text-[var(--color-fg)]">Store ↗</a>
-      <a href="https://install.shimpz.com" class="rounded-lg px-3 py-1.5 dim transition hover:text-[var(--color-fg)]">Install ↗</a>
+      <a href="https://shimpz.com" class="rounded-lg px-3 py-1.5 dim transition hover:text-[var(--color-fg)]">Shimpz ↗</a>
     </nav>
   </div>
 </header>
@@ -46,10 +45,9 @@
 
 <footer class="border-t hair py-10">
   <div class="wrap flex flex-wrap items-center justify-between gap-4 text-sm dim">
-    <span>Shimpz · docs — build & sell your AI solutions</span>
+    <span>Shimpz · docs — build operator-controlled workspace Apps</span>
     <div class="flex gap-4">
-      <a href="https://shimpz.com" class="transition hover:text-[var(--color-fg)]">Store</a>
-      <a href="https://install.shimpz.com" class="transition hover:text-[var(--color-fg)]">Install</a>
+      <a href="https://shimpz.com" class="transition hover:text-[var(--color-fg)]">Shimpz</a>
     </div>
   </div>
 </footer>
