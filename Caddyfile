@@ -1,0 +1,16 @@
+:8080 {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https: wss:; worker-src 'self' blob:; manifest-src 'self'; upgrade-insecure-requests"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+	}
+	root * /srv
+	# Prerendered routes are directories because SvelteKit uses trailingSlash=always. Never fall back
+	# to the homepage: a missing Docs URL is a real 404 and is part of the public edge contract.
+	try_files {path} {path}/ =404
+	file_server
+	encode gzip
+}
