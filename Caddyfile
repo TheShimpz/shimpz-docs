@@ -8,9 +8,27 @@
 		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
 	}
 	root * /srv
-	# Prerendered routes are directories because SvelteKit uses trailingSlash=always. Never fall back
-	# to the homepage: a missing Docs URL is a real 404 and is part of the public edge contract.
-	try_files {path} {path}/ =404
-	file_server
+
+	# The tunnel sends both public hostnames to this deliberately small origin. Keep the installer
+	# uncached so every invocation resolves the current digest-pinning bootstrap.
+	@installer {
+		host install.shimpz.com
+		path / /install.sh
+	}
+	handle @installer {
+		header Content-Type "text/x-shellscript; charset=utf-8"
+		header Cache-Control "no-store"
+		rewrite * /install.sh
+		file_server
+	}
+	@installer_missing host install.shimpz.com
+	respond @installer_missing 404
+
+	# Prerendered routes are directories because SvelteKit uses trailingSlash=always. Never fall
+	# back to the homepage: a missing Docs URL is a real 404 and is part of the public edge contract.
+	handle {
+		try_files {path} {path}/ =404
+		file_server
+	}
 	encode gzip
 }
