@@ -2,7 +2,7 @@
   <title>Install your Shimpz Space — Shimpz docs</title>
   <meta
     name="description"
-    content="Choose the beginner-friendly Shimpz Space installation guide for Linux amd64 or Apple Silicon macOS."
+    content="Choose the Shimpz Space installation guide for Linux amd64, Apple Silicon macOS, or Windows x64 via WSL2."
   />
 </svelte:head>
 
@@ -59,7 +59,7 @@
     <li>
       <a class="docs-entry-link" href="/install/windows/">
         <strong>Windows</strong>
-        <span>Read the current support status</span>
+        <span>Windows x64 via WSL2 · Supported</span>
       </a>
     </li>
   </ul>

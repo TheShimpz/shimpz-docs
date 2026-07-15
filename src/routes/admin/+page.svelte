@@ -1,3 +1,7 @@
+<script lang="ts">
+  import CodeBlock from "$lib/components/CodeBlock.svelte";
+</script>
+
 <svelte:head>
   <title>Open the Shimpz Admin — Shimpz docs</title>
   <meta name="description" content="Open the local Shimpz Admin after installing your Space." />
@@ -17,28 +21,22 @@
   </p>
 </header>
 
-<div class="terminal" role="group" aria-label="Local Shimpz Admin address">
-  <div class="terminal-bar">
-    <span class="terminal-lights" aria-hidden="true"><i></i><i></i><i></i></span>
-    <span>Browser · local Admin</span>
-  </div>
-  <div class="terminal-command"><span aria-hidden="true">›</span><code>http://127.0.0.1:7777</code></div>
-</div>
+<CodeBlock
+  label="Local Shimpz Admin address"
+  title="Browser · local Admin"
+  lines={[{ value: "http://127.0.0.1:7777", prompt: "›" }]}
+/>
 <p>Create the initial Admin password with at least 12 characters.</p>
 
 <section class="guide-section" aria-labelledby="remote-linux-title">
   <span class="section-label">Remote access</span>
   <h2 id="remote-linux-title">Remote Linux host</h2>
   <p>Keep the Admin private and forward its loopback port over SSH:</p>
-  <div class="terminal" role="group" aria-label="Forward a remote Linux Admin over SSH">
-    <div class="terminal-bar">
-      <span class="terminal-lights" aria-hidden="true"><i></i><i></i><i></i></span>
-      <span>Terminal · SSH tunnel</span>
-    </div>
-    <div class="terminal-command">
-      <span aria-hidden="true">$</span><code>ssh -L 7777:127.0.0.1:7777 user@your-server</code>
-    </div>
-  </div>
+  <CodeBlock
+    label="Forward a remote Linux Admin over SSH"
+    title="Terminal · SSH tunnel"
+    lines={[{ value: "ssh -L 7777:127.0.0.1:7777 user@your-server" }]}
+  />
   <p>Leave that session open, then visit <code>http://127.0.0.1:7777</code> on your own computer.</p>
 </section>
 

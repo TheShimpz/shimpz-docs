@@ -1,3 +1,7 @@
+<script lang="ts">
+  import CodeBlock from "$lib/components/CodeBlock.svelte";
+</script>
+
 <svelte:head>
   <title>Update or reset Shimpz — Shimpz docs</title>
   <meta name="description" content="Update or reset a local Shimpz Space installation safely." />
@@ -18,15 +22,11 @@
 </header>
 
 <p>Reset stops the managed Space and permanently removes its local Admin data:</p>
-<div class="terminal" role="group" aria-label="Reset the Shimpz installation">
-  <div class="terminal-bar">
-    <span class="terminal-lights" aria-hidden="true"><i></i><i></i><i></i></span>
-    <span>Terminal · Shimpz reset</span>
-  </div>
-  <div class="terminal-command">
-    <span aria-hidden="true">$</span><code>curl -fsSL https://install.shimpz.com | sh -s -- --reset</code>
-  </div>
-</div>
+<CodeBlock
+  label="Reset the Shimpz installation"
+  title="Terminal · Shimpz reset"
+  lines={[{ value: "curl -fsSL https://install.shimpz.com | sh -s -- --reset" }]}
+/>
 
 <nav class="docs-page-nav" aria-label="Continue the user guide">
   <a href="/concepts/"><span>Next</span><strong>Core concepts</strong></a>

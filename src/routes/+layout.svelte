@@ -2,7 +2,12 @@
   import { page } from "$app/state";
   import "../app.css";
 
-  const navigation = [
+  type NavigationSection = {
+    label: string;
+    items: Array<{ href: string; label: string; description: string }>;
+  };
+
+  const navigation: NavigationSection[] = [
     {
       label: "Start here",
       items: [{ href: "/", label: "Overview", description: "Choose your computer" }],
@@ -12,7 +17,7 @@
       items: [
         { href: "/install/linux/", label: "Linux", description: "amd64 · Supported" },
         { href: "/install/macos/", label: "macOS", description: "Apple Silicon · Supported" },
-        { href: "/install/windows/", label: "Windows", description: "Unsupported" },
+        { href: "/install/windows/", label: "Windows", description: "x64 via WSL2 · Supported" },
       ],
     },
     {
@@ -26,7 +31,7 @@
       label: "Reference",
       items: [{ href: "/concepts/", label: "Core concepts", description: "Space, Drivers, Capsules, Apps" }],
     },
-  ] as const;
+  ];
 
   const currentLabel = $derived(
     navigation.flatMap((section) => section.items).find((item) => item.href === page.url.pathname)?.label ??

@@ -1,3 +1,7 @@
+<script lang="ts">
+  import CodeBlock from "$lib/components/CodeBlock.svelte";
+</script>
+
 <svelte:head>
   <title>Install Shimpz on Linux — Shimpz docs</title>
   <meta
@@ -26,14 +30,11 @@
   <li>
     <h2>Check your processor</h2>
     <p>Open a terminal and run:</p>
-    <div class="terminal" role="group" aria-label="Check the Linux processor architecture">
-      <div class="terminal-bar">
-        <span class="terminal-lights" aria-hidden="true"><i></i><i></i><i></i></span>
-        <span>Terminal · Linux</span>
-      </div>
-      <div class="terminal-command"><span aria-hidden="true">$</span><code>uname -m</code></div>
-      <div class="terminal-output"><span aria-hidden="true">›</span><code>x86_64</code></div>
-    </div>
+    <CodeBlock
+      label="Check the Linux processor architecture"
+      title="Terminal · Linux"
+      lines={[{ value: "uname -m" }, { value: "x86_64", kind: "output" }]}
+    />
     <p>Continue when the result is <code>x86_64</code>.</p>
   </li>
 
@@ -48,28 +49,21 @@
         aria-label="Docker Engine installation documentation (opens in a new tab)">Docker Engine</a
       > with Docker Compose v2, then confirm both commands work:
     </p>
-    <div class="terminal" role="group" aria-label="Check Docker on Linux">
-      <div class="terminal-bar">
-        <span class="terminal-lights" aria-hidden="true"><i></i><i></i><i></i></span>
-        <span>Terminal · Docker check</span>
-      </div>
-      <div class="terminal-command"><span aria-hidden="true">$</span><code>docker version</code></div>
-      <div class="terminal-command"><span aria-hidden="true">$</span><code>docker compose version</code></div>
-    </div>
+    <CodeBlock
+      label="Check Docker on Linux"
+      title="Terminal · Docker check"
+      lines={[{ value: "docker version" }, { value: "docker compose version" }]}
+    />
   </li>
 
   <li>
     <h2>Install Shimpz</h2>
     <p>Run the installer from the same terminal:</p>
-    <div class="terminal" role="group" aria-label="Install Shimpz on Linux">
-      <div class="terminal-bar">
-        <span class="terminal-lights" aria-hidden="true"><i></i><i></i><i></i></span>
-        <span>Terminal · Shimpz install</span>
-      </div>
-      <div class="terminal-command">
-        <span aria-hidden="true">$</span><code>curl -fsSL https://install.shimpz.com | sh</code>
-      </div>
-    </div>
+    <CodeBlock
+      label="Install Shimpz on Linux"
+      title="Terminal · Shimpz install"
+      lines={[{ value: "curl -fsSL https://install.shimpz.com | sh" }]}
+    />
   </li>
 </ol>
 

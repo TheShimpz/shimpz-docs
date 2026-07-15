@@ -1,3 +1,7 @@
+<script lang="ts">
+  import CodeBlock from "$lib/components/CodeBlock.svelte";
+</script>
+
 <svelte:head>
   <title>Install Shimpz on macOS — Shimpz docs</title>
   <meta
@@ -41,28 +45,21 @@
   <li>
     <h2>Check Docker</h2>
     <p>Open the Terminal app and confirm Docker Engine and Docker Compose v2 respond:</p>
-    <div class="terminal" role="group" aria-label="Check Docker on macOS">
-      <div class="terminal-bar">
-        <span class="terminal-lights" aria-hidden="true"><i></i><i></i><i></i></span>
-        <span>Terminal · Docker check</span>
-      </div>
-      <div class="terminal-command"><span aria-hidden="true">$</span><code>docker version</code></div>
-      <div class="terminal-command"><span aria-hidden="true">$</span><code>docker compose version</code></div>
-    </div>
+    <CodeBlock
+      label="Check Docker on macOS"
+      title="Terminal · Docker check"
+      lines={[{ value: "docker version" }, { value: "docker compose version" }]}
+    />
   </li>
 
   <li>
     <h2>Install Shimpz</h2>
     <p>Paste this command into Terminal and press Return:</p>
-    <div class="terminal" role="group" aria-label="Install Shimpz on macOS">
-      <div class="terminal-bar">
-        <span class="terminal-lights" aria-hidden="true"><i></i><i></i><i></i></span>
-        <span>Terminal · Shimpz install</span>
-      </div>
-      <div class="terminal-command">
-        <span aria-hidden="true">$</span><code>curl -fsSL https://install.shimpz.com | sh</code>
-      </div>
-    </div>
+    <CodeBlock
+      label="Install Shimpz on macOS"
+      title="Terminal · Shimpz install"
+      lines={[{ value: "curl -fsSL https://install.shimpz.com | sh" }]}
+    />
   </li>
 </ol>
 
