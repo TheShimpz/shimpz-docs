@@ -362,6 +362,10 @@ a { color: inherit; text-decoration: none; }
     font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.05em;
   }
   .terminal-title { min-width: 0; margin-right: auto; }
+  .terminal-language {
+    flex: none; color: var(--color-magenta); font-size: 0.625rem; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+  }
   .terminal-lights { display: inline-flex; gap: 0.3rem; }
   .terminal-lights i { width: 0.42rem; height: 0.42rem; border-radius: 999px; background: var(--color-border-strong); }
   .terminal-lights i:first-child { background: var(--color-magenta); }
@@ -394,6 +398,19 @@ a { color: inherit; text-decoration: none; }
     min-width: 0; border: 0; padding: 0; background: transparent; color: var(--color-fg);
     font-size: inherit; overflow-wrap: anywhere; white-space: pre-wrap;
   }
+  .code-file {
+    margin: 0; padding: 1rem; overflow: auto; background: #000; color: var(--color-fg);
+    font-family: var(--font-mono); font-size: 0.875rem; line-height: 1.7; tab-size: 2;
+  }
+  .code-file code {
+    display: block; min-width: max-content; overflow-wrap: normal; white-space: pre;
+  }
+  .syntax-key { color: var(--color-cyan); }
+  .syntax-section { color: var(--color-magenta); font-weight: 600; }
+  .syntax-string { color: var(--color-green); }
+  .syntax-number { color: var(--color-yellow); }
+  .syntax-punctuation { color: var(--color-muted); }
+  .syntax-comment { color: var(--color-muted-2); font-style: italic; }
 
   .guide-section { margin-top: 5rem; padding-top: 3.5rem; border-top: 1px solid var(--color-border); }
   .section-label {

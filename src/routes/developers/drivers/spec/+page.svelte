@@ -34,6 +34,8 @@
   <CodeBlock
     label="PostgreSQL Driver Spec v1 manifest"
     title="shimpz.driver.toml"
+    variant="code"
+    language="toml"
     lines={[
       { value: "schema_version = 1" },
       { value: 'id = "postgresql"' },
