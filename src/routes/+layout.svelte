@@ -29,16 +29,16 @@
     },
     {
       label: "Reference",
-      items: [{ href: "/concepts/", label: "Core concepts", description: "Space, Drivers, Capsules, Apps" }],
+      items: [{ href: "/concepts/", label: "Core concepts", description: "Space, Services, Capsules, Assistants" }],
     },
   ];
 
   const developerNavigation: NavigationSection[] = [
     {
-      label: "Drivers",
+      label: "Services",
       items: [
-        { href: "/developers/drivers/", label: "Overview", description: "Architecture and migration" },
-        { href: "/developers/drivers/spec/", label: "Driver Spec v1", description: "Manifest and guarantees" },
+        { href: "/developers/services/", label: "Overview", description: "Shared Space capabilities" },
+        { href: "/developers/drivers/spec/", label: "Service Spec v1", description: "Driver contract compatibility" },
         {
           href: "/developers/drivers/postgresql/",
           label: "PostgreSQL",
@@ -51,13 +51,19 @@
         },
       ],
     },
+    {
+      label: "Assistants",
+      items: [
+        { href: "/developers/assistants/", label: "Overview", description: "Capsule-owned workloads" },
+      ],
+    },
   ];
 
   const isDeveloperGuide = $derived(page.url.pathname.startsWith("/developers/"));
   const navigation = $derived(isDeveloperGuide ? developerNavigation : userNavigation);
   const guideLabel = $derived(isDeveloperGuide ? "Developer guide" : "User guide");
   const guideSummary = $derived(
-    isDeveloperGuide ? "build drivers for a Space" : "install and open your Space",
+    isDeveloperGuide ? "build Services and Assistants" : "install and open your Space",
   );
   const navigationTitleId = $derived(isDeveloperGuide ? "developer-navigation-title" : "user-navigation-title");
 
@@ -102,7 +108,7 @@
       aria-current={!isDeveloperGuide ? "page" : undefined}>User</a
     >
     <a
-      href="/developers/drivers/"
+      href="/developers/services/"
       class="chip justify-center"
       class:is-active={isDeveloperGuide}
       aria-current={isDeveloperGuide ? "page" : undefined}>Developers</a
