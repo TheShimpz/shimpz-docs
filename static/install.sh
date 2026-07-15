@@ -2,7 +2,7 @@
 
 set -eu
 
-INSTALLER_VERSION="0.2.0-dev"
+INSTALLER_VERSION="0.2.1-dev"
 IMAGE_REPOSITORY="ghcr.io/roxygens/shimpz-space"
 IMAGE_CHANNEL="dev"
 PROJECT_NAME="shimpz-space"
@@ -72,12 +72,59 @@ compose() {
 	docker compose --project-name "$PROJECT_NAME" --env-file "$ENV_FILE" -f "$COMPOSE_FILE" "$@"
 }
 
+project_container_ids() {
+	docker ps --all --quiet --filter "label=com.docker.compose.project=${PROJECT_NAME}"
+}
+
+project_volume_ids() {
+	docker volume ls --quiet --filter "label=com.docker.compose.project=${PROJECT_NAME}"
+}
+
+project_network_ids() {
+	docker network ls --quiet --filter "label=com.docker.compose.project=${PROJECT_NAME}"
+}
+
+project_resources_exist() {
+	container_ids="$(project_container_ids)" || die "could not inspect existing Shimpz Space containers"
+	volume_ids="$(project_volume_ids)" || die "could not inspect existing Shimpz Space volumes"
+	network_ids="$(project_network_ids)" || die "could not inspect existing Shimpz Space networks"
+	[ -n "${container_ids}${volume_ids}${network_ids}" ]
+}
+
+remove_project_resources() {
+	container_ids="$(project_container_ids)" || die "could not inspect existing Shimpz Space containers"
+	volume_ids="$(project_volume_ids)" || die "could not inspect existing Shimpz Space volumes"
+	network_ids="$(project_network_ids)" || die "could not inspect existing Shimpz Space networks"
+	for resource_id in $container_ids; do
+		docker rm --force "$resource_id"
+	done
+	for resource_id in $volume_ids; do
+		docker volume rm "$resource_id"
+	done
+	for resource_id in $network_ids; do
+		docker network rm "$resource_id"
+	done
+}
+
 if [ "$action" = "reset" ]; then
-	[ -f "$MARKER_FILE" ] || die "refusing reset: ${SHIMPZ_HOME} is not managed by this installer"
-	[ "$(sed -n '1p' "$MARKER_FILE")" = "$MARKER_VALUE" ] || die "refusing reset: invalid install marker"
+	managed_state=0
+	if [ -f "$MARKER_FILE" ]; then
+		[ "$(sed -n '1p' "$MARKER_FILE")" = "$MARKER_VALUE" ] \
+			|| die "refusing reset: invalid install marker"
+		managed_state=1
+	elif [ -e "$SHIMPZ_HOME" ]; then
+		die "refusing reset: ${SHIMPZ_HOME} exists without a valid install marker"
+	fi
+	if project_resources_exist; then
+		managed_state=1
+	fi
+	[ "$managed_state" -eq 1 ] || die "no managed Shimpz Space installation was found"
 	if [ -f "$COMPOSE_FILE" ] && [ -f "$ENV_FILE" ]; then
 		compose down --volumes --remove-orphans
 	fi
+	# The directory may have been deleted manually while Compose resources kept running. Remove only
+	# resources bearing this installer's fixed Compose project label; images remain cached and harmless.
+	remove_project_resources
 	rm -f \
 		"$COMPOSE_FILE" "$ENV_FILE" "$MARKER_FILE" \
 		"${COMPOSE_FILE}.previous" "${ENV_FILE}.previous" \
@@ -108,6 +155,9 @@ if [ -e "$SHIMPZ_HOME" ] && [ ! -f "$MARKER_FILE" ]; then
 fi
 if [ -f "$MARKER_FILE" ]; then
 	[ "$(sed -n '1p' "$MARKER_FILE")" = "$MARKER_VALUE" ] || die "invalid install marker in ${SHIMPZ_HOME}"
+fi
+if [ ! -f "$MARKER_FILE" ] && project_resources_exist; then
+	die "existing Shimpz Space Docker data was found without ${MARKER_FILE}; reset it first with: curl -fsSL https://install.shimpz.com | sh -s -- --reset"
 fi
 
 umask 077
