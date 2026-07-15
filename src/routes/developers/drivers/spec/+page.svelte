@@ -231,6 +231,12 @@
     to that managed fallback. A rejected update leaves the last valid override active, while an expired or
     failing configured override fails closed instead of silently widening authority through the managed key.
   </p>
+  <p>
+    Driver Spec v1 defines credential custody and lifecycle, but the current App Spec has no
+    <code>credential_ref</code> or scoped grant. Apps cannot consume these credential sets. A future App
+    binding must carry only an opaque reference and an exact operation grant; secret values remain inside
+    the Driver boundary.
+  </p>
 </section>
 
 <section class="guide-section" aria-labelledby="credential-oauth-title">
@@ -256,6 +262,16 @@
     Redpanda may receive post-commit events containing opaque credential references, generation, operation,
     status, and trace identifiers. Form values, authorization codes, access or refresh tokens, ciphertext,
     nonces, and encryption keys never enter an event or topic.
+  </p>
+  <p>
+    The target Redpanda topology is one Driver instance per Space. Each Capsule receives its own
+    authenticated principal, bounded topic and group prefixes, ACLs, and quotas; sharing between Apps or
+    Capsules requires literal, reviewed grants. It carries only post-commit events and never secrets.
+  </p>
+  <p>
+    The OAuth broker, Cloudflare adapter, passkey sign-in, and Redpanda event integration described here are
+    architecture/spec only. The current Driver credential runtime executes the R2
+    <code>secret-fields</code> lifecycle; it does not implement those identity and event components.
   </p>
 </section>
 

@@ -23,9 +23,10 @@
 <aside class="scope-note" aria-labelledby="conformance-status-title">
   <span id="conformance-status-title" class="kicker">Conformance status</span>
   <p>
-    PostgreSQL and R2 publish closed Driver Spec v1 discovery contracts. PostgreSQL is the proved control
-    reference; R2 currently proves its manifest and declarative credential form, while its end-to-end
-    Capsule credential lifecycle remains the next delivery slice.
+    PostgreSQL and R2 publish closed Driver Spec v1 discovery contracts. PostgreSQL is the proved resource
+    control reference. R2 implements the secret-field credential control plane from the Admin through the
+    Capsule Driver to the R2 Driver, including multiple named sets per Capsule. Apps cannot consume those
+    sets because the App contract has no credential reference or grant model.
   </p>
 </aside>
 
@@ -60,7 +61,7 @@
     <li>
       <a class="docs-entry-link" href="/developers/drivers/r2/">
         <strong>Cloudflare R2 Driver</strong>
-        <span>Brokered storage with declarative Capsule BYOK discovery</span>
+        <span>Brokered storage with a Capsule-scoped BYOK control plane</span>
       </a>
     </li>
   </ul>

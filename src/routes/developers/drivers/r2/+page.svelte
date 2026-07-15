@@ -6,7 +6,7 @@
   <title>Cloudflare R2 Driver — Shimpz docs</title>
   <meta
     name="description"
-    content="Driver Spec v1 discovery for brokered Cloudflare R2 storage, managed fallback, and declarative Capsule-scoped BYOK."
+    content="Driver Spec v1 control plane for brokered Cloudflare R2 storage, managed fallback, and Capsule-scoped BYOK."
   />
 </svelte:head>
 
@@ -15,7 +15,7 @@
 </nav>
 
 <header class="docs-page-header">
-  <span class="section-label">Declarative reference · Driver Spec v1</span>
+  <span class="section-label">Control-plane reference · Driver Spec v1</span>
   <h1>Cloudflare R2 Driver</h1>
   <p class="docs-lede">
     One Space service brokers object-storage operations. Its public discovery contract describes both the
@@ -26,9 +26,11 @@
 <aside class="scope-note" aria-labelledby="r2-proof-boundary-title">
   <span id="r2-proof-boundary-title" class="kicker">Current proof boundary</span>
   <p>
-    R2 currently conforms at manifest and credential-form discovery. The end-to-end Capsule credential
-    lifecycle is not implemented yet, so this page does not claim that BYOK values can already be created,
-    stored, rotated, removed, or used safely through the Admin.
+    The Admin-to-Capsule-to-R2 credential control plane is implemented for the
+    <code>secret-fields</code> profile: an authorized Captain can create, list, verify, rotate, and remove
+    multiple named R2 credential sets per Capsule. This does not claim App consumption or production
+    activation: Apps have no credential binding yet, and the current production host cannot complete the
+    live Admin proof until Docker exposes the required <code>runsc</code> runtime.
   </p>
 </aside>
 
@@ -39,8 +41,9 @@
     <li><code>scope = space</code>: one Driver service belongs to the Space, not to each Capsule.</li>
     <li><code>data_plane = brokered</code>: operations remain behind the Driver instead of exposing its key.</li>
     <li>
-      <code>credential_policy = managed-or-byok</code>: BYOK is optional and the managed Space credential is
-      the fallback only when a Capsule has no active override.
+      <code>credential_policy = managed-or-byok</code>: the contract keeps BYOK optional and declares the
+      intended selection policy. When App binding lands, the managed Space credential is the fallback if
+      no Capsule override is selected; the current App data plane does not currently execute that selection.
     </li>
     <li>
       The declarative form fixes <code>owner_scope</code> to <code>capsule</code> and
@@ -48,8 +51,8 @@
     </li>
   </ul>
   <p>
-    These are validated v1 declarations. Runtime fallback, ownership checks, encryption, and fail-closed
-    selection still require the lifecycle implementation and its isolation proofs.
+    The current runtime executes the credential lifecycle, exact Capsule ownership checks, encrypted
+    custody, and fail-closed updates. Selection of a credential set by an App remains outside this proof.
   </p>
 </section>
 
@@ -79,19 +82,34 @@
     <li>The closed manifest selects Driver Spec v1, Space scope, brokered data, and optional BYOK.</li>
     <li>The closed credential form accepts only the reusable v1 field formats needed by an R2 access key.</li>
     <li>Both files pass strict parsers before the service starts and are returned unchanged by discovery.</li>
-    <li>Discovery is definition-only and has no field where a submitted key or provider token can appear.</li>
+    <li>The Admin renders that form and proxies the five lifecycle operations without returning secret values.</li>
+    <li>A separate per-Capsule principal prevents one Capsule from listing or mutating another's inventory.</li>
+    <li>
+      Create and rotate verify the candidate first; authenticated encryption binds its identities and
+      generation, while compare-and-swap rejects stale changes.
+    </li>
   </ul>
 </section>
 
 <section class="guide-section" aria-labelledby="r2-next-title">
-  <span class="section-label">Next delivery slice</span>
-  <h2 id="r2-next-title">Prove the complete credential lifecycle</h2>
+  <span class="section-label">Deliberate boundary</span>
+  <h2 id="r2-next-title">Bind Apps without exposing keys</h2>
   <p>
-    The next implementation must connect the Admin to <code>credential.create</code>,
-    <code>credential.list</code>, <code>credential.verify</code>, <code>credential.rotate</code>, and
-    <code>credential.remove</code>; enforce Capsule ownership, compare-and-swap generations, authenticated
-    encryption with bound AAD, provider verification, and request-scoped R2 use; then prove managed fallback
-    and failure behavior. Until those tests pass, declarative discovery is the only BYOK conformance claim.
+    Driver Spec v1 now covers custody and lifecycle, but the current App Spec does not define a
+    <code>credential_ref</code> or scoped grant. Apps cannot consume these credential sets, and the
+    existing R2 object routes continue to use the Space-managed credential. The next data-plane slice must
+    pass only an opaque reference and an exact operation grant to the broker; it must never inject the
+    submitted access key into an App or Capsule environment.
+  </p>
+  <p>
+    OAuth, passkeys, and Redpanda are not part of this R2 runtime. Their Driver Spec shapes are architecture
+    for later platform-owned adapters and events, not a claim that Cloudflare OAuth or passkey authorization
+    is available today.
+  </p>
+  <p>
+    Production Capsule operations are hard-gated on gVisor. Because <code>runsc</code> is not registered on
+    the current host, the deployed Capsule Driver fails closed instead of silently using <code>runc</code>;
+    focused contract and lifecycle tests do not replace that pending live isolation proof.
   </p>
   <p>
     Read the <a
