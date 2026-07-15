@@ -2,11 +2,75 @@
 
 set -eu
 
-INSTALLER_VERSION="0.2.1-dev"
+INSTALLER_VERSION="0.2.2-dev"
 IMAGE_REPOSITORY="ghcr.io/roxygens/shimpz-space"
 IMAGE_CHANNEL="dev"
 PROJECT_NAME="shimpz-space"
 MARKER_VALUE="shimpz-space-managed-v1"
+
+OUT_RESET=""
+OUT_BOLD=""
+OUT_DIM=""
+OUT_CYAN=""
+OUT_GREEN=""
+OUT_YELLOW=""
+ERR_RESET=""
+ERR_BOLD=""
+ERR_RED=""
+ERR_YELLOW=""
+
+setup_colors() {
+	[ "${TERM:-dumb}" != "dumb" ] || return 0
+	[ -z "${NO_COLOR+x}" ] || return 0
+	escape="$(printf '\033')"
+	if [ -t 1 ]; then
+		OUT_RESET="${escape}[0m"
+		OUT_BOLD="${escape}[1m"
+		OUT_DIM="${escape}[2m"
+		OUT_CYAN="${escape}[36m"
+		OUT_GREEN="${escape}[32m"
+		OUT_YELLOW="${escape}[33m"
+	fi
+	if [ -t 2 ]; then
+		ERR_RESET="${escape}[0m"
+		ERR_BOLD="${escape}[1m"
+		ERR_RED="${escape}[31m"
+		ERR_YELLOW="${escape}[33m"
+	fi
+	return 0
+}
+
+show_brand() {
+	case "$1" in
+		reset) subtitle="safe reset // local data" ;;
+		*) subtitle="space installer // dev" ;;
+	esac
+	printf '%s\n' '    .-""-.'
+	printf '%s\n' "   / o  o \\"
+	printf '  (    ^   )  %s%sShimpz%s\n' "$OUT_BOLD" "$OUT_CYAN" "$OUT_RESET"
+	printf '   \\  \\_/ /   %s%s%s\n' "$OUT_DIM" "$subtitle" "$OUT_RESET"
+	printf '%s\n\n' "    '----'"
+}
+
+step() {
+	printf '  %s[..]%s %s\n' "$OUT_DIM" "$OUT_RESET" "$*"
+}
+
+info() {
+	printf '  %s[i]%s %s\n' "$OUT_CYAN" "$OUT_RESET" "$*"
+}
+
+notice() {
+	printf '  %s%s[!]%s %s\n' "$OUT_BOLD" "$OUT_YELLOW" "$OUT_RESET" "$*"
+}
+
+success() {
+	printf '%s%s[ok]%s %s\n' "$OUT_BOLD" "$OUT_GREEN" "$OUT_RESET" "$*"
+}
+
+warn() {
+	printf '%s%s[warn]%s %s\n' "$ERR_BOLD" "$ERR_YELLOW" "$ERR_RESET" "$*" >&2
+}
 
 usage() {
 	cat <<'EOF'
@@ -28,7 +92,7 @@ EOF
 }
 
 die() {
-	printf 'shimpz-space: %s\n' "$*" >&2
+	printf '%s%s[error]%s Shimpz could not continue: %s\n' "$ERR_BOLD" "$ERR_RED" "$ERR_RESET" "$*" >&2
 	exit 1
 }
 
@@ -49,6 +113,10 @@ case "${1:-}" in
 		;;
 esac
 [ "$#" -le 1 ] || die "only one option may be supplied"
+
+setup_colors
+show_brand "$action"
+step "Checking Docker and Compose"
 
 command -v docker >/dev/null 2>&1 || die "Docker is required: https://docs.docker.com/get-started/get-docker/"
 docker compose version >/dev/null 2>&1 || die "Docker Compose v2 is required"
@@ -142,6 +210,8 @@ remove_validated_project_resources() {
 }
 
 if [ "$action" = "reset" ]; then
+	notice "This permanently removes local Admin data"
+	step "Validating managed Docker resources"
 	managed_state=0
 	if [ -f "$MARKER_FILE" ]; then
 		[ "$(sed -n '1p' "$MARKER_FILE")" = "$MARKER_VALUE" ] \
@@ -155,11 +225,13 @@ if [ "$action" = "reset" ]; then
 	fi
 	[ "$managed_state" -eq 1 ] || die "no managed Shimpz Space installation was found"
 	if [ -f "$COMPOSE_FILE" ] && [ -f "$ENV_FILE" ]; then
+		step "Stopping Admin and removing Docker data"
 		compose down --volumes --remove-orphans
 	elif [ -n "${container_ids}${volume_ids}${network_ids}" ]; then
 		# With the local marker/config gone, do a complete read-only ownership preflight before the
 		# first deletion. Unknown resources sharing the generic Compose project label fail closed.
 		validate_orphaned_project_resources
+		step "Removing verified orphaned Docker data"
 		remove_validated_project_resources
 	fi
 	if project_resources_exist; then
@@ -170,7 +242,11 @@ if [ "$action" = "reset" ]; then
 		"${COMPOSE_FILE}.previous" "${ENV_FILE}.previous" \
 		"${COMPOSE_FILE}.tmp" "${ENV_FILE}.tmp"
 	rmdir "$SHIMPZ_HOME" 2>/dev/null || true
-	printf 'Shimpz Space data was removed from %s.\n' "$SHIMPZ_HOME"
+	printf '\n'
+	success "Shimpz Space was reset"
+	printf '  Data     Managed Admin Docker data was removed\n'
+	printf '  Files    Known installer files were removed from %s\n' "$SHIMPZ_HOME"
+	printf '  Install  curl -fsSL https://install.shimpz.com | sh\n'
 	exit 0
 fi
 
@@ -197,7 +273,15 @@ if [ -f "$MARKER_FILE" ]; then
 	[ "$(sed -n '1p' "$MARKER_FILE")" = "$MARKER_VALUE" ] || die "invalid install marker in ${SHIMPZ_HOME}"
 fi
 if [ ! -f "$MARKER_FILE" ] && project_resources_exist; then
-	die "existing Shimpz Space Docker data was found without ${MARKER_FILE}; reset it first with: curl -fsSL https://install.shimpz.com | sh -s -- --reset"
+	die "an earlier Shimpz installation still has Docker data. Nothing was changed. Reset it first with: curl -fsSL https://install.shimpz.com | sh -s -- --reset"
+fi
+
+if [ -f "$MARKER_FILE" ]; then
+	install_mode="update"
+	info "Updating Shimpz Space; your Admin data will be preserved"
+else
+	install_mode="install"
+	info "Installing a fresh Shimpz Space"
 fi
 
 umask 077
@@ -207,9 +291,10 @@ printf '%s\n' "$MARKER_VALUE" >"$MARKER_FILE"
 chmod 600 "$MARKER_FILE"
 
 tag_ref="${IMAGE_REPOSITORY}:${IMAGE_CHANNEL}"
-printf 'Pulling %s...\n' "$tag_ref"
+step "Pulling the verified development image"
 docker pull --platform "$docker_platform" "$tag_ref"
 
+step "Verifying the immutable image digest"
 pulled_platform="$(docker image inspect --format '{{.Os}}/{{.Architecture}}' "$tag_ref")"
 [ "$pulled_platform" = "$docker_platform" ] \
 	|| die "Docker loaded ${pulled_platform} instead of required platform ${docker_platform}"
@@ -285,22 +370,32 @@ chmod 600 "${COMPOSE_FILE}.tmp"
 mv "${ENV_FILE}.tmp" "$ENV_FILE"
 mv "${COMPOSE_FILE}.tmp" "$COMPOSE_FILE"
 
-printf 'Starting Shimpz Space...\n'
+step "Starting the Shimpz Admin"
 if ! compose up -d --wait --wait-timeout 120 --no-build --pull never; then
-	printf 'The new release did not become healthy.\n' >&2
+	warn "The new release did not become healthy"
 	compose down --remove-orphans >/dev/null 2>&1 || true
 	if [ "$had_previous" -eq 1 ]; then
-		printf 'Restoring the previous working release...\n' >&2
+		step "Restoring the previous pinned release"
 		mv "${ENV_FILE}.previous" "$ENV_FILE"
 		mv "${COMPOSE_FILE}.previous" "$COMPOSE_FILE"
 		compose up -d --wait --wait-timeout 120 --no-build --pull never \
-			|| die "rollback also failed; inspect with: docker compose -p ${PROJECT_NAME} logs"
+			|| die "rollback also failed; inspect with: (cd \"${SHIMPZ_HOME}\" && docker compose -p ${PROJECT_NAME} logs)"
+		warn "Previous version restored; your Admin data was preserved"
+		die "the update failed, so Shimpz is still running the previous version"
 	fi
 	die "installation failed"
 fi
 
 rm -f "${ENV_FILE}.previous" "${COMPOSE_FILE}.previous"
-printf '\nShimpz Space is ready: http://127.0.0.1:%s\n' "$install_port"
-printf 'Open that address and create an Admin password with at least 12 characters.\n'
-printf 'Installed immutable image: %s\n' "$image_ref"
-printf 'Reset command: curl -fsSL https://install.shimpz.com | sh -s -- --reset\n'
+printf '\n'
+if [ "$install_mode" = "update" ]; then
+	success "Shimpz Space is up to date"
+	printf '  Admin    %shttp://127.0.0.1:%s%s\n' "$OUT_CYAN" "$install_port" "$OUT_RESET"
+	printf '  Data     Admin settings and password were preserved\n'
+else
+	success "Shimpz Space is ready"
+	printf '  Admin    %shttp://127.0.0.1:%s%s\n' "$OUT_CYAN" "$install_port" "$OUT_RESET"
+	printf '  Next     Create an Admin password with at least 12 characters\n'
+fi
+printf '  Image    %s\n' "$image_ref"
+printf '  Reset    curl -fsSL https://install.shimpz.com | sh -s -- --reset\n'
