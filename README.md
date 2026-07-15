@@ -1,7 +1,9 @@
 # shimpz-docs
 
-The public developer docs for **[Shimpz](https://shimpz.com)** — how to build Shimpz Apps.
-Served at **docs.shimpz.com**. A prerendered SvelteKit site reusing the Shimpz design system.
+The initial public User documentation for **[Shimpz](https://shimpz.com)**: install the Linux amd64
+development Space, open its loopback-only Admin, understand the Space/Driver/Capsule/App boundaries,
+and reset the local installation. Served at **docs.shimpz.com**. The same hardened origin serves the
+pull-only bootstrap at **install.shimpz.com**.
 
 ```sh
 pnpm install && pnpm run build   # → ./build (static)
