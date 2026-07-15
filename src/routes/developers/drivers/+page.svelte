@@ -23,8 +23,9 @@
 <aside class="scope-note" aria-labelledby="conformance-status-title">
   <span id="conformance-status-title" class="kicker">Conformance status</span>
   <p>
-    PostgreSQL is the only Driver conforming to v1. Existing Drivers remain unchanged until each one is
-    migrated and proved independently. R2 is the next migration target.
+    PostgreSQL and R2 publish closed Driver Spec v1 discovery contracts. PostgreSQL is the proved control
+    reference; R2 currently proves its manifest and declarative credential form, while its end-to-end
+    Capsule credential lifecycle remains the next delivery slice.
   </p>
 </aside>
 
@@ -56,6 +57,12 @@
         <span>The first v1-conforming reference</span>
       </a>
     </li>
+    <li>
+      <a class="docs-entry-link" href="/developers/drivers/r2/">
+        <strong>Cloudflare R2 Driver</strong>
+        <span>Brokered storage with declarative Capsule BYOK discovery</span>
+      </a>
+    </li>
   </ul>
 </section>
 
@@ -65,8 +72,8 @@
   <p>
     Each migrated Driver is intended to live in its own repository. Repository extraction is a
     distribution step, not a field in the runtime manifest: the same contract must remain valid before
-    and after the source moves. PostgreSQL establishes the pattern without forcing unreviewed changes on
-    the other Drivers.
+    and after the source moves. PostgreSQL and R2 establish the incremental pattern without forcing
+    unreviewed changes on the other Drivers.
   </p>
 </section>
 

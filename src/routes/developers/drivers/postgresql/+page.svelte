@@ -121,6 +121,7 @@
   </p>
 </aside>
 
-<nav class="docs-page-nav" aria-label="Continue the developer guide">
+<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the developer guide">
   <a href="/developers/drivers/spec/"><span>Back to</span><strong>Driver Spec v1</strong></a>
+  <a href="/developers/drivers/r2/"><span>Next</span><strong>Cloudflare R2 Driver</strong></a>
 </nav>

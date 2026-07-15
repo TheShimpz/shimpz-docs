@@ -44,6 +44,11 @@
           label: "PostgreSQL",
           description: "First v1 reference",
         },
+        {
+          href: "/developers/drivers/r2/",
+          label: "Cloudflare R2",
+          description: "Declarative BYOK discovery",
+        },
       ],
     },
   ];
