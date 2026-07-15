@@ -384,7 +384,8 @@ a { color: inherit; text-decoration: none; }
     stroke-linecap: square; stroke-linejoin: miter;
   }
   .terminal-command, .terminal-output {
-    display: grid; grid-template-columns: 1rem minmax(0, 1fr); gap: 0.6rem; padding: 0.9rem 1rem;
+    display: grid; grid-template-columns: 1rem minmax(0, 1fr) auto; align-items: center;
+    gap: 0.6rem; padding: 0.7rem 0.8rem 0.7rem 1rem;
     color: var(--color-cyan); font-family: var(--font-mono); font-size: 0.875rem; line-height: 1.65;
   }
   .terminal-command + .terminal-command, .terminal-output { border-top: 1px solid var(--color-border); }
