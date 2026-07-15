@@ -13,8 +13,12 @@
     <a href="/" class="brand-name" aria-label="Shimpz Docs home">Shimpz</a>
     <span class="hidden text-sm dim sm:inline">· docs</span>
     <nav class="ml-auto flex items-center gap-1 text-sm" aria-label="Primary navigation">
-      <a href="https://shimpz.com" class="rounded-lg px-3 py-1.5 dim transition hover:text-[var(--color-fg)]"
-        >Shimpz ↗</a
+      <a
+        href="https://shimpz.com"
+        class="external-link rounded-lg px-3 py-1.5 transition"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Shimpz website (opens in a new tab)">Shimpz</a
       >
     </nav>
   </div>
@@ -58,7 +62,13 @@
   <div class="wrap flex flex-wrap items-center justify-between gap-4 text-sm dim">
     <span>Shimpz · User guide — install and open your Space</span>
     <div class="flex gap-4">
-      <a href="https://shimpz.com" class="transition hover:text-[var(--color-fg)]">Shimpz</a>
+      <a
+        href="https://shimpz.com"
+        class="external-link transition"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Shimpz website (opens in a new tab)">Shimpz</a
+      >
     </div>
   </div>
 </footer>

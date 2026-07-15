@@ -69,8 +69,13 @@
     <li>
       <h3>Install Docker</h3>
       <p>
-        Install <a href="https://docs.docker.com/engine/install/">Docker Engine</a> with Docker Compose
-        v2, then confirm both commands work:
+        Install <a
+          class="external-link"
+          href="https://docs.docker.com/engine/install/"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Docker Engine installation documentation (opens in a new tab)">Docker Engine</a
+        > with Docker Compose v2, then confirm both commands work:
       </p>
       <div class="terminal" role="group" aria-label="Check Docker on Linux">
         <div class="terminal-bar">
@@ -116,7 +121,14 @@
     <li>
       <h3>Install Docker Desktop</h3>
       <p>
-        Install <a href="https://docs.docker.com/desktop/setup/install/mac-install/">Docker Desktop on macOS</a>.
+        Install <a
+          class="external-link"
+          href="https://docs.docker.com/desktop/setup/install/mac-install/"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Docker Desktop for Mac installation documentation (opens in a new tab)"
+          >Docker Desktop on macOS</a
+        >.
         Open it and wait until Docker reports that it is running.
       </p>
     </li>
