@@ -2,7 +2,7 @@
 
 set -eu
 
-INSTALLER_VERSION="0.2.3-dev"
+INSTALLER_VERSION="0.2.4-dev"
 IMAGE_REPOSITORY="ghcr.io/roxygens/shimpz-space"
 IMAGE_CHANNEL="dev"
 PROJECT_NAME="shimpz-space"
@@ -168,7 +168,7 @@ install_port="${SHIMPZ_PORT:-7777}"
 unset SHIMPZ_SPACE_IMAGE SHIMPZ_SPACE_PLATFORM SHIMPZ_PORT
 
 compose() {
-	docker compose --project-name "$PROJECT_NAME" --env-file "$ENV_FILE" -f "$COMPOSE_FILE" "$@"
+	docker compose --progress quiet --project-name "$PROJECT_NAME" --env-file "$ENV_FILE" -f "$COMPOSE_FILE" "$@"
 }
 
 project_container_ids() {
@@ -230,13 +230,13 @@ validate_orphaned_project_resources() {
 
 remove_validated_project_resources() {
 	for resource_id in $container_ids; do
-		docker rm --force "$resource_id"
+		docker rm --force "$resource_id" >/dev/null
 	done
 	for resource_id in $volume_ids; do
-		docker volume rm "$resource_id"
+		docker volume rm "$resource_id" >/dev/null
 	done
 	for resource_id in $network_ids; do
-		docker network rm "$resource_id"
+		docker network rm "$resource_id" >/dev/null
 	done
 }
 
@@ -323,7 +323,7 @@ chmod 600 "$MARKER_FILE"
 
 tag_ref="${IMAGE_REPOSITORY}:${IMAGE_CHANNEL}"
 step "Pulling the verified development image"
-docker pull --platform "$docker_platform" "$tag_ref"
+docker pull --quiet --platform "$docker_platform" "$tag_ref" >/dev/null
 
 step "Verifying the immutable image digest"
 pulled_platform="$(docker image inspect --format '{{.Os}}/{{.Architecture}}' "$tag_ref")"
@@ -404,7 +404,7 @@ mv "${COMPOSE_FILE}.tmp" "$COMPOSE_FILE"
 step "Starting the Shimpz Admin"
 if ! compose up -d --wait --wait-timeout 120 --no-build --pull never; then
 	warn "The new release did not become healthy"
-	compose down --remove-orphans >/dev/null 2>&1 || true
+	compose down --remove-orphans >/dev/null || true
 	if [ "$had_previous" -eq 1 ]; then
 		step "Restoring the previous pinned release"
 		mv "${ENV_FILE}.previous" "$ENV_FILE"
