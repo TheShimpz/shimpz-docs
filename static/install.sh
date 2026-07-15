@@ -2,7 +2,7 @@
 
 set -eu
 
-INSTALLER_VERSION="0.1.0-dev"
+INSTALLER_VERSION="0.2.0-dev"
 IMAGE_REPOSITORY="ghcr.io/roxygens/shimpz-space"
 IMAGE_CHANNEL="dev"
 PROJECT_NAME="shimpz-space"
@@ -21,7 +21,9 @@ Usage:
 Environment:
   SHIMPZ_PORT            Loopback port for the Admin (default: 7777)
 
-Supported host: Linux amd64 with Docker Engine and Docker Compose v2.
+Supported hosts:
+  Linux amd64 with Docker Engine and Docker Compose v2.
+  Apple Silicon macOS arm64 with Docker Desktop and Docker Compose v2.
 EOF
 }
 
@@ -48,7 +50,7 @@ case "${1:-}" in
 esac
 [ "$#" -le 1 ] || die "only one option may be supplied"
 
-command -v docker >/dev/null 2>&1 || die "Docker is required: https://docs.docker.com/engine/install/"
+command -v docker >/dev/null 2>&1 || die "Docker is required: https://docs.docker.com/get-started/get-docker/"
 docker compose version >/dev/null 2>&1 || die "Docker Compose v2 is required"
 docker info >/dev/null 2>&1 || die "the Docker daemon is not available to this user"
 
@@ -62,6 +64,9 @@ SHIMPZ_HOME="${HOME}/.shimpz"
 COMPOSE_FILE="${SHIMPZ_HOME}/compose.yaml"
 ENV_FILE="${SHIMPZ_HOME}/.env"
 MARKER_FILE="${SHIMPZ_HOME}/.shimpz-space"
+
+install_port="${SHIMPZ_PORT:-7777}"
+unset SHIMPZ_SPACE_IMAGE SHIMPZ_SPACE_PLATFORM SHIMPZ_PORT
 
 compose() {
 	docker compose --project-name "$PROJECT_NAME" --env-file "$ENV_FILE" -f "$COMPOSE_FILE" "$@"
@@ -82,17 +87,20 @@ if [ "$action" = "reset" ]; then
 	exit 0
 fi
 
-[ "$(uname -s)" = "Linux" ] || die "this development installer currently supports Linux only"
-case "$(uname -m)" in
-	x86_64|amd64) ;;
-	*) die "this development installer currently supports amd64 only" ;;
+host_os="$(uname -s)"
+host_arch="$(uname -m)"
+case "${host_os}:${host_arch}" in
+	Linux:x86_64|Linux:amd64) docker_platform="linux/amd64" ;;
+	Darwin:arm64) docker_platform="linux/arm64" ;;
+	Darwin:*) die "this development installer supports Apple Silicon Macs only" ;;
+	Linux:*) die "this development installer supports Linux amd64 only" ;;
+	*) die "supported hosts are Linux amd64 and Apple Silicon macOS arm64" ;;
 esac
 
-SHIMPZ_PORT="${SHIMPZ_PORT:-7777}"
-case "$SHIMPZ_PORT" in
+case "$install_port" in
 	""|*[!0-9]*) die "SHIMPZ_PORT must be an integer between 1024 and 65535" ;;
 esac
-[ "$SHIMPZ_PORT" -ge 1024 ] 2>/dev/null && [ "$SHIMPZ_PORT" -le 65535 ] 2>/dev/null \
+[ "$install_port" -ge 1024 ] 2>/dev/null && [ "$install_port" -le 65535 ] 2>/dev/null \
 	|| die "SHIMPZ_PORT must be an integer between 1024 and 65535"
 
 if [ -e "$SHIMPZ_HOME" ] && [ ! -f "$MARKER_FILE" ]; then
@@ -110,7 +118,11 @@ chmod 600 "$MARKER_FILE"
 
 tag_ref="${IMAGE_REPOSITORY}:${IMAGE_CHANNEL}"
 printf 'Pulling %s...\n' "$tag_ref"
-docker pull "$tag_ref"
+docker pull --platform "$docker_platform" "$tag_ref"
+
+pulled_platform="$(docker image inspect --format '{{.Os}}/{{.Architecture}}' "$tag_ref")"
+[ "$pulled_platform" = "$docker_platform" ] \
+	|| die "Docker loaded ${pulled_platform} instead of required platform ${docker_platform}"
 
 digest_ref="$({ docker image inspect --format '{{range .RepoDigests}}{{println .}}{{end}}' "$tag_ref" || true; } \
 	| sed -n "s|^${IMAGE_REPOSITORY}@\(sha256:[0-9a-f][0-9a-f]*\)$|\1|p" \
@@ -131,7 +143,8 @@ fi
 
 cat >"${ENV_FILE}.tmp" <<EOF
 SHIMPZ_SPACE_IMAGE=${image_ref}
-SHIMPZ_PORT=${SHIMPZ_PORT}
+SHIMPZ_SPACE_PLATFORM=${docker_platform}
+SHIMPZ_PORT=${install_port}
 EOF
 chmod 600 "${ENV_FILE}.tmp"
 
@@ -141,6 +154,7 @@ name: shimpz-space
 services:
   admin:
     image: ${SHIMPZ_SPACE_IMAGE:?installer must pin SHIMPZ_SPACE_IMAGE}
+    platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}
     pull_policy: never
     restart: unless-stopped
     user: "1000:1000"
@@ -196,7 +210,7 @@ if ! compose up -d --wait --wait-timeout 120 --no-build --pull never; then
 fi
 
 rm -f "${ENV_FILE}.previous" "${COMPOSE_FILE}.previous"
-printf '\nShimpz Space is ready: http://127.0.0.1:%s\n' "$SHIMPZ_PORT"
+printf '\nShimpz Space is ready: http://127.0.0.1:%s\n' "$install_port"
 printf 'Open that address and create an Admin password with at least 12 characters.\n'
 printf 'Installed immutable image: %s\n' "$image_ref"
 printf 'Reset command: curl -fsSL https://install.shimpz.com | sh -s -- --reset\n'
