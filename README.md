@@ -1,9 +1,10 @@
 # shimpz-docs
 
-The initial public User documentation for **[Shimpz](https://shimpz.com)**: install the development
-Space on Linux amd64 or an Apple Silicon Mac, open its loopback-only Admin, understand the
-Space/Driver/Capsule/App boundaries, and reset the local installation. Served at **docs.shimpz.com**.
-The same hardened origin serves the pull-only bootstrap at **install.shimpz.com**.
+The public documentation for **[Shimpz](https://shimpz.com)**. The User guide installs the development
+Space, opens its loopback-only Admin, explains its boundaries, and resets it. The separate Developer
+guide begins with Driver Spec v1 and the PostgreSQL reference implementation. Served at
+**docs.shimpz.com**; the same hardened origin serves the pull-only bootstrap at
+**install.shimpz.com**.
 
 ```sh
 pnpm install && pnpm run build   # → ./build (static)

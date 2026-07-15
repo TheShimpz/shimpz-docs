@@ -7,7 +7,7 @@
     items: Array<{ href: string; label: string; description: string }>;
   };
 
-  const navigation: NavigationSection[] = [
+  const userNavigation: NavigationSection[] = [
     {
       label: "Start here",
       items: [{ href: "/", label: "Overview", description: "Choose your computer" }],
@@ -32,6 +32,29 @@
       items: [{ href: "/concepts/", label: "Core concepts", description: "Space, Drivers, Capsules, Apps" }],
     },
   ];
+
+  const developerNavigation: NavigationSection[] = [
+    {
+      label: "Drivers",
+      items: [
+        { href: "/developers/drivers/", label: "Overview", description: "Architecture and migration" },
+        { href: "/developers/drivers/spec/", label: "Driver Spec v1", description: "Manifest and guarantees" },
+        {
+          href: "/developers/drivers/postgresql/",
+          label: "PostgreSQL",
+          description: "First v1 reference",
+        },
+      ],
+    },
+  ];
+
+  const isDeveloperGuide = $derived(page.url.pathname.startsWith("/developers/"));
+  const navigation = $derived(isDeveloperGuide ? developerNavigation : userNavigation);
+  const guideLabel = $derived(isDeveloperGuide ? "Developer guide" : "User guide");
+  const guideSummary = $derived(
+    isDeveloperGuide ? "build drivers for a Space" : "install and open your Space",
+  );
+  const navigationTitleId = $derived(isDeveloperGuide ? "developer-navigation-title" : "user-navigation-title");
 
   const currentLabel = $derived(
     navigation.flatMap((section) => section.items).find((item) => item.href === page.url.pathname)?.label ??
@@ -63,6 +86,23 @@
       </li>
     {/each}
   </ul>
+{/snippet}
+
+{#snippet guideSwitch()}
+  <div class="mb-6 grid grid-cols-2 gap-2" role="group" aria-label="Documentation guides">
+    <a
+      href="/"
+      class="chip justify-center"
+      class:is-active={!isDeveloperGuide}
+      aria-current={!isDeveloperGuide ? "page" : undefined}>User</a
+    >
+    <a
+      href="/developers/drivers/"
+      class="chip justify-center"
+      class:is-active={isDeveloperGuide}
+      aria-current={isDeveloperGuide ? "page" : undefined}>Developers</a
+    >
+  </div>
 {/snippet}
 
 <a class="skip-link" href="#main-content">Skip to the content</a>
@@ -104,18 +144,22 @@
 <div class="wrap flex flex-col gap-10 pt-9 pb-16 lg:flex-row lg:gap-14">
   <aside class="docs-sidebar lg:w-64 lg:shrink-0">
     <div class="hidden lg:sticky lg:top-24 lg:block">
-      <p id="user-navigation-title" class="kicker">User guide</p>
-      <nav class="mt-4" aria-labelledby="user-navigation-title">
+      {@render guideSwitch()}
+      <p id={navigationTitleId} class="kicker">{guideLabel}</p>
+      <nav class="mt-4" aria-labelledby={navigationTitleId}>
         {@render navigationTree()}
       </nav>
     </div>
 
     <details class="docs-mobile-menu lg:hidden">
       <summary>
-        <span>User guide</span>
+        <span>{guideLabel}</span>
         <strong>{currentLabel}</strong>
       </summary>
-      <nav aria-label="User guide">{@render navigationTree()}</nav>
+      <nav aria-label={guideLabel}>
+        {@render guideSwitch()}
+        {@render navigationTree()}
+      </nav>
     </details>
   </aside>
 
@@ -126,7 +170,7 @@
 
 <footer class="border-t hair py-10">
   <div class="wrap flex flex-wrap items-center justify-between gap-4 text-sm dim">
-    <span>Shimpz · User guide — install and open your Space</span>
+    <span>Shimpz · {guideLabel} — {guideSummary}</span>
     <div class="flex gap-4">
       <a
         href="https://shimpz.com"
