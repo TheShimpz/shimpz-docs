@@ -74,6 +74,7 @@ a { color: inherit; text-decoration: none; }
   .dim { color: var(--color-muted); }
   .hair { border-color: var(--color-border); }
   .mono { font-family: var(--font-mono); }
+  .brand-wordmark { display: block; width: 8.75rem; height: auto; }
 
   h1, h2, h3 { font-family: var(--font-mono); letter-spacing: -0.01em; }
 

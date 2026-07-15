@@ -10,13 +10,14 @@
   style="background:color-mix(in oklab, var(--color-bg) 82%, transparent)"
 >
   <div class="wrap flex h-16 items-center gap-4">
-    <a href="/" class="mono flex items-center gap-2.5 text-lg font-extrabold uppercase tracking-wide">
-      <span
-        class="app-icon grid place-items-center"
-        style="--g1:var(--color-cyan);--g2:var(--color-magenta);width:28px;height:28px;font-size:15px"
-        aria-hidden="true">◆</span
-      >
-      <span class="glitch" data-text="SHIMPZ" style="color:var(--color-fg)">SHIMPZ</span>
+    <a href="/" aria-label="Shimpz Docs home">
+      <img
+        class="brand-wordmark"
+        src="/brand/shimpz-logo-cyberchimp-v1.png"
+        alt="Shimpz"
+        width="1983"
+        height="793"
+      />
     </a>
     <span class="hidden text-sm dim sm:inline">· docs</span>
     <nav class="ml-auto flex items-center gap-1 text-sm" aria-label="Primary navigation">
