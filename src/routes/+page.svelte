@@ -33,8 +33,8 @@
 <aside class="scope-note" aria-labelledby="validated-scope-title">
   <span id="validated-scope-title" class="kicker">Validated scope</span>
   <p>
-    This initial delivery boots only the Admin. It does not install or advertise a Driver, Capsule, or
-    App package.
+    This initial delivery boots only the Admin. It does not install or advertise a Service, Capsule, or
+    Assistant package.
   </p>
 </aside>
 

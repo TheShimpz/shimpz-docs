@@ -1,5 +1,6 @@
 <svelte:head>
   <title>Build Shimpz Services — Shimpz docs</title>
+  <link rel="canonical" href="https://docs.shimpz.com/developers/services/" />
   <meta
     name="description"
     content="Build shared Shimpz Space capabilities with narrow operations and Capsule-scoped resources."
@@ -34,7 +35,7 @@
   <ul>
     <li>One Service instance serves one Space instead of being duplicated in every Capsule.</li>
     <li>The Service authenticates the caller and derives the exact Capsule resource server-side.</li>
-    <li>Assistants request named operations; they never receive a Service control credential.</li>
+    <li>The future binding lets Assistants request named operations without receiving a Service control credential.</li>
     <li>BYOK is optional and remains encrypted, Capsule-bound, rotatable, and revocable in the Service.</li>
     <li>PostgreSQL and Cloudflare R2 are the current Spec v1 references.</li>
   </ul>
@@ -45,19 +46,19 @@
   <h2 id="service-reference-title">Use the proved compatibility contract</h2>
   <ul class="docs-entry-list">
     <li>
-      <a class="docs-entry-link" href="/developers/drivers/spec/">
+      <a class="docs-entry-link" href="/developers/services/spec/">
         <strong>Service Spec v1</strong>
         <span>Closed <code>shimpz.driver.toml</code> manifest and security guarantees</span>
       </a>
     </li>
     <li>
-      <a class="docs-entry-link" href="/developers/drivers/postgresql/">
+      <a class="docs-entry-link" href="/developers/services/postgresql/">
         <strong>PostgreSQL Service</strong>
         <span>Space-shared control with exact Capsule and workload database scope</span>
       </a>
     </li>
     <li>
-      <a class="docs-entry-link" href="/developers/drivers/r2/">
+      <a class="docs-entry-link" href="/developers/services/r2/">
         <strong>Cloudflare R2 Service</strong>
         <span>Brokered object storage and optional Capsule-scoped BYOK</span>
       </a>

@@ -38,14 +38,14 @@
       label: "Services",
       items: [
         { href: "/developers/services/", label: "Overview", description: "Shared Space capabilities" },
-        { href: "/developers/drivers/spec/", label: "Service Spec v1", description: "Driver contract compatibility" },
+        { href: "/developers/services/spec/", label: "Service Spec v1", description: "Versioned compatibility contract" },
         {
-          href: "/developers/drivers/postgresql/",
+          href: "/developers/services/postgresql/",
           label: "PostgreSQL",
           description: "First v1 reference",
         },
         {
-          href: "/developers/drivers/r2/",
+          href: "/developers/services/r2/",
           label: "Cloudflare R2",
           description: "Declarative BYOK discovery",
         },
