@@ -1,29 +1,31 @@
 <script lang="ts">
   import { onDestroy } from "svelte";
 
-  type CodeLine = {
-    value: string;
-    kind?: "command" | "output";
-    prompt?: string;
-  };
+  import type { CodeLine, HighlightedCode } from "$lib/code";
 
-  type CodeToken = {
-    value: string;
-    kind: "plain" | "key" | "section" | "string" | "number" | "punctuation" | "comment";
-  };
-
-  type Props = {
+  type BaseProps = {
     label: string;
     title: string;
-    lines: readonly CodeLine[];
-    variant?: "terminal" | "code";
-    language?: "toml" | "text";
   };
 
-  const BLOCK_COPY_INDEX = -1;
+  type TerminalProps = BaseProps & {
+    variant?: "terminal";
+    lines: readonly CodeLine[];
+  };
 
-  let { label, title, lines, variant = "terminal", language = "text" }: Props = $props();
-  const blockSource = $derived(lines.map((line) => line.value).join("\n"));
+  type CodeProps = BaseProps & HighlightedCode & { variant: "code" };
+  type Props = TerminalProps | CodeProps;
+
+  const BLOCK_COPY_INDEX = -1;
+  const FONT_STYLE_ITALIC = 1;
+  const FONT_STYLE_BOLD = 2;
+  const FONT_STYLE_UNDERLINE = 4;
+  const FONT_STYLE_STRIKETHROUGH = 8;
+
+  let props: Props = $props();
+  const blockSource = $derived(
+    props.variant === "code" ? props.code : props.lines.map((line) => line.value).join("\n"),
+  );
   let copyStates = $state<Record<number, "copied" | "error">>({});
   const resetTimers = new Map<number, ReturnType<typeof setTimeout>>();
 
@@ -83,94 +85,8 @@
     );
   }
 
-  function tokenizeTomlValue(value: string): CodeToken[] {
-    const tokens: CodeToken[] = [];
-    let cursor = 0;
-
-    while (cursor < value.length) {
-      const character = value[cursor];
-
-      if (character === "#") {
-        tokens.push({ value: value.slice(cursor), kind: "comment" });
-        break;
-      }
-
-      if (character === '"' || character === "'") {
-        const quote = character;
-        let end = cursor + 1;
-        while (end < value.length) {
-          if (value[end] === quote && (quote === "'" || value[end - 1] !== "\\")) {
-            end += 1;
-            break;
-          }
-          end += 1;
-        }
-        tokens.push({ value: value.slice(cursor, end), kind: "string" });
-        cursor = end;
-        continue;
-      }
-
-      const number = value.slice(cursor).match(/^[+-]?\d(?:[\d_]*\d)?(?:\.\d(?:[\d_]*\d)?)?/);
-      if (number) {
-        tokens.push({ value: number[0], kind: "number" });
-        cursor += number[0].length;
-        continue;
-      }
-
-      if ("[]=,{}".includes(character)) {
-        tokens.push({ value: character, kind: "punctuation" });
-        cursor += 1;
-        continue;
-      }
-
-      let end = cursor + 1;
-      while (
-        end < value.length &&
-        !['"', "'", "#", "[", "]", "=", ",", "{", "}"].includes(value[end]) &&
-        !/[+\-\d]/.test(value[end])
-      ) {
-        end += 1;
-      }
-      tokens.push({ value: value.slice(cursor, end), kind: "plain" });
-      cursor = end;
-    }
-
-    return tokens;
-  }
-
-  function tokenizeTomlLine(value: string): CodeToken[] {
-    const leadingWhitespace = value.match(/^\s*/)?.[0] ?? "";
-    const content = value.slice(leadingWhitespace.length);
-    const tokens: CodeToken[] = leadingWhitespace ? [{ value: leadingWhitespace, kind: "plain" }] : [];
-    const section = content.match(/^(\[\[?)([A-Za-z0-9_.-]+)(\]\]?)(\s*(?:#.*)?)$/);
-
-    if (section) {
-      tokens.push(
-        { value: section[1], kind: "punctuation" },
-        { value: section[2], kind: "section" },
-        { value: section[3], kind: "punctuation" },
-        ...tokenizeTomlValue(section[4]),
-      );
-      return tokens;
-    }
-
-    const assignment = content.match(/^([A-Za-z0-9_.-]+)(\s*)(=)(.*)$/);
-    if (assignment) {
-      tokens.push(
-        { value: assignment[1], kind: "key" },
-        { value: assignment[2], kind: "plain" },
-        { value: assignment[3], kind: "punctuation" },
-        ...tokenizeTomlValue(assignment[4]),
-      );
-      return tokens;
-    }
-
-    tokens.push(...tokenizeTomlValue(content));
-    return tokens;
-  }
-
-  function tokensFor(value: string): CodeToken[] {
-    return language === "toml" ? tokenizeTomlLine(value) : [{ value, kind: "plain" }];
+  function hasFontStyle(fontStyle: number | undefined, flag: number) {
+    return Boolean((fontStyle ?? 0) & flag);
   }
 
   onDestroy(() => {
@@ -179,19 +95,19 @@
   });
 </script>
 
-<div class="terminal" role="group" aria-label={label}>
+<div class="terminal" role="group" aria-label={props.label}>
   <div class="terminal-bar">
     <span class="terminal-lights" aria-hidden="true"><i></i><i></i><i></i></span>
-    <span class="terminal-title">{title}</span>
-    {#if variant === "code"}
-      <span class="terminal-language">{language}</span>
+    <span class="terminal-title">{props.title}</span>
+    {#if props.variant === "code"}
+      <span class="terminal-language">{props.language}</span>
       <button
         type="button"
         class:copied={statusFor(BLOCK_COPY_INDEX) === "copied"}
         class:error={statusFor(BLOCK_COPY_INDEX) === "error"}
         class="terminal-copy"
         onclick={() => copyValue(blockSource, BLOCK_COPY_INDEX)}
-        aria-label={`${buttonText(BLOCK_COPY_INDEX)} entire ${label}`}
+        aria-label={`${buttonText(BLOCK_COPY_INDEX)} entire ${props.label}`}
       >
         {#if statusFor(BLOCK_COPY_INDEX) === "copied"}
           <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 10 3.5 3.5L16 5" /></svg>
@@ -206,10 +122,15 @@
     {/if}
   </div>
 
-  {#if variant === "code"}
-    <pre class="code-file" aria-label={`${label} source`}><code data-language={language}>{#each lines as line, index}{#each tokensFor(line.value) as token}<span class={`syntax-${token.kind}`}>{token.value}</span>{/each}{#if index < lines.length - 1}{"\n"}{/if}{/each}</code></pre>
+  {#if props.variant === "code"}
+    <pre class="code-file" aria-label={`${props.label} source`}><code data-language={props.language} style:color={props.foreground}>{#each props.tokens as line, index}{#each line as token}<span
+              class:is-italic={hasFontStyle(token.fontStyle, FONT_STYLE_ITALIC)}
+              class:is-bold={hasFontStyle(token.fontStyle, FONT_STYLE_BOLD)}
+              class:is-underlined={hasFontStyle(token.fontStyle, FONT_STYLE_UNDERLINE)}
+              class:is-struck={hasFontStyle(token.fontStyle, FONT_STYLE_STRIKETHROUGH)}
+              style:color={token.color ?? props.foreground}>{token.content}</span>{/each}{#if index < props.tokens.length - 1}{"\n"}{/if}{/each}</code></pre>
   {:else}
-    {#each lines as line, index}
+    {#each props.lines as line, index}
       <div class:terminal-output={line.kind === "output"} class:terminal-command={line.kind !== "output"}>
         <span aria-hidden="true">{line.prompt ?? (line.kind === "output" ? "›" : "$")}</span>
         <code>{line.value}</code>
@@ -219,7 +140,7 @@
           class:error={statusFor(index) === "error"}
           class="terminal-copy"
           onclick={() => copyValue(line.value, index)}
-          aria-label={`${buttonText(index)} line ${index + 1} from ${label}`}
+          aria-label={`${buttonText(index)} line ${index + 1} from ${props.label}`}
         >
           {#if statusFor(index) === "copied"}
             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 10 3.5 3.5L16 5" /></svg>

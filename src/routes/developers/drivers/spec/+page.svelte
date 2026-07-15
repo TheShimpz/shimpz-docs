@@ -1,5 +1,9 @@
 <script lang="ts">
   import CodeBlock from "$lib/components/CodeBlock.svelte";
+
+  import type { PageData } from "./$types";
+
+  let { data }: { data: PageData } = $props();
 </script>
 
 <svelte:head>
@@ -35,29 +39,7 @@
     label="PostgreSQL Driver Spec v1 manifest"
     title="shimpz.driver.toml"
     variant="code"
-    language="toml"
-    lines={[
-      { value: "schema_version = 1" },
-      { value: 'id = "postgresql"' },
-      { value: 'title = "PostgreSQL"' },
-      { value: 'version = "3.0.0"' },
-      { value: 'summary = "Managed PostgreSQL databases isolated per Capsule and App."' },
-      { value: 'interface = "shimpz.postgresql/v1"' },
-      { value: 'scope = "space"' },
-      { value: 'credential_policy = "managed"' },
-      { value: 'data_plane = "direct"' },
-      { value: "port = 7072" },
-      { value: 'health_path = "/healthz"' },
-      { value: 'metadata_path = "/v1/driver"' },
-      { value: "[capabilities]" },
-      { value: "operations = [" },
-      { value: '  "capsule.provision",' },
-      { value: '  "capsule.finalize",' },
-      { value: '  "capsule.drop",' },
-      { value: '  "capsule.app.create",' },
-      { value: '  "capsule.app.drop",' },
-      { value: "]" },
-    ]}
+    {...data.manifest}
   />
 
   <p>

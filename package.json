@@ -15,6 +15,7 @@
     "@sveltejs/kit": "^2.63.0",
     "@sveltejs/vite-plugin-svelte": "^7.1.2",
     "@tailwindcss/vite": "^4.3.2",
+    "shiki": "4.3.1",
     "svelte": "^5.56.1",
     "svelte-check": "^4.6.0",
     "tailwindcss": "^4.3.2",
@@ -22,7 +23,7 @@
     "vite": "^8.0.16"
   },
   "dependencies": {
-    "@fontsource/ibm-plex-mono": "^5.2.7",
-    "@fontsource-variable/inter": "^5.1.1"
+    "@fontsource-variable/inter": "^5.1.1",
+    "@fontsource/ibm-plex-mono": "^5.2.7"
   }
 }
