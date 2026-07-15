@@ -23,6 +23,41 @@ operations = [
   "capsule.app.drop",
 ]`;
 
+const credentialForm = `{
+  "schema_version": 1,
+  "owner_scope": "capsule",
+  "cardinality": "many",
+  "profiles": [
+    {
+      "id": "access-key",
+      "kind": "secret-fields",
+      "title": "Access key",
+      "fields": [
+        {
+          "id": "account_id",
+          "type": "text",
+          "label": "Account ID",
+          "required": true,
+          "format": "account-id",
+          "min_length": 1,
+          "max_length": 128
+        },
+        {
+          "id": "api_key",
+          "type": "secret",
+          "label": "API key",
+          "required": true,
+          "format": "api-key",
+          "min_length": 16,
+          "max_length": 4096,
+          "write_only": true
+        }
+      ]
+    }
+  ]
+}`;
+
 export const load: PageServerLoad = async () => ({
   manifest: await highlightCode(manifest, "toml"),
+  credentialForm: await highlightCode(credentialForm, "json"),
 });

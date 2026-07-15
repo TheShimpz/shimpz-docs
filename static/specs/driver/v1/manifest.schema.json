@@ -55,6 +55,11 @@
     "credential_policy": {
       "enum": ["none", "managed", "managed-or-byok"]
     },
+    "credential_schema_path": {
+      "type": "string",
+      "pattern": "^/[a-z0-9][a-z0-9-]*(?:/[a-z0-9][a-z0-9-]*)*$",
+      "maxLength": 80
+    },
     "data_plane": {
       "enum": ["direct", "brokered"]
     },
@@ -89,5 +94,25 @@
         }
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "credential_policy": {
+            "const": "managed-or-byok"
+          }
+        },
+        "required": ["credential_policy"]
+      },
+      "then": {
+        "required": ["credential_schema_path"]
+      },
+      "else": {
+        "not": {
+          "required": ["credential_schema_path"]
+        }
+      }
+    }
+  ]
 }

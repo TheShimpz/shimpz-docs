@@ -69,6 +69,10 @@
       <code>managed-or-byok</code>. There is deliberately no required-BYOK mode.
     </li>
     <li>
+      <code>credential_schema_path</code> is an absolute internal HTTP path required only for
+      <code>managed-or-byok</code>. Drivers using <code>none</code> or <code>managed</code> must omit it.
+    </li>
+    <li>
       <code>data_plane</code> is <code>direct</code> when an App receives a scoped connection, or
       <code>brokered</code> when bytes and operations continue through the Driver.
     </li>
@@ -122,6 +126,136 @@
     A BYOK value is Capsule-scoped secret configuration: it cannot appear in the manifest, discovery
     metadata, logs, error bodies, or another Capsule, and it must pass through the platform's secret
     boundary rather than an App-owned environment file.
+  </p>
+</section>
+
+<section class="guide-section" aria-labelledby="credential-form-title">
+  <span class="section-label">Declarative form</span>
+  <h2 id="credential-form-title">The Admin renders data; it never executes Driver JavaScript</h2>
+  <p>
+    A <code>managed-or-byok</code> Driver serves a credential-form document from its declared internal
+    path. The platform fetches that path through the authenticated control plane, validates the complete
+    document, and renders it with a platform-owned component. It never evaluates a script, imports a
+    Driver component, opens an iframe, or follows a provider URL supplied by the document.
+  </p>
+
+  <CodeBlock
+    label="Driver Spec v1 declarative credential form"
+    title="credential form · JSON"
+    variant="code"
+    {...data.credentialForm}
+  />
+
+  <p>
+    The canonical shape is the <a
+      class="external-link"
+      href="/specs/driver/v1/credential-form.schema.json"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Driver Credential Form v1 JSON Schema (opens in a new tab)"
+      >Driver Credential Form v1 JSON Schema</a
+    >. It is closed: unknown profile kinds, fields, formats, and options fail before the Admin displays
+    or submits anything. Profile and field identifiers must also be unique within their arrays.
+  </p>
+  <ul>
+    <li><code>owner_scope</code> is always <code>capsule</code>.</li>
+    <li><code>cardinality</code> is <code>one</code> or <code>many</code> credential sets per Capsule.</li>
+    <li>
+      <code>secret-fields</code> accepts only <code>text</code>, <code>secret</code>, and
+      <code>select</code> fields. It has no executable validator, regular-expression field, or endpoint URL.
+    </li>
+    <li>
+      Every text or secret field selects a named v1 format and declares tighter minimum and maximum
+      lengths. The Admin and Driver both validate the same constraints; client validation is never authority.
+    </li>
+    <li>
+      Secret fields require <code>write_only: true</code>. They are accepted only during create or rotate
+      and are never returned by list, discovery, verification, or error responses.
+    </li>
+  </ul>
+</section>
+
+<section class="guide-section" aria-labelledby="credential-formats-title">
+  <span class="section-label">Bounded formats</span>
+  <h2 id="credential-formats-title">Named validation replaces arbitrary regex</h2>
+  <p>
+    v1 text formats are <code>plain-text</code> (256), <code>account-id</code> (128),
+    <code>bucket-name</code> (63), <code>hostname</code> (253), <code>region</code> (64),
+    <code>tenant-id</code> (128), and <code>username</code> (128). Secret formats are
+    <code>access-key-id</code> (256), <code>api-key</code> (4096), <code>password</code> (1024),
+    <code>private-key</code> (16384), <code>secret-access-key</code> (4096), and
+    <code>secret-token</code> (4096). Numbers are maximum characters; the declared
+    <code>max_length</code> may only narrow them, and <code>min_length</code> cannot exceed it.
+  </p>
+  <p>
+    A <code>select</code> contains at most 64 closed, unique options. Provider endpoints, redirects, and
+    network destinations come from audited platform adapters, never from a form value or form metadata.
+  </p>
+</section>
+
+<section class="guide-section" aria-labelledby="credential-lifecycle-title">
+  <span class="section-label">Lifecycle</span>
+  <h2 id="credential-lifecycle-title">Create, list, verify, rotate, and remove share one contract</h2>
+  <ul>
+    <li>
+      <code>credential.create</code> validates ownership, the selected profile, every field, and a
+      non-destructive provider check before atomically storing a server-generated opaque credential ID at
+      generation <code>1</code>. An idempotency key prevents a lost response from creating a duplicate.
+    </li>
+    <li>
+      <code>credential.list</code> returns only the credential ID, profile ID, label, status, generation,
+      and timestamps. It never returns a submitted value, encryption envelope, or provider token.
+    </li>
+    <li>
+      <code>credential.verify</code> exercises the stored set through its Driver and returns only a typed
+      verdict and trace ID; verification neither reveals values nor advances the generation.
+    </li>
+    <li>
+      <code>credential.rotate</code> requires the complete replacement plus
+      <code>expected_generation</code>. The Driver verifies first, commits with compare-and-swap, then
+      increments the generation. A failure or stale generation preserves the previous set unchanged.
+    </li>
+    <li>
+      <code>credential.remove</code> also requires <code>expected_generation</code>, revokes use before
+      reporting success, and is idempotent for an already removed exact ID. Foreign IDs remain invisible.
+    </li>
+  </ul>
+  <p>
+    Encryption at rest uses authenticated encryption. Its additional authenticated data binds at least
+    the Driver ID, schema version, Capsule ID, credential ID, profile ID, and generation. Moving ciphertext
+    between any of those identities must fail authentication. Keys, ciphertext, nonces, Bearers, and OAuth
+    material never enter logs or public audit fields.
+  </p>
+  <p>
+    No active Capsule override means the Driver uses the Space-managed credential. Explicit removal returns
+    to that managed fallback. A rejected update leaves the last valid override active, while an expired or
+    failing configured override fails closed instead of silently widening authority through the managed key.
+  </p>
+</section>
+
+<section class="guide-section" aria-labelledby="credential-oauth-title">
+  <span class="section-label">OAuth and identity</span>
+  <h2 id="credential-oauth-title">Adapters own OAuth; passkeys authenticate the Admin</h2>
+  <p>
+    An <code>oauth2-authorization-code</code> profile declares only an Admin-allowlisted
+    <code>adapter_id</code>, bounded scopes, and mandatory <code>PKCE S256</code>. Unknown adapters or scopes
+    fail closed. The document cannot carry authorization URLs, token URLs, redirect URLs, client secrets,
+    or executable callback code.
+  </p>
+  <p>
+    The central OAuth broker owns provider endpoints and client registration, generates one-use state and
+    the PKCE verifier, checks the exact callback, exchanges the authorization code server-side, and stores
+    access and refresh tokens through the same Capsule-scoped secret boundary. OAuth codes and tokens never
+    pass through browser storage, URL logs, a Driver manifest, or an App environment.
+  </p>
+  <p>
+    A passkey is a WebAuthn credential for signing in to the Shimpz Admin. It authorizes the Captain's intent
+    but is never a Driver profile, provider credential, or value forwarded to a service.
+  </p>
+  <p>
+    Redpanda may receive post-commit events containing opaque credential references, generation, operation,
+    status, and trace identifiers. Form values, authorization codes, access or refresh tokens, ciphertext,
+    nonces, and encryption keys never enter an event or topic.
   </p>
 </section>
 
