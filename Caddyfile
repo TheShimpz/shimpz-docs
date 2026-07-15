@@ -22,7 +22,9 @@
 		file_server
 	}
 	@installer_missing host install.shimpz.com
-	respond @installer_missing 404
+	handle @installer_missing {
+		respond 404
+	}
 
 	# Prerendered routes are directories because SvelteKit uses trailingSlash=always. Never fall
 	# back to the homepage: a missing Docs URL is a real 404 and is part of the public edge contract.
