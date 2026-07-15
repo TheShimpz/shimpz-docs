@@ -25,8 +25,8 @@
 
 <h2>1 · Requirements</h2>
 <ul>
-  <li>A Linux amd64 machine.</li>
-  <li>Docker Engine with Docker Compose v2.</li>
+  <li>Linux amd64, or an Apple Silicon Mac.</li>
+  <li>Docker Engine with Docker Compose v2 on Linux, or Docker Desktop on macOS.</li>
   <li>Your user must be allowed to run Docker.</li>
 </ul>
 
