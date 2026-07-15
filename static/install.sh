@@ -2,7 +2,7 @@
 
 set -eu
 
-INSTALLER_VERSION="0.2.2-dev"
+INSTALLER_VERSION="0.2.3-dev"
 IMAGE_REPOSITORY="ghcr.io/roxygens/shimpz-space"
 IMAGE_CHANNEL="dev"
 PROJECT_NAME="shimpz-space"
@@ -12,6 +12,8 @@ OUT_RESET=""
 OUT_BOLD=""
 OUT_DIM=""
 OUT_CYAN=""
+OUT_MAGENTA=""
+OUT_WHITE=""
 OUT_GREEN=""
 OUT_YELLOW=""
 ERR_RESET=""
@@ -27,7 +29,9 @@ setup_colors() {
 		OUT_RESET="${escape}[0m"
 		OUT_BOLD="${escape}[1m"
 		OUT_DIM="${escape}[2m"
-		OUT_CYAN="${escape}[36m"
+		OUT_CYAN="${escape}[38;2;0;215;254m"
+		OUT_MAGENTA="${escape}[38;2;248;28;124m"
+		OUT_WHITE="${escape}[38;2;252;252;252m"
 		OUT_GREEN="${escape}[32m"
 		OUT_YELLOW="${escape}[33m"
 	fi
@@ -40,16 +44,43 @@ setup_colors() {
 	return 0
 }
 
+art_line() {
+	while [ "$#" -gt 0 ]; do
+		printf '%s%s' "$1" "$2"
+		shift 2
+	done
+	printf '%s\n' "$OUT_RESET"
+}
+
 show_brand() {
 	case "$1" in
-		reset) subtitle="safe reset // local data" ;;
-		*) subtitle="space installer // dev" ;;
+		reset)
+			subtitle="safe reset // local data"
+			subtitle_color="$OUT_MAGENTA"
+			;;
+		*)
+			subtitle="space installer // dev"
+			subtitle_color="$OUT_CYAN"
+			;;
 	esac
-	printf '%s\n' '    .-""-.'
-	printf '%s\n' "   / o  o \\"
-	printf '  (    ^   )  %s%sShimpz%s\n' "$OUT_BOLD" "$OUT_CYAN" "$OUT_RESET"
-	printf '   \\  \\_/ /   %s%s%s\n' "$OUT_DIM" "$subtitle" "$OUT_RESET"
-	printf '%s\n\n' "    '----'"
+	# Static terminal rendering authored with Chafa from the canonical friendly-v2 symbol:
+	# SHA-256 06d35d9b33c712fe17aef5569e40395b0780860948fa62bf03bd3ee48741f93b.
+	art_line "" "           " "$OUT_CYAN" "⠤⣤⢬" "$OUT_WHITE" "⣶⣶⣤⣄⣀"
+	art_line "" "       " "$OUT_CYAN" "⢀⣤⡖⠚⠉⠉⠁" "$OUT_WHITE" " ⠈⠉⠉⠛⠳⣵⣤⡀"
+	art_line "" "      " "$OUT_CYAN" "⡠⠖⠉⠠⡤⠤⡀" "$OUT_WHITE" "       ⠈⠁⠙⢦"
+	art_line "" "    " "$OUT_CYAN" "⡰⢋" "$OUT_WHITE" "⣤⣶⣶⣤⡀" "$OUT_CYAN" " ⠈⢢" "$OUT_WHITE" "       ⣤⣄⣀ ⠈⠣"
+	art_line "" "   " "$OUT_CYAN" "⢀⠃" "$OUT_WHITE" "⡾⢁⣠⣀⠙⣿⠂ " "$OUT_CYAN" "⢸" "$OUT_WHITE" "  ⢀⣼⣿⡿⠿⠿⠿⣷⣶⣶⣦" "$OUT_MAGENTA" "⡀"
+	art_line "" "   " "$OUT_CYAN" "⠘⡌" "$OUT_WHITE" "⣷⣾⠋ ⡶   " "$OUT_CYAN" "⢸" "$OUT_WHITE" "  ⢿⣿⠁⢤⣒⠢      ⠉" "$OUT_MAGENTA" "⠨⠁"
+	art_line "" "   " "$OUT_CYAN" "⣠⠗" "$OUT_WHITE" "⠘⢿⣷⣄⣉   " "$OUT_CYAN" "⠈⠢⡀" "$OUT_WHITE" "⠈⠻⢿⣿⣧⢆⣴⡶⣤⣤"
+	art_line "$OUT_CYAN" "⣀⣴⡊⠁" "$OUT_WHITE" "   ⠈⠛⠋     " "$OUT_CYAN" "⠈⠢" "$OUT_WHITE" "  ⠁⢀⣽⣿⣶⣮⣧⣇"
+	art_line "" "  " "$OUT_CYAN" "⠉⠑⢄" "$OUT_WHITE" "      ⢧⡀      ⣴⣿⣿⣿⣿⣿⣿⣿⣇"
+	art_line "" "     " "$OUT_CYAN" "⠁" "$OUT_MAGENTA" "⠒⠢⡀" "$OUT_WHITE" "   ⠙⠦⡀   ⠘⣿⣮⣿⣛⣿⣿⣛⣛⣛"
+	art_line "" "        " "$OUT_MAGENTA" "⠈⠢⡀ ⢢" "$OUT_WHITE" " ⠈⠲⣄⣀ ⠈⢿⣿⡿⠟⠉⠉" "$OUT_MAGENTA" "⢀⠆"
+	art_line "" "          " "$OUT_MAGENTA" "⠈⠂ ⠑⡄" "$OUT_WHITE" "  ⠙⣇      " "$OUT_MAGENTA" "⣀⠎"
+	art_line "" "              " "$OUT_MAGENTA" "⡇" "$OUT_WHITE" "   ⠈⠆    " "$OUT_MAGENTA" "⠉"
+	printf '\n       %s//%s %s%sShimpz%s %s//%s\n' \
+		"$OUT_CYAN" "$OUT_RESET" "$OUT_BOLD" "$OUT_WHITE" "$OUT_RESET" "$OUT_MAGENTA" "$OUT_RESET"
+	printf '   %s%s%s%s\n\n' "$OUT_DIM" "$subtitle_color" "$subtitle" "$OUT_RESET"
 }
 
 step() {
