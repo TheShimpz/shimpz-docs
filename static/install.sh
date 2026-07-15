@@ -91,10 +91,45 @@ project_resources_exist() {
 	[ -n "${container_ids}${volume_ids}${network_ids}" ]
 }
 
-remove_project_resources() {
+validate_orphaned_project_resources() {
 	container_ids="$(project_container_ids)" || die "could not inspect existing Shimpz Space containers"
 	volume_ids="$(project_volume_ids)" || die "could not inspect existing Shimpz Space volumes"
 	network_ids="$(project_network_ids)" || die "could not inspect existing Shimpz Space networks"
+	for resource_id in $container_ids; do
+		container_record="$(docker inspect --type=container --format '{{.Name}}|{{index .Config.Labels "com.docker.compose.service"}}|{{.Config.Image}}' "$resource_id")" \
+			|| die "could not verify orphaned Shimpz Space container ${resource_id}"
+		container_name="${container_record%%|*}"
+		container_rest="${container_record#*|}"
+		container_service="${container_rest%%|*}"
+		container_image="${container_rest#*|}"
+		[ "$container_name" = "/${PROJECT_NAME}-admin-1" ] && [ "$container_service" = "admin" ] \
+			|| die "refusing reset: the orphaned Compose project contains an unknown container"
+		container_digest="${container_image#"${IMAGE_REPOSITORY}@sha256:"}"
+		[ "$container_digest" != "$container_image" ] \
+			|| die "refusing reset: the orphaned Admin does not use the official digest-pinned image"
+		case "$container_digest" in
+			""|*[!0-9a-f]*) die "refusing reset: the orphaned Admin image digest is invalid" ;;
+		esac
+		[ "${#container_digest}" -eq 64 ] \
+			|| die "refusing reset: the orphaned Admin image digest is invalid"
+	done
+	for resource_id in $volume_ids; do
+		volume_record="$(docker volume inspect --format '{{.Name}}|{{index .Labels "com.docker.compose.volume"}}' "$resource_id")" \
+			|| die "could not verify orphaned Shimpz Space volume ${resource_id}"
+		case "$volume_record" in
+			"${PROJECT_NAME}_config|config"|"${PROJECT_NAME}_data|data") ;;
+			*) die "refusing reset: the orphaned Compose project contains an unknown volume" ;;
+		esac
+	done
+	for resource_id in $network_ids; do
+		network_record="$(docker network inspect --format '{{.Name}}|{{index .Labels "com.docker.compose.network"}}' "$resource_id")" \
+			|| die "could not verify orphaned Shimpz Space network ${resource_id}"
+		[ "$network_record" = "${PROJECT_NAME}_egress|egress" ] \
+			|| die "refusing reset: the orphaned Compose project contains an unknown network"
+	done
+}
+
+remove_validated_project_resources() {
 	for resource_id in $container_ids; do
 		docker rm --force "$resource_id"
 	done
@@ -121,10 +156,15 @@ if [ "$action" = "reset" ]; then
 	[ "$managed_state" -eq 1 ] || die "no managed Shimpz Space installation was found"
 	if [ -f "$COMPOSE_FILE" ] && [ -f "$ENV_FILE" ]; then
 		compose down --volumes --remove-orphans
+	elif [ -n "${container_ids}${volume_ids}${network_ids}" ]; then
+		# With the local marker/config gone, do a complete read-only ownership preflight before the
+		# first deletion. Unknown resources sharing the generic Compose project label fail closed.
+		validate_orphaned_project_resources
+		remove_validated_project_resources
 	fi
-	# The directory may have been deleted manually while Compose resources kept running. Remove only
-	# resources bearing this installer's fixed Compose project label; images remain cached and harmless.
-	remove_project_resources
+	if project_resources_exist; then
+		die "reset left unexpected Shimpz Space Docker resources; inspect them before retrying"
+	fi
 	rm -f \
 		"$COMPOSE_FILE" "$ENV_FILE" "$MARKER_FILE" \
 		"${COMPOSE_FILE}.previous" "${ENV_FILE}.previous" \
