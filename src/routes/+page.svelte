@@ -13,7 +13,16 @@
     <span class="terminal-cursor" aria-hidden="true"></span>
   </div>
 
-  <h1 id="page-title">Install your <span class="gradient-text">Shimpz Space</span>.</h1>
+  <div class="docs-hero-title">
+    <img
+      class="docs-hero-mark"
+      src="/brand/shimpz-cyberchimp-friendly-v2.png"
+      alt=""
+      width="1254"
+      height="1254"
+    />
+    <h1 id="page-title">Install your <span class="gradient-text">Shimpz Space</span>.</h1>
+  </div>
 
   <p class="docs-lede">
     Choose your computer below. The development installer pulls one prebuilt image, pins its registry

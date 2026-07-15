@@ -10,15 +10,7 @@
   style="background:color-mix(in oklab, var(--color-bg) 82%, transparent)"
 >
   <div class="wrap flex h-16 items-center gap-4">
-    <a href="/" aria-label="Shimpz Docs home">
-      <img
-        class="brand-wordmark"
-        src="/brand/shimpz-logo-cyberchimp-v1.png"
-        alt="Shimpz"
-        width="1983"
-        height="793"
-      />
-    </a>
+    <a href="/" class="brand-name" aria-label="Shimpz Docs home">Shimpz</a>
     <span class="hidden text-sm dim sm:inline">· docs</span>
     <nav class="ml-auto flex items-center gap-1 text-sm" aria-label="Primary navigation">
       <a href="https://shimpz.com" class="rounded-lg px-3 py-1.5 dim transition hover:text-[var(--color-fg)]"
