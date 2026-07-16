@@ -158,6 +158,19 @@ step "Checking Docker and Compose"
 
 command -v docker >/dev/null 2>&1 || die "Docker is required: https://docs.docker.com/get-started/get-docker/"
 docker compose version >/dev/null 2>&1 || die "Docker Compose v2 is required"
+if [ -n "${DOCKER_HOST:-}" ]; then
+	docker_endpoint="$DOCKER_HOST"
+else
+	docker_context="$(docker context show 2>/dev/null)" \
+		|| die "could not determine the active Docker context"
+	[ -n "$docker_context" ] || die "could not determine the active Docker context"
+	docker_endpoint="$(docker context inspect --format '{{.Endpoints.docker.Host}}' "$docker_context" 2>/dev/null)" \
+		|| die "could not inspect the active Docker context"
+fi
+case "$docker_endpoint" in
+	unix:///*) ;;
+	*) die "a local Docker Unix socket is required; remote Docker contexts are not supported" ;;
+esac
 docker info >/dev/null 2>&1 || die "the Docker daemon is not available to this user"
 
 [ -n "${HOME:-}" ] || die "HOME must be set"
