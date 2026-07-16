@@ -23,9 +23,10 @@
 <aside class="scope-note" aria-labelledby="assistant-status-title">
   <span id="assistant-status-title" class="kicker">What is available now</span>
   <p>
-    Assistant Spec v1 begins as a source-validation and developer-experience contract. The public install
-    path, capability-enforcing Capsule controller, persistent scheduler, provider OAuth broker, Telegram
-    delivery, and commerce are not released capabilities yet.
+    Assistant Spec v1 has a source validator and one deliberately narrow runtime proof. A local Captain can
+    create a Capsule, install the digest-pinned Hello Pulse image, call its declared <code>hello</code>
+    operation, and uninstall it. General artifact admission, Service capabilities, approvals, scheduling,
+    provider OAuth, Telegram delivery, and commerce are not part of this proof.
   </p>
 </aside>
 

@@ -41,5 +41,5 @@
 </section>
 
 <nav class="docs-page-nav" aria-label="Continue the user guide">
-  <a href="/manage/"><span>Next</span><strong>Update or reset</strong></a>
+  <a href="/assistants/"><span>Next</span><strong>Install your first Assistant</strong></a>
 </nav>

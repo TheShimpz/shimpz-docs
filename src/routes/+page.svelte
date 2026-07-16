@@ -25,16 +25,18 @@
   </div>
 
   <p class="docs-lede">
-    Choose your computer below. The development installer pulls one prebuilt image, pins its registry
-    digest, and opens the local Admin. It does not clone repositories or build Shimpz on your machine.
+    Choose your computer below. The development installer pulls the prebuilt Admin and local Capsule
+    controller, pins both registry digests, and opens the Admin. It does not clone repositories or build
+    Shimpz on your machine.
   </p>
 </section>
 
 <aside class="scope-note" aria-labelledby="validated-scope-title">
   <span id="validated-scope-title" class="kicker">Validated scope</span>
   <p>
-    This initial delivery boots only the Admin. It does not install or advertise a Service, Capsule, or
-    Assistant package.
+    This development delivery can create an empty local Capsule and install the free Hello Pulse Assistant
+    from one allowlisted, immutable image. It does not install Services or enable provider credentials,
+    routines, Assistant collaboration, or commerce.
   </p>
 </aside>
 

@@ -16,12 +16,15 @@
   <span class="section-label">Keep it current</span>
   <h1>Update or reset</h1>
   <p class="docs-lede">
-    Run the install command again to pull the current development image. The installer keeps the
-    previous digest and restores it when the replacement does not become healthy.
+    Run the install command again to pull the current development images. The installer keeps the
+    previous digests and restores them when a replacement does not become healthy.
   </p>
 </header>
 
-<p>Reset stops the managed Space and permanently removes its local Admin data:</p>
+<p>
+  Reset first asks the local controller to remove its owned Assistants and Capsules, then stops the managed
+  Space and permanently removes its Admin and controller data:
+</p>
 <CodeBlock
   label="Reset the Shimpz installation"
   title="Terminal · Shimpz reset"

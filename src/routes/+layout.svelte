@@ -24,6 +24,7 @@
       label: "Your Space",
       items: [
         { href: "/admin/", label: "Open the Admin", description: "First access" },
+        { href: "/assistants/", label: "First Assistant", description: "Create, install, and run" },
         { href: "/manage/", label: "Update or reset", description: "Keep it current" },
       ],
     },
@@ -74,7 +75,7 @@
   const navigation = $derived(isDeveloperGuide ? developerNavigation : userNavigation);
   const guideLabel = $derived(isDeveloperGuide ? "Developer guide" : "User guide");
   const guideSummary = $derived(
-    isDeveloperGuide ? "build Services and Assistants" : "install and open your Space",
+    isDeveloperGuide ? "build Services and Assistants" : "install and use your Space",
   );
   const navigationTitleId = $derived(isDeveloperGuide ? "developer-navigation-title" : "user-navigation-title");
 

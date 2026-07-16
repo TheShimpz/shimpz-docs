@@ -32,8 +32,10 @@
   <span id="assistant-spec-status-title" class="kicker">Released boundary</span>
   <p>
     The parser, schema, scaffolder, validator, and Hello Pulse development server are available in the SDK.
-    Capsule installation, capability enforcement, approvals, persistent scheduling, Assistant-to-Assistant
-    transport, and provider credential binding are not released runtimes yet.
+    The local evaluation controller additionally admits the published Hello Pulse digest into exactly one
+    Capsule and mediates only its bounded <code>hello</code> operation. General artifact admission, Service
+    capabilities, approvals, persistent scheduling, Assistant-to-Assistant transport, and provider
+    credential binding are not released runtimes.
   </p>
 </aside>
 
