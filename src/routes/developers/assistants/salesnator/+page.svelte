@@ -32,7 +32,7 @@
   <span id="salesnator-status-title" class="kicker">No live account</span>
   <p>
     This reference does not connect to Meta Ads, Telegram, Cloudflare, or a customer account. It validates
-    the Assistant source contract and local operation behavior. Service binding, persistent notification
+    the Assistant source contract and local Power behavior. Service binding, persistent notification
     deduplication, scheduling, and delivery are future controller work.
   </p>
 </aside>
@@ -45,7 +45,7 @@
     <li><code>notifications.send</code> represents one owner notification request.</li>
     <li><code>customer-ad-account</code> and <code>owner-channel</code> are opaque binding names, not keys.</li>
     <li>The Assistant declares no direct egress and never receives a provider credential.</li>
-    <li>No update, publish, budget, ad, ad-set, or campaign mutation operation is declared.</li>
+    <li>No update, publish, budget, ad, ad-set, or campaign mutation Service operation or Power is declared.</li>
   </ul>
 </section>
 
@@ -62,7 +62,7 @@
     variant="code"
     {...data.fixture}
   />
-  <p>The operation returns the same core verdict every time:</p>
+  <p>The Power returns the same core verdict every time:</p>
   <CodeBlock
     label="Expected Salesnator campaign-health verdict"
     title="campaign-health verdict · JSON"
@@ -106,7 +106,7 @@
   <p>
     The manifest requests <code>campaign-watch</code> every 3,600 seconds with timeout, jitter,
     single-flight, and a scheduled-time idempotency key. It starts disabled. The SDK validates those fields;
-    it does not schedule the operation or grant either Service capability.
+    it does not schedule the Power or grant either Service capability.
   </p>
   <p>
     Read the <a

@@ -2,12 +2,12 @@ import { highlightCode } from "$lib/server/highlight";
 
 import type { PageServerLoad } from "./$types";
 
-const manifest = `schema_version = 1
+const manifest = `schema_version = 2
 id = "hello-pulse"
 title = "Hello Pulse"
 version = "0.1.0"
-summary = "A minimal Assistant with one safe operation and one owner-disabled routine."
-skill = "assistant/SKILL.md"
+summary = "A minimal Assistant with one safe Power and one owner-disabled routine."
+rules = "assistant/RULES.md"
 
 [artifact]
 mode = "development"
@@ -16,7 +16,7 @@ port = 8080
 health_path = "/health"
 architectures = ["linux/amd64", "linux/arm64"]
 
-[[operations]]
+[[powers]]
 id = "hello"
 summary = "Return a friendly greeting."
 input_schema = "schemas/hello.input.schema.json"
@@ -30,7 +30,7 @@ assistants = []
 
 [[routines]]
 id = "pulse"
-operation = "hello"
+power = "hello"
 interval_seconds = 300
 timeout_seconds = 10
 jitter_seconds = 15

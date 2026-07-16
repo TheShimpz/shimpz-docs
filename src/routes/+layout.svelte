@@ -56,7 +56,21 @@
       label: "Assistants",
       items: [
         { href: "/developers/assistants/", label: "Overview", description: "Capsule-owned workloads" },
-        { href: "/developers/assistants/spec/", label: "Assistant Spec v1", description: "Closed source contract" },
+        {
+          href: "/developers/assistants/spec/",
+          label: "Assistant Spec v2",
+          description: "Rules, Powers, and grants",
+        },
+        {
+          href: "/developers/assistants/spec/v1/",
+          label: "Assistant Spec v1",
+          description: "Frozen compatibility",
+        },
+        {
+          href: "/developers/assistants/runtime/",
+          label: "Chat and files",
+          description: "Inference and storage boundary",
+        },
         {
           href: "/developers/assistants/hello-pulse/",
           label: "Hello Pulse",

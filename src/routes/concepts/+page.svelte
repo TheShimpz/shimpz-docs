@@ -21,8 +21,8 @@
   </li>
   <li><strong>Capsule</strong> is an isolated tenant environment inside the Space.</li>
   <li>
-    <strong>Assistant</strong> belongs to exactly one Capsule. It can request only the Service and
-    Assistant operations granted to it inside that Capsule.
+    <strong>Assistant</strong> belongs to exactly one Capsule. It can request only the Service operations and
+    Assistant Powers granted to it inside that Capsule. Its Rules orient behavior but grant nothing.
   </li>
 </ul>
 

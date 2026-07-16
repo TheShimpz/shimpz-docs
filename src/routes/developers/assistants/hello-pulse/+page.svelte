@@ -24,7 +24,7 @@
   <h1>Build Hello Pulse.</h1>
   <p class="docs-lede">
     Generate one dependency-free Assistant, validate its complete source contract, then call its only
-    operation on your own machine.
+    Power on your own machine.
   </p>
 </header>
 
@@ -77,7 +77,7 @@
   <li>
     <h2>Validate every reference</h2>
     <p>
-      Validation reads the manifest, skill, and operation schemas without printing permissions or source
+      Validation reads the manifest, Rules, and Power schemas without printing permissions or source
       values back to the terminal.
     </p>
     <CodeBlock
@@ -106,11 +106,14 @@
   </li>
 
   <li>
-    <h2>Call the declared operation</h2>
-    <p>In a second terminal:</p>
+    <h2>Call the declared Power</h2>
+    <p>
+      In a second terminal. The <code>/v1/operations/hello</code> route is the fixed compatibility adapter
+      for the <code>hello</code> Power, not a generic route the manifest or model can choose.
+    </p>
     <CodeBlock
-      label="Call the Hello Pulse operation"
-      title="Terminal two · Operation call"
+      label="Call the Hello Pulse Power"
+      title="Terminal two · Power call"
       lines={[
         { value: "curl -fsS http://127.0.0.1:8080/health" },
         {
@@ -120,7 +123,7 @@
       ]}
     />
     <CodeBlock
-      label="Hello Pulse operation response"
+      label="Hello Pulse Power response"
       title="Response · JSON"
       variant="code"
       {...data.response}
@@ -132,9 +135,9 @@
   <span class="section-label">Result</span>
   <h2 id="hello-proof-title">What you have proved</h2>
   <ul>
-    <li>The scaffold is a valid Assistant Spec v1 source tree.</li>
+    <li>The scaffold is a valid Assistant Spec v2 source tree.</li>
     <li>The process has no dependency, credential, Service permission, Assistant permission, or egress.</li>
-    <li>Unknown fields, unknown operations, oversized bodies, and malformed JSON fail closed.</li>
+    <li>Unknown fields, undeclared Powers, oversized bodies, and malformed JSON fail closed.</li>
     <li>The declared routine remains disabled because no local server silently schedules it.</li>
   </ul>
   <p>
@@ -149,6 +152,6 @@
 </section>
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant developer guide">
-  <a href="/developers/assistants/spec/"><span>Back to</span><strong>Assistant Spec v1</strong></a>
+  <a href="/developers/assistants/runtime/"><span>Back to</span><strong>Chat and files</strong></a>
   <a href="/developers/assistants/salesnator/"><span>Next</span><strong>Salesnator</strong></a>
 </nav>

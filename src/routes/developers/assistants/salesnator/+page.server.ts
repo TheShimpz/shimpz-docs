@@ -21,7 +21,7 @@ const verdict = `{
     "assistant_id": "salesnator",
     "capsule_id": "demo-capsule",
     "run_id": "run-20260715t120000z",
-    "operation": "campaign-health",
+    "power": "campaign-health",
     "result": "blocked"
   },
   "effective_status": "blocked",

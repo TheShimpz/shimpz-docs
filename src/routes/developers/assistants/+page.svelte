@@ -15,18 +15,17 @@
   <span class="section-label">Developer preview</span>
   <h1>Give one Capsule a focused capability.</h1>
   <p class="docs-lede">
-    An Assistant is an immutable workload owned by one isolated Capsule. It combines a skill, named
-    operations, explicit Service access, and optional routines without inheriting Space-level authority.
+    An Assistant is an immutable workload owned by one isolated Capsule. It combines Rules, named Powers,
+    explicit Service access, and optional routines without inheriting Space-level authority.
   </p>
 </header>
 
 <aside class="scope-note" aria-labelledby="assistant-status-title">
   <span id="assistant-status-title" class="kicker">What is available now</span>
   <p>
-    Assistant Spec v1 has a source validator and one deliberately narrow runtime proof. A local Captain can
-    create a Capsule, install the digest-pinned Hello Pulse image, call its declared <code>hello</code>
-    operation, and uninstall it. General artifact admission, Service capabilities, approvals, scheduling,
-    provider OAuth, Telegram delivery, and commerce are not part of this proof.
+    Assistant Spec v2 defines Rules, Powers, grants, and routines while preserving the frozen v1 parser.
+    Hello Pulse remains the deliberately narrow runtime reference. The Capsule chat boundary selects one
+    installed Assistant and exposes only its controller-validated Powers to the chosen inference provider.
   </p>
 </aside>
 
@@ -35,8 +34,9 @@
   <h2 id="assistant-model-title">Capsule-owned by construction</h2>
   <ul>
     <li>An Assistant belongs to one Capsule and shares only that Capsule's admitted resource budget.</li>
-    <li>Its manifest declares named operations with closed input and output schemas.</li>
-    <li>Service and Assistant access is allowlisted by interface and operation, never by generic reach.</li>
+    <li>Rules orient behavior but cannot add authority.</li>
+    <li>Its manifest declares named Powers with closed input and output schemas.</li>
+    <li>Service operations and Assistant Powers are allowlisted by interface and name, never generic reach.</li>
     <li>Credential declarations are opaque references; secret values stay in the responsible Service.</li>
     <li>Egress is exact and routines start disabled, single-flight, and idempotent.</li>
   </ul>
@@ -44,9 +44,9 @@
 
 <section class="guide-section" aria-labelledby="assistant-collaboration-title">
   <span class="section-label">Collaboration</span>
-  <h2 id="assistant-collaboration-title">Ask for an operation, not another workload</h2>
+  <h2 id="assistant-collaboration-title">Ask for a Power, not another workload</h2>
   <p>
-    Collaboration means invoking one declared operation through a scoped capability. It never grants
+    Collaboration means invoking one declared Power through a scoped capability. It never grants
     access to another Assistant's workspace, database, container, secrets, or generic network endpoint.
     Redpanda may carry durable events later, but a queue does not replace caller identity or authorization.
   </p>
@@ -58,14 +58,20 @@
   <ul class="docs-entry-list">
     <li>
       <a class="docs-entry-link" href="/developers/assistants/spec/">
-        <strong>Assistant Spec v1</strong>
-        <span>Identity, immutable artifacts, operations, permissions, and routines</span>
+        <strong>Assistant Spec v2</strong>
+        <span>Rules, Powers, immutable artifacts, permissions, and routines</span>
+      </a>
+    </li>
+    <li>
+      <a class="docs-entry-link" href="/developers/assistants/runtime/">
+        <strong>Chat and files</strong>
+        <span>Inference-only Brains, controller grants, and opaque Capsule storage</span>
       </a>
     </li>
     <li>
       <a class="docs-entry-link" href="/developers/assistants/hello-pulse/">
         <strong>Hello Pulse</strong>
-        <span>Scaffold, validate, and call one dependency-free operation locally</span>
+        <span>Scaffold, validate, and call one dependency-free Power locally</span>
       </a>
     </li>
     <li>
@@ -87,5 +93,5 @@
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the developer guide">
   <a href="/developers/services/"><span>Back</span><strong>Services</strong></a>
-  <a href="/developers/assistants/spec/"><span>Next</span><strong>Assistant Spec v1</strong></a>
+  <a href="/developers/assistants/spec/"><span>Next</span><strong>Assistant Spec v2</strong></a>
 </nav>

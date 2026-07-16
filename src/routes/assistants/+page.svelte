@@ -15,7 +15,7 @@
   <span class="section-label">First local evaluation</span>
   <h1>Install your first Assistant</h1>
   <p class="docs-lede">
-    Create an empty Capsule, install Hello Pulse, and run one harmless operation. The Admin keeps the
+    Create an empty Capsule, install Hello Pulse, and run one harmless Power. The Admin keeps the
     destination choice and install authority local; the Store never receives your Admin token or Capsule ID.
   </p>
 </header>
@@ -53,7 +53,7 @@
     <p>
       Select the destination Capsule in the local dialog and confirm. The controller admits only the
       published Hello Pulse digest, waits for readiness, and then invokes its declared <code>hello</code>
-      operation. A successful response appears in the same card.
+      Power. A successful response appears in the same card.
     </p>
   </li>
 
@@ -65,6 +65,22 @@
     </p>
   </li>
 </ol>
+
+<section class="guide-section" aria-labelledby="assistant-chat-title">
+  <span class="section-label">Chat</span>
+  <h2 id="assistant-chat-title">Talk to one installed Assistant</h2>
+  <p>
+    In <strong>Chat</strong>, choose the Capsule, an installed Assistant, and Claude Code or Codex. The Brain
+    is only the inference engine: it follows that Assistant's Rules and may request only its declared,
+    controller-validated Powers. It cannot use a shell, create or edit code, execute files, or access the
+    network directly.
+  </p>
+  <p>
+    Capsule uploads use isolated opaque storage with an initial total quota of <strong>100 MiB</strong>.
+    Files are not mounted or executed. An Assistant can receive content only through an explicit Power
+    granted and brokered by the controller.
+  </p>
+</section>
 
 <section class="guide-section" aria-labelledby="assistant-failure-title">
   <span class="section-label">If it does not start</span>
