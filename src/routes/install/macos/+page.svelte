@@ -53,6 +53,18 @@
       that socket is unavailable.
     </p>
     <p>
+      During installation, Shimpz first probes Docker Desktop’s
+      <a
+        class="external-link"
+        href="https://docs.docker.com/extensions/extensions-sdk/guides/use-docker-socket-from-backend/"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Docker Desktop VM socket documentation (opens in a new tab)"
+        >VM-local socket</a
+      >, then uses the default socket only when the same controller image proves it can reach Docker.
+      An update stops before replacing the running version when neither path passes this check.
+    </p>
+    <p>
       Docker Desktop’s Enhanced Container Isolation blocks Docker socket mounts by default. If your
       organization enables it, ask its administrator to
       <a
