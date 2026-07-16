@@ -55,6 +55,17 @@
       label: "Assistants",
       items: [
         { href: "/developers/assistants/", label: "Overview", description: "Capsule-owned workloads" },
+        { href: "/developers/assistants/spec/", label: "Assistant Spec v1", description: "Closed source contract" },
+        {
+          href: "/developers/assistants/hello-pulse/",
+          label: "Hello Pulse",
+          description: "Executable first project",
+        },
+        {
+          href: "/developers/assistants/salesnator/",
+          label: "Salesnator",
+          description: "Read-only campaign proof",
+        },
       ],
     },
   ];

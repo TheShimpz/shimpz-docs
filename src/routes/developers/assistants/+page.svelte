@@ -1,5 +1,6 @@
 <svelte:head>
   <title>Build Shimpz Assistants — Shimpz docs</title>
+  <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/" />
   <meta
     name="description"
     content="Understand the Capsule-owned Shimpz Assistant boundary before building your first Assistant."
@@ -53,19 +54,37 @@
 <section class="guide-section" aria-labelledby="assistant-reference-title">
   <span class="section-label">First references</span>
   <h2 id="assistant-reference-title">Prove the smallest useful loop</h2>
-  <ul>
-    <li><strong>Hello Pulse</strong> validates health, one operation, and one opt-in routine.</li>
+  <ul class="docs-entry-list">
     <li>
-      <strong>Salesnator</strong> starts as a read-only campaign-health skeleton. Meta and Telegram tokens
-      stay in Services, and campaign mutations remain outside the MVP.
+      <a class="docs-entry-link" href="/developers/assistants/spec/">
+        <strong>Assistant Spec v1</strong>
+        <span>Identity, immutable artifacts, operations, permissions, and routines</span>
+      </a>
+    </li>
+    <li>
+      <a class="docs-entry-link" href="/developers/assistants/hello-pulse/">
+        <strong>Hello Pulse</strong>
+        <span>Scaffold, validate, and call one dependency-free operation locally</span>
+      </a>
+    </li>
+    <li>
+      <a class="docs-entry-link" href="/developers/assistants/salesnator/">
+        <strong>Salesnator</strong>
+        <span>Prove read-only campaign health and idempotent notification intent</span>
+      </a>
     </li>
   </ul>
+  <p>
+    Salesnator uses only synthetic data. Meta and notification tokens remain in Services, and campaign
+    mutations remain outside this MVP.
+  </p>
   <p>
     Creators may eventually distribute and sell Assistants. That marketplace is a later product layer,
     not permission to weaken the Capsule boundary or claim an unavailable checkout today.
   </p>
 </section>
 
-<nav class="docs-page-nav" aria-label="Continue the developer guide">
+<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the developer guide">
   <a href="/developers/services/"><span>Back</span><strong>Services</strong></a>
+  <a href="/developers/assistants/spec/"><span>Next</span><strong>Assistant Spec v1</strong></a>
 </nav>
