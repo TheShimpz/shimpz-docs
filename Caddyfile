@@ -26,6 +26,29 @@
 		respond 404
 	}
 
+	# adapter-static emits browser redirects for prerender compatibility. Enforce the public rename at
+	# the HTTP boundary as well so clients, caches, and search engines receive an actual permanent status.
+	@legacy_driver_overview {
+		host docs.shimpz.com
+		path /developers/drivers /developers/drivers/
+	}
+	redir @legacy_driver_overview /developers/services/ 308
+	@legacy_driver_spec {
+		host docs.shimpz.com
+		path /developers/drivers/spec /developers/drivers/spec/
+	}
+	redir @legacy_driver_spec /developers/services/spec/ 308
+	@legacy_driver_postgresql {
+		host docs.shimpz.com
+		path /developers/drivers/postgresql /developers/drivers/postgresql/
+	}
+	redir @legacy_driver_postgresql /developers/services/postgresql/ 308
+	@legacy_driver_r2 {
+		host docs.shimpz.com
+		path /developers/drivers/r2 /developers/drivers/r2/
+	}
+	redir @legacy_driver_r2 /developers/services/r2/ 308
+
 	# Prerendered routes are directories because SvelteKit uses trailingSlash=always. Never fall
 	# back to the homepage: a missing Docs URL is a real 404 and is part of the public edge contract.
 	handle {
