@@ -21,6 +21,15 @@
   </p>
 </header>
 
+<aside class="scope-note" aria-labelledby="local-trust-boundary">
+  <span id="local-trust-boundary" class="kicker">Single-owner local profile</span>
+  <p>
+    Use this development build only on a personal or otherwise trusted host. Anyone who controls your
+    operating-system account or Docker daemon is inside the same trust boundary. Keep port
+    <code>7777</code> on loopback and create the Admin password immediately after installation.
+  </p>
+</aside>
+
 <CodeBlock
   label="Local Shimpz Admin address"
   title="Browser · local Admin"

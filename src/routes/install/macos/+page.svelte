@@ -40,6 +40,30 @@
         >Docker Desktop on macOS</a
       >. Open it and wait until Docker reports that it is running.
     </p>
+    <p>
+      In Docker Desktop, open <strong>Settings → Advanced</strong> and enable
+      <a
+        class="external-link"
+        href="https://docs.docker.com/desktop/settings-and-maintenance/settings/#advanced"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Docker Desktop advanced settings documentation (opens in a new tab)"
+        ><strong>Allow the default Docker socket to be used</strong></a
+      >. Shimpz checks for <code>/var/run/docker.sock</code> and stops without changing anything when
+      that socket is unavailable.
+    </p>
+    <p>
+      Docker Desktop’s Enhanced Container Isolation blocks Docker socket mounts by default. If your
+      organization enables it, ask its administrator to
+      <a
+        class="external-link"
+        href="https://docs.docker.com/enterprise/security/hardened-desktop/enhanced-container-isolation/config/"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Docker socket exceptions for Enhanced Container Isolation (opens in a new tab)"
+        >allow the verified Shimpz controller image</a
+      >; do not weaken an organization policy just to run this evaluation.
+    </p>
   </li>
 
   <li>
