@@ -617,6 +617,7 @@ services:
     environment:
       SHIMPZ_CAPSULEDRIVER_URL: http://capsule-driver-local:7077
       SHIMPZ_CAPSULEDRIVER_TOKEN_FILE: /run/shimpz-local/token
+      SHIMPZ_CAPSULE_CREDENTIALS_ENABLED: "0"
     volumes:
       - config:/repo
       - data:/data
