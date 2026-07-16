@@ -2,7 +2,7 @@
 
 set -eu
 
-INSTALLER_VERSION="0.3.0-dev"
+INSTALLER_VERSION="0.3.1-dev"
 IMAGE_REPOSITORY="ghcr.io/roxygens/shimpz-space"
 ADMIN_CHANNEL="dev"
 CONTROLLER_CHANNEL="capsule-driver-local-dev"
@@ -186,7 +186,7 @@ MARKER_FILE="${SHIMPZ_HOME}/.shimpz-space"
 
 install_port="${SHIMPZ_PORT:-7777}"
 unset SHIMPZ_ADMIN_IMAGE SHIMPZ_CONTROLLER_IMAGE SHIMPZ_SPACE_PLATFORM SHIMPZ_PORT
-unset SHIMPZ_DOCKER_GID SHIMPZ_SPACE_ID SHIMPZ_CPUSET
+unset SHIMPZ_DOCKER_GID SHIMPZ_DOCKER_SOCKET SHIMPZ_SPACE_ID SHIMPZ_CPUSET
 
 compose() {
 	docker compose --progress quiet --project-name "$PROJECT_NAME" --env-file "$ENV_FILE" -f "$COMPOSE_FILE" "$@"
@@ -455,24 +455,20 @@ fi
 host_os="$(uname -s)"
 host_arch="$(uname -m)"
 case "${host_os}:${host_arch}" in
-	Linux:x86_64|Linux:amd64) docker_platform="linux/amd64" ;;
-	Darwin:arm64) docker_platform="linux/arm64" ;;
+	Linux:x86_64|Linux:amd64)
+		docker_platform="linux/amd64"
+		docker_socket_candidates="/var/run/docker.sock"
+		;;
+	Darwin:arm64)
+		docker_platform="linux/arm64"
+		docker_socket_candidates="/var/run/docker.sock.raw /var/run/docker.sock"
+		;;
 	Darwin:*) die "this development installer supports Apple Silicon Macs only" ;;
 	Linux:*) die "this development installer supports Linux amd64 only" ;;
 	*) die "supported hosts are Linux amd64 and Apple Silicon macOS arm64" ;;
 esac
 
 [ -S /var/run/docker.sock ] || die "Docker must expose /var/run/docker.sock"
-if docker_socket_gid="$(stat -c '%g' /var/run/docker.sock 2>/dev/null)"; then
-	:
-elif docker_socket_gid="$(stat -f '%g' /var/run/docker.sock 2>/dev/null)"; then
-	:
-else
-	die "could not read the Docker socket group"
-fi
-case "$docker_socket_gid" in
-	""|*[!0-9]*) die "Docker socket group must be numeric" ;;
-esac
 
 daemon_processors="$(docker info --format '{{.NCPU}}')" || die "could not read Docker CPU availability"
 case "$daemon_processors" in
@@ -548,18 +544,124 @@ pull_verified_ref() {
 	printf '%s@%s\n' "$IMAGE_REPOSITORY" "$digest_ref"
 }
 
+optional_env_value() {
+	env_key="$1"
+	env_path="$2"
+	env_lines="$(sed -n "s/^${env_key}=//p" "$env_path")"
+	[ -n "$env_lines" ] || return 0
+	[ "$(printf '%s\n' "$env_lines" | wc -l | tr -d ' ')" -eq 1 ] \
+		|| die "the previous release has duplicate ${env_key} values"
+	printf '%s\n' "$env_lines"
+}
+
+validate_pinned_release_ref() {
+	release_ref="$1"
+	release_digest="${release_ref#"${IMAGE_REPOSITORY}@sha256:"}"
+	[ "$release_digest" != "$release_ref" ] || die "the previous release is not pinned to the official image"
+	case "$release_digest" in
+		""|*[!0-9a-f]*) die "the previous release has an invalid image digest" ;;
+	esac
+	[ "${#release_digest}" -eq 64 ] || die "the previous release has a malformed image digest"
+}
+
+load_previous_release() {
+	previous_platform="$(optional_env_value SHIMPZ_SPACE_PLATFORM "${ENV_FILE}.previous")"
+	[ "$previous_platform" = "$docker_platform" ] \
+		|| die "the previous release targets a different Docker platform"
+	previous_admin_ref="$(optional_env_value SHIMPZ_ADMIN_IMAGE "${ENV_FILE}.previous")"
+	previous_legacy_ref="$(optional_env_value SHIMPZ_SPACE_IMAGE "${ENV_FILE}.previous")"
+	[ -z "$previous_admin_ref" ] || [ -z "$previous_legacy_ref" ] \
+		|| die "the previous release has ambiguous Admin image values"
+	[ -n "$previous_admin_ref" ] || previous_admin_ref="$previous_legacy_ref"
+	[ -n "$previous_admin_ref" ] || die "the previous release is missing its Admin image"
+	previous_controller_ref="$(optional_env_value SHIMPZ_CONTROLLER_IMAGE "${ENV_FILE}.previous")"
+	validate_pinned_release_ref "$previous_admin_ref"
+	if [ -n "$previous_controller_ref" ]; then
+		validate_pinned_release_ref "$previous_controller_ref"
+	fi
+}
+
+ensure_pinned_release_ref() {
+	pinned_ref="$1"
+	pinned_platform="$2"
+	loaded_platform=""
+	if docker image inspect "$pinned_ref" >/dev/null 2>&1; then
+		loaded_platform="$(docker image inspect --format '{{.Os}}/{{.Architecture}}' "$pinned_ref")" || return 1
+	fi
+	if [ "$loaded_platform" != "$pinned_platform" ]; then
+		docker pull --quiet --platform "$pinned_platform" "$pinned_ref" >/dev/null || return 1
+		loaded_platform="$(docker image inspect --format '{{.Os}}/{{.Architecture}}' "$pinned_ref")" || return 1
+	fi
+	[ "$loaded_platform" = "$pinned_platform" ] || return 1
+	resolved_ref="$({ docker image inspect --format '{{range .RepoDigests}}{{println .}}{{end}}' "$pinned_ref" || true; } \
+		| grep -F -x "$pinned_ref" | head -n 1)"
+	[ "$resolved_ref" = "$pinned_ref" ]
+}
+
+hydrate_previous_release() {
+	ensure_pinned_release_ref "$previous_admin_ref" "$previous_platform" || return 1
+	if [ -n "$previous_controller_ref" ]; then
+		ensure_pinned_release_ref "$previous_controller_ref" "$previous_platform" || return 1
+	fi
+}
+
+controller_socket_gid() {
+	controller_ref="$1"
+	docker run --rm \
+		--platform "$docker_platform" --pull never \
+		--network none --read-only --cap-drop ALL --security-opt no-new-privileges:true \
+		--cpuset-cpus "$docker_cpuset" --cpus 0.25 --memory 64m --memory-swap 64m --pids-limit 32 \
+		--tmpfs /tmp:rw,noexec,nosuid,nodev,size=8m \
+		--mount "type=bind,src=${docker_socket_source},dst=/var/run/docker.sock,readonly" \
+		--entrypoint /opt/venv/bin/python \
+		"$controller_ref" -c 'import os; print(os.stat("/var/run/docker.sock").st_gid)'
+}
+
+controller_can_reach_docker() {
+	controller_ref="$1"
+	controller_gid="$2"
+	docker run --rm \
+		--platform "$docker_platform" --pull never \
+		--network none --read-only --cap-drop ALL --security-opt no-new-privileges:true \
+		--group-add "$controller_gid" \
+		--cpuset-cpus "$docker_cpuset" --cpus 0.25 --memory 64m --memory-swap 64m --pids-limit 32 \
+		--tmpfs /tmp:rw,noexec,nosuid,nodev,size=8m \
+		--mount "type=bind,src=${docker_socket_source},dst=/var/run/docker.sock" \
+		--entrypoint /opt/venv/bin/python \
+		"$controller_ref" -c 'import socket; connection=socket.socket(socket.AF_UNIX); connection.settimeout(5); connection.connect("/var/run/docker.sock"); connection.sendall(b"GET /_ping HTTP/1.0\r\nHost: docker\r\n\r\n"); status=connection.recv(128).split(b"\r\n",1)[0]; connection.close(); raise SystemExit(0 if status in {b"HTTP/1.0 200 OK",b"HTTP/1.1 200 OK"} else 1)' \
+		>/dev/null 2>&1
+}
+
 admin_tag_ref="${IMAGE_REPOSITORY}:${ADMIN_CHANNEL}"
 controller_tag_ref="${IMAGE_REPOSITORY}:${CONTROLLER_CHANNEL}"
 step "Pulling and verifying the Admin development image"
 admin_image_ref="$(pull_verified_ref "$admin_tag_ref")"
 step "Pulling and verifying the local Capsule controller image"
 controller_image_ref="$(pull_verified_ref "$controller_tag_ref")"
+step "Verifying local Docker access for the Capsule controller"
+docker_socket_source=""
+docker_socket_gid=""
+for socket_candidate in $docker_socket_candidates; do
+	if candidate_gid="$(docker_socket_source="$socket_candidate" controller_socket_gid "$controller_image_ref" 2>/dev/null)"; then
+		case "$candidate_gid" in ""|*[!0-9]*) continue ;; esac
+		if docker_socket_source="$socket_candidate" controller_can_reach_docker "$controller_image_ref" "$candidate_gid"; then
+			docker_socket_source="$socket_candidate"
+			docker_socket_gid="$candidate_gid"
+			break
+		fi
+	fi
+done
+[ -n "$docker_socket_source" ] && [ -n "$docker_socket_gid" ] \
+	|| die "the Capsule controller cannot access Docker; check Docker Desktop socket permissions or Enhanced Container Isolation"
 
 had_previous=0
 if [ -f "$COMPOSE_FILE" ] && [ -f "$ENV_FILE" ]; then
 	cp "$COMPOSE_FILE" "${COMPOSE_FILE}.previous"
 	cp "$ENV_FILE" "${ENV_FILE}.previous"
 	had_previous=1
+	load_previous_release
+	step "Pinning the previous release for safe rollback"
+	hydrate_previous_release || die "the previous pinned release could not be prepared; the running version was not changed"
 fi
 
 cat >"${ENV_FILE}.tmp" <<EOF
@@ -568,6 +670,7 @@ SHIMPZ_CONTROLLER_IMAGE=${controller_image_ref}
 SHIMPZ_SPACE_PLATFORM=${docker_platform}
 SHIMPZ_PORT=${install_port}
 SHIMPZ_DOCKER_GID=${docker_socket_gid}
+SHIMPZ_DOCKER_SOCKET=${docker_socket_source}
 SHIMPZ_SPACE_ID=${space_id}
 SHIMPZ_CPUSET=${docker_cpuset}
 EOF
@@ -593,7 +696,7 @@ services:
     environment:
       SHIMPZ_SPACE_ID: ${SHIMPZ_SPACE_ID:?installer must preserve SHIMPZ_SPACE_ID}
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - ${SHIMPZ_DOCKER_SOCKET:?installer must bind the platform Docker socket}:/var/run/docker.sock:rw
       - controller_token:/run/shimpz-local:rw
       - controller_audit:/var/log/shimpz-local:rw
     tmpfs:
@@ -681,6 +784,15 @@ mv "${COMPOSE_FILE}.tmp" "$COMPOSE_FILE"
 step "Starting the Shimpz Admin and local Capsule controller"
 if ! compose up -d --wait --wait-timeout 120 --no-build --pull never; then
 	warn "The new release did not become healthy"
+	compose logs --no-color --tail 20 capsule-driver-local >&2 || true
+	if [ "$had_previous" -eq 1 ]; then
+		step "Verifying the previous pinned release"
+		if ! hydrate_previous_release; then
+			mv "${ENV_FILE}.previous" "$ENV_FILE"
+			mv "${COMPOSE_FILE}.previous" "$COMPOSE_FILE"
+			die "the candidate failed and rollback images could not be verified; previous files were restored without deleting Docker data"
+		fi
+	fi
 	compose down --remove-orphans >/dev/null || true
 	if [ "$had_previous" -eq 1 ]; then
 		step "Restoring the previous pinned release"
