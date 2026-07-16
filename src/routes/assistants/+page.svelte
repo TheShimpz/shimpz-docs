@@ -70,10 +70,10 @@
   <span class="section-label">If it does not start</span>
   <h2 id="assistant-failure-title">Retry safely</h2>
   <p>
-    Use <strong>Install and run hello</strong> again. Installation is idempotent: the controller checks the
-    existing runtime and replaces it when it is stopped or no longer responds. If the Admin reports that the
-    local control plane is unavailable, run the install command again to repair the managed services without
-    deleting your data.
+    Use <strong>Install and run hello</strong> again. Installation is idempotent: the controller starts a
+    stopped runtime and replaces the stateless Hello Pulse container only when it remains unresponsive. If
+    the Admin reports that the local control plane is unavailable, run the install command again to repair
+    the managed services without deleting your data.
   </p>
 </section>
 
