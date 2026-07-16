@@ -2,11 +2,14 @@
 
 set -eu
 
-INSTALLER_VERSION="0.2.5-dev"
+INSTALLER_VERSION="0.3.0-dev"
 IMAGE_REPOSITORY="ghcr.io/roxygens/shimpz-space"
-IMAGE_CHANNEL="dev"
+ADMIN_CHANNEL="dev"
+CONTROLLER_CHANNEL="capsule-driver-local-dev"
 PROJECT_NAME="shimpz-space"
 MARKER_VALUE="shimpz-space-managed-v1"
+LOCAL_PROFILE="single-owner-local-v1"
+SPACE_LABEL="com.shimpz.local.space-id"
 
 OUT_RESET=""
 OUT_BOLD=""
@@ -169,7 +172,8 @@ ENV_FILE="${SHIMPZ_HOME}/.env"
 MARKER_FILE="${SHIMPZ_HOME}/.shimpz-space"
 
 install_port="${SHIMPZ_PORT:-7777}"
-unset SHIMPZ_SPACE_IMAGE SHIMPZ_SPACE_PLATFORM SHIMPZ_PORT
+unset SHIMPZ_ADMIN_IMAGE SHIMPZ_CONTROLLER_IMAGE SHIMPZ_SPACE_PLATFORM SHIMPZ_PORT
+unset SHIMPZ_DOCKER_GID SHIMPZ_SPACE_ID SHIMPZ_CPUSET
 
 compose() {
 	docker compose --progress quiet --project-name "$PROJECT_NAME" --env-file "$ENV_FILE" -f "$COMPOSE_FILE" "$@"
@@ -194,58 +198,196 @@ project_resources_exist() {
 	[ -n "${container_ids}${volume_ids}${network_ids}" ]
 }
 
-validate_orphaned_project_resources() {
+validate_space_id() {
+	space_value="$1"
+	space_hex="${space_value#space-}"
+	[ "$space_hex" != "$space_value" ] || die "invalid Shimpz Space identity"
+	case "$space_hex" in
+		""|*[!0-9a-f]*) die "invalid Shimpz Space identity" ;;
+	esac
+	[ "${#space_hex}" -eq 24 ] || die "invalid Shimpz Space identity"
+}
+
+generated_space_id() {
+	[ -r /dev/urandom ] || die "could not access the system random source"
+	space_hex="$(od -An -N12 -tx1 /dev/urandom 2>/dev/null | tr -d ' \n')" \
+		|| die "could not generate the Shimpz Space identity"
+	case "$space_hex" in
+		""|*[!0-9a-f]*) die "could not generate the Shimpz Space identity" ;;
+	esac
+	[ "${#space_hex}" -eq 24 ] || die "could not generate the Shimpz Space identity"
+	printf 'space-%s\n' "$space_hex"
+}
+
+space_id_from_env_file() {
+	[ -f "$ENV_FILE" ] || return 1
+	space_lines="$(sed -n 's/^SHIMPZ_SPACE_ID=//p' "$ENV_FILE")"
+	[ -n "$space_lines" ] || return 1
+	[ "$(printf '%s\n' "$space_lines" | wc -l | tr -d ' ')" -eq 1 ] || die "invalid Shimpz Space identity"
+	validate_space_id "$space_lines"
+	printf '%s\n' "$space_lines"
+}
+
+validate_official_digest_image() {
+	image_value="$1"
+	image_digest="${image_value#"${IMAGE_REPOSITORY}@sha256:"}"
+	[ "$image_digest" != "$image_value" ] \
+		|| die "refusing reset: a managed container does not use the official digest-pinned image"
+	case "$image_digest" in
+		""|*[!0-9a-f]*) die "refusing reset: a managed image digest is invalid" ;;
+	esac
+	[ "${#image_digest}" -eq 64 ] || die "refusing reset: a managed image digest is invalid"
+}
+
+validate_project_resources() {
 	container_ids="$(project_container_ids)" || die "could not inspect existing Shimpz Space containers"
 	volume_ids="$(project_volume_ids)" || die "could not inspect existing Shimpz Space volumes"
 	network_ids="$(project_network_ids)" || die "could not inspect existing Shimpz Space networks"
+	admin_seen=0
+	controller_seen=0
+	controller_id=""
+	controller_space_id=""
 	for resource_id in $container_ids; do
 		container_record="$(docker inspect --type=container --format '{{.Name}}|{{index .Config.Labels "com.docker.compose.service"}}|{{.Config.Image}}' "$resource_id")" \
-			|| die "could not verify orphaned Shimpz Space container ${resource_id}"
+			|| die "could not verify managed Shimpz Space container ${resource_id}"
 		container_name="${container_record%%|*}"
 		container_rest="${container_record#*|}"
 		container_service="${container_rest%%|*}"
 		container_image="${container_rest#*|}"
-		[ "$container_name" = "/${PROJECT_NAME}-admin-1" ] && [ "$container_service" = "admin" ] \
-			|| die "refusing reset: the orphaned Compose project contains an unknown container"
-		container_digest="${container_image#"${IMAGE_REPOSITORY}@sha256:"}"
-		[ "$container_digest" != "$container_image" ] \
-			|| die "refusing reset: the orphaned Admin does not use the official digest-pinned image"
-		case "$container_digest" in
-			""|*[!0-9a-f]*) die "refusing reset: the orphaned Admin image digest is invalid" ;;
+		validate_official_digest_image "$container_image"
+		case "${container_name}|${container_service}" in
+			"/${PROJECT_NAME}-admin-1|admin")
+				[ "$admin_seen" -eq 0 ] || die "refusing reset: duplicate managed Admin container"
+				admin_seen=1
+				;;
+			"/${PROJECT_NAME}-capsule-driver-local-1|capsule-driver-local")
+				[ "$controller_seen" -eq 0 ] || die "refusing reset: duplicate managed controller container"
+				controller_seen=1
+				controller_id="$resource_id"
+				controller_space_lines="$(docker inspect --type=container --format '{{range .Config.Env}}{{println .}}{{end}}' "$resource_id" \
+					| sed -n 's/^SHIMPZ_SPACE_ID=//p')" \
+					|| die "could not inspect the managed controller identity"
+				[ "$(printf '%s\n' "$controller_space_lines" | wc -l | tr -d ' ')" -eq 1 ] \
+					|| die "refusing reset: managed controller has an ambiguous Space identity"
+				validate_space_id "$controller_space_lines"
+				controller_space_id="$controller_space_lines"
+				;;
+			*) die "refusing reset: the Compose project contains an unknown container" ;;
 		esac
-		[ "${#container_digest}" -eq 64 ] \
-			|| die "refusing reset: the orphaned Admin image digest is invalid"
 	done
 	for resource_id in $volume_ids; do
 		volume_record="$(docker volume inspect --format '{{.Name}}|{{index .Labels "com.docker.compose.volume"}}' "$resource_id")" \
-			|| die "could not verify orphaned Shimpz Space volume ${resource_id}"
+			|| die "could not verify managed Shimpz Space volume ${resource_id}"
 		case "$volume_record" in
-			"${PROJECT_NAME}_config|config"|"${PROJECT_NAME}_data|data") ;;
-			*) die "refusing reset: the orphaned Compose project contains an unknown volume" ;;
+			"${PROJECT_NAME}_config|config"|"${PROJECT_NAME}_data|data"|\
+			"${PROJECT_NAME}_controller_token|controller_token"|\
+			"${PROJECT_NAME}_controller_audit|controller_audit") ;;
+			*) die "refusing reset: the Compose project contains an unknown volume" ;;
 		esac
 	done
 	for resource_id in $network_ids; do
 		network_record="$(docker network inspect --format '{{.Name}}|{{index .Labels "com.docker.compose.network"}}' "$resource_id")" \
-			|| die "could not verify orphaned Shimpz Space network ${resource_id}"
-		[ "$network_record" = "${PROJECT_NAME}_egress|egress" ] \
-			|| die "refusing reset: the orphaned Compose project contains an unknown network"
+			|| die "could not verify managed Shimpz Space network ${resource_id}"
+		case "$network_record" in
+			"${PROJECT_NAME}_egress|egress"|"${PROJECT_NAME}_control|control") ;;
+			*) die "refusing reset: the Compose project contains an unknown network" ;;
+		esac
 	done
+}
+
+dynamic_container_ids() {
+	docker ps --all --quiet --filter "label=${SPACE_LABEL}=${reset_space_id}"
+}
+
+dynamic_network_ids() {
+	docker network ls --quiet --filter "label=${SPACE_LABEL}=${reset_space_id}"
+}
+
+validate_dynamic_resources() {
+	dynamic_container_ids_value="$(dynamic_container_ids)" || die "could not inspect managed Assistant containers"
+	dynamic_network_ids_value="$(dynamic_network_ids)" || die "could not inspect managed Capsule networks"
+	for resource_id in $dynamic_container_ids_value; do
+		dynamic_record="$(docker inspect --type=container --format '{{.Name}}|{{index .Config.Labels "com.shimpz.local.managed"}}|{{index .Config.Labels "com.shimpz.local.profile"}}|{{index .Config.Labels "com.shimpz.local.space-id"}}|{{index .Config.Labels "com.shimpz.local.kind"}}|{{index .Config.Labels "com.shimpz.local.capsule-id"}}|{{index .Config.Labels "com.shimpz.local.assistant-id"}}' "$resource_id")" \
+			|| die "could not verify managed Assistant container ${resource_id}"
+		dynamic_name="${dynamic_record%%|*}"
+		dynamic_rest="${dynamic_record#*|}"
+		managed_value="${dynamic_rest%%|*}"; dynamic_rest="${dynamic_rest#*|}"
+		profile_value="${dynamic_rest%%|*}"; dynamic_rest="${dynamic_rest#*|}"
+		space_value="${dynamic_rest%%|*}"; dynamic_rest="${dynamic_rest#*|}"
+		kind_value="${dynamic_rest%%|*}"; dynamic_rest="${dynamic_rest#*|}"
+		capsule_value="${dynamic_rest%%|*}"
+		assistant_value="${dynamic_rest#*|}"
+		[ "$managed_value" = "1" ] && [ "$profile_value" = "$LOCAL_PROFILE" ] \
+			&& [ "$space_value" = "$reset_space_id" ] && [ "$kind_value" = "assistant" ] \
+			|| die "refusing reset: a Space-labeled container has invalid ownership labels"
+		case "$dynamic_name" in "/shimpz-local-"*) ;; *) die "refusing reset: invalid managed Assistant name" ;; esac
+		case "$capsule_value" in ""|*[!a-z0-9_]*) die "refusing reset: invalid managed Capsule id" ;; esac
+		[ "${#capsule_value}" -le 40 ] || die "refusing reset: invalid managed Capsule id"
+		case "$assistant_value" in ""|*[!a-z0-9-]*) die "refusing reset: invalid managed Assistant id" ;; esac
+		case "$assistant_value" in [a-z]*) ;; *) die "refusing reset: invalid managed Assistant id" ;; esac
+		case "$assistant_value" in *--*|*-) die "refusing reset: invalid managed Assistant id" ;; esac
+		[ "${#assistant_value}" -le 48 ] || die "refusing reset: invalid managed Assistant id"
+	done
+	for resource_id in $dynamic_network_ids_value; do
+		dynamic_record="$(docker network inspect --format '{{.Name}}|{{index .Labels "com.shimpz.local.managed"}}|{{index .Labels "com.shimpz.local.profile"}}|{{index .Labels "com.shimpz.local.space-id"}}|{{index .Labels "com.shimpz.local.kind"}}|{{index .Labels "com.shimpz.local.capsule-id"}}' "$resource_id")" \
+			|| die "could not verify managed Capsule network ${resource_id}"
+		dynamic_name="${dynamic_record%%|*}"
+		dynamic_rest="${dynamic_record#*|}"
+		managed_value="${dynamic_rest%%|*}"; dynamic_rest="${dynamic_rest#*|}"
+		profile_value="${dynamic_rest%%|*}"; dynamic_rest="${dynamic_rest#*|}"
+		space_value="${dynamic_rest%%|*}"; dynamic_rest="${dynamic_rest#*|}"
+		kind_value="${dynamic_rest%%|*}"
+		capsule_value="${dynamic_rest#*|}"
+		[ "$managed_value" = "1" ] && [ "$profile_value" = "$LOCAL_PROFILE" ] \
+			&& [ "$space_value" = "$reset_space_id" ] && [ "$kind_value" = "capsule" ] \
+			|| die "refusing reset: a Space-labeled network has invalid ownership labels"
+		case "$dynamic_name" in "shimpz-local-"*) ;; *) die "refusing reset: invalid managed Capsule network name" ;; esac
+		case "$capsule_value" in ""|*[!a-z0-9_]*) die "refusing reset: invalid managed Capsule id" ;; esac
+		[ "${#capsule_value}" -le 40 ] || die "refusing reset: invalid managed Capsule id"
+	done
+}
+
+reset_dynamic_space() {
+	[ -n "$controller_id" ] || {
+		[ -z "${dynamic_container_ids_value}${dynamic_network_ids_value}" ] \
+			|| die "refusing reset: managed Capsule resources exist without their controller"
+		return 0
+	}
+	controller_running="$(docker inspect --type=container --format '{{.State.Running}}' "$controller_id")" \
+		|| die "could not inspect the managed controller state"
+	if [ "$controller_running" != "true" ]; then
+		docker start "$controller_id" >/dev/null || die "could not start the managed controller for reset"
+	fi
+	step "Resetting Capsules and Assistants through the authenticated controller"
+	reset_attempt=0
+	while [ "$reset_attempt" -lt 30 ]; do
+		if docker exec "$controller_id" /opt/venv/bin/python -c 'import http.client,json,pathlib; token=pathlib.Path("/run/shimpz-local/token").read_text(encoding="ascii"); connection=http.client.HTTPConnection("127.0.0.1",7077,timeout=5); connection.request("DELETE","/v1/space",headers={"Authorization":"Bearer "+token,"Content-Length":"0"}); response=connection.getresponse(); body=response.read(32769); document=json.loads(body); valid=response.status==200 and len(body)<=32768 and isinstance(document,dict) and document.get("reset") is True; connection.close(); raise SystemExit(0 if valid else 1)' >/dev/null 2>&1; then
+			break
+		fi
+		reset_attempt=$((reset_attempt + 1))
+		sleep 1
+	done
+	[ "$reset_attempt" -lt 30 ] || die "the authenticated Capsule reset did not complete"
+	dynamic_container_ids_value="$(dynamic_container_ids)" || die "could not verify Assistant reset"
+	dynamic_network_ids_value="$(dynamic_network_ids)" || die "could not verify Capsule reset"
+	[ -z "${dynamic_container_ids_value}${dynamic_network_ids_value}" ] \
+		|| die "the authenticated reset left managed Capsule resources"
 }
 
 remove_validated_project_resources() {
 	for resource_id in $container_ids; do
 		docker rm --force "$resource_id" >/dev/null
 	done
-	for resource_id in $volume_ids; do
-		docker volume rm "$resource_id" >/dev/null
-	done
 	for resource_id in $network_ids; do
 		docker network rm "$resource_id" >/dev/null
+	done
+	for resource_id in $volume_ids; do
+		docker volume rm "$resource_id" >/dev/null
 	done
 }
 
 if [ "$action" = "reset" ]; then
-	notice "This permanently removes local Admin data"
+	notice "This permanently removes local Admin, Capsule, and Assistant data"
 	step "Validating managed Docker resources"
 	managed_state=0
 	if [ -f "$MARKER_FILE" ]; then
@@ -259,13 +401,25 @@ if [ "$action" = "reset" ]; then
 		managed_state=1
 	fi
 	[ "$managed_state" -eq 1 ] || die "no managed Shimpz Space installation was found"
+	validate_project_resources
+	reset_space_id="$(space_id_from_env_file || true)"
+	if [ -n "$controller_space_id" ]; then
+		if [ -n "$reset_space_id" ]; then
+			[ "$reset_space_id" = "$controller_space_id" ] \
+				|| die "refusing reset: local state and controller Space identities differ"
+		else
+			reset_space_id="$controller_space_id"
+		fi
+	fi
+	if [ -n "$reset_space_id" ]; then
+		validate_space_id "$reset_space_id"
+		validate_dynamic_resources
+		reset_dynamic_space
+	fi
 	if [ -f "$COMPOSE_FILE" ] && [ -f "$ENV_FILE" ]; then
-		step "Stopping Admin and removing Docker data"
+		step "Stopping Shimpz Space and removing Docker data"
 		compose down --volumes --remove-orphans
 	elif [ -n "${container_ids}${volume_ids}${network_ids}" ]; then
-		# With the local marker/config gone, do a complete read-only ownership preflight before the
-		# first deletion. Unknown resources sharing the generic Compose project label fail closed.
-		validate_orphaned_project_resources
 		step "Removing verified orphaned Docker data"
 		remove_validated_project_resources
 	fi
@@ -279,7 +433,7 @@ if [ "$action" = "reset" ]; then
 	rmdir "$SHIMPZ_HOME" 2>/dev/null || true
 	printf '\n'
 	success "Shimpz Space was reset"
-	printf '  Data     Managed Admin Docker data was removed\n'
+	printf '  Data     Managed Space, Capsule, and Assistant Docker data was removed\n'
 	printf '  Files    Known installer files were removed from %s\n' "$SHIMPZ_HOME"
 	printf '  Install  curl -fsSL https://install.shimpz.com | sh\n'
 	exit 0
@@ -294,6 +448,31 @@ case "${host_os}:${host_arch}" in
 	Linux:*) die "this development installer supports Linux amd64 only" ;;
 	*) die "supported hosts are Linux amd64 and Apple Silicon macOS arm64" ;;
 esac
+
+[ -S /var/run/docker.sock ] || die "Docker must expose /var/run/docker.sock"
+if docker_socket_gid="$(stat -c '%g' /var/run/docker.sock 2>/dev/null)"; then
+	:
+elif docker_socket_gid="$(stat -f '%g' /var/run/docker.sock 2>/dev/null)"; then
+	:
+else
+	die "could not read the Docker socket group"
+fi
+case "$docker_socket_gid" in
+	""|*[!0-9]*) die "Docker socket group must be numeric" ;;
+esac
+
+daemon_processors="$(docker info --format '{{.NCPU}}')" || die "could not read Docker CPU availability"
+case "$daemon_processors" in
+	""|*[!0-9]*) die "Docker returned an invalid CPU count" ;;
+esac
+[ "$daemon_processors" -ge 1 ] || die "Docker returned an invalid CPU count"
+half_processors=$((daemon_processors / 2))
+[ "$half_processors" -ge 1 ] || half_processors=1
+if [ "$half_processors" -eq 1 ]; then
+	docker_cpuset="0"
+else
+	docker_cpuset="0-$((half_processors - 1))"
+fi
 
 case "$install_port" in
 	""|*[!0-9]*) die "SHIMPZ_PORT must be an integer between 1024 and 65535" ;;
@@ -314,9 +493,23 @@ fi
 if [ -f "$MARKER_FILE" ]; then
 	install_mode="update"
 	info "Updating Shimpz Space; your Admin data will be preserved"
+	space_id="$(space_id_from_env_file || true)"
+	[ -n "$space_id" ] || space_id="$(generated_space_id)"
 else
 	install_mode="install"
 	info "Installing a fresh Shimpz Space"
+	space_id="$(generated_space_id)"
+fi
+validate_space_id "$space_id"
+if project_resources_exist; then
+	step "Validating the existing managed runtime"
+	validate_project_resources
+	if [ -n "$controller_space_id" ]; then
+		[ "$controller_space_id" = "$space_id" ] \
+			|| die "existing controller and local Space identities differ"
+	fi
+	reset_space_id="$space_id"
+	validate_dynamic_resources
 fi
 
 umask 077
@@ -325,24 +518,29 @@ chmod 700 "$SHIMPZ_HOME"
 printf '%s\n' "$MARKER_VALUE" >"$MARKER_FILE"
 chmod 600 "$MARKER_FILE"
 
-tag_ref="${IMAGE_REPOSITORY}:${IMAGE_CHANNEL}"
-step "Pulling the verified development image"
-docker pull --quiet --platform "$docker_platform" "$tag_ref" >/dev/null
+pull_verified_ref() {
+	tag_ref="$1"
+	docker pull --quiet --platform "$docker_platform" "$tag_ref" >/dev/null
+	pulled_platform="$(docker image inspect --format '{{.Os}}/{{.Architecture}}' "$tag_ref")"
+	[ "$pulled_platform" = "$docker_platform" ] \
+		|| die "Docker loaded ${pulled_platform} instead of required platform ${docker_platform}"
+	digest_ref="$({ docker image inspect --format '{{range .RepoDigests}}{{println .}}{{end}}' "$tag_ref" || true; } \
+		| sed -n "s|^${IMAGE_REPOSITORY}@\(sha256:[0-9a-f][0-9a-f]*\)$|\1|p" \
+		| head -n 1)"
+	digest_hex="${digest_ref#sha256:}"
+	case "$digest_hex" in
+		""|*[!0-9a-f]*) die "Docker did not return a valid registry digest for ${tag_ref}" ;;
+	esac
+	[ "${#digest_hex}" -eq 64 ] || die "Docker returned a malformed registry digest for ${tag_ref}"
+	printf '%s@%s\n' "$IMAGE_REPOSITORY" "$digest_ref"
+}
 
-step "Verifying the immutable image digest"
-pulled_platform="$(docker image inspect --format '{{.Os}}/{{.Architecture}}' "$tag_ref")"
-[ "$pulled_platform" = "$docker_platform" ] \
-	|| die "Docker loaded ${pulled_platform} instead of required platform ${docker_platform}"
-
-digest_ref="$({ docker image inspect --format '{{range .RepoDigests}}{{println .}}{{end}}' "$tag_ref" || true; } \
-	| sed -n "s|^${IMAGE_REPOSITORY}@\(sha256:[0-9a-f][0-9a-f]*\)$|\1|p" \
-	| head -n 1)"
-digest_hex="${digest_ref#sha256:}"
-case "$digest_hex" in
-	""|*[!0-9a-f]*) die "Docker did not return a valid registry digest for ${tag_ref}" ;;
-esac
-[ "${#digest_hex}" -eq 64 ] || die "Docker returned a malformed registry digest for ${tag_ref}"
-image_ref="${IMAGE_REPOSITORY}@${digest_ref}"
+admin_tag_ref="${IMAGE_REPOSITORY}:${ADMIN_CHANNEL}"
+controller_tag_ref="${IMAGE_REPOSITORY}:${CONTROLLER_CHANNEL}"
+step "Pulling and verifying the Admin development image"
+admin_image_ref="$(pull_verified_ref "$admin_tag_ref")"
+step "Pulling and verifying the local Capsule controller image"
+controller_image_ref="$(pull_verified_ref "$controller_tag_ref")"
 
 had_previous=0
 if [ -f "$COMPOSE_FILE" ] && [ -f "$ENV_FILE" ]; then
@@ -352,9 +550,13 @@ if [ -f "$COMPOSE_FILE" ] && [ -f "$ENV_FILE" ]; then
 fi
 
 cat >"${ENV_FILE}.tmp" <<EOF
-SHIMPZ_SPACE_IMAGE=${image_ref}
+SHIMPZ_ADMIN_IMAGE=${admin_image_ref}
+SHIMPZ_CONTROLLER_IMAGE=${controller_image_ref}
 SHIMPZ_SPACE_PLATFORM=${docker_platform}
 SHIMPZ_PORT=${install_port}
+SHIMPZ_DOCKER_GID=${docker_socket_gid}
+SHIMPZ_SPACE_ID=${space_id}
+SHIMPZ_CPUSET=${docker_cpuset}
 EOF
 chmod 600 "${ENV_FILE}.tmp"
 
@@ -362,12 +564,49 @@ cat >"${COMPOSE_FILE}.tmp" <<'COMPOSE'
 name: shimpz-space
 
 services:
+  capsule-driver-local:
+    image: ${SHIMPZ_CONTROLLER_IMAGE:?installer must pin SHIMPZ_CONTROLLER_IMAGE}
+    platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}
+    pull_policy: never
+    restart: unless-stopped
+    user: "10001:10001"
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    group_add:
+      - "${SHIMPZ_DOCKER_GID:?installer must bind the Docker socket group}"
+    environment:
+      SHIMPZ_SPACE_ID: ${SHIMPZ_SPACE_ID:?installer must preserve SHIMPZ_SPACE_ID}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - controller_token:/run/shimpz-local:rw
+      - controller_audit:/var/log/shimpz-local:rw
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=32m
+    cpuset: "${SHIMPZ_CPUSET:?installer must limit local CPUs}"
+    cpus: "1.0"
+    mem_limit: 256m
+    memswap_limit: 256m
+    pids_limit: 128
+    stop_grace_period: 15s
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+        max-file: "2"
+    networks:
+      - control
+
   admin:
-    image: ${SHIMPZ_SPACE_IMAGE:?installer must pin SHIMPZ_SPACE_IMAGE}
+    image: ${SHIMPZ_ADMIN_IMAGE:?installer must pin SHIMPZ_ADMIN_IMAGE}
     platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}
     pull_policy: never
     restart: unless-stopped
     user: "1000:1000"
+    group_add:
+      - "10010"
     read_only: true
     cap_drop:
       - ALL
@@ -375,9 +614,13 @@ services:
       - no-new-privileges:true
     ports:
       - "127.0.0.1:${SHIMPZ_PORT:-7777}:4600"
+    environment:
+      SHIMPZ_CAPSULEDRIVER_URL: http://capsule-driver-local:7077
+      SHIMPZ_CAPSULEDRIVER_TOKEN_FILE: /run/shimpz-local/token
     volumes:
       - config:/repo
       - data:/data
+      - controller_token:/run/shimpz-local:ro
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,size=32m
     healthcheck:
@@ -387,17 +630,33 @@ services:
       retries: 24
       start_period: 5s
     cpus: "2.0"
+    cpuset: "${SHIMPZ_CPUSET:?installer must limit local CPUs}"
     mem_limit: 512m
+    memswap_limit: 512m
     pids_limit: 128
     stop_grace_period: 15s
+    depends_on:
+      capsule-driver-local:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+        max-file: "2"
     networks:
+      - control
       - egress
 
 volumes:
   config:
   data:
+  controller_token:
+  controller_audit:
 
 networks:
+  control:
+    driver: bridge
+    internal: true
   egress:
     driver: bridge
 COMPOSE
@@ -405,7 +664,7 @@ chmod 600 "${COMPOSE_FILE}.tmp"
 mv "${ENV_FILE}.tmp" "$ENV_FILE"
 mv "${COMPOSE_FILE}.tmp" "$COMPOSE_FILE"
 
-step "Starting the Shimpz Admin"
+step "Starting the Shimpz Admin and local Capsule controller"
 if ! compose up -d --wait --wait-timeout 120 --no-build --pull never; then
 	warn "The new release did not become healthy"
 	compose down --remove-orphans >/dev/null || true
@@ -432,5 +691,6 @@ else
 	printf '  Admin    %shttp://127.0.0.1:%s%s\n' "$OUT_CYAN" "$install_port" "$OUT_RESET"
 	printf '  Next     Create an Admin password with at least 12 characters\n'
 fi
-printf '  Image    %s\n' "$image_ref"
+printf '  AdminImg %s\n' "$admin_image_ref"
+printf '  Control  %s\n' "$controller_image_ref"
 printf '  Reset    curl -fsSL https://install.shimpz.com | sh -s -- --reset\n'
