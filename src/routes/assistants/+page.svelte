@@ -70,10 +70,16 @@
   <span class="section-label">Chat</span>
   <h2 id="assistant-chat-title">Talk to one installed Assistant</h2>
   <p>
-    In <strong>Chat</strong>, choose the Capsule, an installed Assistant, and Claude Code or Codex. The Brain
-    is only the inference engine: it follows that Assistant's Rules and may request only its declared,
-    controller-validated Powers. It cannot use a shell, create or edit code, execute files, or access the
-    network directly.
+    In <strong>Chat</strong>, choose the Capsule, an installed Assistant, and its OpenAI or Anthropic model.
+    The provider-neutral LangGraph Brain receives only that Assistant's validated Rules and Powers. It may
+    answer or request a Power, but the Capsule controller is the only component allowed to validate and
+    execute that request.
+  </p>
+  <p>
+    Configure the selected provider with an API key in the authenticated Admin. The secret is never returned
+    by status APIs, stored in browser storage, or exposed to an Assistant. The Brain receives it only in
+    memory for the provider request. It has no ambient shell, filesystem, general network access, code tools,
+    or package managers.
   </p>
   <p>
     Capsule uploads use isolated opaque storage with an initial total quota of <strong>100 MiB</strong>.

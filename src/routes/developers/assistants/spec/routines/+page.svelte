@@ -67,5 +67,5 @@
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec v2 guide">
   <a href="/developers/assistants/spec/permissions/"><span>Back</span><strong>Permissions</strong></a>
-  <a href="/developers/assistants/spec/runtime/"><span>Next</span><strong>Chat and files</strong></a>
+  <a href="/developers/assistants/spec/runtime/"><span>Next</span><strong>Brain runtime</strong></a>
 </nav>

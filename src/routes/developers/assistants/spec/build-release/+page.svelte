@@ -83,6 +83,6 @@
 </section>
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec v2 guide">
-  <a href="/developers/assistants/spec/runtime/"><span>Back</span><strong>Chat and files</strong></a>
+  <a href="/developers/assistants/spec/runtime/"><span>Back</span><strong>Brain runtime</strong></a>
   <a href="/developers/assistants/hello-pulse/"><span>Next</span><strong>Hello Pulse</strong></a>
 </nav>

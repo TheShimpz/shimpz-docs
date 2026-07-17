@@ -33,7 +33,11 @@
     <li>The Capsule controller validates the request and decides whether it is granted.</li>
     <li>The Assistant executes the bounded Power and returns a schema-validated result.</li>
   </ol>
-  <p>Rules never grant authority, and the Brain never receives a shell, direct network, or ambient tools.</p>
+  <p>
+    The provider-neutral LangGraph Brain receives the selected Assistant's Rules and declared Powers, but
+    Rules never grant authority. Only the Capsule controller can validate and execute an authorized Power;
+    the Brain never receives an ambient shell, filesystem, general network, or host tools.
+  </p>
 </section>
 
 <section class="guide-section" aria-labelledby="assistant-topics-title">
@@ -72,8 +76,8 @@
     </li>
     <li>
       <a class="docs-entry-link" href="/developers/assistants/spec/runtime/">
-        <strong>Chat and files</strong>
-        <span>Keep the Brain and uploaded files inside the Capsule boundary.</span>
+        <strong>Brain runtime</strong>
+        <span>Use LangGraph inference without giving the model ambient authority.</span>
       </a>
     </li>
     <li>

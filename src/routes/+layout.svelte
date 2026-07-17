@@ -108,8 +108,8 @@
             },
             {
               href: "/developers/assistants/spec/runtime/",
-              label: "Chat and files",
-              description: "Keep the Brain bounded",
+              label: "Brain runtime",
+              description: "LangGraph, API keys, and files",
             },
             {
               href: "/developers/assistants/spec/build-release/",

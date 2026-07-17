@@ -24,8 +24,9 @@
   <span id="assistant-status-title" class="kicker">What is available now</span>
   <p>
     Assistant Spec v2 defines Rules, Powers, permissions, routines, and immutable releases. Hello Pulse
-    remains the deliberately narrow runtime reference. The Capsule chat boundary selects one installed
-    Assistant and exposes only its controller-validated Powers to the chosen inference provider.
+    remains the deliberately narrow runtime reference. The provider-neutral LangGraph Brain receives one
+    selected Assistant's validated Rules and Powers, while the Capsule controller retains all execution
+    authority.
   </p>
 </aside>
 
@@ -40,6 +41,11 @@
     <li>Credential declarations are opaque references; secret values stay in the responsible Service.</li>
     <li>Egress is exact and routines start disabled, single-flight, and idempotent.</li>
   </ul>
+  <p>
+    OpenAI and Anthropic inference use API keys configured in the authenticated Admin. A key is never exposed
+    to an Assistant or returned to the browser; it is delivered to the Brain only in memory for the provider
+    request. The Brain has no ambient shell, filesystem, network, or provider-native tools.
+  </p>
 </section>
 
 <section class="guide-section" aria-labelledby="assistant-collaboration-title">
@@ -64,8 +70,8 @@
     </li>
     <li>
       <a class="docs-entry-link" href="/developers/assistants/spec/runtime/">
-        <strong>Chat and files</strong>
-        <span>Inference-only Brains, controller grants, and opaque Capsule storage</span>
+        <strong>Brain runtime</strong>
+        <span>LangGraph inference, controller-owned Powers, API keys, and opaque files</span>
       </a>
     </li>
     <li>
