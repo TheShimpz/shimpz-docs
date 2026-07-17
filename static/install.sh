@@ -868,7 +868,7 @@ mv "${ENV_FILE}.tmp" "$ENV_FILE"
 mv "${COMPOSE_FILE}.tmp" "$COMPOSE_FILE"
 
 step "Starting the Shimpz Admin, local Capsule controller, and isolated Brain runtime"
-if ! compose up -d --wait --wait-timeout 120 --no-build --pull never; then
+if ! compose up -d --wait --wait-timeout 120 --no-build --pull never --remove-orphans; then
 	warn "The new release did not become healthy"
 	compose logs --no-color --tail 20 capsule-driver-local >&2 || true
 	compose logs --no-color --tail 20 brain-runtime >&2 || true
@@ -885,7 +885,7 @@ if ! compose up -d --wait --wait-timeout 120 --no-build --pull never; then
 		step "Restoring the previous pinned release"
 		mv "${ENV_FILE}.previous" "$ENV_FILE"
 		mv "${COMPOSE_FILE}.previous" "$COMPOSE_FILE"
-		compose up -d --wait --wait-timeout 120 --no-build --pull never \
+		compose up -d --wait --wait-timeout 120 --no-build --pull never --remove-orphans \
 			|| die "rollback also failed; inspect with: (cd \"${SHIMPZ_HOME}\" && docker compose -p ${PROJECT_NAME} logs)"
 		warn "Previous version restored; your Admin data was preserved"
 		die "the update failed, so Shimpz is still running the previous version"
