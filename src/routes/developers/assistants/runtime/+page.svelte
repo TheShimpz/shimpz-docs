@@ -85,6 +85,12 @@
     <li>Uploaded content is never mounted into the Brain or an Assistant container.</li>
     <li>An upload is data only: it is never treated as a path, program, dependency, prompt, or executable.</li>
   </ul>
+  <p>
+    The portable v1 boundary is an exact transactional payload quota plus a bounded SQLite page ceiling,
+    not a claim of kernel project quotas across Linux and Docker Desktop. The stronger execution boundary
+    is that workloads receive no storage mount at all. A trusted per-Capsule quota resolver is already the
+    seam for future plan limits; clients cannot choose or increase that value.
+  </p>
 </section>
 
 <section class="guide-section" aria-labelledby="file-power-title">
