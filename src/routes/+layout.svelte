@@ -2,10 +2,21 @@
   import { page } from "$app/state";
   import "../app.css";
 
+  type NavigationItem = {
+    href: string;
+    label: string;
+    description: string;
+    children?: NavigationItem[];
+  };
+
   type NavigationSection = {
     label: string;
-    items: Array<{ href: string; label: string; description: string }>;
+    items: NavigationItem[];
   };
+
+  function flattenNavigation(items: NavigationItem[]): NavigationItem[] {
+    return items.flatMap((item) => [item, ...flattenNavigation(item.children ?? [])]);
+  }
 
   const userNavigation: NavigationSection[] = [
     {
@@ -59,18 +70,50 @@
         {
           href: "/developers/assistants/spec/",
           label: "Assistant Spec v2",
-          description: "Rules, Powers, and grants",
+          description: "Start with the current contract",
+          children: [
+            {
+              href: "/developers/assistants/spec/manifest/",
+              label: "Project manifest",
+              description: "One file maps the project",
+            },
+            {
+              href: "/developers/assistants/spec/rules/",
+              label: "Rules",
+              description: "Orient behavior",
+            },
+            {
+              href: "/developers/assistants/spec/powers/",
+              label: "Powers",
+              description: "Declare safe actions",
+            },
+            {
+              href: "/developers/assistants/spec/permissions/",
+              label: "Permissions",
+              description: "Request narrow access",
+            },
+            {
+              href: "/developers/assistants/spec/routines/",
+              label: "Routines",
+              description: "Schedule one Power",
+            },
+            {
+              href: "/developers/assistants/spec/runtime/",
+              label: "Chat and files",
+              description: "Keep the Brain bounded",
+            },
+            {
+              href: "/developers/assistants/spec/build-release/",
+              label: "Build and release",
+              description: "Validate and pin artifacts",
+            },
+          ],
         },
-        {
-          href: "/developers/assistants/spec/v1/",
-          label: "Assistant Spec v1",
-          description: "Frozen compatibility",
-        },
-        {
-          href: "/developers/assistants/runtime/",
-          label: "Chat and files",
-          description: "Inference and storage boundary",
-        },
+      ],
+    },
+    {
+      label: "Assistant examples",
+      items: [
         {
           href: "/developers/assistants/hello-pulse/",
           label: "Hello Pulse",
@@ -94,8 +137,9 @@
   const navigationTitleId = $derived(isDeveloperGuide ? "developer-navigation-title" : "user-navigation-title");
 
   const currentLabel = $derived(
-    navigation.flatMap((section) => section.items).find((item) => item.href === page.url.pathname)?.label ??
-      "Overview",
+    navigation
+      .flatMap((section) => flattenNavigation(section.items))
+      .find((item) => item.href === page.url.pathname)?.label ?? "Overview",
   );
 
   let { children } = $props();
@@ -108,15 +152,32 @@
         <span class="docs-nav-group-label">{section.label}</span>
         <ul class="docs-nav-list">
           {#each section.items as item}
-            <li>
+            <li class:has-submenu={Boolean(item.children?.length)}>
               <a
                 href={item.href}
                 class="docs-nav-link"
+                class:is-branch-current={item.children?.some((child) => child.href === page.url.pathname)}
                 aria-current={page.url.pathname === item.href ? "page" : undefined}
               >
                 <span class="docs-nav-rail" aria-hidden="true"></span>
                 <span><strong>{item.label}</strong><small>{item.description}</small></span>
               </a>
+              {#if item.children?.length}
+                <ul class="docs-nav-sublist" aria-label={`${item.label} topics`}>
+                  {#each item.children as child}
+                    <li>
+                      <a
+                        href={child.href}
+                        class="docs-nav-sublink"
+                        aria-current={page.url.pathname === child.href ? "page" : undefined}
+                      >
+                        <span class="docs-nav-subrail" aria-hidden="true"></span>
+                        <span><strong>{child.label}</strong><small>{child.description}</small></span>
+                      </a>
+                    </li>
+                  {/each}
+                </ul>
+              {/if}
             </li>
           {/each}
         </ul>

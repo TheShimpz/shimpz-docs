@@ -152,6 +152,6 @@
 </section>
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant developer guide">
-  <a href="/developers/assistants/runtime/"><span>Back to</span><strong>Chat and files</strong></a>
+  <a href="/developers/assistants/spec/build-release/"><span>Back to</span><strong>Build and release</strong></a>
   <a href="/developers/assistants/salesnator/"><span>Next</span><strong>Salesnator</strong></a>
 </nav>

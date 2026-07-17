@@ -1,6 +1,6 @@
 <svelte:head>
   <title>Assistant chat and file boundary — Shimpz docs</title>
-  <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/runtime/" />
+  <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/spec/runtime/" />
   <meta
     name="description"
     content="How Shimpz confines Claude Code and Codex to one installed Assistant's Rules and controller-validated Powers."
@@ -8,7 +8,8 @@
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/assistants/">Assistants</a><span aria-hidden="true">/</span><strong
+  <a href="/developers/assistants/">Assistants</a><span aria-hidden="true">/</span
+  ><a href="/developers/assistants/spec/">Spec v2</a><span aria-hidden="true">/</span><strong
     >Chat and files</strong
   >
 </nav>
@@ -121,6 +122,6 @@
 </section>
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant developer guide">
-  <a href="/developers/assistants/spec/"><span>Back</span><strong>Assistant Spec v2</strong></a>
-  <a href="/developers/assistants/hello-pulse/"><span>Next</span><strong>Hello Pulse</strong></a>
+  <a href="/developers/assistants/spec/routines/"><span>Back</span><strong>Routines</strong></a>
+  <a href="/developers/assistants/spec/build-release/"><span>Next</span><strong>Build and release</strong></a>
 </nav>

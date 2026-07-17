@@ -2,8 +2,8 @@
 
 The public documentation for **[Shimpz](https://shimpz.com)**. The User guide installs the development
 Space, opens its loopback-only Admin, runs the first Capsule-owned Assistant, explains its boundaries, and
-resets it. The separate Developer guide covers Service Spec v1 and Assistant Spec v2; the frozen
-Assistant Spec v1 remains documented only for compatibility. Served at
+resets it. The separate Developer guide covers Service Spec v1 and the concept-based Assistant Spec v2.
+Served at
 **docs.shimpz.com**; the same hardened origin serves the pull-only bootstrap at
 **install.shimpz.com**.
 

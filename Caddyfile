@@ -48,6 +48,16 @@
 		path /developers/drivers/r2 /developers/drivers/r2/
 	}
 	redir @legacy_driver_r2 /developers/services/r2/ 308
+	@legacy_assistant_v1 {
+		host docs.shimpz.com
+		path /developers/assistants/spec/v1 /developers/assistants/spec/v1/
+	}
+	redir @legacy_assistant_v1 /developers/assistants/spec/ 308
+	@legacy_assistant_runtime {
+		host docs.shimpz.com
+		path /developers/assistants/runtime /developers/assistants/runtime/
+	}
+	redir @legacy_assistant_runtime /developers/assistants/spec/runtime/ 308
 
 	# Prerendered routes are directories because SvelteKit uses trailingSlash=always. Never fall
 	# back to the homepage: a missing Docs URL is a real 404 and is part of the public edge contract.

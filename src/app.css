@@ -468,7 +468,7 @@ a { color: inherit; text-decoration: none; }
   }
   .docs-page-nav strong { grid-column: 1; grid-row: 2; display: block; font-family: var(--font-mono); font-size: 0.9rem; }
 
-  .docs-nav-tree, .docs-nav-list { margin: 0; padding: 0; list-style: none; }
+  .docs-nav-tree, .docs-nav-list, .docs-nav-sublist { margin: 0; padding: 0; list-style: none; }
   .docs-nav-tree { display: grid; gap: 1.35rem; }
   .docs-nav-group-label {
     display: flex; align-items: center; gap: 0.45rem; margin: 0 0 0.42rem;
@@ -494,11 +494,17 @@ a { color: inherit; text-decoration: none; }
     background: linear-gradient(90deg, color-mix(in oklab, var(--color-cyan) 12%, transparent), transparent 88%);
     color: var(--color-fg); box-shadow: inset 0 1px color-mix(in oklab, var(--color-cyan) 18%, transparent);
   }
+  .docs-nav-link.is-branch-current {
+    border-left-color: color-mix(in oklab, var(--color-cyan) 55%, var(--color-border-strong));
+    color: var(--color-fg);
+  }
   .docs-nav-link::after {
     content: "›"; color: var(--color-muted-2); font-size: 1rem; font-weight: 700; opacity: 0.55;
   }
   .docs-nav-link:hover::after, .docs-nav-link:focus-visible::after,
-  .docs-nav-link[aria-current="page"]::after { color: var(--color-magenta); opacity: 1; }
+  .docs-nav-link[aria-current="page"]::after, .docs-nav-link.is-branch-current::after {
+    color: var(--color-magenta); opacity: 1;
+  }
   .docs-nav-rail {
     width: 0.4rem; height: 0.4rem; border: 1px solid var(--color-border-strong); transform: rotate(45deg);
   }
@@ -512,6 +518,35 @@ a { color: inherit; text-decoration: none; }
   .docs-nav-link small {
     display: block; margin-top: 0.1rem; color: var(--color-muted-2); font-family: var(--font-sans);
     font-size: 0.68rem; line-height: 1.35;
+  }
+  .docs-nav-sublist {
+    margin: 0.15rem 0 0.45rem 1.4rem; border-left: 1px solid var(--color-border);
+    padding: 0.12rem 0 0.12rem 0.55rem;
+  }
+  .docs-nav-sublink {
+    display: grid; min-height: 2.65rem; grid-template-columns: 0.5rem minmax(0, 1fr); align-items: center;
+    gap: 0.55rem; padding: 0.42rem 0.5rem; color: var(--color-muted); font-family: var(--font-mono);
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+  .docs-nav-sublink:hover, .docs-nav-sublink:focus-visible {
+    background: color-mix(in oklab, var(--color-magenta) 7%, transparent); color: var(--color-fg);
+  }
+  .docs-nav-sublink[aria-current="page"] {
+    background: linear-gradient(90deg, color-mix(in oklab, var(--color-cyan) 10%, transparent), transparent);
+    color: var(--color-fg);
+  }
+  .docs-nav-subrail { width: 0.42rem; height: 1px; background: var(--color-border-strong); }
+  .docs-nav-sublink:hover .docs-nav-subrail, .docs-nav-sublink:focus-visible .docs-nav-subrail {
+    background: var(--color-magenta);
+  }
+  .docs-nav-sublink[aria-current="page"] .docs-nav-subrail {
+    height: 0.42rem; border: 1px solid var(--color-cyan); background: var(--color-cyan);
+    box-shadow: 0 0 7px rgba(0, 240, 255, 0.42); transform: rotate(45deg);
+  }
+  .docs-nav-sublink strong { display: block; font-size: 0.75rem; font-weight: 700; }
+  .docs-nav-sublink small {
+    display: block; margin-top: 0.08rem; color: var(--color-muted-2); font-family: var(--font-sans);
+    font-size: 0.64rem; line-height: 1.3;
   }
 
   .docs-mobile-menu {
@@ -550,7 +585,7 @@ a { color: inherit; text-decoration: none; }
     .docs-prose a, a.external-link, a.external-link::after { color: LinkText; text-decoration-color: LinkText; }
     .github-link { border-color: LinkText; color: LinkText; }
     .terminal-copy { border-color: ButtonText; color: ButtonText; }
-    .docs-nav-link[aria-current="page"] { border: 1px solid Highlight; }
+    .docs-nav-link[aria-current="page"], .docs-nav-sublink[aria-current="page"] { border: 1px solid Highlight; }
   }
 
   /* rendered markdown (the brain's chat replies) — tight, mono code, neon links, black code wells */
@@ -598,7 +633,7 @@ a { color: inherit; text-decoration: none; }
   }
   @media (prefers-reduced-motion: reduce) {
     .terminal-cursor, .caret::after { animation: none; opacity: 1; }
-    .card, .btn-primary, .btn-ghost, .field, .docs-nav-link, .docs-prose a,
+    .card, .btn-primary, .btn-ghost, .field, .docs-nav-link, .docs-nav-sublink, .docs-prose a,
     a.external-link, a.external-link::after, .github-link, .terminal-copy { transition: none; }
     .card:hover { transform: none; }
     a.external-link:hover::after, a.external-link:focus-visible::after { transform: translateY(-0.08em); }

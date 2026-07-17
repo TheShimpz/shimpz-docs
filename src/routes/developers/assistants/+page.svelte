@@ -23,9 +23,9 @@
 <aside class="scope-note" aria-labelledby="assistant-status-title">
   <span id="assistant-status-title" class="kicker">What is available now</span>
   <p>
-    Assistant Spec v2 defines Rules, Powers, grants, and routines while preserving the frozen v1 parser.
-    Hello Pulse remains the deliberately narrow runtime reference. The Capsule chat boundary selects one
-    installed Assistant and exposes only its controller-validated Powers to the chosen inference provider.
+    Assistant Spec v2 defines Rules, Powers, permissions, routines, and immutable releases. Hello Pulse
+    remains the deliberately narrow runtime reference. The Capsule chat boundary selects one installed
+    Assistant and exposes only its controller-validated Powers to the chosen inference provider.
   </p>
 </aside>
 
@@ -63,7 +63,7 @@
       </a>
     </li>
     <li>
-      <a class="docs-entry-link" href="/developers/assistants/runtime/">
+      <a class="docs-entry-link" href="/developers/assistants/spec/runtime/">
         <strong>Chat and files</strong>
         <span>Inference-only Brains, controller grants, and opaque Capsule storage</span>
       </a>
