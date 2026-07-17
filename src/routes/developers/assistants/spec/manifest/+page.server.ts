@@ -4,9 +4,9 @@ import type { PageServerLoad } from "./$types";
 
 const manifest = `schema_version = 2
 id = "hello-pulse"
-title = "Hello Pulse"
+name = "Hello Pulse"
 version = "0.1.0"
-summary = "Return a friendly greeting."
+description = "Return a friendly greeting."
 rules = "assistant/RULES.md"
 
 [artifact]

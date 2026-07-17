@@ -57,7 +57,7 @@
   <span class="section-label">Mental model</span>
   <h2 id="manifest-fields-title">Read it from top to bottom</h2>
   <ul>
-    <li><code>id</code>, <code>title</code>, <code>version</code>, and <code>summary</code> identify the release.</li>
+    <li><code>id</code>, <code>name</code>, <code>version</code>, and <code>description</code> identify the release.</li>
     <li><code>rules</code> points to the Assistant's behavior guide.</li>
     <li><code>artifact</code> describes how the process is started and checked.</li>
     <li><code>powers</code> define the only Assistant capabilities it may request.</li>
