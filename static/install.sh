@@ -294,7 +294,8 @@ validate_project_resources() {
 		case "$volume_record" in
 			"${PROJECT_NAME}_config|config"|"${PROJECT_NAME}_data|data"|\
 			"${PROJECT_NAME}_controller_token|controller_token"|\
-			"${PROJECT_NAME}_controller_audit|controller_audit") ;;
+			"${PROJECT_NAME}_controller_audit|controller_audit"|\
+			"${PROJECT_NAME}_controller_storage|controller_storage") ;;
 			*) die "refusing reset: the Compose project contains an unknown volume" ;;
 		esac
 	done
@@ -699,6 +700,7 @@ services:
       - ${SHIMPZ_DOCKER_SOCKET:?installer must bind the platform Docker socket}:/var/run/docker.sock:rw
       - controller_token:/run/shimpz-local:rw
       - controller_audit:/var/log/shimpz-local:rw
+      - controller_storage:/var/lib/shimpz-local/storage:rw
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,size=32m
     cpuset: "${SHIMPZ_CPUSET:?installer must limit local CPUs}"
@@ -769,6 +771,7 @@ volumes:
   data:
   controller_token:
   controller_audit:
+  controller_storage:
 
 networks:
   control:
