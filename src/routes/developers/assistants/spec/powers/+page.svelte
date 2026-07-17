@@ -72,7 +72,7 @@
   <h2 id="powers-runtime-title">Let the controller broker the call</h2>
   <p>
     The controller must validate the request, map the declared Power ID to the fixed
-    <code>/v1/operations/&lt;power-id&gt;</code> adapter, validate the result, and audit the invocation. That
+    <code>/v1/powers/&lt;power-id&gt;</code> adapter, validate the result, and audit the invocation. That
     compatibility path is not a URL the model or manifest can choose. Shared Services continue to call their
     capabilities <strong>operations</strong>; Assistants expose <strong>Powers</strong>.
   </p>

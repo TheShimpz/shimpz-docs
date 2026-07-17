@@ -108,7 +108,7 @@
   <li>
     <h2>Call the declared Power</h2>
     <p>
-      In a second terminal. The <code>/v1/operations/hello</code> route is the fixed compatibility adapter
+      In a second terminal. The <code>/v1/powers/hello</code> route is the fixed compatibility adapter
       for the <code>hello</code> Power, not a generic route the manifest or model can choose.
     </p>
     <CodeBlock
@@ -118,7 +118,7 @@
         { value: "curl -fsS http://127.0.0.1:8080/health" },
         {
           value:
-            "curl -fsS -H 'content-type: application/json' -d '{\"name\":\"Ada\"}' http://127.0.0.1:8080/v1/operations/hello",
+            "curl -fsS -H 'content-type: application/json' -d '{\"name\":\"Ada\"}' http://127.0.0.1:8080/v1/powers/hello",
         },
       ]}
     />
