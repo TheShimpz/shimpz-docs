@@ -6,6 +6,7 @@ INSTALLER_VERSION="0.3.1-dev"
 IMAGE_REPOSITORY="ghcr.io/roxygens/shimpz-space"
 ADMIN_CHANNEL="dev"
 CONTROLLER_CHANNEL="capsule-driver-local-dev"
+BRAIN_RUNTIME_CHANNEL="brain-runtime-dev"
 PROJECT_NAME="shimpz-space"
 MARKER_VALUE="shimpz-space-managed-v1"
 LOCAL_PROFILE="single-owner-local-v1"
@@ -185,7 +186,7 @@ ENV_FILE="${SHIMPZ_HOME}/.env"
 MARKER_FILE="${SHIMPZ_HOME}/.shimpz-space"
 
 install_port="${SHIMPZ_PORT:-7777}"
-unset SHIMPZ_ADMIN_IMAGE SHIMPZ_CONTROLLER_IMAGE SHIMPZ_SPACE_PLATFORM SHIMPZ_PORT
+unset SHIMPZ_ADMIN_IMAGE SHIMPZ_CONTROLLER_IMAGE SHIMPZ_BRAIN_RUNTIME_IMAGE SHIMPZ_SPACE_PLATFORM SHIMPZ_PORT
 unset SHIMPZ_DOCKER_GID SHIMPZ_DOCKER_SOCKET SHIMPZ_SPACE_ID SHIMPZ_CPUSET
 
 compose() {
@@ -258,6 +259,7 @@ validate_project_resources() {
 	network_ids="$(project_network_ids)" || die "could not inspect existing Shimpz Space networks"
 	admin_seen=0
 	controller_seen=0
+	brain_runtime_seen=0
 	controller_id=""
 	controller_space_id=""
 	for resource_id in $container_ids; do
@@ -285,6 +287,10 @@ validate_project_resources() {
 				validate_space_id "$controller_space_lines"
 				controller_space_id="$controller_space_lines"
 				;;
+			"/${PROJECT_NAME}-brain-runtime-1|brain-runtime")
+				[ "$brain_runtime_seen" -eq 0 ] || die "refusing reset: duplicate managed Brain runtime container"
+				brain_runtime_seen=1
+				;;
 			*) die "refusing reset: the Compose project contains an unknown container" ;;
 		esac
 	done
@@ -295,7 +301,10 @@ validate_project_resources() {
 			"${PROJECT_NAME}_config|config"|"${PROJECT_NAME}_data|data"|\
 			"${PROJECT_NAME}_controller_token|controller_token"|\
 			"${PROJECT_NAME}_controller_audit|controller_audit"|\
-			"${PROJECT_NAME}_controller_storage|controller_storage") ;;
+			"${PROJECT_NAME}_controller_storage|controller_storage"|\
+			"${PROJECT_NAME}_controller_inference|controller_inference"|\
+			"${PROJECT_NAME}_brain_runtime_token|brain_runtime_token"|\
+			"${PROJECT_NAME}_brain_runtime_state|brain_runtime_state") ;;
 			*) die "refusing reset: the Compose project contains an unknown volume" ;;
 		esac
 	done
@@ -303,7 +312,8 @@ validate_project_resources() {
 		network_record="$(docker network inspect --format '{{.Name}}|{{index .Labels "com.docker.compose.network"}}' "$resource_id")" \
 			|| die "could not verify managed Shimpz Space network ${resource_id}"
 		case "$network_record" in
-			"${PROJECT_NAME}_egress|egress"|"${PROJECT_NAME}_control|control") ;;
+			"${PROJECT_NAME}_egress|egress"|"${PROJECT_NAME}_control|control"|\
+			"${PROJECT_NAME}_brain_runtime|brain_runtime"|"${PROJECT_NAME}_brain_egress|brain_egress") ;;
 			*) die "refusing reset: the Compose project contains an unknown network" ;;
 		esac
 	done
@@ -433,6 +443,11 @@ if [ "$action" = "reset" ]; then
 	if [ -f "$COMPOSE_FILE" ] && [ -f "$ENV_FILE" ]; then
 		step "Stopping Shimpz Space and removing Docker data"
 		compose down --volumes --remove-orphans
+		if project_resources_exist; then
+			step "Removing verified rollback leftovers"
+			validate_project_resources
+			remove_validated_project_resources
+		fi
 	elif [ -n "${container_ids}${volume_ids}${network_ids}" ]; then
 		step "Removing verified orphaned Docker data"
 		remove_validated_project_resources
@@ -576,9 +591,13 @@ load_previous_release() {
 	[ -n "$previous_admin_ref" ] || previous_admin_ref="$previous_legacy_ref"
 	[ -n "$previous_admin_ref" ] || die "the previous release is missing its Admin image"
 	previous_controller_ref="$(optional_env_value SHIMPZ_CONTROLLER_IMAGE "${ENV_FILE}.previous")"
+	previous_brain_runtime_ref="$(optional_env_value SHIMPZ_BRAIN_RUNTIME_IMAGE "${ENV_FILE}.previous")"
 	validate_pinned_release_ref "$previous_admin_ref"
 	if [ -n "$previous_controller_ref" ]; then
 		validate_pinned_release_ref "$previous_controller_ref"
+	fi
+	if [ -n "$previous_brain_runtime_ref" ]; then
+		validate_pinned_release_ref "$previous_brain_runtime_ref"
 	fi
 }
 
@@ -603,6 +622,9 @@ hydrate_previous_release() {
 	ensure_pinned_release_ref "$previous_admin_ref" "$previous_platform" || return 1
 	if [ -n "$previous_controller_ref" ]; then
 		ensure_pinned_release_ref "$previous_controller_ref" "$previous_platform" || return 1
+	fi
+	if [ -n "$previous_brain_runtime_ref" ]; then
+		ensure_pinned_release_ref "$previous_brain_runtime_ref" "$previous_platform" || return 1
 	fi
 }
 
@@ -635,10 +657,13 @@ controller_can_reach_docker() {
 
 admin_tag_ref="${IMAGE_REPOSITORY}:${ADMIN_CHANNEL}"
 controller_tag_ref="${IMAGE_REPOSITORY}:${CONTROLLER_CHANNEL}"
+brain_runtime_tag_ref="${IMAGE_REPOSITORY}:${BRAIN_RUNTIME_CHANNEL}"
 step "Pulling and verifying the Admin development image"
 admin_image_ref="$(pull_verified_ref "$admin_tag_ref")"
 step "Pulling and verifying the local Capsule controller image"
 controller_image_ref="$(pull_verified_ref "$controller_tag_ref")"
+step "Pulling and verifying the isolated Brain runtime image"
+brain_runtime_image_ref="$(pull_verified_ref "$brain_runtime_tag_ref")"
 step "Verifying local Docker access for the Capsule controller"
 docker_socket_source=""
 docker_socket_gid=""
@@ -668,6 +693,7 @@ fi
 cat >"${ENV_FILE}.tmp" <<EOF
 SHIMPZ_ADMIN_IMAGE=${admin_image_ref}
 SHIMPZ_CONTROLLER_IMAGE=${controller_image_ref}
+SHIMPZ_BRAIN_RUNTIME_IMAGE=${brain_runtime_image_ref}
 SHIMPZ_SPACE_PLATFORM=${docker_platform}
 SHIMPZ_PORT=${install_port}
 SHIMPZ_DOCKER_GID=${docker_socket_gid}
@@ -694,13 +720,18 @@ services:
       - no-new-privileges:true
     group_add:
       - "${SHIMPZ_DOCKER_GID:?installer must bind the Docker socket group}"
+      - "10016"
     environment:
       SHIMPZ_SPACE_ID: ${SHIMPZ_SPACE_ID:?installer must preserve SHIMPZ_SPACE_ID}
+      SHIMPZ_BRAIN_RUNTIME_URL: http://brain-runtime:8080
+      SHIMPZ_BRAIN_RUNTIME_TOKEN_FILE: /run/shimpz-brain-runtime/token
     volumes:
       - ${SHIMPZ_DOCKER_SOCKET:?installer must bind the platform Docker socket}:/var/run/docker.sock:rw
       - controller_token:/run/shimpz-local:rw
       - controller_audit:/var/log/shimpz-local:rw
       - controller_storage:/var/lib/shimpz-local/storage:rw
+      - controller_inference:/var/lib/shimpz-local/inference:rw
+      - brain_runtime_token:/run/shimpz-brain-runtime:rw
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,size=32m
     cpuset: "${SHIMPZ_CPUSET:?installer must limit local CPUs}"
@@ -716,6 +747,48 @@ services:
         max-file: "2"
     networks:
       - control
+      - brain_runtime
+
+  brain-runtime:
+    image: ${SHIMPZ_BRAIN_RUNTIME_IMAGE:?installer must pin SHIMPZ_BRAIN_RUNTIME_IMAGE}
+    platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}
+    pull_policy: never
+    restart: unless-stopped
+    user: "10001:10001"
+    group_add:
+      - "10016"
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      LANGCHAIN_TRACING_V2: "false"
+      LANGSMITH_TRACING: "false"
+      SHIMPZ_BRAIN_RUNTIME_TOKEN_FILE: /run/shimpz-brain-runtime/token
+      SHIMPZ_BRAIN_RUNTIME_STATE: /var/lib/shimpz-brain-runtime/checkpoints.sqlite3
+    volumes:
+      - brain_runtime_token:/run/shimpz-brain-runtime:ro
+      - brain_runtime_state:/var/lib/shimpz-brain-runtime:rw
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=64m
+    cpuset: "${SHIMPZ_CPUSET:?installer must limit local CPUs}"
+    cpus: "2.0"
+    mem_limit: 1g
+    memswap_limit: 1g
+    pids_limit: 128
+    stop_grace_period: 15s
+    depends_on:
+      capsule-driver-local:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+        max-file: "2"
+    networks:
+      - brain_runtime
+      - brain_egress
 
   admin:
     image: ${SHIMPZ_ADMIN_IMAGE:?installer must pin SHIMPZ_ADMIN_IMAGE}
@@ -757,6 +830,8 @@ services:
     depends_on:
       capsule-driver-local:
         condition: service_healthy
+      brain-runtime:
+        condition: service_healthy
     logging:
       driver: json-file
       options:
@@ -772,11 +847,19 @@ volumes:
   controller_token:
   controller_audit:
   controller_storage:
+  controller_inference:
+  brain_runtime_token:
+  brain_runtime_state:
 
 networks:
   control:
     driver: bridge
     internal: true
+  brain_runtime:
+    driver: bridge
+    internal: true
+  brain_egress:
+    driver: bridge
   egress:
     driver: bridge
 COMPOSE
@@ -784,10 +867,11 @@ chmod 600 "${COMPOSE_FILE}.tmp"
 mv "${ENV_FILE}.tmp" "$ENV_FILE"
 mv "${COMPOSE_FILE}.tmp" "$COMPOSE_FILE"
 
-step "Starting the Shimpz Admin and local Capsule controller"
+step "Starting the Shimpz Admin, local Capsule controller, and isolated Brain runtime"
 if ! compose up -d --wait --wait-timeout 120 --no-build --pull never; then
 	warn "The new release did not become healthy"
 	compose logs --no-color --tail 20 capsule-driver-local >&2 || true
+	compose logs --no-color --tail 20 brain-runtime >&2 || true
 	if [ "$had_previous" -eq 1 ]; then
 		step "Verifying the previous pinned release"
 		if ! hydrate_previous_release; then
@@ -822,4 +906,5 @@ else
 fi
 printf '  AdminImg %s\n' "$admin_image_ref"
 printf '  Control  %s\n' "$controller_image_ref"
+printf '  Brain    %s\n' "$brain_runtime_image_ref"
 printf '  Reset    curl -fsSL https://install.shimpz.com | sh -s -- --reset\n'
