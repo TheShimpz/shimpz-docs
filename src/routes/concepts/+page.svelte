@@ -25,7 +25,8 @@
   </li>
   <li>
     <strong>Assistant</strong> belongs to exactly one Team. It contributes Rules and named Powers to that
-    Team, but is not a speaker the user selects. Rules orient behavior but grant nothing.
+    Team, but is not a speaker the user selects. Rules orient behavior but grant nothing. It cannot access
+    another Team's Assistants, files, or resources.
   </li>
 </ul>
 
