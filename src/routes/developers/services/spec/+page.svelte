@@ -24,7 +24,7 @@
   <h1>Service Spec v1</h1>
   <p class="docs-lede">
     A small, closed contract for discovering a Service and proving that its control plane preserves the
-    Space and Capsule boundaries.
+    Space and Team boundaries.
   </p>
 </header>
 
@@ -53,9 +53,9 @@
   />
 
   <p>
-    This example is byte-compatible with the current PostgreSQL manifest. <code>App</code> and
-    <code>capsule.app.*</code> inside the block are legacy wire identifiers; the public workload name is
-    Assistant, and renaming those operation IDs requires a versioned interface migration.
+    This example matches the current PostgreSQL manifest. <code>App</code> and <code>team.app.*</code> inside
+    the block are internal wire identifiers; the public workload name is Assistant, and renaming those
+    operation IDs requires a versioned interface migration.
   </p>
 
   <p>
@@ -130,24 +130,24 @@
       an Assistant request.
     </li>
     <li>Lifecycle retries cannot widen access, duplicate authority, or report success over known residue.</li>
-    <li>One Capsule cannot enumerate, read, mutate, or delete another Capsule's resources.</li>
-    <li>The Service's control credential never enters an Assistant or its Capsule data plane.</li>
+    <li>One Team cannot enumerate, read, mutate, or delete another Team's resources.</li>
+    <li>The Service's control credential never enters an Assistant or its Team data plane.</li>
   </ul>
 </section>
 
 <section class="guide-section" aria-labelledby="byok-title">
   <span class="section-label">Credentials</span>
-  <h2 id="byok-title">BYOK is an optional Capsule override</h2>
+  <h2 id="byok-title">BYOK is an optional Team override</h2>
   <p>
     <code>none</code> means the capability has no provider credential. <code>managed</code> means only the
     Space operator configures it. <code>managed-or-byok</code> uses the Space-managed credential by
-    default and permits an authenticated Captain to set or rotate an override for one Capsule; clearing
-    it returns that Capsule to the managed credential. A missing or invalid update fails closed without
+    default and permits an authenticated Captain to set or rotate an override for one Team; clearing
+    it returns that Team to the managed credential. A missing or invalid update fails closed without
     replacing the last valid configuration.
   </p>
   <p>
-    A BYOK value is Capsule-scoped secret configuration: it cannot appear in the manifest, discovery
-    metadata, logs, error bodies, or another Capsule, and it must pass through the platform's secret
+    A BYOK value is Team-scoped secret configuration: it cannot appear in the manifest, discovery
+    metadata, logs, error bodies, or another Team, and it must pass through the platform's secret
     boundary rather than an Assistant-owned environment file.
   </p>
 </section>
@@ -181,8 +181,8 @@
     or submits anything. Profile and field identifiers must also be unique within their arrays.
   </p>
   <ul>
-    <li><code>owner_scope</code> is always <code>capsule</code>.</li>
-    <li><code>cardinality</code> is <code>one</code> or <code>many</code> credential sets per Capsule.</li>
+    <li><code>owner_scope</code> is always <code>team</code>.</li>
+    <li><code>cardinality</code> is <code>one</code> or <code>many</code> credential sets per Team.</li>
     <li>
       <code>secret-fields</code> accepts only <code>text</code>, <code>secret</code>, and
       <code>select</code> fields. It has no executable validator, regular-expression field, or endpoint URL.
@@ -245,12 +245,12 @@
   </ul>
   <p>
     Encryption at rest uses authenticated encryption. Its additional authenticated data binds at least
-    the Service ID, schema version, Capsule ID, credential ID, profile ID, and generation. Moving ciphertext
+    the Service ID, schema version, Team ID, credential ID, profile ID, and generation. Moving ciphertext
     between any of those identities must fail authentication. Keys, ciphertext, nonces, Bearers, and OAuth
     material never enter logs or public audit fields.
   </p>
   <p>
-    No active Capsule override means the Service uses the Space-managed credential. Explicit removal returns
+    No active Team override means the Service uses the Space-managed credential. Explicit removal returns
     to that managed fallback. A rejected update leaves the last valid override active, while an expired or
     failing configured override fails closed instead of silently widening authority through the managed key.
   </p>
@@ -274,7 +274,7 @@
   <p>
     The central OAuth broker owns provider endpoints and client registration, generates one-use state and
     the PKCE verifier, checks the exact callback, exchanges the authorization code server-side, and stores
-    access and refresh tokens through the same Capsule-scoped secret boundary. OAuth codes and tokens never
+    access and refresh tokens through the same Team-scoped secret boundary. OAuth codes and tokens never
     pass through browser storage, URL logs, a Service manifest, or an Assistant environment.
   </p>
   <p>
@@ -287,9 +287,9 @@
     nonces, and encryption keys never enter an event or topic.
   </p>
   <p>
-    The target Redpanda topology is one Service instance per Space. Each Capsule receives its own
+    The target Redpanda topology is one Service instance per Space. Each Team receives its own
     authenticated principal, bounded topic and group prefixes, ACLs, and quotas; sharing between Assistants
-    or Capsules requires literal, reviewed grants. It carries only post-commit events and never secrets.
+    or Teams requires literal, reviewed grants. It carries only post-commit events and never secrets.
   </p>
   <p>
     The OAuth broker, Cloudflare adapter, passkey sign-in, and Redpanda event integration described here are

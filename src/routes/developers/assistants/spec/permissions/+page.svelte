@@ -26,7 +26,7 @@
   <h1>Start with no external access.</h1>
   <p class="docs-lede">
     Permissions declare the smallest external capability the Assistant may need. Every entry remains a
-    request until the Capsule controller grants it.
+    request until the Team controller grants it.
   </p>
 </header>
 
@@ -54,7 +54,7 @@
     <li>A shared <strong>Service</strong> exposes named <code>operations</code>.</li>
     <li>Another installed <strong>Assistant</strong> exposes named <code>powers</code>.</li>
     <li><code>interface</code> pins the contract version independently from an artifact version.</li>
-    <li><code>credential_refs</code> are logical Capsule binding names, never provider key IDs or values.</li>
+    <li><code>credential_refs</code> are logical Team binding names, never provider key IDs or values.</li>
   </ul>
 </section>
 

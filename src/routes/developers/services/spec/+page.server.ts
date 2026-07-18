@@ -6,7 +6,7 @@ const manifest = `schema_version = 1
 id = "postgresql"
 title = "PostgreSQL"
 version = "3.0.0"
-summary = "Managed PostgreSQL databases isolated per Capsule and App."
+summary = "Managed PostgreSQL databases isolated per Team and App."
 interface = "shimpz.postgresql/v1"
 scope = "space"
 credential_policy = "managed"
@@ -16,16 +16,16 @@ health_path = "/healthz"
 metadata_path = "/v1/driver"
 [capabilities]
 operations = [
-  "capsule.provision",
-  "capsule.finalize",
-  "capsule.drop",
-  "capsule.app.create",
-  "capsule.app.drop",
+  "team.provision",
+  "team.finalize",
+  "team.drop",
+  "team.app.create",
+  "team.app.drop",
 ]`;
 
 const credentialForm = `{
   "schema_version": 1,
-  "owner_scope": "capsule",
+  "owner_scope": "team",
   "cardinality": "many",
   "profiles": [
     {

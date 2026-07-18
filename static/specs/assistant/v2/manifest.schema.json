@@ -224,7 +224,7 @@
           }
         },
         "credential_refs": {
-          "description": "Logical Capsule binding names only; never provider credential identifiers or values.",
+          "description": "Logical Team binding names only; never provider credential identifiers or values.",
           "type": "array",
           "uniqueItems": true,
           "items": {

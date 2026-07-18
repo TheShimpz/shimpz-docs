@@ -30,13 +30,13 @@
   </li>
 </ul>
 
-<aside class="scope-note" aria-labelledby="legacy-names-title">
-  <span id="legacy-names-title" class="kicker">Internal compatibility names</span>
+<aside class="scope-note" aria-labelledby="canonical-names-title">
+  <span id="canonical-names-title" class="kicker">Canonical platform names</span>
   <p>
-    Each public Team is backed by the technical Capsule isolation boundary. Existing code, routes, and
-    payloads therefore retain names such as <code>capsule_id</code> and <code>Capsule Controller</code> where
-    changing the wire contract would add risk. They may also say <code>Driver</code> for Service and
-    <code>App</code> for Assistant. These internal identifiers do not create a second product concept.
+    A Team is the platform's isolation boundary. Code, routes, and payloads use the same concept through
+    names such as <code>team_id</code> and <code>Team Controller</code>. Internal implementation surfaces may
+    still say <code>Driver</code> for Service and <code>App</code> for Assistant; those names do not create a
+    second product concept.
   </p>
 </aside>
 

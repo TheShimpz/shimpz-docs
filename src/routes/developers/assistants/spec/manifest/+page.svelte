@@ -33,7 +33,7 @@
 <aside class="scope-note" aria-labelledby="manifest-request-title">
   <span id="manifest-request-title" class="kicker">A request, not a grant</span>
   <p>
-    The manifest declares what the Assistant needs. Installation, owner consent, and Capsule controller
+    The manifest declares what the Assistant needs. Installation, owner consent, and Team controller
     policy still decide what it may use.
   </p>
 </aside>

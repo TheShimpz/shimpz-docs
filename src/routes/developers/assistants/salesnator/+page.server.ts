@@ -4,7 +4,7 @@ import type { PageServerLoad } from "./$types";
 
 const fixture = `{
   "assistant_id": "salesnator",
-  "capsule_id": "demo-capsule",
+  "team_id": "demo-team",
   "run_id": "run-20260715t120000z",
   "scheduled_at": "2026-07-15T12:00:00Z",
   "campaign": { "status": "ACTIVE" },
@@ -19,7 +19,7 @@ const fixture = `{
 const verdict = `{
   "audit": {
     "assistant_id": "salesnator",
-    "capsule_id": "demo-capsule",
+    "team_id": "demo-team",
     "run_id": "run-20260715t120000z",
     "power": "campaign-health",
     "result": "blocked"

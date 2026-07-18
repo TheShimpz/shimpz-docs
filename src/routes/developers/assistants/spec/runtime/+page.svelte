@@ -125,7 +125,7 @@
   <p>
     The portable v1 boundary is an exact transactional payload quota plus a bounded SQLite page ceiling,
     not a claim of kernel project quotas across Linux and Docker Desktop. The stronger execution boundary
-    is that workloads receive no storage mount at all. A trusted per-Capsule quota resolver is already the
+    is that workloads receive no storage mount at all. A trusted per-Team quota resolver is already the
     seam for future plan limits; clients cannot choose or increase that value.
   </p>
 </section>

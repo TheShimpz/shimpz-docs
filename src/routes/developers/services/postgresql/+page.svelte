@@ -7,7 +7,7 @@
   <link rel="canonical" href="https://docs.shimpz.com/developers/services/postgresql/" />
   <meta
     name="description"
-    content="The first Service Spec v1 implementation: one PostgreSQL control service with exact Capsule and workload database scope."
+    content="The first Service Spec v1 implementation: one PostgreSQL control service with exact Team and workload database scope."
   />
 </svelte:head>
 
@@ -20,14 +20,14 @@
   <h1>PostgreSQL Service</h1>
   <p class="docs-lede">
     One Space service owns the PostgreSQL administrator credential, provisions exact database roles,
-    and gives each Capsule access only to its registered database set.
+    and gives each Team access only to its registered database set.
   </p>
 </header>
 
 <aside class="scope-note" aria-labelledby="postgres-assistant-status-title">
   <span id="postgres-assistant-status-title" class="kicker">Assistant binding status</span>
   <p>
-    The Service control plane and its Capsule isolation proofs exist today. The Assistant capability-binding
+    The Service control plane and its Team isolation proofs exist today. The Assistant capability-binding
     runtime has not been released, so this page does not claim that an Assistant can request or receive a
     PostgreSQL database yet.
   </p>
@@ -38,9 +38,9 @@
   <h2 id="postgres-boundary-title">The control credential stops at the Service</h2>
   <ul>
     <li>Only the PostgreSQL Service holds the administrator DSN.</li>
-    <li>The provisioner uses a dedicated Bearer token for Capsule creation and finalization.</li>
-    <li>Each Capsule receives a random principal; the Service stores its hash and exact database set.</li>
-    <li>Database and role names are derived on the server from validated Capsule and workload identifiers.</li>
+    <li>The provisioner uses a dedicated Bearer token for Team creation and finalization.</li>
+    <li>Each Team receives a random principal; the Service stores its hash and exact database set.</li>
+    <li>Database and role names are derived on the server from validated Team and workload identifiers.</li>
     <li>The current compatibility runtime issues only a database URL scoped to the registered workload.</li>
     <li>No generic SQL, global list, arbitrary create, or arbitrary drop operation is exposed.</li>
   </ul>
@@ -55,11 +55,11 @@
     lines={[
       { value: "GET  /healthz" },
       { value: "GET  /v1/driver" },
-      { value: "POST /v1/capsules/provision" },
-      { value: "POST /v1/capsules/finalize" },
-      { value: "POST /v1/capsules/apps/create" },
-      { value: "POST /v1/capsules/apps/drop" },
-      { value: "POST /v1/capsules/drop" },
+      { value: "POST /v1/teams/provision" },
+      { value: "POST /v1/teams/finalize" },
+      { value: "POST /v1/teams/apps/create" },
+      { value: "POST /v1/teams/apps/drop" },
+      { value: "POST /v1/teams/drop" },
     ]}
   />
   <p>
@@ -80,30 +80,30 @@
     reflecting SQL, subprocess output, credentials, or an upstream body.
   </p>
   <p>
-    The <code>capsule.app.*</code> operation names and <code>app_id</code> field below are legacy wire
-    compatibility identifiers. New public documentation calls that workload an Assistant; these identifiers
-    can change only through a versioned interface migration.
+    The <code>team.app.*</code> operation names and <code>app_id</code> field below are internal wire
+    identifiers. Public documentation calls that workload an Assistant; changing those identifiers requires
+    a versioned interface migration.
   </p>
   <ul>
     <li>
-      <code>capsule.provision</code> uses provisioner authority with <code>capsule_id</code> and
+      <code>team.provision</code> uses provisioner authority with <code>team_id</code> and
       <code>principal_token</code>; it returns <code>database_url</code> and <code>created</code>.
     </li>
     <li>
-      <code>capsule.finalize</code> uses provisioner authority with <code>capsule_id</code>; it returns
+      <code>team.finalize</code> uses provisioner authority with <code>team_id</code>; it returns
       <code>finalized</code>.
     </li>
     <li>
-      <code>capsule.app.create</code> uses that Capsule's principal with <code>capsule_id</code> and
+      <code>team.app.create</code> uses that Team's principal with <code>team_id</code> and
       <code>app_id</code>; it returns <code>database_url</code> and <code>created</code>.
     </li>
     <li>
-      <code>capsule.app.drop</code> uses that Capsule's principal with <code>capsule_id</code> and
+      <code>team.app.drop</code> uses that Team's principal with <code>team_id</code> and
       <code>app_id</code>; it returns the exact <code>dropped</code> database and may report
       <code>already_absent</code> for a proved retry.
     </li>
     <li>
-      <code>capsule.drop</code> uses that Capsule's principal with <code>capsule_id</code>; it returns the
+      <code>team.drop</code> uses that Team's principal with <code>team_id</code>; it returns the
       exact <code>dropped</code> database list and retires the principal for retry-safe finalization.
     </li>
   </ul>
@@ -114,11 +114,11 @@
   <h2 id="postgres-proof-title">What conforms now</h2>
   <ul>
     <li>The manifest is parsed with a closed allowlist before the listener or token state starts.</li>
-    <li>Malformed, incomplete, unknown, Capsule-scoped, and required-BYOK declarations fail closed.</li>
+    <li>Malformed, incomplete, unknown, Team-scoped, and required-BYOK declarations fail closed.</li>
     <li>Discovery metadata matches the in-image manifest exactly.</li>
     <li>Unauthenticated mutations remain forbidden, including the Docker healthcheck's live auth probe.</li>
     <li>
-      Provision, retry, workload teardown, Capsule retirement, and legacy-route denial retain their isolation
+      Provision, retry, workload teardown, Team retirement, and legacy-route denial retain their isolation
       tests.
     </li>
   </ul>

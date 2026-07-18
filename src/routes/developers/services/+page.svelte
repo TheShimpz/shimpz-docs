@@ -3,7 +3,7 @@
   <link rel="canonical" href="https://docs.shimpz.com/developers/services/" />
   <meta
     name="description"
-    content="Build shared Shimpz Space capabilities with narrow operations and Capsule-scoped resources."
+    content="Build shared Shimpz Space capabilities with narrow operations and Team-scoped resources."
   />
 </svelte:head>
 
@@ -16,7 +16,7 @@
   <h1>Build one capability for the Space.</h1>
   <p class="docs-lede">
     A Service owns one shared infrastructure capability and exposes narrow, authenticated operations to
-    authorized Capsules. It keeps provider and administrator credentials outside every Assistant.
+    authorized Teams. It keeps provider and administrator credentials outside every Assistant.
   </p>
 </header>
 
@@ -33,10 +33,10 @@
   <span class="section-label">Architecture</span>
   <h2 id="service-model-title">Shared process, isolated authority</h2>
   <ul>
-    <li>One Service instance serves one Space instead of being duplicated in every Capsule.</li>
-    <li>The Service authenticates the caller and derives the exact Capsule resource server-side.</li>
+    <li>One Service instance serves one Space instead of being duplicated in every Team.</li>
+    <li>The Service authenticates the caller and derives the exact Team resource server-side.</li>
     <li>The future binding lets Assistants request named operations without receiving a Service control credential.</li>
-    <li>BYOK is optional and remains encrypted, Capsule-bound, rotatable, and revocable in the Service.</li>
+    <li>BYOK is optional and remains encrypted, Team-bound, rotatable, and revocable in the Service.</li>
     <li>PostgreSQL and Cloudflare R2 are the current Spec v1 references.</li>
   </ul>
 </section>
@@ -54,13 +54,13 @@
     <li>
       <a class="docs-entry-link" href="/developers/services/postgresql/">
         <strong>PostgreSQL Service</strong>
-        <span>Space-shared control with exact Capsule and workload database scope</span>
+        <span>Space-shared control with exact Team and workload database scope</span>
       </a>
     </li>
     <li>
       <a class="docs-entry-link" href="/developers/services/r2/">
         <strong>Cloudflare R2 Service</strong>
-        <span>Brokered object storage and optional Capsule-scoped BYOK</span>
+        <span>Brokered object storage and optional Team-scoped BYOK</span>
       </a>
     </li>
   </ul>

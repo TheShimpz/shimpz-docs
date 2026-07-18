@@ -199,7 +199,7 @@ a { color: inherit; text-decoration: none; }
   }
   select.field option { background: #000000; color: var(--color-fg); }
 
-  /* chamfered HUD pill (header capsule selector + locale toggle) — the field family's nav sibling */
+  /* chamfered HUD pill (header team selector + locale toggle) — the field family's nav sibling */
   .hud-pill {
     background: #000000;
     box-shadow: inset 0 0 0 1px var(--color-border);
