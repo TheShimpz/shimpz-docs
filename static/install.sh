@@ -812,6 +812,7 @@ services:
       SHIMPZ_CAPSULEDRIVER_URL: http://capsule-driver-local:7077
       SHIMPZ_CAPSULEDRIVER_TOKEN_FILE: /run/shimpz-local/token
       SHIMPZ_CAPSULE_CREDENTIALS_ENABLED: "0"
+      SHIMPZ_ADMIN_ALLOWED_ORIGINS: "http://localhost:${SHIMPZ_PORT:?installer must pin local Admin port},http://127.0.0.1:${SHIMPZ_PORT:?installer must pin local Admin port}"
     volumes:
       - config:/repo
       - data:/data
