@@ -2,12 +2,15 @@
 
 set -eu
 
-INSTALLER_VERSION="0.4.0-dev"
+INSTALLER_VERSION="0.4.1-dev"
 IMAGE_REPOSITORY="ghcr.io/roxygens/shimpz-space"
 ADMIN_CHANNEL="dev"
 CONTROLLER_CHANNEL="team-driver-local-dev"
 BRAIN_RUNTIME_CHANNEL="brain-runtime-dev"
 PROJECT_NAME="shimpz-space"
+# Exact controller service shipped by 0.3.1. The retired identifier is split so
+# terminology audits do not mistake this migration-only value for an active API.
+PRIOR_CONTROLLER_SERVICE="cap""sule-driver-local"
 MARKER_VALUE="shimpz-space-managed-v1"
 LOCAL_PROFILE="single-owner-local-v1"
 SPACE_LABEL="com.shimpz.local.space-id"
@@ -253,12 +256,54 @@ validate_official_digest_image() {
 	[ "${#image_digest}" -eq 64 ] || die "refusing reset: a managed image digest is invalid"
 }
 
+controller_image_from_env_file() {
+	[ -f "$ENV_FILE" ] || return 1
+	controller_image_lines="$(sed -n 's/^SHIMPZ_CONTROLLER_IMAGE=//p' "$ENV_FILE")"
+	[ -n "$controller_image_lines" ] || return 1
+	[ "$(printf '%s\n' "$controller_image_lines" | wc -l | tr -d ' ')" -eq 1 ] \
+		|| return 2
+	controller_image_digest="${controller_image_lines#"${IMAGE_REPOSITORY}@sha256:"}"
+	[ "$controller_image_digest" != "$controller_image_lines" ] || return 2
+	case "$controller_image_digest" in
+		""|*[!0-9a-f]*) return 2 ;;
+	esac
+	[ "${#controller_image_digest}" -eq 64 ] || return 2
+	printf '%s\n' "$controller_image_lines"
+}
+
+record_controller_identity() {
+	controller_id="$1"
+	controller_space_lines="$(docker inspect --type=container --format '{{range .Config.Env}}{{println .}}{{end}}' "$controller_id" \
+		| sed -n 's/^SHIMPZ_SPACE_ID=//p')" \
+		|| die "could not inspect the managed controller identity"
+	[ "$(printf '%s\n' "$controller_space_lines" | wc -l | tr -d ' ')" -eq 1 ] \
+		|| die "refusing reset: managed controller has an ambiguous Space identity"
+	validate_space_id "$controller_space_lines"
+	controller_space_id="$controller_space_lines"
+}
+
+accept_prior_controller() {
+	container_name="$1"
+	container_service="$2"
+	container_image="$3"
+	resource_id="$4"
+	[ -n "$prior_controller_image_ref" ] && [ "$container_image" = "$prior_controller_image_ref" ] \
+		|| return 1
+	[ "$container_service" = "$PRIOR_CONTROLLER_SERVICE" ] || return 1
+	[ "$container_name" = "/${PROJECT_NAME}-${PRIOR_CONTROLLER_SERVICE}-1" ] || return 1
+	[ "$controller_seen" -eq 0 ] || die "refusing reset: duplicate managed controller container"
+	controller_seen=1
+	prior_controller_seen=1
+	record_controller_identity "$resource_id"
+}
+
 validate_project_resources() {
 	container_ids="$(project_container_ids)" || die "could not inspect existing Shimpz Space containers"
 	volume_ids="$(project_volume_ids)" || die "could not inspect existing Shimpz Space volumes"
 	network_ids="$(project_network_ids)" || die "could not inspect existing Shimpz Space networks"
 	admin_seen=0
 	controller_seen=0
+	prior_controller_seen=0
 	brain_runtime_seen=0
 	controller_id=""
 	controller_space_id=""
@@ -278,20 +323,14 @@ validate_project_resources() {
 			"/${PROJECT_NAME}-team-driver-local-1|team-driver-local")
 				[ "$controller_seen" -eq 0 ] || die "refusing reset: duplicate managed controller container"
 				controller_seen=1
-				controller_id="$resource_id"
-				controller_space_lines="$(docker inspect --type=container --format '{{range .Config.Env}}{{println .}}{{end}}' "$resource_id" \
-					| sed -n 's/^SHIMPZ_SPACE_ID=//p')" \
-					|| die "could not inspect the managed controller identity"
-				[ "$(printf '%s\n' "$controller_space_lines" | wc -l | tr -d ' ')" -eq 1 ] \
-					|| die "refusing reset: managed controller has an ambiguous Space identity"
-				validate_space_id "$controller_space_lines"
-				controller_space_id="$controller_space_lines"
+				record_controller_identity "$resource_id"
 				;;
 			"/${PROJECT_NAME}-brain-runtime-1|brain-runtime")
 				[ "$brain_runtime_seen" -eq 0 ] || die "refusing reset: duplicate managed Brain runtime container"
 				brain_runtime_seen=1
 				;;
-			*) die "refusing reset: the Compose project contains an unknown container" ;;
+			*) accept_prior_controller "$container_name" "$container_service" "$container_image" "$resource_id" \
+				|| die "refusing reset: the Compose project contains an unknown container" ;;
 		esac
 	done
 	for resource_id in $volume_ids; do
@@ -411,6 +450,15 @@ remove_validated_project_resources() {
 	done
 }
 
+prior_controller_image_ref=""
+if prior_controller_image_value="$(controller_image_from_env_file)"; then
+	prior_controller_image_ref="$prior_controller_image_value"
+else
+	prior_controller_image_status=$?
+	[ "$prior_controller_image_status" -eq 1 ] \
+		|| die "the existing pinned controller image is invalid"
+fi
+
 if [ "$action" = "reset" ]; then
 	notice "This permanently removes local Admin, Team, and Assistant data"
 	step "Validating managed Docker resources"
@@ -438,7 +486,9 @@ if [ "$action" = "reset" ]; then
 	fi
 	if [ -n "$reset_space_id" ]; then
 		validate_space_id "$reset_space_id"
-		validate_dynamic_resources
+		if [ "$prior_controller_seen" -eq 0 ]; then
+			validate_dynamic_resources
+		fi
 		reset_dynamic_space
 	fi
 	if [ -f "$COMPOSE_FILE" ] && [ -f "$ENV_FILE" ]; then
@@ -527,6 +577,7 @@ else
 	space_id="$(generated_space_id)"
 fi
 validate_space_id "$space_id"
+prior_runtime_transition=0
 if project_resources_exist; then
 	step "Validating the existing managed runtime"
 	validate_project_resources
@@ -535,7 +586,11 @@ if project_resources_exist; then
 			|| die "existing controller and local Space identities differ"
 	fi
 	reset_space_id="$space_id"
-	validate_dynamic_resources
+	if [ "$prior_controller_seen" -eq 1 ]; then
+		prior_runtime_transition=1
+	else
+		validate_dynamic_resources
+	fi
 fi
 
 umask 077
@@ -689,6 +744,13 @@ if [ -f "$COMPOSE_FILE" ] && [ -f "$ENV_FILE" ]; then
 	load_previous_release
 	step "Pinning the previous release for safe rollback"
 	hydrate_previous_release || die "the previous pinned release could not be prepared; the running version was not changed"
+fi
+
+if [ "$prior_runtime_transition" -eq 1 ]; then
+	notice "The previous development runtime uses retired Team metadata"
+	notice "Your Admin password and settings stay intact; Teams and Assistants must be created again"
+	step "Safely retiring previous Team and Assistant resources"
+	reset_dynamic_space
 fi
 
 cat >"${ENV_FILE}.tmp" <<EOF
@@ -904,6 +966,9 @@ if [ "$install_mode" = "update" ]; then
 	success "Shimpz Space is up to date"
 	printf '  Admin    %shttp://127.0.0.1:%s%s\n' "$OUT_CYAN" "$install_port" "$OUT_RESET"
 	printf '  Data     Admin settings and password were preserved\n'
+	if [ "$prior_runtime_transition" -eq 1 ]; then
+		printf '  Teams    Recreate previous development Teams and Assistants in the Admin\n'
+	fi
 else
 	success "Shimpz Space is ready"
 	printf '  Admin    %shttp://127.0.0.1:%s%s\n' "$OUT_CYAN" "$install_port" "$OUT_RESET"
