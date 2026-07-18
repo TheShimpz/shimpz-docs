@@ -1,6 +1,6 @@
 <svelte:head>
   <title>Shimpz core concepts — Shimpz docs</title>
-  <meta name="description" content="Understand the current Space, Service, Capsule, and Assistant boundaries." />
+  <meta name="description" content="Understand the current Space, Service, Team, and Assistant boundaries." />
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
@@ -16,21 +16,26 @@
 <ul>
   <li><strong>Space</strong> is the server-wide Shimpz installation owned by this machine.</li>
   <li>
-    <strong>Service</strong> is a shared capability operated by the Space. It authorizes each Capsule and
+    <strong>Service</strong> is a shared capability operated by the Space. It authorizes each Team and
     keeps provider or administrator credentials outside Assistants.
   </li>
-  <li><strong>Capsule</strong> is an isolated tenant environment inside the Space.</li>
   <li>
-    <strong>Assistant</strong> belongs to exactly one Capsule. It can request only the Service operations and
-    Assistant Powers granted to it inside that Capsule. Its Rules orient behavior but grant nothing.
+    <strong>Team</strong> is an isolated environment that owns its Assistants, files, conversation state,
+    and resource budget. Chat addresses the Team by its chosen name.
+  </li>
+  <li>
+    <strong>Assistant</strong> belongs to exactly one Team. It contributes Rules and named Powers to that
+    Team, but is not a speaker the user selects. Rules orient behavior but grant nothing.
   </li>
 </ul>
 
 <aside class="scope-note" aria-labelledby="legacy-names-title">
-  <span id="legacy-names-title" class="kicker">Compatibility names</span>
+  <span id="legacy-names-title" class="kicker">Internal compatibility names</span>
   <p>
-    Existing code and APIs may still say <code>Driver</code> for Service and <code>App</code> for Assistant.
-    Those identifiers remain during the versioned migration; they do not change the architecture above.
+    Each public Team is backed by the technical Capsule isolation boundary. Existing code, routes, and
+    payloads therefore retain names such as <code>capsule_id</code> and <code>Capsule Controller</code> where
+    changing the wire contract would add risk. They may also say <code>Driver</code> for Service and
+    <code>App</code> for Assistant. These internal identifiers do not create a second product concept.
   </p>
 </aside>
 

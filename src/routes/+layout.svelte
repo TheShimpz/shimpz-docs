@@ -44,13 +44,13 @@
       label: "Your Space",
       items: [
         { href: "/admin/", label: "Open the Admin", description: "First access" },
-        { href: "/assistants/", label: "First Assistant", description: "Create, install, and run" },
+        { href: "/assistants/", label: "First Assistant", description: "Create, install, and chat" },
         { href: "/manage/", label: "Update or reset", description: "Keep it current" },
       ],
     },
     {
       label: "Reference",
-      items: [{ href: "/concepts/", label: "Core concepts", description: "Space, Services, Capsules, Assistants" }],
+      items: [{ href: "/concepts/", label: "Core concepts", description: "Space, Services, Teams, Assistants" }],
     },
   ];
 
@@ -75,7 +75,7 @@
     {
       label: "Assistants",
       items: [
-        { href: "/developers/assistants/", label: "Overview", description: "Capsule-owned workloads" },
+        { href: "/developers/assistants/", label: "Overview", description: "Team-owned capabilities" },
         {
           href: "/developers/assistants/spec/",
           label: "Assistant Spec v2",

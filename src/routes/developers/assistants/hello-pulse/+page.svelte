@@ -32,18 +32,18 @@
   <span id="hello-pulse-boundary-title" class="kicker">Local proof</span>
   <p>
     The source steps below prove the SDK and process directly. The packaged release can also be installed
-    into one local Capsule through the Admin's narrowly allowlisted evaluation flow. Neither path enables
+    into one local Team through the Admin's narrowly allowlisted evaluation flow. Neither path enables
     its routine or proves general capability and scheduling support.
   </p>
 </aside>
 
 <section class="guide-section" aria-labelledby="hello-install-title">
   <span class="section-label">Published evaluation</span>
-  <h2 id="hello-install-title">Run the immutable release in a Capsule</h2>
+  <h2 id="hello-install-title">Install the immutable release in a Team</h2>
   <p>
-    Install Shimpz, create an empty Capsule, then let the local Admin install and call the exact Hello Pulse
-    release. The Store can suggest this Assistant, but only the local Captain chooses the Capsule and
-    authorizes the install.
+    Install Shimpz, create an empty Team, then let the local Admin install the exact Hello Pulse release.
+    The Store can suggest this Assistant, but only the local Captain chooses the Team and authorizes the
+    install. Installation itself does not invoke the <code>hello</code> Power.
   </p>
   <p><a href="/assistants/">Follow the first Assistant guide</a>.</p>
 </section>

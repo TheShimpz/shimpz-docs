@@ -25,7 +25,7 @@
   </div>
 
   <p class="docs-lede">
-    Choose your computer below. The development installer pulls the prebuilt Admin and local Capsule
+    Choose your computer below. The development installer pulls the prebuilt Admin and local Team
     controller, pins both registry digests, and opens the Admin. It does not clone repositories or build
     Shimpz on your machine.
   </p>
@@ -34,9 +34,9 @@
 <aside class="scope-note" aria-labelledby="validated-scope-title">
   <span id="validated-scope-title" class="kicker">Validated scope</span>
   <p>
-    This development delivery can create an empty local Capsule and install the free Hello Pulse Assistant
-    from one allowlisted, immutable image. It does not install Services or enable provider credentials,
-    routines, Assistant collaboration, or commerce.
+    This development delivery can create an empty local Team and install the free Hello Pulse Assistant
+    from one allowlisted, immutable image. Provider-backed Team chat requires a configured API key. Services,
+    routines, and commerce remain outside this delivery.
   </p>
 </aside>
 

@@ -28,15 +28,16 @@
   <span class="section-label">Mental model</span>
   <h2 id="assistant-flow-title">Rules orient. Powers act.</h2>
   <ol>
-    <li>Rules tell the Brain how the Assistant should behave.</li>
-    <li>The Brain may request one Power declared by that Assistant.</li>
-    <li>The Capsule controller validates the request and decides whether it is granted.</li>
+    <li>Each installed Assistant contributes its validated Rules and declared Powers to its Team.</li>
+    <li>The Brain decides which Assistant Power, if any, can help answer the Team's current turn.</li>
+    <li>The controller validates the request and decides whether it is granted.</li>
     <li>The Assistant executes the bounded Power and returns a schema-validated result.</li>
   </ol>
   <p>
-    The provider-neutral LangGraph Brain receives the selected Assistant's Rules and declared Powers, but
-    Rules never grant authority. Only the Capsule controller can validate and execute an authorized Power;
-    the Brain never receives an ambient shell, filesystem, general network, or host tools.
+    The provider-neutral LangGraph Brain can chain Powers from the Team's installed Assistants before it
+    answers naturally as the Team. Rules never grant authority. Only the controller can validate and execute
+    an authorized Power; the Brain never receives an ambient shell, filesystem, general network, or host
+    tools.
   </p>
 </section>
 
@@ -117,7 +118,7 @@
   <span id="assistant-spec-status-title" class="kicker">Available today</span>
   <p>
     Spec v2 source validation and the reviewed Hello Pulse runtime contract are implemented. Generic
-    third-party manifest ingestion, cross-component bindings, and routine scheduling are not released yet;
+    third-party manifest ingestion, Service bindings, and routine scheduling are not released yet;
     the guides describe the closed contract they must satisfy.
   </p>
 </aside>

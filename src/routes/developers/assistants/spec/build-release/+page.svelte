@@ -65,7 +65,7 @@
   <span id="build-admission-title" class="kicker">The digest is identity, not authority</span>
   <p>
     A valid image reference does not install or grant the Assistant. Registry trust, declared architecture,
-    runtime identity, resources, mounts, network, health, permissions, and owner decisions remain Capsule
+    runtime identity, resources, mounts, network, health, permissions, and owner decisions remain Team
     admission concerns.
   </p>
 </aside>

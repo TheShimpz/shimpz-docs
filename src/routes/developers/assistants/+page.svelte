@@ -3,7 +3,7 @@
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/" />
   <meta
     name="description"
-    content="Understand the Capsule-owned Shimpz Assistant boundary before building your first Assistant."
+    content="Understand the Team-owned Shimpz Assistant boundary before building your first Assistant."
   />
 </svelte:head>
 
@@ -13,9 +13,9 @@
 
 <header class="docs-page-header">
   <span class="section-label">Developer preview</span>
-  <h1>Give one Capsule a focused capability.</h1>
+  <h1>Give one Team a focused capability.</h1>
   <p class="docs-lede">
-    An Assistant is an immutable workload owned by one isolated Capsule. It combines Rules, named Powers,
+    An Assistant is an immutable workload owned by one isolated Team. It combines Rules, named Powers,
     explicit Service access, and optional routines without inheriting Space-level authority.
   </p>
 </header>
@@ -24,17 +24,17 @@
   <span id="assistant-status-title" class="kicker">What is available now</span>
   <p>
     Assistant Spec v2 defines Rules, Powers, permissions, routines, and immutable releases. Hello Pulse
-    remains the deliberately narrow runtime reference. The provider-neutral LangGraph Brain receives one
-    selected Assistant's validated Rules and Powers, while the Capsule controller retains all execution
-    authority.
+    remains the deliberately narrow runtime reference. For each turn, the provider-neutral LangGraph Brain
+    receives every installed, available Assistant's validated Rules and Powers, while the controller retains
+    all execution authority.
   </p>
 </aside>
 
 <section class="guide-section" aria-labelledby="assistant-model-title">
   <span class="section-label">Boundary</span>
-  <h2 id="assistant-model-title">Capsule-owned by construction</h2>
+  <h2 id="assistant-model-title">Team-owned by construction</h2>
   <ul>
-    <li>An Assistant belongs to one Capsule and shares only that Capsule's admitted resource budget.</li>
+    <li>An Assistant belongs to one Team and shares only that Team's admitted resource budget.</li>
     <li>Rules orient behavior but cannot add authority.</li>
     <li>Its manifest declares named Powers with closed input and output schemas.</li>
     <li>Service operations and Assistant Powers are allowlisted by interface and name, never generic reach.</li>
@@ -50,11 +50,12 @@
 
 <section class="guide-section" aria-labelledby="assistant-collaboration-title">
   <span class="section-label">Collaboration</span>
-  <h2 id="assistant-collaboration-title">Ask for a Power, not another workload</h2>
+  <h2 id="assistant-collaboration-title">Compose Powers without crossing boundaries</h2>
   <p>
-    Collaboration means invoking one declared Power through a scoped capability. It never grants
-    access to another Assistant's workspace, database, container, secrets, or generic network endpoint.
-    Redpanda may carry durable events later, but a queue does not replace caller identity or authorization.
+    The user talks to the Team, not to a selected Assistant. Its Brain can request declared Powers from
+    multiple installed Assistants and continue the graph until it can answer naturally under the Team's
+    name. Each request still goes through the controller and never grants direct access to another
+    Assistant's workspace, database, container, secrets, or generic network endpoint.
   </p>
 </section>
 
@@ -93,7 +94,7 @@
   </p>
   <p>
     Creators may eventually distribute and sell Assistants. That marketplace is a later product layer,
-    not permission to weaken the Capsule boundary or claim an unavailable checkout today.
+    not permission to weaken the Team boundary or claim an unavailable checkout today.
   </p>
 </section>
 

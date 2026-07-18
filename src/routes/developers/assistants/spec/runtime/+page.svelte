@@ -3,7 +3,7 @@
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/spec/runtime/" />
   <meta
     name="description"
-    content="How the provider-neutral LangGraph Brain uses one Assistant's Rules and Powers while the Capsule controller retains execution authority."
+    content="How the provider-neutral LangGraph Brain coordinates a Team's Assistants while the controller retains execution authority."
   />
 </svelte:head>
 
@@ -18,9 +18,9 @@
   <span class="section-label">Runtime boundary</span>
   <h1>Inference is not ambient authority.</h1>
   <p class="docs-lede">
-    Shimpz uses a provider-neutral LangGraph Brain for one selected Assistant. The Brain receives that
-    Assistant's validated Rules and Powers so it can answer or request a bounded action; it is not a coding
-    agent inside the Capsule.
+    Shimpz uses a provider-neutral LangGraph Brain for each Team turn. The Brain receives the validated
+    Rules and Powers of every installed, available Assistant so it can answer naturally or coordinate
+    bounded actions; it is not a coding agent inside the Team.
   </p>
 </header>
 
@@ -34,14 +34,15 @@
 </aside>
 
 <section class="guide-section" aria-labelledby="chat-selection-title">
-  <span class="section-label">Selection</span>
-  <h2 id="chat-selection-title">Bind every turn to one installed Assistant</h2>
+  <span class="section-label">Team identity</span>
+  <h2 id="chat-selection-title">Bind every turn to one Team</h2>
   <ul>
-    <li>The user selects a Capsule, an installed Assistant in that Capsule, and an OpenAI or Anthropic model.</li>
-    <li>No selected installed Assistant means no Assistant chat turn.</li>
-    <li>The controller gives LangGraph only that Assistant's validated Rules and currently granted Powers.</li>
+    <li>The user selects a Team and talks to it by the name chosen when that Team was created.</li>
+    <li>Assistants are installed capabilities, not selectable speakers or independent chat identities.</li>
+    <li>The controller gives LangGraph every installed, available Assistant's validated Rules and Powers.</li>
+    <li>An empty Team with no available Assistant cannot start a Brain turn.</li>
     <li>Changing provider or model changes inference, not authority.</li>
-    <li>Changing the Assistant replaces the Rules and Power set; authority never carries across.</li>
+    <li>Installing, removing, or stopping an Assistant changes the Team's Power set at the next validated boundary.</li>
   </ul>
 </section>
 
@@ -49,12 +50,13 @@
   <span class="section-label">Power broker</span>
   <h2 id="chat-flow-title">Let the controller execute, never the model</h2>
   <ol>
-    <li>The controller loads the selected Assistant's validated Rules and Power definitions.</li>
+    <li>The controller loads the Team's installed Assistants and their validated Rules and Power definitions.</li>
     <li>LangGraph gives that closed context to the configured model provider.</li>
-    <li>The model may answer with text or request one declared Power with structured input.</li>
-    <li>The controller verifies installation, declaration, grant, approval, and the closed input schema.</li>
+    <li>The model may answer naturally as the Team or request one declared Power with structured input.</li>
+    <li>The controller verifies Team ownership, Assistant installation, declaration, grant, approval, and schema.</li>
     <li>A fixed adapter invokes the Power; the model cannot choose a command, URL, container, or route.</li>
-    <li>The controller validates the output, records the invocation, and returns only the bounded result.</li>
+    <li>The controller validates the output and resumes the graph, which may request another bounded Power.</li>
+    <li>The terminal response is attributed to the Team's name, never to an Assistant chosen by the user.</li>
   </ol>
   <p>
     A malformed request, undeclared Power, missing grant, unavailable Assistant, schema mismatch, or
@@ -66,15 +68,30 @@
   <span class="section-label">Brain</span>
   <h2 id="chat-model-title">Keep LangGraph provider-neutral and instrumental</h2>
   <ul>
-    <li>The Brain cannot create, edit, delete, inspect, or execute Capsule files.</li>
+    <li>The Brain cannot create, edit, delete, inspect, or execute Team files.</li>
     <li>It cannot run shell commands, package managers, interpreters, build tools, or source-control tools.</li>
-    <li>It cannot call a Service, another Assistant, arbitrary internet endpoint, or host route.</li>
-    <li>Its LangGraph tools are generated only from the selected Assistant's declared Powers.</li>
+    <li>It cannot directly call a Service, Assistant, arbitrary internet endpoint, or host route.</li>
+    <li>Its LangGraph tools are generated only from the Team's installed Assistants and declared Powers.</li>
     <li>Each tool call suspends the graph; only the controller may authorize and execute the Power.</li>
   </ul>
   <p>
     Assistant developers implement behavior behind declared Powers. Chat never turns a model or graph into
     a general-purpose development environment.
+  </p>
+</section>
+
+<section class="guide-section" aria-labelledby="power-trace-title">
+  <span class="section-label">Operational trace</span>
+  <h2 id="power-trace-title">Keep execution evidence internal and metadata-only</h2>
+  <p>
+    Tests and trusted operations may inspect a structured trace containing only the owning Assistant ID,
+    Power ID, lifecycle status, and timing when available. That is enough to prove which capabilities the
+    Brain used without judging the wording of a model response.
+  </p>
+  <p>
+    The trace never carries user messages, Power inputs or outputs, Rules, prompts, file contents,
+    credentials, or provider responses. It is not returned by the public chat contract and has no end-user
+    debug screen.
   </p>
 </section>
 
@@ -99,9 +116,9 @@
   <span class="section-label">Uploaded files</span>
   <h2 id="file-storage-title">Store opaque objects outside every runtime</h2>
   <ul>
-    <li>Each Capsule starts with a total upload quota of <strong>100 MiB</strong>.</li>
-    <li>The controller stores bytes under opaque server-assigned object IDs, isolated by Capsule.</li>
-    <li>Only the Capsule controller can list, write, read, or delete objects in the storage plane.</li>
+    <li>Each Team starts with a total upload quota of <strong>100 MiB</strong>.</li>
+    <li>The controller stores bytes under opaque server-assigned object IDs, isolated by Team.</li>
+    <li>Only the controller can list, write, read, or delete objects in the storage plane.</li>
     <li>Uploaded content is never mounted into the Brain or an Assistant container.</li>
     <li>An upload is data only: it is never treated as a path, program, dependency, prompt, or executable.</li>
   </ul>
@@ -119,12 +136,12 @@
   <p>
     Chat may show safe object metadata, but neither the model nor Assistant receives uploaded bytes by
     default. Content access requires a named Power whose schema explicitly accepts an opaque object ID. The
-    controller verifies Capsule ownership, installation, grant, approval, quota policy, and schema before
+    controller verifies Team ownership, installation, grant, approval, quota policy, and schema before
     brokering a bounded stream to that single invocation.
   </p>
   <p>
     The object never becomes a shared mount or ambient filesystem. The controller does not execute it, and
-    one Assistant cannot reuse another Capsule's object ID. A Power result returns through its declared
+    one Team cannot reuse another Team's object ID. A Power result returns through its declared
     output schema; it cannot leak a host path or create persistent file authority.
   </p>
 </section>

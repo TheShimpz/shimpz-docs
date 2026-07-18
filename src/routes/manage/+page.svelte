@@ -22,7 +22,7 @@
 </header>
 
 <p>
-  Reset first asks the local controller to remove its owned Assistants and Capsules, then stops the managed
+  Reset first asks the local controller to remove its owned Assistants and Teams, then stops the managed
   Space and permanently removes its Admin and controller data:
 </p>
 <CodeBlock

@@ -2,7 +2,7 @@
   <title>Install your first Assistant — Shimpz docs</title>
   <meta
     name="description"
-    content="Create a local Capsule and safely evaluate the free Hello Pulse Assistant from the Shimpz Admin."
+    content="Create a local Team, install Hello Pulse, and chat with the Team from the Shimpz Admin."
   />
 </svelte:head>
 
@@ -15,8 +15,8 @@
   <span class="section-label">First local evaluation</span>
   <h1>Install your first Assistant</h1>
   <p class="docs-lede">
-    Create an empty Capsule, install Hello Pulse, and run one harmless Power. The Admin keeps the
-    destination choice and install authority local; the Store never receives your Admin token or Capsule ID.
+    Create an empty Team and install Hello Pulse. The Admin keeps the destination choice and install
+    authority local; the Store never receives your Admin token or internal Team identifier.
   </p>
 </header>
 
@@ -25,17 +25,17 @@
   <p>
     Hello Pulse is the only admitted Assistant in this development build. Its immutable image has no
     credentials, mounts, host ports, or general network access, and runs with bounded CPU, memory, and
-    processes inside one Capsule network.
+    processes inside one Team network.
   </p>
 </aside>
 
 <ol class="step-list">
   <li>
-    <h2>Create the Capsule</h2>
+    <h2>Create the Team</h2>
     <p>
       Open <a href="http://127.0.0.1:7777" target="_blank" rel="noopener noreferrer">your local Admin</a>,
-      sign in, choose <strong>Capsules</strong>, and select <strong>New Capsule</strong>. Give it a name and
-      create it. New Capsules start empty.
+      sign in, choose <strong>Teams</strong>, and select <strong>New Team</strong>. Give it a name and create
+      it. New Teams start empty.
     </p>
   </li>
 
@@ -43,37 +43,38 @@
     <h2>Choose Hello Pulse</h2>
     <p>
       Open <strong>Assistants</strong>. In the Hello Pulse evaluation card, select
-      <strong>Install and run hello</strong>. A Store card may open the same local confirmation, but it cannot
-      install on its own.
+      <strong>Install</strong>. A Store card may open the same local confirmation, but it cannot install on
+      its own.
     </p>
   </li>
 
   <li>
-    <h2>Confirm the exact Capsule</h2>
+    <h2>Confirm the exact Team</h2>
     <p>
-      Select the destination Capsule in the local dialog and confirm. The controller admits only the
-      published Hello Pulse digest, waits for readiness, and then invokes its declared <code>hello</code>
-      Power. A successful response appears in the same card.
+      Select the destination Team in the local dialog and confirm. The controller admits only the published
+      Hello Pulse digest and waits for readiness. Installation does not invoke a Power or start a chat turn;
+      the Store marks the Assistant as installed when it is ready.
     </p>
   </li>
 
   <li>
     <h2>Remove it cleanly</h2>
     <p>
-      Select <strong>Uninstall from Capsule</strong> when you finish evaluating. This removes the Assistant
-      container from that Capsule without destroying the Capsule itself.
+      Select <strong>Uninstall</strong> when you finish evaluating. This removes the Assistant container from
+      that Team without destroying the Team itself.
     </p>
   </li>
 </ol>
 
 <section class="guide-section" aria-labelledby="assistant-chat-title">
   <span class="section-label">Chat</span>
-  <h2 id="assistant-chat-title">Talk to one installed Assistant</h2>
+  <h2 id="assistant-chat-title">Talk to your Team</h2>
   <p>
-    In <strong>Chat</strong>, choose the Capsule, an installed Assistant, and its OpenAI or Anthropic model.
-    The provider-neutral LangGraph Brain receives only that Assistant's validated Rules and Powers. It may
-    answer or request a Power, but the Capsule controller is the only component allowed to validate and
-    execute that request.
+    In <strong>Chat</strong>, choose the Team and its configured OpenAI or Anthropic model. You do not select
+    an Assistant as the speaker: replies use the Team's name. The provider-neutral LangGraph Brain receives
+    the validated Rules and Powers of every installed, available Assistant in that Team. It can answer
+    naturally or request a sequence of Powers, but the controller is the only component allowed to validate
+    and execute each request.
   </p>
   <p>
     Configure the selected provider with an API key in the authenticated Admin. The secret is never returned
@@ -82,9 +83,13 @@
     or package managers.
   </p>
   <p>
-    Capsule uploads use isolated opaque storage with an initial total quota of <strong>100 MiB</strong>.
+    Team uploads use isolated opaque storage with an initial total quota of <strong>100 MiB</strong>.
     Files are not mounted or executed. An Assistant can receive content only through an explicit Power
     granted and brokered by the controller.
+  </p>
+  <p>
+    Power traces are operational evidence, not a public chat feature. The interface returns the Team's
+    reply without exposing internal prompts, Rules, Power inputs or outputs, file contents, or secrets.
   </p>
 </section>
 
@@ -92,7 +97,7 @@
   <span class="section-label">If it does not start</span>
   <h2 id="assistant-failure-title">Retry safely</h2>
   <p>
-    Use <strong>Install and run hello</strong> again. Installation is idempotent: the controller starts a
+    Use <strong>Install</strong> again. Installation is idempotent: the controller starts a
     stopped runtime and replaces the stateless Hello Pulse container only when it remains unresponsive. If
     the Admin reports that the local control plane is unavailable, run the install command again to repair
     the managed services without deleting your data.
