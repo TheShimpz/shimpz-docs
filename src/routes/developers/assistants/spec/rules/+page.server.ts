@@ -4,7 +4,8 @@ import type { PageServerLoad } from "./$types";
 
 const rules = `# Hello Pulse
 
-Use only the declared \`hello\` Power.
+Respond naturally to questions and conversation. Use the declared \`hello\` Power only when the Captain explicitly
+asks you to run or demonstrate it. After a Power result, explain the outcome naturally.
 Ask for the person's name when it is missing.
 Keep the greeting brief and friendly.
 Never infer another Power or send data outside the Capsule.`;
