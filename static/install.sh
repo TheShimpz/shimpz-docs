@@ -303,6 +303,7 @@ validate_project_resources() {
 			"${PROJECT_NAME}_controller_audit|controller_audit"|\
 			"${PROJECT_NAME}_controller_storage|controller_storage"|\
 			"${PROJECT_NAME}_controller_inference|controller_inference"|\
+			"${PROJECT_NAME}_controller_power_journal|controller_power_journal"|\
 			"${PROJECT_NAME}_brain_runtime_token|brain_runtime_token"|\
 			"${PROJECT_NAME}_brain_runtime_state|brain_runtime_state") ;;
 			*) die "refusing reset: the Compose project contains an unknown volume" ;;
@@ -725,12 +726,14 @@ services:
       SHIMPZ_SPACE_ID: ${SHIMPZ_SPACE_ID:?installer must preserve SHIMPZ_SPACE_ID}
       SHIMPZ_BRAIN_RUNTIME_URL: http://brain-runtime:8080
       SHIMPZ_BRAIN_RUNTIME_TOKEN_FILE: /run/shimpz-brain-runtime/token
+      SHIMPZ_LOCAL_POWER_JOURNAL_PATH: /var/lib/shimpz-local/power-journal/journal.sqlite3
     volumes:
       - ${SHIMPZ_DOCKER_SOCKET:?installer must bind the platform Docker socket}:/var/run/docker.sock:rw
       - controller_token:/run/shimpz-local:rw
       - controller_audit:/var/log/shimpz-local:rw
       - controller_storage:/var/lib/shimpz-local/storage:rw
       - controller_inference:/var/lib/shimpz-local/inference:rw
+      - controller_power_journal:/var/lib/shimpz-local/power-journal:rw
       - brain_runtime_token:/run/shimpz-brain-runtime:rw
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,size=32m
@@ -848,6 +851,7 @@ volumes:
   controller_audit:
   controller_storage:
   controller_inference:
+  controller_power_journal:
   brain_runtime_token:
   brain_runtime_state:
 
