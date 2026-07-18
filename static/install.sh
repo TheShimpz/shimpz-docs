@@ -2,10 +2,10 @@
 
 set -eu
 
-INSTALLER_VERSION="0.3.1-dev"
+INSTALLER_VERSION="0.4.0-dev"
 IMAGE_REPOSITORY="ghcr.io/roxygens/shimpz-space"
 ADMIN_CHANNEL="dev"
-CONTROLLER_CHANNEL="capsule-driver-local-dev"
+CONTROLLER_CHANNEL="team-driver-local-dev"
 BRAIN_RUNTIME_CHANNEL="brain-runtime-dev"
 PROJECT_NAME="shimpz-space"
 MARKER_VALUE="shimpz-space-managed-v1"
@@ -275,7 +275,7 @@ validate_project_resources() {
 				[ "$admin_seen" -eq 0 ] || die "refusing reset: duplicate managed Admin container"
 				admin_seen=1
 				;;
-			"/${PROJECT_NAME}-capsule-driver-local-1|capsule-driver-local")
+			"/${PROJECT_NAME}-team-driver-local-1|team-driver-local")
 				[ "$controller_seen" -eq 0 ] || die "refusing reset: duplicate managed controller container"
 				controller_seen=1
 				controller_id="$resource_id"
@@ -330,9 +330,9 @@ dynamic_network_ids() {
 
 validate_dynamic_resources() {
 	dynamic_container_ids_value="$(dynamic_container_ids)" || die "could not inspect managed Assistant containers"
-	dynamic_network_ids_value="$(dynamic_network_ids)" || die "could not inspect managed Capsule networks"
+	dynamic_network_ids_value="$(dynamic_network_ids)" || die "could not inspect managed Team networks"
 	for resource_id in $dynamic_container_ids_value; do
-		dynamic_record="$(docker inspect --type=container --format '{{.Name}}|{{index .Config.Labels "com.shimpz.local.managed"}}|{{index .Config.Labels "com.shimpz.local.profile"}}|{{index .Config.Labels "com.shimpz.local.space-id"}}|{{index .Config.Labels "com.shimpz.local.kind"}}|{{index .Config.Labels "com.shimpz.local.capsule-id"}}|{{index .Config.Labels "com.shimpz.local.assistant-id"}}' "$resource_id")" \
+		dynamic_record="$(docker inspect --type=container --format '{{.Name}}|{{index .Config.Labels "com.shimpz.local.managed"}}|{{index .Config.Labels "com.shimpz.local.profile"}}|{{index .Config.Labels "com.shimpz.local.space-id"}}|{{index .Config.Labels "com.shimpz.local.kind"}}|{{index .Config.Labels "com.shimpz.local.team-id"}}|{{index .Config.Labels "com.shimpz.local.assistant-id"}}' "$resource_id")" \
 			|| die "could not verify managed Assistant container ${resource_id}"
 		dynamic_name="${dynamic_record%%|*}"
 		dynamic_rest="${dynamic_record#*|}"
@@ -340,42 +340,42 @@ validate_dynamic_resources() {
 		profile_value="${dynamic_rest%%|*}"; dynamic_rest="${dynamic_rest#*|}"
 		space_value="${dynamic_rest%%|*}"; dynamic_rest="${dynamic_rest#*|}"
 		kind_value="${dynamic_rest%%|*}"; dynamic_rest="${dynamic_rest#*|}"
-		capsule_value="${dynamic_rest%%|*}"
+		team_value="${dynamic_rest%%|*}"
 		assistant_value="${dynamic_rest#*|}"
 		[ "$managed_value" = "1" ] && [ "$profile_value" = "$LOCAL_PROFILE" ] \
 			&& [ "$space_value" = "$reset_space_id" ] && [ "$kind_value" = "assistant" ] \
 			|| die "refusing reset: a Space-labeled container has invalid ownership labels"
 		case "$dynamic_name" in "/shimpz-local-"*) ;; *) die "refusing reset: invalid managed Assistant name" ;; esac
-		case "$capsule_value" in ""|*[!a-z0-9_]*) die "refusing reset: invalid managed Capsule id" ;; esac
-		[ "${#capsule_value}" -le 40 ] || die "refusing reset: invalid managed Capsule id"
+		case "$team_value" in ""|*[!a-z0-9_]*) die "refusing reset: invalid managed Team id" ;; esac
+		[ "${#team_value}" -le 40 ] || die "refusing reset: invalid managed Team id"
 		case "$assistant_value" in ""|*[!a-z0-9-]*) die "refusing reset: invalid managed Assistant id" ;; esac
 		case "$assistant_value" in [a-z]*) ;; *) die "refusing reset: invalid managed Assistant id" ;; esac
 		case "$assistant_value" in *--*|*-) die "refusing reset: invalid managed Assistant id" ;; esac
 		[ "${#assistant_value}" -le 48 ] || die "refusing reset: invalid managed Assistant id"
 	done
 	for resource_id in $dynamic_network_ids_value; do
-		dynamic_record="$(docker network inspect --format '{{.Name}}|{{index .Labels "com.shimpz.local.managed"}}|{{index .Labels "com.shimpz.local.profile"}}|{{index .Labels "com.shimpz.local.space-id"}}|{{index .Labels "com.shimpz.local.kind"}}|{{index .Labels "com.shimpz.local.capsule-id"}}' "$resource_id")" \
-			|| die "could not verify managed Capsule network ${resource_id}"
+		dynamic_record="$(docker network inspect --format '{{.Name}}|{{index .Labels "com.shimpz.local.managed"}}|{{index .Labels "com.shimpz.local.profile"}}|{{index .Labels "com.shimpz.local.space-id"}}|{{index .Labels "com.shimpz.local.kind"}}|{{index .Labels "com.shimpz.local.team-id"}}' "$resource_id")" \
+			|| die "could not verify managed Team network ${resource_id}"
 		dynamic_name="${dynamic_record%%|*}"
 		dynamic_rest="${dynamic_record#*|}"
 		managed_value="${dynamic_rest%%|*}"; dynamic_rest="${dynamic_rest#*|}"
 		profile_value="${dynamic_rest%%|*}"; dynamic_rest="${dynamic_rest#*|}"
 		space_value="${dynamic_rest%%|*}"; dynamic_rest="${dynamic_rest#*|}"
 		kind_value="${dynamic_rest%%|*}"
-		capsule_value="${dynamic_rest#*|}"
+		team_value="${dynamic_rest#*|}"
 		[ "$managed_value" = "1" ] && [ "$profile_value" = "$LOCAL_PROFILE" ] \
-			&& [ "$space_value" = "$reset_space_id" ] && [ "$kind_value" = "capsule" ] \
+			&& [ "$space_value" = "$reset_space_id" ] && [ "$kind_value" = "team" ] \
 			|| die "refusing reset: a Space-labeled network has invalid ownership labels"
-		case "$dynamic_name" in "shimpz-local-"*) ;; *) die "refusing reset: invalid managed Capsule network name" ;; esac
-		case "$capsule_value" in ""|*[!a-z0-9_]*) die "refusing reset: invalid managed Capsule id" ;; esac
-		[ "${#capsule_value}" -le 40 ] || die "refusing reset: invalid managed Capsule id"
+		case "$dynamic_name" in "shimpz-local-"*) ;; *) die "refusing reset: invalid managed Team network name" ;; esac
+		case "$team_value" in ""|*[!a-z0-9_]*) die "refusing reset: invalid managed Team id" ;; esac
+		[ "${#team_value}" -le 40 ] || die "refusing reset: invalid managed Team id"
 	done
 }
 
 reset_dynamic_space() {
 	[ -n "$controller_id" ] || {
 		[ -z "${dynamic_container_ids_value}${dynamic_network_ids_value}" ] \
-			|| die "refusing reset: managed Capsule resources exist without their controller"
+			|| die "refusing reset: managed Team resources exist without their controller"
 		return 0
 	}
 	controller_running="$(docker inspect --type=container --format '{{.State.Running}}' "$controller_id")" \
@@ -383,7 +383,7 @@ reset_dynamic_space() {
 	if [ "$controller_running" != "true" ]; then
 		docker start "$controller_id" >/dev/null || die "could not start the managed controller for reset"
 	fi
-	step "Resetting Capsules and Assistants through the authenticated controller"
+	step "Resetting Teams and Assistants through the authenticated controller"
 	reset_attempt=0
 	while [ "$reset_attempt" -lt 30 ]; do
 		if docker exec "$controller_id" /opt/venv/bin/python -c 'import http.client,json,pathlib; token=pathlib.Path("/run/shimpz-local/token").read_text(encoding="ascii"); connection=http.client.HTTPConnection("127.0.0.1",7077,timeout=5); connection.request("DELETE","/v1/space",headers={"Authorization":"Bearer "+token,"Content-Length":"0"}); response=connection.getresponse(); body=response.read(32769); document=json.loads(body); valid=response.status==200 and len(body)<=32768 and isinstance(document,dict) and document.get("reset") is True; connection.close(); raise SystemExit(0 if valid else 1)' >/dev/null 2>&1; then
@@ -392,11 +392,11 @@ reset_dynamic_space() {
 		reset_attempt=$((reset_attempt + 1))
 		sleep 1
 	done
-	[ "$reset_attempt" -lt 30 ] || die "the authenticated Capsule reset did not complete"
+	[ "$reset_attempt" -lt 30 ] || die "the authenticated Team reset did not complete"
 	dynamic_container_ids_value="$(dynamic_container_ids)" || die "could not verify Assistant reset"
-	dynamic_network_ids_value="$(dynamic_network_ids)" || die "could not verify Capsule reset"
+	dynamic_network_ids_value="$(dynamic_network_ids)" || die "could not verify Team reset"
 	[ -z "${dynamic_container_ids_value}${dynamic_network_ids_value}" ] \
-		|| die "the authenticated reset left managed Capsule resources"
+		|| die "the authenticated reset left managed Team resources"
 }
 
 remove_validated_project_resources() {
@@ -412,7 +412,7 @@ remove_validated_project_resources() {
 }
 
 if [ "$action" = "reset" ]; then
-	notice "This permanently removes local Admin, Capsule, and Assistant data"
+	notice "This permanently removes local Admin, Team, and Assistant data"
 	step "Validating managed Docker resources"
 	managed_state=0
 	if [ -f "$MARKER_FILE" ]; then
@@ -463,7 +463,7 @@ if [ "$action" = "reset" ]; then
 	rmdir "$SHIMPZ_HOME" 2>/dev/null || true
 	printf '\n'
 	success "Shimpz Space was reset"
-	printf '  Data     Managed Space, Capsule, and Assistant Docker data was removed\n'
+	printf '  Data     Managed Space, Team, and Assistant Docker data was removed\n'
 	printf '  Files    Known installer files were removed from %s\n' "$SHIMPZ_HOME"
 	printf '  Install  curl -fsSL https://install.shimpz.com | sh\n'
 	exit 0
@@ -661,11 +661,11 @@ controller_tag_ref="${IMAGE_REPOSITORY}:${CONTROLLER_CHANNEL}"
 brain_runtime_tag_ref="${IMAGE_REPOSITORY}:${BRAIN_RUNTIME_CHANNEL}"
 step "Pulling and verifying the Admin development image"
 admin_image_ref="$(pull_verified_ref "$admin_tag_ref")"
-step "Pulling and verifying the local Capsule controller image"
+step "Pulling and verifying the local Team controller image"
 controller_image_ref="$(pull_verified_ref "$controller_tag_ref")"
 step "Pulling and verifying the isolated Brain runtime image"
 brain_runtime_image_ref="$(pull_verified_ref "$brain_runtime_tag_ref")"
-step "Verifying local Docker access for the Capsule controller"
+step "Verifying local Docker access for the Team controller"
 docker_socket_source=""
 docker_socket_gid=""
 for socket_candidate in $docker_socket_candidates; do
@@ -679,7 +679,7 @@ for socket_candidate in $docker_socket_candidates; do
 	fi
 done
 [ -n "$docker_socket_source" ] && [ -n "$docker_socket_gid" ] \
-	|| die "the Capsule controller cannot access Docker; check Docker Desktop socket permissions or Enhanced Container Isolation"
+	|| die "the Team controller cannot access Docker; check Docker Desktop socket permissions or Enhanced Container Isolation"
 
 had_previous=0
 if [ -f "$COMPOSE_FILE" ] && [ -f "$ENV_FILE" ]; then
@@ -708,7 +708,7 @@ cat >"${COMPOSE_FILE}.tmp" <<'COMPOSE'
 name: shimpz-space
 
 services:
-  capsule-driver-local:
+  team-driver-local:
     image: ${SHIMPZ_CONTROLLER_IMAGE:?installer must pin SHIMPZ_CONTROLLER_IMAGE}
     platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}
     pull_policy: never
@@ -782,7 +782,7 @@ services:
     pids_limit: 128
     stop_grace_period: 15s
     depends_on:
-      capsule-driver-local:
+      team-driver-local:
         condition: service_healthy
     logging:
       driver: json-file
@@ -809,9 +809,9 @@ services:
     ports:
       - "127.0.0.1:${SHIMPZ_PORT:-7777}:4600"
     environment:
-      SHIMPZ_CAPSULEDRIVER_URL: http://capsule-driver-local:7077
-      SHIMPZ_CAPSULEDRIVER_TOKEN_FILE: /run/shimpz-local/token
-      SHIMPZ_CAPSULE_CREDENTIALS_ENABLED: "0"
+      SHIMPZ_TEAMDRIVER_URL: http://team-driver-local:7077
+      SHIMPZ_TEAMDRIVER_TOKEN_FILE: /run/shimpz-local/token
+      SHIMPZ_TEAM_CREDENTIALS_ENABLED: "0"
       SHIMPZ_ADMIN_ALLOWED_ORIGINS: "http://localhost:${SHIMPZ_PORT:?installer must pin local Admin port},http://127.0.0.1:${SHIMPZ_PORT:?installer must pin local Admin port}"
     volumes:
       - config:/repo
@@ -832,7 +832,7 @@ services:
     pids_limit: 128
     stop_grace_period: 15s
     depends_on:
-      capsule-driver-local:
+      team-driver-local:
         condition: service_healthy
       brain-runtime:
         condition: service_healthy
@@ -872,10 +872,10 @@ chmod 600 "${COMPOSE_FILE}.tmp"
 mv "${ENV_FILE}.tmp" "$ENV_FILE"
 mv "${COMPOSE_FILE}.tmp" "$COMPOSE_FILE"
 
-step "Starting the Shimpz Admin, local Capsule controller, and isolated Brain runtime"
+step "Starting the Shimpz Admin, local Team controller, and isolated Brain runtime"
 if ! compose up -d --wait --wait-timeout 120 --no-build --pull never --remove-orphans; then
 	warn "The new release did not become healthy"
-	compose logs --no-color --tail 20 capsule-driver-local >&2 || true
+	compose logs --no-color --tail 20 team-driver-local >&2 || true
 	compose logs --no-color --tail 20 brain-runtime >&2 || true
 	if [ "$had_previous" -eq 1 ]; then
 		step "Verifying the previous pinned release"
