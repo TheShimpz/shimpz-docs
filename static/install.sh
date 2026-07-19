@@ -2,11 +2,12 @@
 
 set -eu
 
-INSTALLER_VERSION="0.4.1-dev"
+INSTALLER_VERSION="0.4.2-dev"
 IMAGE_REPOSITORY="ghcr.io/roxygens/shimpz-space"
 ADMIN_CHANNEL="dev"
 CONTROLLER_CHANNEL="team-driver-local-dev"
 BRAIN_RUNTIME_CHANNEL="brain-runtime-dev"
+APP_EGRESS_RELEASE="${IMAGE_REPOSITORY}@sha256:39c4b3aa5a3112b567935d06da35ac56d233d6706bce05ce818d8374ade750b0"
 PROJECT_NAME="shimpz-space"
 # Exact controller service shipped by 0.3.1. The retired identifier is split so
 # terminology audits do not mistake this migration-only value for an active API.
@@ -189,7 +190,8 @@ ENV_FILE="${SHIMPZ_HOME}/.env"
 MARKER_FILE="${SHIMPZ_HOME}/.shimpz-space"
 
 install_port="${SHIMPZ_PORT:-7777}"
-unset SHIMPZ_ADMIN_IMAGE SHIMPZ_CONTROLLER_IMAGE SHIMPZ_BRAIN_RUNTIME_IMAGE SHIMPZ_SPACE_PLATFORM SHIMPZ_PORT
+unset SHIMPZ_ADMIN_IMAGE SHIMPZ_CONTROLLER_IMAGE SHIMPZ_BRAIN_RUNTIME_IMAGE SHIMPZ_APP_EGRESS_IMAGE
+unset SHIMPZ_SPACE_PLATFORM SHIMPZ_PORT
 unset SHIMPZ_DOCKER_GID SHIMPZ_DOCKER_SOCKET SHIMPZ_SPACE_ID SHIMPZ_CPUSET
 
 compose() {
@@ -305,6 +307,7 @@ validate_project_resources() {
 	controller_seen=0
 	prior_controller_seen=0
 	brain_runtime_seen=0
+	app_egress_proxy_seen=0
 	controller_id=""
 	controller_space_id=""
 	for resource_id in $container_ids; do
@@ -329,6 +332,11 @@ validate_project_resources() {
 				[ "$brain_runtime_seen" -eq 0 ] || die "refusing reset: duplicate managed Brain runtime container"
 				brain_runtime_seen=1
 				;;
+			"/${PROJECT_NAME}-app-egress-proxy-1|app-egress-proxy")
+				[ "$app_egress_proxy_seen" -eq 0 ] \
+					|| die "refusing reset: duplicate managed Assistant egress proxy container"
+				app_egress_proxy_seen=1
+				;;
 			*) accept_prior_controller "$container_name" "$container_service" "$container_image" "$resource_id" \
 				|| die "refusing reset: the Compose project contains an unknown container" ;;
 		esac
@@ -344,7 +352,9 @@ validate_project_resources() {
 			"${PROJECT_NAME}_controller_inference|controller_inference"|\
 			"${PROJECT_NAME}_controller_power_journal|controller_power_journal"|\
 			"${PROJECT_NAME}_brain_runtime_token|brain_runtime_token"|\
-			"${PROJECT_NAME}_brain_runtime_state|brain_runtime_state") ;;
+			"${PROJECT_NAME}_brain_runtime_state|brain_runtime_state"|\
+			"${PROJECT_NAME}_app_egress_policy|app_egress_policy"|\
+			"${PROJECT_NAME}_app_egress_audit|app_egress_audit") ;;
 			*) die "refusing reset: the Compose project contains an unknown volume" ;;
 		esac
 	done
@@ -353,7 +363,8 @@ validate_project_resources() {
 			|| die "could not verify managed Shimpz Space network ${resource_id}"
 		case "$network_record" in
 			"${PROJECT_NAME}_egress|egress"|"${PROJECT_NAME}_control|control"|\
-			"${PROJECT_NAME}_brain_runtime|brain_runtime"|"${PROJECT_NAME}_brain_egress|brain_egress") ;;
+			"${PROJECT_NAME}_brain_runtime|brain_runtime"|"${PROJECT_NAME}_brain_egress|brain_egress"|\
+			"${PROJECT_NAME}_app_egress_out|app_egress_out") ;;
 			*) die "refusing reset: the Compose project contains an unknown network" ;;
 		esac
 	done
@@ -363,6 +374,12 @@ dynamic_container_ids() {
 	docker ps --all --quiet --filter "label=${SPACE_LABEL}=${reset_space_id}"
 }
 
+dynamic_assistant_container_ids() {
+	docker ps --all --quiet \
+		--filter "label=${SPACE_LABEL}=${reset_space_id}" \
+		--filter "label=com.shimpz.local.kind=assistant"
+}
+
 dynamic_network_ids() {
 	docker network ls --quiet --filter "label=${SPACE_LABEL}=${reset_space_id}"
 }
@@ -370,6 +387,7 @@ dynamic_network_ids() {
 validate_dynamic_resources() {
 	dynamic_container_ids_value="$(dynamic_container_ids)" || die "could not inspect managed Assistant containers"
 	dynamic_network_ids_value="$(dynamic_network_ids)" || die "could not inspect managed Team networks"
+	dynamic_app_egress_seen=0
 	for resource_id in $dynamic_container_ids_value; do
 		dynamic_record="$(docker inspect --type=container --format '{{.Name}}|{{index .Config.Labels "com.shimpz.local.managed"}}|{{index .Config.Labels "com.shimpz.local.profile"}}|{{index .Config.Labels "com.shimpz.local.space-id"}}|{{index .Config.Labels "com.shimpz.local.kind"}}|{{index .Config.Labels "com.shimpz.local.team-id"}}|{{index .Config.Labels "com.shimpz.local.assistant-id"}}' "$resource_id")" \
 			|| die "could not verify managed Assistant container ${resource_id}"
@@ -382,15 +400,27 @@ validate_dynamic_resources() {
 		team_value="${dynamic_rest%%|*}"
 		assistant_value="${dynamic_rest#*|}"
 		[ "$managed_value" = "1" ] && [ "$profile_value" = "$LOCAL_PROFILE" ] \
-			&& [ "$space_value" = "$reset_space_id" ] && [ "$kind_value" = "assistant" ] \
+			&& [ "$space_value" = "$reset_space_id" ] \
 			|| die "refusing reset: a Space-labeled container has invalid ownership labels"
-		case "$dynamic_name" in "/shimpz-local-"*) ;; *) die "refusing reset: invalid managed Assistant name" ;; esac
-		case "$team_value" in ""|*[!a-z0-9_]*) die "refusing reset: invalid managed Team id" ;; esac
-		[ "${#team_value}" -le 40 ] || die "refusing reset: invalid managed Team id"
-		case "$assistant_value" in ""|*[!a-z0-9-]*) die "refusing reset: invalid managed Assistant id" ;; esac
-		case "$assistant_value" in [a-z]*) ;; *) die "refusing reset: invalid managed Assistant id" ;; esac
-		case "$assistant_value" in *--*|*-) die "refusing reset: invalid managed Assistant id" ;; esac
-		[ "${#assistant_value}" -le 48 ] || die "refusing reset: invalid managed Assistant id"
+		case "$kind_value" in
+			assistant)
+				case "$dynamic_name" in "/shimpz-local-"*) ;; *) die "refusing reset: invalid managed Assistant name" ;; esac
+				case "$team_value" in ""|*[!a-z0-9_]*) die "refusing reset: invalid managed Team id" ;; esac
+				[ "${#team_value}" -le 40 ] || die "refusing reset: invalid managed Team id"
+				case "$assistant_value" in ""|*[!a-z0-9-]*) die "refusing reset: invalid managed Assistant id" ;; esac
+				case "$assistant_value" in [a-z]*) ;; *) die "refusing reset: invalid managed Assistant id" ;; esac
+				case "$assistant_value" in *--*|*-) die "refusing reset: invalid managed Assistant id" ;; esac
+				[ "${#assistant_value}" -le 48 ] || die "refusing reset: invalid managed Assistant id"
+				;;
+			app-egress-proxy)
+				[ "$dynamic_name" = "/${PROJECT_NAME}-app-egress-proxy-1" ] \
+					|| die "refusing reset: invalid managed Assistant egress proxy name"
+				[ "$dynamic_app_egress_seen" -eq 0 ] \
+					|| die "refusing reset: duplicate managed Assistant egress proxy"
+				dynamic_app_egress_seen=1
+				;;
+			*) die "refusing reset: a Space-labeled container has invalid ownership labels" ;;
+		esac
 	done
 	for resource_id in $dynamic_network_ids_value; do
 		dynamic_record="$(docker network inspect --format '{{.Name}}|{{index .Labels "com.shimpz.local.managed"}}|{{index .Labels "com.shimpz.local.profile"}}|{{index .Labels "com.shimpz.local.space-id"}}|{{index .Labels "com.shimpz.local.kind"}}|{{index .Labels "com.shimpz.local.team-id"}}' "$resource_id")" \
@@ -413,7 +443,9 @@ validate_dynamic_resources() {
 
 reset_dynamic_space() {
 	[ -n "$controller_id" ] || {
-		[ -z "${dynamic_container_ids_value}${dynamic_network_ids_value}" ] \
+		dynamic_assistant_container_ids_value="$(dynamic_assistant_container_ids)" \
+			|| die "could not inspect managed Assistant containers"
+		[ -z "${dynamic_assistant_container_ids_value}${dynamic_network_ids_value}" ] \
 			|| die "refusing reset: managed Team resources exist without their controller"
 		return 0
 	}
@@ -432,9 +464,10 @@ reset_dynamic_space() {
 		sleep 1
 	done
 	[ "$reset_attempt" -lt 30 ] || die "the authenticated Team reset did not complete"
-	dynamic_container_ids_value="$(dynamic_container_ids)" || die "could not verify Assistant reset"
+	dynamic_assistant_container_ids_value="$(dynamic_assistant_container_ids)" \
+		|| die "could not verify Assistant reset"
 	dynamic_network_ids_value="$(dynamic_network_ids)" || die "could not verify Team reset"
-	[ -z "${dynamic_container_ids_value}${dynamic_network_ids_value}" ] \
+	[ -z "${dynamic_assistant_container_ids_value}${dynamic_network_ids_value}" ] \
 		|| die "the authenticated reset left managed Team resources"
 }
 
@@ -648,12 +681,16 @@ load_previous_release() {
 	[ -n "$previous_admin_ref" ] || die "the previous release is missing its Admin image"
 	previous_controller_ref="$(optional_env_value SHIMPZ_CONTROLLER_IMAGE "${ENV_FILE}.previous")"
 	previous_brain_runtime_ref="$(optional_env_value SHIMPZ_BRAIN_RUNTIME_IMAGE "${ENV_FILE}.previous")"
+	previous_app_egress_ref="$(optional_env_value SHIMPZ_APP_EGRESS_IMAGE "${ENV_FILE}.previous")"
 	validate_pinned_release_ref "$previous_admin_ref"
 	if [ -n "$previous_controller_ref" ]; then
 		validate_pinned_release_ref "$previous_controller_ref"
 	fi
 	if [ -n "$previous_brain_runtime_ref" ]; then
 		validate_pinned_release_ref "$previous_brain_runtime_ref"
+	fi
+	if [ -n "$previous_app_egress_ref" ]; then
+		validate_pinned_release_ref "$previous_app_egress_ref"
 	fi
 }
 
@@ -681,6 +718,9 @@ hydrate_previous_release() {
 	fi
 	if [ -n "$previous_brain_runtime_ref" ]; then
 		ensure_pinned_release_ref "$previous_brain_runtime_ref" "$previous_platform" || return 1
+	fi
+	if [ -n "$previous_app_egress_ref" ]; then
+		ensure_pinned_release_ref "$previous_app_egress_ref" "$previous_platform" || return 1
 	fi
 }
 
@@ -720,6 +760,10 @@ step "Pulling and verifying the local Team controller image"
 controller_image_ref="$(pull_verified_ref "$controller_tag_ref")"
 step "Pulling and verifying the isolated Brain runtime image"
 brain_runtime_image_ref="$(pull_verified_ref "$brain_runtime_tag_ref")"
+step "Pulling and verifying the deny-by-default Assistant egress proxy"
+ensure_pinned_release_ref "$APP_EGRESS_RELEASE" "$docker_platform" \
+	|| die "the immutable Assistant egress proxy could not be verified"
+app_egress_image_ref="$APP_EGRESS_RELEASE"
 step "Verifying local Docker access for the Team controller"
 docker_socket_source=""
 docker_socket_gid=""
@@ -757,6 +801,7 @@ cat >"${ENV_FILE}.tmp" <<EOF
 SHIMPZ_ADMIN_IMAGE=${admin_image_ref}
 SHIMPZ_CONTROLLER_IMAGE=${controller_image_ref}
 SHIMPZ_BRAIN_RUNTIME_IMAGE=${brain_runtime_image_ref}
+SHIMPZ_APP_EGRESS_IMAGE=${app_egress_image_ref}
 SHIMPZ_SPACE_PLATFORM=${docker_platform}
 SHIMPZ_PORT=${install_port}
 SHIMPZ_DOCKER_GID=${docker_socket_gid}
@@ -784,11 +829,14 @@ services:
     group_add:
       - "${SHIMPZ_DOCKER_GID:?installer must bind the Docker socket group}"
       - "10016"
+      - "10017"
     environment:
       SHIMPZ_SPACE_ID: ${SHIMPZ_SPACE_ID:?installer must preserve SHIMPZ_SPACE_ID}
       SHIMPZ_BRAIN_RUNTIME_URL: http://brain-runtime:8080
       SHIMPZ_BRAIN_RUNTIME_TOKEN_FILE: /run/shimpz-brain-runtime/token
       SHIMPZ_LOCAL_POWER_JOURNAL_PATH: /var/lib/shimpz-local/power-journal/journal.sqlite3
+      SHIMPZ_APP_EGRESS_PROXY_CONTAINER: shimpz-space-app-egress-proxy-1
+      SHIMPZ_APP_EGRESS_POLICY_DIR: /var/lib/shimpz-local/app-egress
     volumes:
       - ${SHIMPZ_DOCKER_SOCKET:?installer must bind the platform Docker socket}:/var/run/docker.sock:rw
       - controller_token:/run/shimpz-local:rw
@@ -796,6 +844,7 @@ services:
       - controller_storage:/var/lib/shimpz-local/storage:rw
       - controller_inference:/var/lib/shimpz-local/inference:rw
       - controller_power_journal:/var/lib/shimpz-local/power-journal:rw
+      - app_egress_policy:/var/lib/shimpz-local/app-egress:rw
       - brain_runtime_token:/run/shimpz-brain-runtime:rw
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,size=32m
@@ -813,6 +862,60 @@ services:
     networks:
       - control
       - brain_runtime
+
+  app-egress-proxy:
+    image: ${SHIMPZ_APP_EGRESS_IMAGE:?installer must pin SHIMPZ_APP_EGRESS_IMAGE}
+    platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}
+    pull_policy: never
+    restart: unless-stopped
+    user: "10005:10005"
+    group_add:
+      - "10017"
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    labels:
+      com.shimpz.local.managed: "1"
+      com.shimpz.local.profile: single-owner-local-v1
+      com.shimpz.local.space-id: ${SHIMPZ_SPACE_ID:?installer must preserve SHIMPZ_SPACE_ID}
+      com.shimpz.local.kind: app-egress-proxy
+    environment:
+      SHIMPZ_APP_EGRESS_PORT: "8889"
+      SHIMPZ_APP_EGRESS_POLICY_DIR: /policy
+      SHIMPZ_APP_EGRESS_AUDIT_LOG: /var/log/app-egress-proxy/audit.jsonl
+      SHIMPZ_APP_EGRESS_MAX_CONCURRENCY: "64"
+      SHIMPZ_APP_EGRESS_MAX_SOURCE_CONCURRENCY: "8"
+      SHIMPZ_APP_EGRESS_LISTEN_BACKLOG: "16"
+    volumes:
+      - app_egress_policy:/policy:ro
+      - app_egress_audit:/var/log/app-egress-proxy:rw
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=16m
+    healthcheck:
+      test: ["CMD", "python3", "/app/healthcheck.py"]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+      start_period: 5s
+    cpuset: "${SHIMPZ_CPUSET:?installer must limit local CPUs}"
+    cpus: "1.0"
+    mem_limit: 256m
+    memswap_limit: 256m
+    pids_limit: 128
+    ulimits:
+      nofile:
+        soft: 512
+        hard: 512
+    stop_grace_period: 15s
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+        max-file: "2"
+    networks:
+      - app_egress_out
 
   brain-runtime:
     image: ${SHIMPZ_BRAIN_RUNTIME_IMAGE:?installer must pin SHIMPZ_BRAIN_RUNTIME_IMAGE}
@@ -915,6 +1018,8 @@ volumes:
   controller_storage:
   controller_inference:
   controller_power_journal:
+  app_egress_policy:
+  app_egress_audit:
   brain_runtime_token:
   brain_runtime_state:
 
@@ -927,6 +1032,8 @@ networks:
     internal: true
   brain_egress:
     driver: bridge
+  app_egress_out:
+    driver: bridge
   egress:
     driver: bridge
 COMPOSE
@@ -938,6 +1045,7 @@ step "Starting the Shimpz Admin, local Team controller, and isolated Brain runti
 if ! compose up -d --wait --wait-timeout 120 --no-build --pull never --remove-orphans; then
 	warn "The new release did not become healthy"
 	compose logs --no-color --tail 20 team-driver-local >&2 || true
+	compose logs --no-color --tail 20 app-egress-proxy >&2 || true
 	compose logs --no-color --tail 20 brain-runtime >&2 || true
 	if [ "$had_previous" -eq 1 ]; then
 		step "Verifying the previous pinned release"
@@ -977,4 +1085,5 @@ fi
 printf '  AdminImg %s\n' "$admin_image_ref"
 printf '  Control  %s\n' "$controller_image_ref"
 printf '  Brain    %s\n' "$brain_runtime_image_ref"
+printf '  Egress   %s\n' "$app_egress_image_ref"
 printf '  Reset    curl -fsSL https://install.shimpz.com | sh -s -- --reset\n'
