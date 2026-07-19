@@ -44,7 +44,7 @@
     <li><code>meta-ads.read</code> represents a mediated, read-only campaign snapshot.</li>
     <li><code>notifications.send</code> represents one owner notification request.</li>
     <li><code>customer-ad-account</code> and <code>owner-channel</code> are opaque binding names, not keys.</li>
-    <li>The Assistant declares no direct egress and never receives a provider credential.</li>
+    <li>The Assistant declares <code>allowed_hosts = []</code> and never receives a provider credential.</li>
     <li>No update, publish, budget, ad, ad-set, or campaign mutation Service operation or Power is declared.</li>
   </ul>
 </section>

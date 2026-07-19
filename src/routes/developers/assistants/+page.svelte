@@ -36,10 +36,16 @@
   <ul>
     <li>An Assistant belongs to one Team and shares only that Team's admitted resource budget.</li>
     <li>Genesis defines behavior and Power composition but cannot add authority.</li>
-    <li>Its manifest declares only identity and named Powers; conventional files carry closed schemas.</li>
+    <li>
+      Its manifest declares identity, named Powers, and a transparent exact-host allowlist; conventional files
+      carry closed schemas.
+    </li>
     <li>Service operations and Assistant Powers are allowlisted by controller policy, never generic reach.</li>
     <li>Secrets stay in the responsible Service; an Assistant manifest cannot request their values.</li>
-    <li>Egress is exact, proxy-brokered, and bound to a reviewed release outside the manifest.</li>
+    <li>
+      Egress is exact and proxy-brokered. The controller must match the packaged host list to the reviewed
+      catalog policy before granting it.
+    </li>
   </ul>
   <p>
     OpenAI and Anthropic inference use API keys configured in the authenticated Admin. A key is never exposed

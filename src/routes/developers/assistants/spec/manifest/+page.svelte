@@ -25,16 +25,16 @@
   <span class="section-label">Spec v2 · start here</span>
   <h1>Describe one Assistant.</h1>
   <p class="docs-lede">
-    <code>shimpz.assistant.toml</code> contains only the identity and behavior choices that belong to the
-    creator. Shimpz owns runtime, network, build, and file-layout decisions.
+    <code>shimpz.assistant.toml</code> contains the identity, behavior, and exact external hosts requested by
+    the creator. Shimpz owns runtime enforcement, build, and file-layout decisions.
   </p>
 </header>
 
 <aside class="scope-note" aria-labelledby="manifest-request-title">
   <span id="manifest-request-title" class="kicker">A request, not a grant</span>
   <p>
-    A Power declaration describes an intent. Installation, owner consent, and Team controller policy still
-    decide whether it can run.
+    Power and <code>allowed_hosts</code> declarations describe intent. Installation, owner consent, catalog
+    review, and Team controller policy still decide what can run and which hosts can be reached.
   </p>
 </aside>
 
@@ -42,8 +42,9 @@
   <span class="section-label">Smallest useful example</span>
   <h2 id="manifest-example-title">Keep the first manifest boring</h2>
   <p>
-    This complete example names its creators and three Powers. Omitting <code>approval</code> uses the safe
-    <code>never</code> default, so the first Power shows the shortest valid form.
+    This complete example names its creators, two exact Open-Meteo hosts, and three Powers. Omitting
+    <code>approval</code> uses the safe <code>never</code> default, so the first Power shows the shortest valid
+    form.
   </p>
   <CodeBlock
     label="Minimal Assistant Spec v2 manifest"
@@ -62,6 +63,10 @@
     <li><code>summary</code> gives people and the Brain one concise purpose.</li>
     <li><code>creators</code> contains one or more real GitHub users, including the leading <code>@</code>.</li>
     <li><code>github</code> is an optional public repository URL.</li>
+    <li>
+      <code>allowed_hosts</code> is the required, reviewable list of exact public DNS hosts the Assistant may
+      request through the Team proxy. Use <code>[]</code> when it needs no internet access.
+    </li>
     <li><code>powers</code> defines the only Assistant capabilities the Brain may request.</li>
   </ul>
 </section>
@@ -71,7 +76,9 @@
   <h2 id="manifest-validation-title">Let validation catch drift early</h2>
   <p>
     Unknown fields, invalid creator names, duplicate Power IDs, unsafe conventional files, open schemas,
-    and secret-like values are rejected. The <a
+    and secret-like values are rejected. Each allowed host must be a unique, lowercase, exact public DNS
+    hostname. URLs, ports, paths, wildcards, IP addresses, localhost, and internal names are rejected. The
+    list accepts at most 32 hosts. The <a
       class="external-link"
       href="/specs/assistant/v2/manifest.schema.json"
       target="_blank"

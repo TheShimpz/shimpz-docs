@@ -34,8 +34,9 @@
   <span id="assistant-boundary-title" class="kicker">Easy to inspect</span>
   <p>
     The reference uses public Open-Meteo data and needs no weather credential. In a Team, requests can
-    reach only the declared weather hosts through the authenticated egress proxy; the Assistant receives
-    no host mount, published port, or general network access.
+    reach only <code>api.open-meteo.com</code> and <code>geocoding-api.open-meteo.com</code> through the
+    authenticated egress proxy; the Assistant receives no host mount, published port, or general network
+    access.
   </p>
 </aside>
 
@@ -124,6 +125,10 @@
     <li>
       <code>help/HELP-&lt;locale&gt;.md</code> gives the installed user short instructions and prompt examples in
       every Admin language.
+    </li>
+    <li>
+      <code>allowed_hosts</code> exposes the two exact external destinations for review. The controller admits
+      only the matching packaged manifest, and the proxy blocks every other host.
     </li>
     <li>Closed schemas bound every input and output; unknown fields and undeclared routes fail closed.</li>
     <li>A shared async HTTP session keeps external calls efficient without granting ambient authority.</li>

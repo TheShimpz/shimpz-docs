@@ -104,7 +104,7 @@
             {
               href: "/developers/assistants/spec/permissions/",
               label: "Permissions",
-              description: "Controller-owned grants",
+              description: "Transparent egress, controller-owned grants",
             },
             {
               href: "/developers/assistants/spec/routines/",

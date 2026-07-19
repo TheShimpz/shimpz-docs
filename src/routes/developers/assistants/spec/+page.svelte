@@ -125,7 +125,8 @@
   <p>
     Spec v2 source validation and the reviewed Shimpz Assistant runtime contract are implemented. Generic
     third-party Store ingestion, generic Service bindings, and routine scheduling are not released yet.
-    Permissions and routines remain controller-owned runtime policy rather than source manifest fields.
+    The manifest exposes requested hosts through <code>allowed_hosts</code>, but network grants and routines
+    remain controller-owned runtime policy.
   </p>
 </aside>
 

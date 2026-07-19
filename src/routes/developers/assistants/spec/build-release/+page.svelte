@@ -34,7 +34,7 @@
   <span class="section-label">Source contract</span>
   <h2 id="build-conventions-title">Keep the expected files together</h2>
   <ul>
-    <li><code>shimpz.assistant.toml</code> declares identity and Powers.</li>
+    <li><code>shimpz.assistant.toml</code> declares identity, exact allowed hosts, and Powers.</li>
     <li><code>GENESIS.md</code> defines behavior, style, safety, and how declared Powers compose.</li>
     <li><code>help/HELP-&lt;locale&gt;.md</code> teaches the installed user in every Admin language.</li>
     <li>Each Power has conventional closed input and output schemas under <code>schemas/</code>.</li>
@@ -50,7 +50,8 @@
     <li>Run focused source and contract tests.</li>
     <li>
       Build and smoke the supported platform images as an unprivileged, read-only runtime, including
-      <code>GENESIS.md</code> at <code>/opt/shimpz-assistant/GENESIS.md</code> with mode <code>0444</code>.
+      <code>GENESIS.md</code> and <code>shimpz.assistant.toml</code> under <code>/opt/shimpz-assistant/</code>
+      with mode <code>0444</code>.
     </li>
     <li>Push one multi-platform image with provenance and an SBOM.</li>
     <li>Bind the returned registry digest in the trusted catalog; never install from a mutable tag.</li>
