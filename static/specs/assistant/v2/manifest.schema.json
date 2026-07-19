@@ -2,346 +2,62 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://docs.shimpz.com/specs/assistant/v2/manifest.schema.json",
   "title": "Shimpz Assistant Manifest v2",
-  "description": "Closed Rules/Powers representation of shimpz.assistant.toml. The stdlib parser remains authoritative for semantic, filesystem, UTF-8 and secret-like-value checks.",
+  "description": "Closed, intent-only representation of shimpz.assistant.toml.",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "schema_version",
-    "id",
-    "name",
-    "version",
-    "description",
-    "rules",
-    "artifact",
-    "powers",
-    "permissions"
-  ],
+  "required": ["schema_version", "name", "summary", "creators", "powers"],
   "properties": {
-    "schema_version": {
-      "const": 2
-    },
-    "id": {
-      "$ref": "#/$defs/id"
-    },
+    "schema_version": { "const": 2 },
     "name": {
-      "$ref": "#/$defs/name"
-    },
-    "version": {
       "type": "string",
-      "maxLength": 40,
-      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+      "minLength": 1,
+      "maxLength": 80,
+      "pattern": "^(?!\\s)(?!.*\\s$)[^\\r\\n]+$"
     },
-    "description": {
+    "summary": {
       "type": "string",
       "minLength": 1,
       "maxLength": 240,
       "pattern": "^(?!\\s)(?!.*\\s$)[^\\r\\n]+$"
     },
-    "artifact": {
-      "$ref": "#/$defs/artifact"
-    },
-    "permissions": {
-      "$ref": "#/$defs/permissions"
-    },
-    "routines": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/routine"
-      }
-    },
-    "rules": {
-      "$ref": "#/$defs/rulesPath"
-    },
-    "powers": {
+    "creators": {
       "type": "array",
       "minItems": 1,
+      "uniqueItems": true,
       "items": {
-        "$ref": "#/$defs/power"
+        "type": "string",
+        "pattern": "^@[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$"
+      }
+    },
+    "github": {
+      "type": "string",
+      "maxLength": 200,
+      "pattern": "^https://github\\.com/[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?/[A-Za-z0-9._-]+/?$"
+    },
+    "powers": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$": { "$ref": "#/$defs/power" }
       }
     }
   },
   "$defs": {
-    "id": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 80,
-      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
-    },
-    "name": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 80,
-      "pattern": "^(?!\\s)(?!.*\\s$)[^\\r\\n]+$"
-    },
-    "interface": {
-      "type": "string",
-      "maxLength": 100,
-      "pattern": "^shimpz\\.[a-z][a-z0-9]*(?:-[a-z0-9]+)*/v[1-9][0-9]*$"
-    },
-    "remoteOperation": {
-      "type": "string",
-      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*(?:\\.[a-z][a-z0-9]*(?:-[a-z0-9]+)*)*$"
-    },
-    "schemaPath": {
-      "type": "string",
-      "maxLength": 200,
-      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*//)[A-Za-z0-9][A-Za-z0-9._/-]*\\.json$"
-    },
-    "artifact": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "mode",
-        "port",
-        "health_path",
-        "architectures"
-      ],
-      "properties": {
-        "mode": {
-          "enum": [
-            "development",
-            "release"
-          ]
-        },
-        "source": {
-          "const": "."
-        },
-        "image": {
-          "type": "string",
-          "maxLength": 300,
-          "pattern": "^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?(?::[1-9][0-9]{0,4})?/[a-z0-9]+(?:[._/-][a-z0-9]+)*@sha256:[0-9a-f]{64}$"
-        },
-        "port": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 65535
-        },
-        "health_path": {
-          "type": "string",
-          "pattern": "^/(?!.*//)[a-z0-9][a-z0-9/_-]*$",
-          "maxLength": 120
-        },
-        "architectures": {
-          "type": "array",
-          "minItems": 1,
-          "uniqueItems": true,
-          "items": {
-            "enum": [
-              "linux/amd64",
-              "linux/arm64"
-            ]
-          }
-        }
-      },
-      "oneOf": [
-        {
-          "properties": {
-            "mode": {
-              "const": "development"
-            },
-            "source": {
-              "const": "."
-            }
-          },
-          "required": [
-            "source"
-          ],
-          "not": {
-            "required": [
-              "image"
-            ]
-          }
-        },
-        {
-          "properties": {
-            "mode": {
-              "const": "release"
-            }
-          },
-          "required": [
-            "image"
-          ],
-          "not": {
-            "required": [
-              "source"
-            ]
-          }
-        }
-      ]
-    },
-    "permissions": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "egress"
-      ],
-      "properties": {
-        "egress": {
-          "type": "array",
-          "uniqueItems": true,
-          "items": {
-            "type": "string",
-            "maxLength": 253,
-            "pattern": "^(?![0-9]+(?:\\.[0-9]+){3}$)(?!.*\\.(?:example|home\\.arpa|internal|invalid|lan|local|localhost|onion|test)$)[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$"
-          }
-        },
-        "services": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/servicePermission"
-          }
-        },
-        "assistants": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/assistantPermission"
-          }
-        }
-      }
-    },
-    "servicePermission": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "interface",
-        "operations",
-        "credential_refs"
-      ],
-      "properties": {
-        "id": {
-          "$ref": "#/$defs/id"
-        },
-        "interface": {
-          "$ref": "#/$defs/interface"
-        },
-        "operations": {
-          "type": "array",
-          "minItems": 1,
-          "uniqueItems": true,
-          "items": {
-            "$ref": "#/$defs/remoteOperation"
-          }
-        },
-        "credential_refs": {
-          "description": "Logical Team binding names only; never provider credential identifiers or values.",
-          "type": "array",
-          "uniqueItems": true,
-          "items": {
-            "$ref": "#/$defs/id"
-          }
-        }
-      }
-    },
-    "assistantPermission": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "interface",
-        "powers"
-      ],
-      "properties": {
-        "id": {
-          "$ref": "#/$defs/id"
-        },
-        "interface": {
-          "$ref": "#/$defs/interface"
-        },
-        "powers": {
-          "type": "array",
-          "minItems": 1,
-          "uniqueItems": true,
-          "items": {
-            "$ref": "#/$defs/remoteOperation"
-          }
-        }
-      }
-    },
-    "routine": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "power",
-        "interval_seconds",
-        "timeout_seconds",
-        "jitter_seconds",
-        "enabled_by_default",
-        "single_flight",
-        "idempotency_key"
-      ],
-      "properties": {
-        "id": {
-          "$ref": "#/$defs/id"
-        },
-        "interval_seconds": {
-          "type": "integer",
-          "minimum": 60,
-          "maximum": 31536000
-        },
-        "timeout_seconds": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "jitter_seconds": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "enabled_by_default": {
-          "const": false
-        },
-        "single_flight": {
-          "const": true
-        },
-        "idempotency_key": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 160,
-          "pattern": "^(?=.*\\{scheduled_at\\})(?:[A-Za-z0-9_.:-]|\\{(?:assistant_id|routine_id|scheduled_at)\\})+$"
-        },
-        "power": {
-          "$ref": "#/$defs/id"
-        }
-      }
-    },
-    "rulesPath": {
-      "type": "string",
-      "maxLength": 200,
-      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*//)[A-Za-z0-9][A-Za-z0-9._/-]*\\.md$"
-    },
     "power": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "id",
-        "summary",
-        "input_schema",
-        "output_schema",
-        "approval"
-      ],
+      "required": ["summary"],
       "properties": {
-        "id": {
-          "$ref": "#/$defs/id"
-        },
         "summary": {
           "type": "string",
           "minLength": 1,
           "maxLength": 160,
           "pattern": "^(?!\\s)(?!.*\\s$)[^\\r\\n]+$"
         },
-        "input_schema": {
-          "$ref": "#/$defs/schemaPath"
-        },
-        "output_schema": {
-          "$ref": "#/$defs/schemaPath"
-        },
         "approval": {
-          "enum": [
-            "none",
-            "once",
-            "each-run"
-          ]
+          "enum": ["never", "once", "always"],
+          "default": "never"
         }
       }
     }

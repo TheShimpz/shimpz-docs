@@ -2,21 +2,18 @@ import { highlightCode } from "$lib/server/highlight";
 
 import type { PageServerLoad } from "./$types";
 
-const power = `[[powers]]
-id = "hello"
-summary = "Return a friendly greeting."
-input_schema = "schemas/hello.input.schema.json"
-output_schema = "schemas/hello.output.schema.json"
-approval = "none"`;
+const power = `[powers.current-weather]
+summary = "Read the current weather for one coordinate."
+approval = "never"`;
 
 const inputSchema = `{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "hello.input.schema.json",
   "type": "object",
   "properties": {
-    "name": { "type": "string", "minLength": 1, "maxLength": 80 }
+    "latitude": { "type": "number", "minimum": -90, "maximum": 90 },
+    "longitude": { "type": "number", "minimum": -180, "maximum": 180 }
   },
-  "required": ["name"],
+  "required": ["latitude", "longitude"],
   "additionalProperties": false
 }`;
 

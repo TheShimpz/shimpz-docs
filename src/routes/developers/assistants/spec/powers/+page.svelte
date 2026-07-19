@@ -41,14 +41,15 @@
   <span class="section-label">Declaration</span>
   <h2 id="powers-declaration-title">Name one useful outcome</h2>
   <CodeBlock
-    label="Hello Power declaration"
+    label="Current weather Power declaration"
     title="shimpz.assistant.toml · Power"
     variant="code"
     {...data.power}
   />
   <p>
-    Power IDs are stable lowercase kebab-case identifiers. The approval value requests <code>none</code>,
-    <code>once</code>, or <code>each-run</code>; it never overrides an owner or controller decision.
+    The table key is the stable lowercase kebab-case Power ID. <code>approval</code> accepts
+    <code>never</code>, <code>once</code>, or <code>always</code> and defaults to <code>never</code> when
+    omitted. It never overrides an owner or controller decision.
   </p>
 </section>
 
@@ -56,8 +57,8 @@
   <span class="section-label">Closed data</span>
   <h2 id="powers-schema-title">Accept only the fields you designed</h2>
   <CodeBlock
-    label="Closed Hello Power input"
-    title="schemas/hello.input.schema.json"
+    label="Closed current weather input"
+    title="schemas/current-weather.input.schema.json"
     variant="code"
     {...data.inputSchema}
   />

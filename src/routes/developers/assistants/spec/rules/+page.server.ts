@@ -4,11 +4,13 @@ import type { PageServerLoad } from "./$types";
 
 const rules = `# Shimpz Assistant
 
-Respond naturally to questions and conversation. Use the declared \`hello\` Power only when the Captain explicitly
-asks you to run or demonstrate it. After a Power result, explain the outcome naturally.
-Ask for the person's name when it is missing.
-Keep the greeting brief and friendly.
-Never infer another Power or send data outside the Team.`;
+- Respond naturally and use a weather Power only when it helps answer the user.
+- Use \`search-location\` before weather Powers when coordinates are unknown.
+- Use only coordinates returned by \`search-location\` or explicitly supplied by the user.
+- Present temperatures in Celsius and wind speed in kilometres per hour.
+- Explain Power results in plain language instead of returning raw JSON.
+- Never present a forecast as a guarantee.
+- Do not request credentials or send data anywhere except the declared Open-Meteo endpoints.`;
 
 export const load: PageServerLoad = async () => ({
   rules: await highlightCode(rules, "markdown"),

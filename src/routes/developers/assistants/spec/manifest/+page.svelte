@@ -25,16 +25,16 @@
   <span class="section-label">Spec v2 · start here</span>
   <h1>Describe one Assistant.</h1>
   <p class="docs-lede">
-    <code>shimpz.assistant.toml</code> connects identity, Rules, Powers, permissions, and the runnable
-    artifact in one closed contract.
+    <code>shimpz.assistant.toml</code> contains only the identity and behavior choices that belong to the
+    creator. Shimpz owns runtime, network, build, and file-layout decisions.
   </p>
 </header>
 
 <aside class="scope-note" aria-labelledby="manifest-request-title">
   <span id="manifest-request-title" class="kicker">A request, not a grant</span>
   <p>
-    The manifest declares what the Assistant needs. Installation, owner consent, and Team controller
-    policy still decide what it may use.
+    A Power declaration describes an intent. Installation, owner consent, and Team controller policy still
+    decide whether it can run.
   </p>
 </aside>
 
@@ -42,8 +42,8 @@
   <span class="section-label">Smallest useful example</span>
   <h2 id="manifest-example-title">Keep the first manifest boring</h2>
   <p>
-    This project has one Rule file, one Power, no external permissions, and a local development artifact.
-    Add a concept only when the Assistant needs it.
+    This complete example names its creators and three Powers. Omitting <code>approval</code> uses the safe
+    <code>never</code> default, so the first Power shows the shortest valid form.
   </p>
   <CodeBlock
     label="Minimal Assistant Spec v2 manifest"
@@ -57,12 +57,12 @@
   <span class="section-label">Mental model</span>
   <h2 id="manifest-fields-title">Read it from top to bottom</h2>
   <ul>
-    <li><code>id</code>, <code>name</code>, <code>version</code>, and <code>description</code> identify the release.</li>
-    <li><code>rules</code> points to the Assistant's behavior guide.</li>
-    <li><code>artifact</code> describes how the process is started and checked.</li>
-    <li><code>powers</code> define the only Assistant capabilities it may request.</li>
-    <li><code>permissions</code> request narrowly scoped access outside this Assistant.</li>
-    <li><code>routines</code> are optional, owner-disabled schedules for declared Powers.</li>
+    <li><code>schema_version</code> selects the closed v2 parser.</li>
+    <li><code>name</code> is the display identity; Shimpz derives the stable kebab-case ID once.</li>
+    <li><code>summary</code> gives people and the Brain one concise purpose.</li>
+    <li><code>creators</code> contains one or more real GitHub users, including the leading <code>@</code>.</li>
+    <li><code>github</code> is an optional public repository URL.</li>
+    <li><code>powers</code> defines the only Assistant capabilities the Brain may request.</li>
   </ul>
 </section>
 
@@ -70,14 +70,15 @@
   <span class="section-label">Fail closed</span>
   <h2 id="manifest-validation-title">Let validation catch drift early</h2>
   <p>
-    Unknown fields, mixed vocabulary, duplicate IDs, unsafe paths, mutable release images, and undeclared
-    routine Powers are rejected. The <a
+    Unknown fields, invalid creator names, duplicate Power IDs, unsafe conventional files, open schemas,
+    and secret-like values are rejected. The <a
       class="external-link"
       href="/specs/assistant/v2/manifest.schema.json"
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Assistant Manifest v2 JSON Schema (opens in a new tab)">JSON Schema</a
-    > documents the data shape; the SDK parser also performs filesystem, UTF-8, and secret-safety checks.
+    > documents the data shape. The SDK also validates the conventional <code>assistant/RULES.md</code>,
+    <code>HELP.md</code>, and <code>schemas/&lt;power&gt;.(input|output).schema.json</code> files.
   </p>
 </section>
 

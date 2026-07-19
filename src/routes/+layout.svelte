@@ -104,12 +104,12 @@
             {
               href: "/developers/assistants/spec/permissions/",
               label: "Permissions",
-              description: "Request narrow access",
+              description: "Controller-owned grants",
             },
             {
               href: "/developers/assistants/spec/routines/",
               label: "Routines",
-              description: "Schedule one Power",
+              description: "Future owner schedules",
             },
             {
               href: "/developers/assistants/spec/runtime/",

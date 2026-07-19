@@ -20,7 +20,7 @@
   <h1>Build one safe capability at a time.</h1>
   <p class="docs-lede">
     Assistant Spec v2 keeps behavior, authority, and execution separate. Start with a tiny project, validate
-    it locally, then add only the concepts your Assistant needs.
+    it locally, then add only the Powers your Assistant needs.
   </p>
 </header>
 
@@ -72,13 +72,13 @@
     <li>
       <a class="docs-entry-link" href="/developers/assistants/spec/permissions/">
         <strong>Permissions</strong>
-        <span>Request the narrowest Service or Assistant access.</span>
+        <span>Understand controller-owned grants and network policy.</span>
       </a>
     </li>
     <li>
       <a class="docs-entry-link" href="/developers/assistants/spec/routines/">
         <strong>Routines</strong>
-        <span>Schedule a declared Power with safe defaults.</span>
+        <span>Understand the boundary for future owner-managed schedules.</span>
       </a>
     </li>
     <li>
@@ -98,19 +98,19 @@
 
 <section class="guide-section" aria-labelledby="assistant-first-project-title">
   <span class="section-label">Fastest path</span>
-  <h2 id="assistant-first-project-title">Scaffold and validate Shimpz Assistant</h2>
+  <h2 id="assistant-first-project-title">Scaffold and validate one Assistant</h2>
   <p>From a checked-out <code>shimpz-sdk</code> repository with Python 3.14:</p>
   <CodeBlock
-    label="Create and validate the Shimpz Assistant Assistant"
+    label="Create and validate a minimal Assistant"
     title="Terminal · two commands"
     lines={[
       {
         value:
-          "SHIMPZ_LIB=$PWD/rootfs/opt/shimpz-lib python3 rootfs/usr/local/bin/shimpz-assistant new shimpz-assistant /tmp/shimpz-assistant",
+          "SHIMPZ_LIB=$PWD/rootfs/opt/shimpz-lib python3 rootfs/usr/local/bin/shimpz-assistant new my-assistant /tmp/my-assistant",
       },
       {
         value:
-          "SHIMPZ_LIB=$PWD/rootfs/opt/shimpz-lib python3 rootfs/usr/local/bin/shimpz-assistant validate /tmp/shimpz-assistant",
+          "SHIMPZ_LIB=$PWD/rootfs/opt/shimpz-lib python3 rootfs/usr/local/bin/shimpz-assistant validate /tmp/my-assistant",
       },
     ]}
   />
@@ -124,8 +124,8 @@
   <span id="assistant-spec-status-title" class="kicker">Available today</span>
   <p>
     Spec v2 source validation and the reviewed Shimpz Assistant runtime contract are implemented. Generic
-    third-party manifest ingestion, Service bindings, and routine scheduling are not released yet;
-    the guides describe the closed contract they must satisfy.
+    third-party Store ingestion, generic Service bindings, and routine scheduling are not released yet.
+    Permissions and routines remain controller-owned runtime policy rather than source manifest fields.
   </p>
 </aside>
 
