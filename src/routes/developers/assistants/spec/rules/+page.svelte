@@ -66,5 +66,5 @@
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec v2 guide">
   <a href="/developers/assistants/spec/manifest/"><span>Back</span><strong>Manifest</strong></a>
-  <a href="/developers/assistants/spec/powers/"><span>Next</span><strong>Powers</strong></a>
+  <a href="/developers/assistants/spec/help/"><span>Next</span><strong>Help</strong></a>
 </nav>

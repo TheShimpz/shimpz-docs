@@ -79,6 +79,6 @@
 </section>
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec v2 guide">
-  <a href="/developers/assistants/spec/rules/"><span>Back</span><strong>Rules</strong></a>
+  <a href="/developers/assistants/spec/help/"><span>Back</span><strong>Help</strong></a>
   <a href="/developers/assistants/spec/permissions/"><span>Next</span><strong>Permissions</strong></a>
 </nav>

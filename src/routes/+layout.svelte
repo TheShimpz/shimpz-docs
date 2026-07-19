@@ -92,6 +92,11 @@
               description: "Orient behavior",
             },
             {
+              href: "/developers/assistants/spec/help/",
+              label: "Help",
+              description: "Guide the person using it",
+            },
+            {
               href: "/developers/assistants/spec/powers/",
               label: "Powers",
               description: "Declare safe actions",

@@ -58,6 +58,12 @@
       </a>
     </li>
     <li>
+      <a class="docs-entry-link" href="/developers/assistants/spec/help/">
+        <strong>Help</strong>
+        <span>Show people what the Assistant can do and what to ask.</span>
+      </a>
+    </li>
+    <li>
       <a class="docs-entry-link" href="/developers/assistants/spec/powers/">
         <strong>Powers</strong>
         <span>Declare one safe action with closed input and output.</span>
