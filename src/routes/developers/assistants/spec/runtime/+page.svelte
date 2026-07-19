@@ -179,5 +179,5 @@
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant developer guide">
   <a href="/developers/assistants/spec/routines/"><span>Back</span><strong>Routines</strong></a>
-  <a href="/developers/assistants/spec/build-release/"><span>Next</span><strong>Build and release</strong></a>
+  <a href="/developers/assistants/spec/changelog/"><span>Next</span><strong>Changelog</strong></a>
 </nav>

@@ -88,6 +88,12 @@
       </a>
     </li>
     <li>
+      <a class="docs-entry-link" href="/developers/assistants/spec/changelog/">
+        <strong>Changelog</strong>
+        <span>Explain each published update and notify only the people using it.</span>
+      </a>
+    </li>
+    <li>
       <a class="docs-entry-link" href="/developers/assistants/spec/build-release/">
         <strong>Build and release</strong>
         <span>Validate locally and release one immutable artifact.</span>

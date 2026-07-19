@@ -37,6 +37,7 @@
     <li><code>shimpz.assistant.toml</code> declares identity, exact allowed hosts, and Powers.</li>
     <li><code>GENESIS.md</code> defines behavior, style, safety, and how declared Powers compose.</li>
     <li><code>help/HELP-&lt;locale&gt;.md</code> teaches the installed user in every Admin language.</li>
+    <li><code>CHANGELOG.md</code> explains every published update in concise user-visible language.</li>
     <li>Each Power has conventional closed input and output schemas under <code>schemas/</code>.</li>
     <li>The executable source exposes only the fixed health, Help, and declared Power adapters.</li>
   </ul>
@@ -46,6 +47,7 @@
   <span class="section-label">Release checklist</span>
   <h2 id="build-checklist-title">Publish only tested bytes</h2>
   <ol>
+    <li>Update the required root <code>CHANGELOG.md</code> for this release.</li>
     <li>Validate the complete source tree with the Assistant SDK.</li>
     <li>Run focused source and contract tests.</li>
     <li>
@@ -59,6 +61,6 @@
 </section>
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec v2 guide">
-  <a href="/developers/assistants/spec/runtime/"><span>Back</span><strong>Brain runtime</strong></a>
+  <a href="/developers/assistants/spec/changelog/"><span>Back</span><strong>Changelog</strong></a>
   <a href="/developers/assistants/shimpz-assistant/"><span>Next</span><strong>Shimpz Assistant</strong></a>
 </nav>

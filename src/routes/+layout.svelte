@@ -117,6 +117,11 @@
               description: "LangGraph, API keys, and files",
             },
             {
+              href: "/developers/assistants/spec/changelog/",
+              label: "Changelog",
+              description: "Explain every published update",
+            },
+            {
               href: "/developers/assistants/spec/build-release/",
               label: "Build and release",
               description: "Validate and pin artifacts",
