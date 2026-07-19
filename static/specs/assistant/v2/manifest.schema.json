@@ -2,17 +2,26 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://docs.shimpz.com/specs/assistant/v2/manifest.schema.json",
   "title": "Shimpz Assistant Manifest v2",
-  "description": "Closed, intent-only representation of shimpz.assistant.toml.",
+  "description": "Closed, intent-only representation of shimpz.assistant.toml. Runtime, build, network, scheduling and grant policy are deliberately outside this contract.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "name", "summary", "creators", "powers"],
+  "required": [
+    "schema_version",
+    "name",
+    "summary",
+    "creators",
+    "powers"
+  ],
   "properties": {
-    "schema_version": { "const": 2 },
+    "schema_version": {
+      "const": 2
+    },
     "name": {
       "type": "string",
       "minLength": 1,
       "maxLength": 80,
-      "pattern": "^(?!\\s)(?!.*\\s$)[^\\r\\n]+$"
+      "pattern": "^(?!\\s)(?!.*\\s$)[^\\r\\n]+$",
+      "description": "Human-readable name. Shimpz derives and stores its immutable lowercase kebab-case id when first registered."
     },
     "summary": {
       "type": "string",
@@ -31,23 +40,34 @@
     },
     "github": {
       "type": "string",
-      "maxLength": 200,
-      "pattern": "^https://github\\.com/[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?/[A-Za-z0-9._-]+/?$"
+      "maxLength": 220,
+      "pattern": "^https://github\\.com/[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?/[A-Za-z0-9](?:[A-Za-z0-9._-]{0,98}[A-Za-z0-9])?$"
     },
     "powers": {
       "type": "object",
       "minProperties": 1,
-      "additionalProperties": false,
-      "patternProperties": {
-        "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$": { "$ref": "#/$defs/power" }
+      "maxProperties": 128,
+      "propertyNames": {
+        "$ref": "#/$defs/id"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/power"
       }
     }
   },
   "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
     "power": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["summary"],
+      "required": [
+        "summary"
+      ],
       "properties": {
         "summary": {
           "type": "string",
@@ -56,8 +76,12 @@
           "pattern": "^(?!\\s)(?!.*\\s$)[^\\r\\n]+$"
         },
         "approval": {
-          "enum": ["never", "once", "always"],
-          "default": "never"
+          "description": "Defaults to never when omitted.",
+          "enum": [
+            "never",
+            "once",
+            "always"
+          ]
         }
       }
     }
