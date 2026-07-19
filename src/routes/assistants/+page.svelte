@@ -83,7 +83,7 @@
   <p>
     In <strong>Chat</strong>, choose the Team and its configured OpenAI or Anthropic model. You do not select
     an Assistant as the speaker: replies use the Team's name. The provider-neutral LangGraph Brain receives
-    the validated Rules and Powers of every installed, available Assistant in that Team. It can answer
+    the validated Genesis and Powers of every installed, available Assistant in that Team. It can answer
     naturally or request a sequence of Powers, but the controller is the only component allowed to validate
     and execute each request.
   </p>
@@ -100,7 +100,7 @@
   </p>
   <p>
     Power traces are operational evidence, not a public chat feature. The interface returns the Team's
-    reply without exposing internal prompts, Rules, Power inputs or outputs, file contents, or secrets.
+    reply without exposing internal prompts, Genesis, Power inputs or outputs, file contents, or secrets.
   </p>
 </section>
 

@@ -34,7 +34,7 @@
 <aside class="scope-note" aria-labelledby="help-boundary-title">
   <span id="help-boundary-title" class="kicker">Help is not authority</span>
   <p>
-    Help cannot add a Power, alter Rules, grant network access, or request a secret. It is display-only
+    Help cannot add a Power, alter Genesis, grant network access, or request a secret. It is display-only
     documentation for the person using the Assistant.
   </p>
 </aside>

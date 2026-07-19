@@ -11,7 +11,7 @@
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/spec/genesis/" />
   <meta
     name="description"
-    content="Write a required Assistant Genesis playbook that teaches the Team Brain how to choose and compose declared Powers."
+    content="Write one required Assistant Genesis playbook for behavior, style, safety, and declared Power composition."
   />
 </svelte:head>
 
@@ -22,30 +22,30 @@
 </nav>
 
 <header class="docs-page-header">
-  <span class="section-label">Concept · Power orchestration</span>
-  <h1>Teach the Brain how Powers work together.</h1>
+  <span class="section-label">Concept · operating playbook</span>
+  <h1>Define how the Assistant should act.</h1>
   <p class="docs-lede">
-    The required root <code>GENESIS.md</code> is the Assistant's stable operating playbook. It explains when
-    to choose a declared Power, how to compose several Powers, when to ask for clarification, and when to
-    stop without inventing a result.
+    The required root <code>GENESIS.md</code> is the Assistant's single stable operating playbook. It defines
+    purpose, behavior, response style, safety boundaries, when to choose a declared Power, how to compose
+    several Powers, and when to stop without inventing a result.
   </p>
 </header>
 
 <aside class="scope-note" aria-labelledby="genesis-boundary-title">
   <span id="genesis-boundary-title" class="kicker">Context, never authority</span>
   <p>
-    Genesis cannot add a Power, approve an invocation, grant network access, or weaken controller policy.
-    The Brain receives this stable context only while the Assistant is explicitly enabled for the current
-    Team chat.
+    Genesis can guide behavior but cannot add a Power, approve an invocation, grant network access, expose a
+    credential, or weaken controller policy. The Brain receives this stable context only while the Assistant
+    is explicitly enabled for the current Team chat.
   </p>
 </aside>
 
 <section class="guide-section" aria-labelledby="genesis-example-title">
   <span class="section-label">Minimal example</span>
-  <h2 id="genesis-example-title">Describe one useful composition</h2>
+  <h2 id="genesis-example-title">Keep the full operating contract together</h2>
   <p>
-    Name only declared Powers. Give the Brain a clear start condition, the smallest useful sequence, and a
-    safe stop condition.
+    State the Assistant's purpose, communication style, and safety boundaries, then name only declared
+    Powers. Give the Brain a clear start condition, the smallest useful sequence, and a safe stop condition.
   </p>
   <CodeBlock
     label="Minimal Genesis for a weather Assistant"
@@ -71,10 +71,12 @@
 
 <section class="guide-section" aria-labelledby="genesis-separation-title">
   <span class="section-label">Responsibility</span>
-  <h2 id="genesis-separation-title">Keep each document focused</h2>
+  <h2 id="genesis-separation-title">Keep runtime and user guidance separate</h2>
   <ul>
-    <li><code>assistant/RULES.md</code> defines invariant behavior, answer style, and safety boundaries.</li>
-    <li><code>GENESIS.md</code> defines the operational playbook for choosing and composing declared Powers.</li>
+    <li>
+      <code>GENESIS.md</code> defines purpose, behavior, answer style, safety boundaries, and the operational
+      playbook for choosing and composing declared Powers.
+    </li>
     <li><code>help/HELP-&lt;locale&gt;.md</code> teaches a person what to ask in the Admin.</li>
     <li>The manifest and controller define the actual Power and authority boundary.</li>
   </ul>
@@ -86,6 +88,6 @@
 </section>
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec v2 guide">
-  <a href="/developers/assistants/spec/rules/"><span>Back</span><strong>Rules</strong></a>
+  <a href="/developers/assistants/spec/manifest/"><span>Back</span><strong>Manifest</strong></a>
   <a href="/developers/assistants/spec/help/"><span>Next</span><strong>Help</strong></a>
 </nav>

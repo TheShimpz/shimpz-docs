@@ -25,8 +25,8 @@
   <span class="section-label">Executable source reference</span>
   <h1>Explore Shimpz Assistant.</h1>
   <p class="docs-lede">
-    Use one small, real Assistant to see how Rules, Genesis, user Help, typed Powers, async I/O, and
-    restricted network access fit together.
+    Use one small, real Assistant to see how Genesis, user Help, typed Powers, async I/O, and restricted
+    network access fit together.
   </p>
 </header>
 
@@ -117,8 +117,10 @@
   <span class="section-label">What this reference demonstrates</span>
   <h2 id="assistant-proof-title">One complete, reusable pattern</h2>
   <ul>
-    <li><code>assistant/RULES.md</code> defines invariant behavior and safety boundaries.</li>
-    <li><code>GENESIS.md</code> tells the Brain when and how to combine the three weather Powers.</li>
+    <li>
+      <code>GENESIS.md</code> defines behavior, response style, safety boundaries, and when and how to combine
+      the three weather Powers.
+    </li>
     <li>
       <code>help/HELP-&lt;locale&gt;.md</code> gives the installed user short instructions and prompt examples in
       every Admin language.

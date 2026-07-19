@@ -77,13 +77,13 @@
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Assistant Manifest v2 JSON Schema (opens in a new tab)">JSON Schema</a
-    > documents the data shape. The SDK also validates the conventional <code>assistant/RULES.md</code>, root
-    <code>GENESIS.md</code>, localized <code>help/HELP-&lt;locale&gt;.md</code> files, and
+    > documents the data shape. The SDK also validates the conventional root <code>GENESIS.md</code>,
+    localized <code>help/HELP-&lt;locale&gt;.md</code> files, and
     <code>schemas/&lt;power&gt;.(input|output).schema.json</code> files.
   </p>
 </section>
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec v2 guide">
   <a href="/developers/assistants/spec/"><span>Back</span><strong>Spec v2 overview</strong></a>
-  <a href="/developers/assistants/spec/rules/"><span>Next</span><strong>Rules</strong></a>
+  <a href="/developers/assistants/spec/genesis/"><span>Next</span><strong>Genesis</strong></a>
 </nav>

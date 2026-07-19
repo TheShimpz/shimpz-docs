@@ -24,9 +24,9 @@
     and resource budget. Chat addresses the Team by its chosen name.
   </li>
   <li>
-    <strong>Assistant</strong> belongs to exactly one Team. It contributes Rules and named Powers to that
-    Team, but is not a speaker the user selects. Rules orient behavior but grant nothing. It cannot access
-    another Team's Assistants, files, or resources.
+    <strong>Assistant</strong> belongs to exactly one Team. It contributes a Genesis playbook and named Powers
+    to that Team, but is not a speaker the user selects. Genesis guides behavior and Power composition but
+    grants nothing. It cannot access another Team's Assistants, files, or resources.
   </li>
 </ul>
 

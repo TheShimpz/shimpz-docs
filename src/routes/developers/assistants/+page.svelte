@@ -15,15 +15,15 @@
   <span class="section-label">Developer preview</span>
   <h1>Give one Team a focused capability.</h1>
   <p class="docs-lede">
-    An Assistant is an immutable workload owned by one isolated Team. It combines Rules, a Genesis
-    orchestration playbook, user Help, and named Powers without inheriting Space-level authority.
+    An Assistant is an immutable workload owned by one isolated Team. It combines a Genesis operating
+    playbook, user Help, and named Powers without inheriting Space-level authority.
   </p>
 </header>
 
 <aside class="scope-note" aria-labelledby="assistant-status-title">
   <span id="assistant-status-title" class="kicker">What is available now</span>
   <p>
-    Assistant Spec v2 defines the intent-only manifest, Rules, Genesis, Powers, closed schemas, and user Help.
+    Assistant Spec v2 defines the intent-only manifest, Genesis, Powers, closed schemas, and user Help.
     Shimpz Assistant is the executable runtime reference. For each turn, the provider-neutral LangGraph Brain
     receives only the enabled Assistants' validated context and Powers, while the controller retains all
     execution authority.
@@ -35,7 +35,7 @@
   <h2 id="assistant-model-title">Team-owned by construction</h2>
   <ul>
     <li>An Assistant belongs to one Team and shares only that Team's admitted resource budget.</li>
-    <li>Rules orient behavior but cannot add authority.</li>
+    <li>Genesis defines behavior and Power composition but cannot add authority.</li>
     <li>Its manifest declares only identity and named Powers; conventional files carry closed schemas.</li>
     <li>Service operations and Assistant Powers are allowlisted by controller policy, never generic reach.</li>
     <li>Secrets stay in the responsible Service; an Assistant manifest cannot request their values.</li>
@@ -66,7 +66,7 @@
     <li>
       <a class="docs-entry-link" href="/developers/assistants/spec/">
         <strong>Assistant Spec v2</strong>
-        <span>Intent-only manifest, Rules, Genesis, Help, Powers, and runtime boundaries</span>
+        <span>Intent-only manifest, Genesis, Help, Powers, and runtime boundaries</span>
       </a>
     </li>
     <li>

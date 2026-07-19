@@ -87,14 +87,9 @@
               description: "One file maps the project",
             },
             {
-              href: "/developers/assistants/spec/rules/",
-              label: "Rules",
-              description: "Orient behavior",
-            },
-            {
               href: "/developers/assistants/spec/genesis/",
               label: "Genesis",
-              description: "Compose declared Powers",
+              description: "Define behavior and compose Powers",
             },
             {
               href: "/developers/assistants/spec/help/",

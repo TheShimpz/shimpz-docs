@@ -35,8 +35,7 @@
   <h2 id="build-conventions-title">Keep the expected files together</h2>
   <ul>
     <li><code>shimpz.assistant.toml</code> declares identity and Powers.</li>
-    <li><code>assistant/RULES.md</code> defines invariant behavior and safety boundaries.</li>
-    <li><code>GENESIS.md</code> teaches the Brain how declared Powers compose.</li>
+    <li><code>GENESIS.md</code> defines behavior, style, safety, and how declared Powers compose.</li>
     <li><code>help/HELP-&lt;locale&gt;.md</code> teaches the installed user in every Admin language.</li>
     <li>Each Power has conventional closed input and output schemas under <code>schemas/</code>.</li>
     <li>The executable source exposes only the fixed health, Help, and declared Power adapters.</li>

@@ -19,8 +19,8 @@
   <h1>Inference is not ambient authority.</h1>
   <p class="docs-lede">
     Shimpz uses a provider-neutral LangGraph Brain for each Team turn. The Brain receives the validated
-    Rules, Genesis, and Powers of only the Assistants enabled for that turn so it can answer naturally or
-    coordinate bounded actions; it is not a coding agent inside the Team.
+    Genesis and Powers of only the Assistants enabled for that turn so it can answer naturally or coordinate
+    bounded actions; it is not a coding agent inside the Team.
   </p>
 </header>
 
@@ -40,7 +40,7 @@
     <li>The user selects a Team and talks to it by the name chosen when that Team was created.</li>
     <li>Assistants are installed capabilities, not selectable speakers or independent chat identities.</li>
     <li>The user may enable any bounded subset of the Team's running Assistants for the next turn.</li>
-    <li>The controller gives LangGraph only that subset's validated Rules, Genesis, and Powers.</li>
+    <li>The controller gives LangGraph only that subset's validated Genesis and Powers.</li>
     <li>
       An empty selection allows natural greetings, clarification, and capability explanation only; the Brain
       cannot perform generic out-of-scope work or invent Assistant abilities.
@@ -55,8 +55,8 @@
   <h2 id="team-purpose-title">Answer as the Team, not as a generic model</h2>
   <p>
     The fixed Brain system context binds every turn to the Team's chosen name and to the enabled Assistants.
-    Capability claims and answers must relate to those Assistants, their Rules, their Genesis playbooks, and
-    their declared Powers.
+    Capability claims and answers must relate to those Assistants, their Genesis playbooks, and their declared
+    Powers.
   </p>
   <ul>
     <li>The Brain presents itself as the Team and never as an Assistant, provider, or coding agent.</li>
@@ -70,7 +70,7 @@
   <span class="section-label">Power broker</span>
   <h2 id="chat-flow-title">Let the controller execute, never the model</h2>
   <ol>
-    <li>The controller resolves the explicitly enabled Assistants and their validated Rules, Genesis, and Powers.</li>
+    <li>The controller resolves the explicitly enabled Assistants and their validated Genesis and Powers.</li>
     <li>LangGraph gives that closed context to the configured model provider.</li>
     <li>The model may answer naturally as the Team or request one declared Power with structured input.</li>
     <li>The controller verifies Team ownership, Assistant installation, declaration, grant, approval, and schema.</li>
@@ -80,7 +80,7 @@
   </ol>
   <p>
     A malformed request, undeclared Power, missing grant, unavailable Assistant, schema mismatch, or
-    unexpected result fails closed. Rules are instructions—not a fallback authorization mechanism.
+    unexpected result fails closed. Genesis provides instructions—not a fallback authorization mechanism.
   </p>
 </section>
 
@@ -109,7 +109,7 @@
     Brain used without judging the wording of a model response.
   </p>
   <p>
-    The trace never carries user messages, Power inputs or outputs, Rules, prompts, file contents,
+    The trace never carries user messages, Power inputs or outputs, Genesis, prompts, file contents,
     credentials, or provider responses. It is not returned by the public chat contract and has no end-user
     debug screen.
   </p>
