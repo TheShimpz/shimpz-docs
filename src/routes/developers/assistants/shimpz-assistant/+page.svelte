@@ -45,7 +45,7 @@
   <p>
     Install Shimpz, create a Team, then choose <strong>Shimpz Assistant</strong> in the local Store. Open
     the Team chat and select the <strong>?</strong> button next to <strong>Send</strong> to read its
-    <code>HELP.md</code> and copy a starter prompt.
+    localized Help and copy a starter prompt.
   </p>
   <p><a href="/assistants/">Follow the first Assistant guide</a>.</p>
 </section>
@@ -118,7 +118,10 @@
   <h2 id="assistant-proof-title">One complete, reusable pattern</h2>
   <ul>
     <li><code>assistant/RULES.md</code> tells the Brain when and how to combine the declared Powers.</li>
-    <li><code>HELP.md</code> gives the installed user short instructions and prompt examples.</li>
+    <li>
+      <code>help/HELP-&lt;locale&gt;.md</code> gives the installed user short instructions and prompt examples in
+      every Admin language.
+    </li>
     <li>Closed schemas bound every input and output; unknown fields and undeclared routes fail closed.</li>
     <li>A shared async HTTP session keeps external calls efficient without granting ambient authority.</li>
   </ul>

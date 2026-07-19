@@ -71,8 +71,9 @@
   <h2 id="assistant-help-title">Open the built-in help</h2>
   <p>
     Go to the Team chat and select the <strong>?</strong> button beside <strong>Send</strong>. The right sidebar
-    displays the installed Assistant's <code>HELP.md</code> with short examples. Try “What is the weather in
-    Lisbon right now?” or ask for a five-day forecast in your city.
+    displays the installed Assistant's localized Help with short examples. The Admin selects
+    <code>help/HELP-&lt;locale&gt;.md</code> for its current language and falls back to English. Try “What is the
+    weather in Lisbon right now?” or ask for a five-day forecast in your city.
   </p>
 </section>
 

@@ -11,7 +11,7 @@
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/spec/help/" />
   <meta
     name="description"
-    content="Write a short HELP.md that teaches people how to use a Shimpz Assistant."
+    content="Write localized Assistant Help that teaches every Admin user how to begin."
   />
 </svelte:head>
 
@@ -25,16 +25,17 @@
   <span class="section-label">Concept · user guidance</span>
   <h1>Make the first prompt obvious.</h1>
   <p class="docs-lede">
-    A root <code>HELP.md</code> tells people what the installed Assistant can do and gives them a few useful
-    prompts. The Admin opens it beside the Team chat from the <code>?</code> button.
+    Localized Markdown files under <code>help/</code> tell people what the installed Assistant can do and give
+    them a few useful prompts. The Admin opens the current language beside the Team chat from the
+    <code>?</code> button.
   </p>
 </header>
 
 <aside class="scope-note" aria-labelledby="help-boundary-title">
   <span id="help-boundary-title" class="kicker">Help is not authority</span>
   <p>
-    <code>HELP.md</code> cannot add a Power, alter Rules, grant network access, or request a secret. It is
-    display-only documentation for the person using the Assistant.
+    Help cannot add a Power, alter Rules, grant network access, or request a secret. It is display-only
+    documentation for the person using the Assistant.
   </p>
 </aside>
 
@@ -43,21 +44,45 @@
   <h2 id="help-example-title">Say what it does, then show what to ask</h2>
   <CodeBlock
     label="User help for Shimpz Assistant"
-    title="HELP.md"
+    title="help/HELP-en.md"
     variant="code"
     {...data.help}
   />
 </section>
 
 <section class="guide-section" aria-labelledby="help-contract-title">
-  <span class="section-label">File contract</span>
-  <h2 id="help-contract-title">Keep it short and safe</h2>
+  <span class="section-label">Localized file contract</span>
+  <h2 id="help-contract-title">Ship every Admin language</h2>
+  <p>
+    Keep Help in the reserved <code>help/</code> directory. Assistant Spec v2 requires one file for every
+    language supported by the Admin:
+  </p>
   <ul>
-    <li>Place exactly one <code>HELP.md</code> at the project root; no manifest field is needed.</li>
-    <li>Use valid UTF-8 Markdown, keep it non-empty, and stay below 32 KiB.</li>
+    <li><code>HELP-en.md</code> — English</li>
+    <li><code>HELP-pt.md</code> — Portuguese</li>
+    <li><code>HELP-es.md</code> — Spanish</li>
+    <li><code>HELP-zh.md</code> — Chinese</li>
+    <li><code>HELP-fr.md</code> — French</li>
+    <li><code>HELP-de.md</code> — German</li>
+    <li><code>HELP-ja.md</code> — Japanese</li>
+    <li><code>HELP-ar.md</code> — Arabic</li>
+  </ul>
+  <p>
+    Use the exact <code>HELP-&lt;locale&gt;.md</code> filenames; no manifest field is needed. English is the
+    deterministic runtime fallback if the requested locale cannot be loaded. Release validation still rejects
+    a source tree that omits any required Admin locale.
+  </p>
+</section>
+
+<section class="guide-section" aria-labelledby="help-writing-title">
+  <span class="section-label">Writing and rendering</span>
+  <h2 id="help-writing-title">Keep each translation short and safe</h2>
+  <ul>
+    <li>Use valid UTF-8 Markdown, keep every file non-empty, and stay below 32 KiB per locale.</li>
     <li>Write for a beginner: purpose, three to six example prompts, and any important limit.</li>
+    <li>Translate the meaning and examples naturally instead of exposing internal implementation details.</li>
     <li>Never include API keys, tokens, passwords, hidden instructions, or credential examples.</li>
-    <li>The Admin ignores raw HTML and displays only a safe Markdown subset.</li>
+    <li>The Admin ignores raw HTML, sanitizes links, and renders only the supported Markdown subset as HTML.</li>
   </ul>
 </section>
 

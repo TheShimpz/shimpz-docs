@@ -36,7 +36,7 @@
   <ul>
     <li><code>shimpz.assistant.toml</code> declares identity and Powers.</li>
     <li><code>assistant/RULES.md</code> guides the Brain.</li>
-    <li><code>HELP.md</code> teaches the installed user.</li>
+    <li><code>help/HELP-&lt;locale&gt;.md</code> teaches the installed user in every Admin language.</li>
     <li>Each Power has conventional closed input and output schemas under <code>schemas/</code>.</li>
     <li>The executable source exposes only the fixed health, Help, and declared Power adapters.</li>
   </ul>
