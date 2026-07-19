@@ -3,8 +3,8 @@ import { highlightCode } from "$lib/server/highlight";
 import type { PageServerLoad } from "./$types";
 
 const manifest = `schema_version = 2
-id = "hello-pulse"
-name = "Hello Pulse"
+id = "shimpz-assistant"
+name = "Shimpz Assistant"
 version = "0.1.0"
 description = "Return a friendly greeting."
 rules = "assistant/RULES.md"

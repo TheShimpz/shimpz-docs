@@ -98,24 +98,24 @@
 
 <section class="guide-section" aria-labelledby="assistant-first-project-title">
   <span class="section-label">Fastest path</span>
-  <h2 id="assistant-first-project-title">Scaffold and validate Hello Pulse</h2>
+  <h2 id="assistant-first-project-title">Scaffold and validate Shimpz Assistant</h2>
   <p>From a checked-out <code>shimpz-sdk</code> repository with Python 3.14:</p>
   <CodeBlock
-    label="Create and validate the Hello Pulse Assistant"
+    label="Create and validate the Shimpz Assistant Assistant"
     title="Terminal · two commands"
     lines={[
       {
         value:
-          "SHIMPZ_LIB=$PWD/rootfs/opt/shimpz-lib python3 rootfs/usr/local/bin/shimpz-assistant new hello-pulse /tmp/hello-pulse",
+          "SHIMPZ_LIB=$PWD/rootfs/opt/shimpz-lib python3 rootfs/usr/local/bin/shimpz-assistant new shimpz-assistant /tmp/shimpz-assistant",
       },
       {
         value:
-          "SHIMPZ_LIB=$PWD/rootfs/opt/shimpz-lib python3 rootfs/usr/local/bin/shimpz-assistant validate /tmp/hello-pulse",
+          "SHIMPZ_LIB=$PWD/rootfs/opt/shimpz-lib python3 rootfs/usr/local/bin/shimpz-assistant validate /tmp/shimpz-assistant",
       },
     ]}
   />
   <p>
-    Continue with the <a href="/developers/assistants/hello-pulse/">Hello Pulse walkthrough</a> to call its
+    Continue with the <a href="/developers/assistants/shimpz-assistant/">Shimpz Assistant walkthrough</a> to call its
     first Power.
   </p>
 </section>
@@ -123,7 +123,7 @@
 <aside class="scope-note" aria-labelledby="assistant-spec-status-title">
   <span id="assistant-spec-status-title" class="kicker">Available today</span>
   <p>
-    Spec v2 source validation and the reviewed Hello Pulse runtime contract are implemented. Generic
+    Spec v2 source validation and the reviewed Shimpz Assistant runtime contract are implemented. Generic
     third-party manifest ingestion, Service bindings, and routine scheduling are not released yet;
     the guides describe the closed contract they must satisfy.
   </p>

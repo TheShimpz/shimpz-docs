@@ -120,6 +120,6 @@
 </section>
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant developer guide">
-  <a href="/developers/assistants/hello-pulse/"><span>Back</span><strong>Hello Pulse</strong></a>
+  <a href="/developers/assistants/shimpz-assistant/"><span>Back</span><strong>Shimpz Assistant</strong></a>
   <a href="/developers/services/"><span>Related</span><strong>Services</strong></a>
 </nav>

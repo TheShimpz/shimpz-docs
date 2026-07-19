@@ -34,9 +34,9 @@
 <aside class="scope-note" aria-labelledby="validated-scope-title">
   <span id="validated-scope-title" class="kicker">Validated scope</span>
   <p>
-    This development delivery can create an empty local Team and install the free Hello Pulse Assistant
-    from one allowlisted, immutable image. Provider-backed Team chat requires a configured API key. Services,
-    routines, and commerce remain outside this delivery.
+    This development delivery can create an empty local Team and install the free Shimpz Assistant from one
+    allowlisted, immutable image. Its three weather Powers use only public Open-Meteo data through a restricted
+    proxy. Provider-backed Team chat requires a configured API key. Commerce remains outside this delivery.
   </p>
 </aside>
 

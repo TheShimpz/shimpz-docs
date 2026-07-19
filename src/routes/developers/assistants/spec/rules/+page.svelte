@@ -46,7 +46,7 @@
     expected communication style.
   </p>
   <CodeBlock
-    label="Minimal Rules for Hello Pulse"
+    label="Minimal Rules for Shimpz Assistant"
     title="assistant/RULES.md"
     variant="code"
     {...data.rules}

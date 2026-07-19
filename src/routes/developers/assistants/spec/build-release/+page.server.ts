@@ -11,7 +11,7 @@ architectures = ["linux/amd64", "linux/arm64"]`;
 
 const releaseArtifact = `[artifact]
 mode = "release"
-image = "ghcr.io/acme/hello-pulse@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+image = "ghcr.io/acme/shimpz-assistant@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 port = 8080
 health_path = "/health"
 architectures = ["linux/amd64", "linux/arm64"]`;

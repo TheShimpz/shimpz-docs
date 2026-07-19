@@ -2,7 +2,7 @@
   <title>Install your first Assistant — Shimpz docs</title>
   <meta
     name="description"
-    content="Create a local Team, install Hello Pulse, and chat with the Team from the Shimpz Admin."
+    content="Create a local Team, install Shimpz Assistant, and chat with the Team from the Shimpz Admin."
   />
 </svelte:head>
 
@@ -15,7 +15,7 @@
   <span class="section-label">First local evaluation</span>
   <h1>Install your first Assistant</h1>
   <p class="docs-lede">
-    Create an empty Team and install Hello Pulse. The Admin keeps the destination choice and install
+    Create an empty Team and install Shimpz Assistant. The Admin keeps the destination choice and install
     authority local; the Store never receives your Admin token or internal Team identifier.
   </p>
 </header>
@@ -23,9 +23,9 @@
 <aside class="scope-note" aria-labelledby="assistant-evaluation-scope">
   <span id="assistant-evaluation-scope" class="kicker">Evaluation boundary</span>
   <p>
-    Hello Pulse is the only admitted Assistant in this development build. Its immutable image has no
-    credentials, mounts, host ports, or general network access, and runs with bounded CPU, memory, and
-    processes inside one Team network.
+    Shimpz Assistant is the only admitted Assistant in this development build. Its immutable image has no
+    credentials, mounts, host ports, or general network access. Weather requests can reach only the two
+    declared Open-Meteo hosts through the authenticated egress proxy.
   </p>
 </aside>
 
@@ -40,9 +40,9 @@
   </li>
 
   <li>
-    <h2>Choose Hello Pulse</h2>
+    <h2>Choose Shimpz Assistant</h2>
     <p>
-      Open <strong>Assistants</strong>. In the Hello Pulse evaluation card, select
+      Open <strong>Assistants</strong>. In the Shimpz Assistant card, select
       <strong>Install</strong>. A Store card may open the same local confirmation, but it cannot install on
       its own.
     </p>
@@ -52,7 +52,7 @@
     <h2>Confirm the exact Team</h2>
     <p>
       Select the destination Team in the local dialog and confirm. The controller admits only the published
-      Hello Pulse digest and waits for readiness. Installation does not invoke a Power or start a chat turn;
+      Shimpz Assistant digest and waits for readiness. Installation does not invoke a Power or start a chat turn;
       the Store marks the Assistant as installed when it is ready.
     </p>
   </li>
@@ -65,6 +65,16 @@
     </p>
   </li>
 </ol>
+
+<section class="guide-section" aria-labelledby="assistant-help-title">
+  <span class="section-label">First prompt</span>
+  <h2 id="assistant-help-title">Open the built-in help</h2>
+  <p>
+    Go to the Team chat and select the <strong>?</strong> button beside <strong>Send</strong>. The right sidebar
+    displays the installed Assistant's <code>HELP.md</code> with short examples. Try “What is the weather in
+    Lisbon right now?” or ask for a five-day forecast in your city.
+  </p>
+</section>
 
 <section class="guide-section" aria-labelledby="assistant-chat-title">
   <span class="section-label">Chat</span>
@@ -98,7 +108,7 @@
   <h2 id="assistant-failure-title">Retry safely</h2>
   <p>
     Use <strong>Install</strong> again. Installation is idempotent: the controller starts a
-    stopped runtime and replaces the stateless Hello Pulse container only when it remains unresponsive. If
+    stopped runtime and replaces the stateless Shimpz Assistant container only when it remains unresponsive. If
     the Admin reports that the local control plane is unavailable, run the install command again to repair
     the managed services without deleting your data.
   </p>

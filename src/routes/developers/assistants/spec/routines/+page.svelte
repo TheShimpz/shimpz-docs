@@ -42,7 +42,7 @@
   <span class="section-label">Example</span>
   <h2 id="routines-example-title">Reuse a declared Power</h2>
   <CodeBlock
-    label="Owner-disabled Hello Pulse routine"
+    label="Owner-disabled Shimpz Assistant routine"
     title="shimpz.assistant.toml · routine"
     variant="code"
     {...data.routine}

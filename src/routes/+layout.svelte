@@ -129,9 +129,9 @@
       label: "Assistant examples",
       items: [
         {
-          href: "/developers/assistants/hello-pulse/",
-          label: "Hello Pulse",
-          description: "Executable first project",
+          href: "/developers/assistants/shimpz-assistant/",
+          label: "Shimpz Assistant",
+          description: "Executable weather reference",
         },
         {
           href: "/developers/assistants/salesnator/",

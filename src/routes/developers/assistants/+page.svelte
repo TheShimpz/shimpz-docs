@@ -23,8 +23,8 @@
 <aside class="scope-note" aria-labelledby="assistant-status-title">
   <span id="assistant-status-title" class="kicker">What is available now</span>
   <p>
-    Assistant Spec v2 defines Rules, Powers, permissions, routines, and immutable releases. Hello Pulse
-    remains the deliberately narrow runtime reference. For each turn, the provider-neutral LangGraph Brain
+    Assistant Spec v2 defines Rules, Powers, permissions, routines, immutable releases, and user Help. Shimpz
+    Assistant is the executable runtime reference. For each turn, the provider-neutral LangGraph Brain
     receives every installed, available Assistant's validated Rules and Powers, while the controller retains
     all execution authority.
   </p>
@@ -76,9 +76,9 @@
       </a>
     </li>
     <li>
-      <a class="docs-entry-link" href="/developers/assistants/hello-pulse/">
-        <strong>Hello Pulse</strong>
-        <span>Scaffold, validate, and call one dependency-free Power locally</span>
+      <a class="docs-entry-link" href="/developers/assistants/shimpz-assistant/">
+        <strong>Shimpz Assistant</strong>
+        <span>Compose three typed weather Powers through one bounded public API</span>
       </a>
     </li>
     <li>
