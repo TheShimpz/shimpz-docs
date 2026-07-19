@@ -15,18 +15,18 @@
   <span class="section-label">Developer preview</span>
   <h1>Give one Team a focused capability.</h1>
   <p class="docs-lede">
-    An Assistant is an immutable workload owned by one isolated Team. It combines Rules, user Help, and
-    named Powers without inheriting Space-level authority.
+    An Assistant is an immutable workload owned by one isolated Team. It combines Rules, a Genesis
+    orchestration playbook, user Help, and named Powers without inheriting Space-level authority.
   </p>
 </header>
 
 <aside class="scope-note" aria-labelledby="assistant-status-title">
   <span id="assistant-status-title" class="kicker">What is available now</span>
   <p>
-    Assistant Spec v2 defines the intent-only manifest, Rules, Powers, closed schemas, and user Help. Shimpz
-    Assistant is the executable runtime reference. For each turn, the provider-neutral LangGraph Brain
-    receives every installed, available Assistant's validated Rules and Powers, while the controller retains
-    all execution authority.
+    Assistant Spec v2 defines the intent-only manifest, Rules, Genesis, Powers, closed schemas, and user Help.
+    Shimpz Assistant is the executable runtime reference. For each turn, the provider-neutral LangGraph Brain
+    receives only the enabled Assistants' validated context and Powers, while the controller retains all
+    execution authority.
   </p>
 </aside>
 
@@ -66,7 +66,7 @@
     <li>
       <a class="docs-entry-link" href="/developers/assistants/spec/">
         <strong>Assistant Spec v2</strong>
-        <span>Intent-only manifest, Rules, Help, Powers, and runtime boundaries</span>
+        <span>Intent-only manifest, Rules, Genesis, Help, Powers, and runtime boundaries</span>
       </a>
     </li>
     <li>

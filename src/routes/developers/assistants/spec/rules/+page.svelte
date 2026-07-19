@@ -25,8 +25,8 @@
   <span class="section-label">Concept · behavior</span>
   <h1>Teach behavior with Rules.</h1>
   <p class="docs-lede">
-    Rules tell the inference model how this Assistant should reason, when to suggest a Power, and how to
-    communicate the result.
+    Rules define invariant behavior, communication style, and safety boundaries. Put Power selection and
+    multi-Power sequences in the separate root <code>GENESIS.md</code> playbook.
   </p>
 </header>
 
@@ -42,8 +42,8 @@
   <span class="section-label">Example</span>
   <h2 id="rules-example-title">Write for the next decision</h2>
   <p>
-    Start with the Assistant's purpose, the Power it may use, what to ask when input is missing, and the
-    expected communication style.
+    State how the Assistant should communicate, what it must never claim, and which uncertainty it must
+    surface. Keep operational Power recipes in Genesis.
   </p>
   <CodeBlock
     label="Minimal Rules for Shimpz Assistant"
@@ -57,7 +57,7 @@
   <span class="section-label">File contract</span>
   <h2 id="rules-file-title">Keep one bounded Markdown file</h2>
   <ul>
-    <li>Reference it with a project-relative <code>.md</code> path such as <code>assistant/RULES.md</code>.</li>
+    <li>Use the conventional project path <code>assistant/RULES.md</code>; no manifest field is needed.</li>
     <li>Keep it non-empty, valid UTF-8, inside the project, and below 128 KiB.</li>
     <li>Do not place passwords, API keys, tokens, or other credentials in Rules.</li>
     <li>Name Powers exactly as declared; prose never creates a missing capability.</li>
@@ -66,5 +66,5 @@
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec v2 guide">
   <a href="/developers/assistants/spec/manifest/"><span>Back</span><strong>Manifest</strong></a>
-  <a href="/developers/assistants/spec/help/"><span>Next</span><strong>Help</strong></a>
+  <a href="/developers/assistants/spec/genesis/"><span>Next</span><strong>Genesis</strong></a>
 </nav>

@@ -77,8 +77,8 @@
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Assistant Manifest v2 JSON Schema (opens in a new tab)">JSON Schema</a
-    > documents the data shape. The SDK also validates the conventional <code>assistant/RULES.md</code>,
-    localized <code>help/HELP-&lt;locale&gt;.md</code> files, and
+    > documents the data shape. The SDK also validates the conventional <code>assistant/RULES.md</code>, root
+    <code>GENESIS.md</code>, localized <code>help/HELP-&lt;locale&gt;.md</code> files, and
     <code>schemas/&lt;power&gt;.(input|output).schema.json</code> files.
   </p>
 </section>

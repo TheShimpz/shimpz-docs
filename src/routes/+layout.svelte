@@ -92,6 +92,11 @@
               description: "Orient behavior",
             },
             {
+              href: "/developers/assistants/spec/genesis/",
+              label: "Genesis",
+              description: "Compose declared Powers",
+            },
+            {
               href: "/developers/assistants/spec/help/",
               label: "Help",
               description: "Guide the person using it",

@@ -87,6 +87,6 @@
 </section>
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec v2 guide">
-  <a href="/developers/assistants/spec/rules/"><span>Back</span><strong>Rules</strong></a>
+  <a href="/developers/assistants/spec/genesis/"><span>Back</span><strong>Genesis</strong></a>
   <a href="/developers/assistants/spec/powers/"><span>Next</span><strong>Powers</strong></a>
 </nav>

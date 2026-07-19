@@ -26,15 +26,15 @@
 
 <section class="guide-section" aria-labelledby="assistant-flow-title">
   <span class="section-label">Mental model</span>
-  <h2 id="assistant-flow-title">Rules orient. Powers act.</h2>
+  <h2 id="assistant-flow-title">Rules constrain. Genesis composes. Powers act.</h2>
   <ol>
-    <li>Each installed Assistant contributes its validated Rules and declared Powers to its Team.</li>
+    <li>Each enabled Assistant contributes its validated Rules, Genesis, and declared Powers to its Team.</li>
     <li>The Brain decides which Assistant Power, if any, can help answer the Team's current turn.</li>
     <li>The controller validates the request and decides whether it is granted.</li>
     <li>The Assistant executes the bounded Power and returns a schema-validated result.</li>
   </ol>
   <p>
-    The provider-neutral LangGraph Brain can chain Powers from the Team's installed Assistants before it
+    The provider-neutral LangGraph Brain can chain Powers from the Team's enabled Assistants before it
     answers naturally as the Team. Rules never grant authority. Only the controller can validate and execute
     an authorized Power; the Brain never receives an ambient shell, filesystem, general network, or host
     tools.
@@ -55,6 +55,12 @@
       <a class="docs-entry-link" href="/developers/assistants/spec/rules/">
         <strong>Rules</strong>
         <span>Guide behavior without creating authority.</span>
+      </a>
+    </li>
+    <li>
+      <a class="docs-entry-link" href="/developers/assistants/spec/genesis/">
+        <strong>Genesis</strong>
+        <span>Teach the Brain how declared Powers compose.</span>
       </a>
     </li>
     <li>

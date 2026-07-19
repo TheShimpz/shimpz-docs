@@ -19,8 +19,8 @@
   <h1>Inference is not ambient authority.</h1>
   <p class="docs-lede">
     Shimpz uses a provider-neutral LangGraph Brain for each Team turn. The Brain receives the validated
-    Rules and Powers of every installed, available Assistant so it can answer naturally or coordinate
-    bounded actions; it is not a coding agent inside the Team.
+    Rules, Genesis, and Powers of only the Assistants enabled for that turn so it can answer naturally or
+    coordinate bounded actions; it is not a coding agent inside the Team.
   </p>
 </header>
 
@@ -39,10 +39,30 @@
   <ul>
     <li>The user selects a Team and talks to it by the name chosen when that Team was created.</li>
     <li>Assistants are installed capabilities, not selectable speakers or independent chat identities.</li>
-    <li>The controller gives LangGraph every installed, available Assistant's validated Rules and Powers.</li>
-    <li>An empty Team with no available Assistant cannot start a Brain turn.</li>
+    <li>The user may enable any bounded subset of the Team's running Assistants for the next turn.</li>
+    <li>The controller gives LangGraph only that subset's validated Rules, Genesis, and Powers.</li>
+    <li>
+      An empty selection allows natural greetings, clarification, and capability explanation only; the Brain
+      cannot perform generic out-of-scope work or invent Assistant abilities.
+    </li>
     <li>Changing provider or model changes inference, not authority.</li>
     <li>Installing, removing, or stopping an Assistant changes the Team's Power set at the next validated boundary.</li>
+  </ul>
+</section>
+
+<section class="guide-section" aria-labelledby="team-purpose-title">
+  <span class="section-label">System identity</span>
+  <h2 id="team-purpose-title">Answer as the Team, not as a generic model</h2>
+  <p>
+    The fixed Brain system context binds every turn to the Team's chosen name and to the enabled Assistants.
+    Capability claims and answers must relate to those Assistants, their Rules, their Genesis playbooks, and
+    their declared Powers.
+  </p>
+  <ul>
+    <li>The Brain presents itself as the Team and never as an Assistant, provider, or coding agent.</li>
+    <li>It may reason naturally within the enabled Assistants' purposes and compose their bounded Powers.</li>
+    <li>For an out-of-scope request, it explains the available capabilities or asks the user to enable a relevant Assistant.</li>
+    <li>Neither a Genesis playbook nor user text can replace this identity or create an undeclared capability.</li>
   </ul>
 </section>
 
@@ -50,7 +70,7 @@
   <span class="section-label">Power broker</span>
   <h2 id="chat-flow-title">Let the controller execute, never the model</h2>
   <ol>
-    <li>The controller loads the Team's installed Assistants and their validated Rules and Power definitions.</li>
+    <li>The controller resolves the explicitly enabled Assistants and their validated Rules, Genesis, and Powers.</li>
     <li>LangGraph gives that closed context to the configured model provider.</li>
     <li>The model may answer naturally as the Team or request one declared Power with structured input.</li>
     <li>The controller verifies Team ownership, Assistant installation, declaration, grant, approval, and schema.</li>
@@ -71,7 +91,7 @@
     <li>The Brain cannot create, edit, delete, inspect, or execute Team files.</li>
     <li>It cannot run shell commands, package managers, interpreters, build tools, or source-control tools.</li>
     <li>It cannot directly call a Service, Assistant, arbitrary internet endpoint, or host route.</li>
-    <li>Its LangGraph tools are generated only from the Team's installed Assistants and declared Powers.</li>
+    <li>Its LangGraph tools are generated only from the turn's enabled Assistants and declared Powers.</li>
     <li>Each tool call suspends the graph; only the controller may authorize and execute the Power.</li>
   </ul>
   <p>
