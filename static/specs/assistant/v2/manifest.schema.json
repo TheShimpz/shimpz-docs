@@ -52,7 +52,7 @@
       "items": {
         "type": "string",
         "maxLength": 253,
-        "pattern": "^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?$"
+        "pattern": "^(?!.*\\.(?:arpa|example|home|internal|invalid|lan|local|localdomain|localhost|onion|test)$)(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?$"
       }
     },
     "powers": {
