@@ -93,7 +93,7 @@
     <li>
       <a class="docs-entry-link" href="/developers/assistants/shimpz-assistant/">
         <strong>Shimpz Assistant</strong>
-        <span>Use five private X declarations across four narrowly scoped Powers</span>
+        <span>Review the blocked X reference and its controller-owned OAuth boundary</span>
       </a>
     </li>
     <li>

@@ -11,7 +11,7 @@
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/shimpz-assistant/" />
   <meta
     name="description"
-    content="Run the canonical Shimpz Assistant and inspect its four typed X.com Powers, five secret declarations, and built-in Help."
+    content="Review the blocked X.com Shimpz Assistant reference and the OAuth boundary required before release."
   />
 </svelte:head>
 
@@ -25,29 +25,28 @@
   <span class="section-label">Executable source reference</span>
   <h1>Explore Shimpz Assistant.</h1>
   <p class="docs-lede">
-    Use one small, real Assistant to see how Genesis, localized Help, typed Powers, per-Power secrets, async
-    I/O, explicit approval, and restricted network access fit together.
+    Inspect the source and the release boundary for an X.com Assistant with localized Help, typed Powers,
+    explicit approval, and restricted network access.
   </p>
 </header>
 
 <aside class="scope-note" aria-labelledby="assistant-boundary-title">
-  <span id="assistant-boundary-title" class="kicker">Easy to inspect</span>
+  <span id="assistant-boundary-title" class="kicker">Publication blocked</span>
   <p>
-    The reference declares five X credentials but contains no values. In a Team, requests can reach only
-    <code>api.x.com</code> through the authenticated egress proxy; the Assistant receives no host mount,
-    published port, general network access, or secret outside the Power currently being invoked.
+    This reference is not installable until X OAuth 2.0 Authorization Code with S256 PKCE is owned by the
+    controller. End users must never be asked for X developer keys, Bearer Tokens, access tokens, refresh
+    tokens, or client secrets.
   </p>
 </aside>
 
 <section class="guide-section" aria-labelledby="assistant-install-title">
-  <span class="section-label">Fastest path</span>
-  <h2 id="assistant-install-title">Install it in a Team</h2>
+  <span class="section-label">Current path</span>
+  <h2 id="assistant-install-title">Inspect it without installing</h2>
   <p>
-    Install Shimpz, create a Team, then choose <strong>Shimpz Assistant</strong> in the local Store. Open
-    the Team chat and select the <strong>?</strong> button next to <strong>Send</strong> to read its
-    localized Help and copy a starter prompt.
+    Clone the source and run its local checks. The Store must not advertise or install the X reference until
+    the reviewed connection release is bound to an immutable image.
   </p>
-  <p><a href="/assistants/">Follow the first Assistant guide</a>.</p>
+  <p><a href="/developers/assistants/spec/secrets/">Review the secret and OAuth boundary</a>.</p>
 </section>
 
 <ol class="step-list">
@@ -78,8 +77,8 @@
   </li>
 
   <li>
-    <h2>Start the local process</h2>
-    <p>The process exposes health, user Help, and exactly four declared Power routes.</p>
+    <h2>Inspect the fail-closed process</h2>
+    <p>The current source deliberately refuses X provider calls until the OAuth connection exists.</p>
     <CodeBlock
       label="Run Shimpz Assistant locally"
       title="Terminal one · Runtime"
@@ -88,15 +87,14 @@
   </li>
 
   <li>
-    <h2>Compose least-privilege Powers</h2>
+    <h2>Review the intended least-privilege Powers</h2>
     <p>
-      <code>public-user-lookup</code> receives only a Bearer Token. <code>identity-me</code>,
-      <code>create-post</code>, and <code>delete-post</code> receive the four OAuth 1.0a values, while both write
-      Powers independently require explicit approval. The Team Brain can compose them from natural language,
-      but the controller validates and invokes every step.
+      The future <code>public-user-lookup</code>, <code>identity-me</code>, <code>create-post</code>, and
+      <code>delete-post</code> Powers reference one scoped X connection. Only a short-lived access token may
+      enter the private Power envelope; both write Powers independently require explicit approval.
     </p>
     <CodeBlock
-      label="Inspect the declarative X contract without exposing a credential"
+      label="Inspect the blocked X source without exposing a credential"
       title="Terminal · Manifest"
       lines={[
         {
@@ -118,8 +116,7 @@
   <h2 id="assistant-proof-title">One complete, reusable pattern</h2>
   <ul>
     <li>
-      <code>GENESIS.md</code> defines behavior, response style, safety boundaries, and when and how to combine
-      the four X Powers.
+      <code>GENESIS.md</code> defines behavior, response style, safety boundaries, and intended Power composition.
     </li>
     <li>
       <code>help/HELP-&lt;locale&gt;.md</code> gives the installed user short instructions and prompt examples in
@@ -130,11 +127,11 @@
       admits only the matching packaged manifest, and the proxy blocks every other host.
     </li>
     <li>
-      Five public secret declarations drive the write-only Admin forms; each Power receives only its declared
-      values through the closed private RPC envelope.
+      A reviewed <code>connections.x</code> declaration will request provider consent without accepting X
+      developer credentials in Assistant source or forms.
     </li>
     <li>Closed schemas bound every input and output; unknown fields and undeclared routes fail closed.</li>
-    <li>A mature OAuth 1.0a signer and shared async HTTP session keep provider calls correct and efficient.</li>
+    <li>The controller, not Assistant code, will own PKCE state, refresh, revocation, and token custody.</li>
   </ul>
   <p>
     Read the <a

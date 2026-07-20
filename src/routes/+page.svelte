@@ -34,10 +34,10 @@
 <aside class="scope-note" aria-labelledby="validated-scope-title">
   <span id="validated-scope-title" class="kicker">Validated scope</span>
   <p>
-    This development delivery can create an empty local Team and install the free Shimpz Assistant from one
-    allowlisted, immutable image. Its four X.com Powers can reach only <code>api.x.com</code> through a
-    restricted proxy and receive only their declared Team-scoped secrets. Provider-backed Team chat requires
-    a separate configured model API key. Commerce remains outside this delivery.
+    This development delivery can create an empty local Team and run provider-backed Team chat with a
+    separately configured model API key. The reviewed X reference remains unavailable while its
+    controller-owned OAuth connection is completed; do not paste X developer credentials into Shimpz.
+    Commerce remains outside this delivery.
   </p>
 </aside>
 

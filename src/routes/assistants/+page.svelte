@@ -21,12 +21,11 @@
 </header>
 
 <aside class="scope-note" aria-labelledby="assistant-evaluation-scope">
-  <span id="assistant-evaluation-scope" class="kicker">Evaluation boundary</span>
+  <span id="assistant-evaluation-scope" class="kicker">Release status</span>
   <p>
-    Shimpz Assistant is the only admitted Assistant in this development build. Its immutable image has no
-    embedded credentials, mounts, host ports, or general network access. X requests can reach only the
-    declared <code>api.x.com</code> host through the authenticated egress proxy. Private values are scoped to
-    this Assistant installation and the destination Team.
+    The X.com Shimpz Assistant is intentionally unavailable while its controller-owned OAuth 2.0 connection
+    is completed. Shimpz will never ask you to paste X developer keys, Bearer Tokens, access tokens, refresh
+    tokens, or client secrets into an Assistant form.
   </p>
 </aside>
 
@@ -43,9 +42,8 @@
   <li>
     <h2>Choose Shimpz Assistant</h2>
     <p>
-      Open <strong>Assistants</strong>. In the Shimpz Assistant card, select
-      <strong>Install</strong>. A Store card may open the same local confirmation, but it cannot install on
-      its own.
+      Open <strong>Assistants</strong>. The X reference will appear only after its reviewed OAuth release is
+      available. A Store card may open a local confirmation, but it cannot install on its own.
     </p>
   </li>
 
@@ -73,23 +71,22 @@
   <p>
     Go to the Team chat and select the <strong>?</strong> button beside <strong>Send</strong>. The right sidebar
     displays the installed Assistant's localized Help with short examples. The Admin selects
-    <code>help/HELP-&lt;locale&gt;.md</code> for its current language and falls back to English. Try “Look up the
-    public X profile @TheShimpz” or ask which connected X account is active.
+    <code>help/HELP-&lt;locale&gt;.md</code> for its current language and falls back to English.
   </p>
 </section>
 
 <section class="guide-section" aria-labelledby="assistant-secrets-title">
-  <span class="section-label">Private X access</span>
-  <h2 id="assistant-secrets-title">Let the Admin ask at the moment of use</h2>
+  <span class="section-label">Private provider access</span>
+  <h2 id="assistant-secrets-title">Secrets and account connections are different</h2>
   <p>
     When a selected Power needs a value that is not configured, the Admin pauses the turn and opens a
-    write-only form. Public profile lookup asks only for an X Bearer Token. Connected-account identity,
-    create, and delete use the four declared OAuth 1.0a values. Never paste any of them into chat.
+    write-only form containing every missing opaque API key declared by that Power. Never paste a secret into
+    chat.
   </p>
   <p>
-    Values remain bound to this Team and Shimpz Assistant installation. The inventory shows only configured
-    or missing status behind a fixed mask. Creating or deleting a Post also requires a separate explicit
-    approval; saving credentials is never approval for an external effect.
+    OAuth account access uses a separate controller-owned connection and provider consent screen. X developer
+    credentials are not Assistant secrets. Saving either kind of private access is never approval for an
+    external effect; a write Power still needs its own explicit approval.
   </p>
 </section>
 
