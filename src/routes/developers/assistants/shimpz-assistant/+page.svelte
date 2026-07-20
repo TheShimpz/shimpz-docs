@@ -60,7 +60,7 @@
       label="Clone Shimpz Assistant"
       title="Terminal · Source"
       lines={[
-        { value: "git clone https://github.com/roxygens/shimpz-assistant.git" },
+        { value: "git clone https://github.com/TheShimpz/shimpz-assistant.git" },
         { value: "cd shimpz-assistant" },
       ]}
     />

@@ -118,7 +118,7 @@
   <p>
     Read the <a
       class="external-link"
-      href="https://github.com/roxygens/shimpz-drivers/tree/main/r2"
+      href="https://github.com/TheShimpz/shimpz-core/tree/main/r2"
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Cloudflare R2 Service source on GitHub (opens in a new tab)">Cloudflare R2 Service source</a

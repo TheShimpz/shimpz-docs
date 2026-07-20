@@ -125,7 +125,7 @@
   <p>
     Read the <a
       class="external-link"
-      href="https://github.com/roxygens/shimpz-drivers/tree/main/pg"
+      href="https://github.com/TheShimpz/shimpz-core/tree/main/pg"
       target="_blank"
       rel="noopener noreferrer"
       aria-label="PostgreSQL Service source on GitHub (opens in a new tab)">PostgreSQL Service source</a
