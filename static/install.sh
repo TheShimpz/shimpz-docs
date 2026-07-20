@@ -354,6 +354,8 @@ validate_project_resources() {
 			"${PROJECT_NAME}_controller_approval_state|controller_approval_state"|\
 			"${PROJECT_NAME}_controller_assistant_secret_state|controller_assistant_secret_state"|\
 			"${PROJECT_NAME}_controller_assistant_secret_key|controller_assistant_secret_key"|\
+			"${PROJECT_NAME}_controller_assistant_connection_state|controller_assistant_connection_state"|\
+			"${PROJECT_NAME}_controller_assistant_connection_key|controller_assistant_connection_key"|\
 			"${PROJECT_NAME}_brain_runtime_token|brain_runtime_token"|\
 			"${PROJECT_NAME}_brain_runtime_state|brain_runtime_state"|\
 			"${PROJECT_NAME}_app_egress_policy|app_egress_policy"|\
@@ -851,6 +853,8 @@ services:
       - controller_approval_state:/var/lib/shimpz-local/assistant-approvals:rw
       - controller_assistant_secret_state:/var/lib/shimpz-local/assistant-secrets/state:rw
       - controller_assistant_secret_key:/var/lib/shimpz-local/assistant-secrets/key:rw
+      - controller_assistant_connection_state:/var/lib/shimpz-local/assistant-connections/state:rw
+      - controller_assistant_connection_key:/var/lib/shimpz-local/assistant-connections/key:rw
       - app_egress_policy:/var/lib/shimpz-local/app-egress:rw
       - brain_runtime_token:/run/shimpz-brain-runtime:rw
     tmpfs:
@@ -1028,6 +1032,8 @@ volumes:
   controller_approval_state:
   controller_assistant_secret_state:
   controller_assistant_secret_key:
+  controller_assistant_connection_state:
+  controller_assistant_connection_key:
   app_egress_policy:
   app_egress_audit:
   brain_runtime_token:
