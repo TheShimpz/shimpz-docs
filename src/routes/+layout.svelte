@@ -272,7 +272,7 @@
 
 <div class="wrap flex flex-col gap-10 pt-9 pb-16 lg:flex-row lg:gap-14">
   <aside class="docs-sidebar lg:w-64 lg:shrink-0">
-    <div class="hidden lg:sticky lg:top-24 lg:block">
+    <div class="docs-sidebar-panel hidden lg:sticky lg:top-24 lg:block">
       {@render guideSwitch()}
       <p id={navigationTitleId} class="kicker">{guideLabel}</p>
       <nav class="mt-4" aria-labelledby={navigationTitleId}>
