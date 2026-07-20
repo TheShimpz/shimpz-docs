@@ -25,18 +25,18 @@
   <span class="section-label">Spec v2 · start here</span>
   <h1>Describe one Assistant.</h1>
   <p class="docs-lede">
-    <code>shimpz.assistant.toml</code> contains identity, public secret metadata, narrow Powers, and exact
-    external hosts requested by the creator. Shimpz owns values, runtime enforcement, build, and file-layout
-    decisions.
+    <code>shimpz.assistant.toml</code> contains identity, public secret and connection intent, narrow Powers,
+    and exact external hosts requested by the creator. Shimpz owns private values, OAuth, runtime enforcement,
+    build, and file-layout decisions.
   </p>
 </header>
 
 <aside class="scope-note" aria-labelledby="manifest-request-title">
   <span id="manifest-request-title" class="kicker">A request, not a grant</span>
   <p>
-    Power, <code>secrets</code>, and <code>allowed_hosts</code> declarations describe intent. Installation,
-    owner consent, catalog review, and Team controller policy still decide what can run, which private values
-    can be delivered, and which hosts can be reached.
+    Power, <code>secrets</code>, <code>connections</code>, and <code>allowed_hosts</code> declarations describe
+    intent. Installation, owner consent, catalog review, and Team controller policy still decide what can run,
+    which private values can be delivered, and which hosts can be reached.
   </p>
 </aside>
 
@@ -73,10 +73,19 @@
       <code>name</code> and <code>summary</code>, and is bounded to 64 characters so admission and encrypted
       storage enforce the same identifier contract; values never belong in source.
     </li>
+    <li>
+      <code>connections</code> optionally names a reviewed OAuth provider and its narrow scopes. Endpoints,
+      callbacks, Client IDs, authorization codes, PKCE verifiers, and tokens are controller-owned and are not
+      manifest fields.
+    </li>
     <li><code>powers</code> defines the only Assistant capabilities the Brain may request.</li>
     <li>
       <code>powers.&lt;id&gt;.secrets</code> lists the exact declared secret IDs delivered to that Power for one
       invocation.
+    </li>
+    <li>
+      <code>powers.&lt;id&gt;.connections</code> lists the exact declared connections delivered to that Power for
+      one invocation.
     </li>
   </ul>
 </section>
@@ -85,8 +94,8 @@
   <span class="section-label">Fail closed</span>
   <h2 id="manifest-validation-title">Let validation catch drift early</h2>
   <p>
-    Unknown fields, invalid creator names, duplicate IDs, undefined Power secret references, secret values in
-    source, unsafe conventional files, and open schemas are rejected. Each allowed host must be a unique,
+    Unknown fields, invalid creator names, duplicate IDs, undefined Power secret or connection references,
+    provider credentials in source, unsafe conventional files, and open schemas are rejected. Each allowed host must be a unique,
     lowercase, exact public DNS hostname. URLs, ports, paths, wildcards, IP addresses, localhost, and internal
     names are rejected. The list accepts at most 32 hosts. The <a
       class="external-link"

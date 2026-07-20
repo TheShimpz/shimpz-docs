@@ -46,7 +46,7 @@
     Clone the source and run its local checks. The Store must not advertise or install the X reference until
     the reviewed connection release is bound to an immutable image.
   </p>
-  <p><a href="/developers/assistants/spec/secrets/">Review the secret and OAuth boundary</a>.</p>
+  <p><a href="/developers/assistants/spec/connections/">Review the OAuth connection boundary</a>.</p>
 </section>
 
 <ol class="step-list">

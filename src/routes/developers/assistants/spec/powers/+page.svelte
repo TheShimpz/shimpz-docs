@@ -50,7 +50,8 @@
     The table key is the stable lowercase kebab-case Power ID. <code>approval</code> accepts
     <code>never</code>, <code>once</code>, or <code>always</code> and defaults to <code>never</code> when
     omitted. It never overrides an owner or controller decision. <code>secrets</code> accepts only unique IDs
-    declared in the top-level <code>secrets</code> table and gives this Power no access to any other value.
+    declared in the top-level <code>secrets</code> table; <code>connections</code> does the same for reviewed
+    OAuth intent. A Power receives no private value or connection it did not explicitly reference.
   </p>
 </section>
 
