@@ -141,7 +141,7 @@
         {
           href: "/developers/assistants/shimpz-assistant/",
           label: "Shimpz Assistant",
-          description: "Executable weather reference",
+          description: "Executable X.com reference",
         },
         {
           href: "/developers/assistants/salesnator/",

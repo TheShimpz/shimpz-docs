@@ -35,8 +35,9 @@
   <span id="validated-scope-title" class="kicker">Validated scope</span>
   <p>
     This development delivery can create an empty local Team and install the free Shimpz Assistant from one
-    allowlisted, immutable image. Its three weather Powers use only public Open-Meteo data through a restricted
-    proxy. Provider-backed Team chat requires a configured API key. Commerce remains outside this delivery.
+    allowlisted, immutable image. Its four X.com Powers can reach only <code>api.x.com</code> through a
+    restricted proxy and receive only their declared Team-scoped secrets. Provider-backed Team chat requires
+    a separate configured model API key. Commerce remains outside this delivery.
   </p>
 </aside>
 

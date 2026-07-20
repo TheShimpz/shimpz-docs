@@ -48,7 +48,7 @@
     Powers. Give the Brain a clear start condition, the smallest useful sequence, and a safe stop condition.
   </p>
   <CodeBlock
-    label="Minimal Genesis for a weather Assistant"
+    label="Minimal Genesis for the X.com reference Assistant"
     title="GENESIS.md"
     variant="code"
     {...data.genesis}

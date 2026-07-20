@@ -4,15 +4,17 @@ import type { PageServerLoad } from "./$types";
 
 const help = `# Shimpz Assistant
 
-Use this Assistant to search for a place and check its weather with public Open-Meteo data.
+Use this Assistant to read public X profiles and manage Posts for one connected X account.
 
 ## Try asking
 
-- “Find the coordinates for Lisbon.”
-- “What is the weather in Tokyo right now?”
-- “Give me the next five days in São Paulo.”
+- “Look up the public X profile @TheShimpz.”
+- “Which X account is connected?”
+- “Draft this Post and show me the exact text before asking to publish it.”
+- “Delete the Post we just created.”
 
-Forecasts are estimates. No account or API key is required.`;
+The Admin securely asks for a missing X credential when a Power needs it. Never paste a token or secret into
+chat. Publishing and deleting each require your explicit approval.`;
 
 export const load: PageServerLoad = async () => ({
   help: await highlightCode(help, "markdown"),

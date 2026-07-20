@@ -17,7 +17,7 @@
   <li><strong>Space</strong> is the server-wide Shimpz installation owned by this machine.</li>
   <li>
     <strong>Service</strong> is a shared capability operated by the Space. It authorizes each Team and
-    keeps provider or administrator credentials outside Assistants.
+    keeps its own provider or administrator credentials outside Assistants.
   </li>
   <li>
     <strong>Team</strong> is an isolated environment that owns its Assistants, files, conversation state,
@@ -26,7 +26,8 @@
   <li>
     <strong>Assistant</strong> belongs to exactly one Team. It contributes a Genesis playbook and named Powers
     to that Team, but is not a speaker the user selects. Genesis guides behavior and Power composition but
-    grants nothing. It cannot access another Team's Assistants, files, or resources.
+    grants nothing. Its own declared secret values are scoped to that Team and Assistant and delivered only
+    to a referencing Power. It cannot access another Team's Assistants, secrets, files, or resources.
   </li>
 </ul>
 

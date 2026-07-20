@@ -11,7 +11,7 @@
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/shimpz-assistant/" />
   <meta
     name="description"
-    content="Run the canonical Shimpz Assistant and inspect its three typed weather Powers and built-in user help."
+    content="Run the canonical Shimpz Assistant and inspect its four typed X.com Powers, five secret declarations, and built-in Help."
   />
 </svelte:head>
 
@@ -25,18 +25,17 @@
   <span class="section-label">Executable source reference</span>
   <h1>Explore Shimpz Assistant.</h1>
   <p class="docs-lede">
-    Use one small, real Assistant to see how Genesis, user Help, typed Powers, async I/O, and restricted
-    network access fit together.
+    Use one small, real Assistant to see how Genesis, localized Help, typed Powers, per-Power secrets, async
+    I/O, explicit approval, and restricted network access fit together.
   </p>
 </header>
 
 <aside class="scope-note" aria-labelledby="assistant-boundary-title">
   <span id="assistant-boundary-title" class="kicker">Easy to inspect</span>
   <p>
-    The reference uses public Open-Meteo data and needs no weather credential. In a Team, requests can
-    reach only <code>api.open-meteo.com</code> and <code>geocoding-api.open-meteo.com</code> through the
-    authenticated egress proxy; the Assistant receives no host mount, published port, or general network
-    access.
+    The reference declares five X credentials but contains no values. In a Team, requests can reach only
+    <code>api.x.com</code> through the authenticated egress proxy; the Assistant receives no host mount,
+    published port, general network access, or secret outside the Power currently being invoked.
   </p>
 </aside>
 
@@ -80,7 +79,7 @@
 
   <li>
     <h2>Start the local process</h2>
-    <p>The process exposes health, user Help, and exactly three declared Power routes.</p>
+    <p>The process exposes health, user Help, and exactly four declared Power routes.</p>
     <CodeBlock
       label="Run Shimpz Assistant locally"
       title="Terminal one · Runtime"
@@ -89,25 +88,25 @@
   </li>
 
   <li>
-    <h2>Compose real Powers</h2>
+    <h2>Compose least-privilege Powers</h2>
     <p>
-      First call <code>search-location</code> to obtain coordinates. Pass the selected coordinates to
-      <code>current-weather</code> or <code>daily-forecast</code>. The Team Brain performs this composition
-      from a natural-language request.
+      <code>public-user-lookup</code> receives only a Bearer Token. <code>identity-me</code>,
+      <code>create-post</code>, and <code>delete-post</code> receive the four OAuth 1.0a values, while both write
+      Powers independently require explicit approval. The Team Brain can compose them from natural language,
+      but the controller validates and invokes every step.
     </p>
     <CodeBlock
-      label="Call the current weather Power"
-      title="Terminal two · Power call"
+      label="Inspect the declarative X contract without exposing a credential"
+      title="Terminal · Manifest"
       lines={[
         {
-          value:
-            "curl -fsS -H 'content-type: application/json' -d '{\"latitude\":38.72,\"longitude\":-9.14}' http://127.0.0.1:8080/v1/powers/current-weather",
+          value: "sed -n '1,240p' shimpz.assistant.toml",
         },
       ]}
     />
     <CodeBlock
-      label="Current weather Power response"
-      title="Response · JSON"
+      label="Illustrative schema-validated public profile response"
+      title="public-user-lookup · JSON"
       variant="code"
       {...data.response}
     />
@@ -120,18 +119,22 @@
   <ul>
     <li>
       <code>GENESIS.md</code> defines behavior, response style, safety boundaries, and when and how to combine
-      the three weather Powers.
+      the four X Powers.
     </li>
     <li>
       <code>help/HELP-&lt;locale&gt;.md</code> gives the installed user short instructions and prompt examples in
       every Admin language.
     </li>
     <li>
-      <code>allowed_hosts</code> exposes the two exact external destinations for review. The controller admits
-      only the matching packaged manifest, and the proxy blocks every other host.
+      <code>allowed_hosts</code> exposes <code>api.x.com</code> as the only external destination. The controller
+      admits only the matching packaged manifest, and the proxy blocks every other host.
+    </li>
+    <li>
+      Five public secret declarations drive the write-only Admin forms; each Power receives only its declared
+      values through the closed private RPC envelope.
     </li>
     <li>Closed schemas bound every input and output; unknown fields and undeclared routes fail closed.</li>
-    <li>A shared async HTTP session keeps external calls efficient without granting ambient authority.</li>
+    <li>A mature OAuth 1.0a signer and shared async HTTP session keep provider calls correct and efficient.</li>
   </ul>
   <p>
     Read the <a

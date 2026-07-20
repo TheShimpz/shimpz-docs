@@ -24,8 +24,9 @@
   <span id="assistant-evaluation-scope" class="kicker">Evaluation boundary</span>
   <p>
     Shimpz Assistant is the only admitted Assistant in this development build. Its immutable image has no
-    credentials, mounts, host ports, or general network access. Weather requests can reach only the two
-    declared Open-Meteo hosts through the authenticated egress proxy.
+    embedded credentials, mounts, host ports, or general network access. X requests can reach only the
+    declared <code>api.x.com</code> host through the authenticated egress proxy. Private values are scoped to
+    this Assistant installation and the destination Team.
   </p>
 </aside>
 
@@ -72,8 +73,23 @@
   <p>
     Go to the Team chat and select the <strong>?</strong> button beside <strong>Send</strong>. The right sidebar
     displays the installed Assistant's localized Help with short examples. The Admin selects
-    <code>help/HELP-&lt;locale&gt;.md</code> for its current language and falls back to English. Try “What is the
-    weather in Lisbon right now?” or ask for a five-day forecast in your city.
+    <code>help/HELP-&lt;locale&gt;.md</code> for its current language and falls back to English. Try “Look up the
+    public X profile @TheShimpz” or ask which connected X account is active.
+  </p>
+</section>
+
+<section class="guide-section" aria-labelledby="assistant-secrets-title">
+  <span class="section-label">Private X access</span>
+  <h2 id="assistant-secrets-title">Let the Admin ask at the moment of use</h2>
+  <p>
+    When a selected Power needs a value that is not configured, the Admin pauses the turn and opens a
+    write-only form. Public profile lookup asks only for an X Bearer Token. Connected-account identity,
+    create, and delete use the four declared OAuth 1.0a values. Never paste any of them into chat.
+  </p>
+  <p>
+    Values remain bound to this Team and Shimpz Assistant installation. The inventory shows only configured
+    or missing status behind a fixed mask. Creating or deleting a Post also requires a separate explicit
+    approval; saving credentials is never approval for an external effect.
   </p>
 </section>
 
