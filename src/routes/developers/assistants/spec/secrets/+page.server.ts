@@ -2,19 +2,19 @@ import { highlightCode } from "$lib/server/highlight";
 
 import type { PageServerLoad } from "./$types";
 
-const declaration = `[secrets.x-bearer-token]
-name = "X Bearer Token"
-summary = "App-only token used exclusively for public X profile reads."
+const declaration = `[secrets.openweather-api-key]
+name = "OpenWeather API key"
+summary = "Authenticates current-weather requests for this Team."
 
-[powers.public-user-lookup]
-summary = "Read one public X profile by username."
+[powers.current-weather]
+summary = "Read current weather for one coordinate pair."
 approval = "never"
-secrets = ["x-bearer-token"]`;
+secrets = ["openweather-api-key"]`;
 
 const envelope = `{
-  "input": { "username": "TheShimpz" },
+  "input": { "latitude": -23.55, "longitude": -46.63 },
   "secrets": {
-    "x-bearer-token": "<resolved in memory>"
+    "openweather-api-key": "<resolved in memory>"
   }
 }`;
 

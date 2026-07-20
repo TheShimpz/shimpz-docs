@@ -3,66 +3,25 @@ import { highlightCode } from "$lib/server/highlight";
 import type { PageServerLoad } from "./$types";
 
 const manifest = `schema_version = 2
-name = "Shimpz Assistant"
-summary = "Read public X profiles and manage approved Posts for one connected X account."
-creators = ["@roxygens"]
-github = "https://github.com/roxygens/shimpz-assistant"
-allowed_hosts = ["api.x.com"]
+name = "Weather Desk"
+summary = "Read current weather and forecasts with one Team-owned API key."
+creators = ["@your-github-user"]
+github = "https://github.com/your-github-user/weather-desk"
+allowed_hosts = ["api.openweathermap.org"]
 
-[secrets.x-bearer-token]
-name = "X Bearer Token"
-summary = "App-only token used exclusively for public X profile reads."
+[secrets.openweather-api-key]
+name = "OpenWeather API key"
+summary = "Authenticates weather requests for this Team."
 
-[secrets.x-api-key]
-name = "X API Key"
-summary = "OAuth 1.0a consumer key identifying the connected X application."
-
-[secrets.x-api-key-secret]
-name = "X API Key Secret"
-summary = "OAuth 1.0a consumer secret used to sign account requests."
-
-[secrets.x-access-token]
-name = "X Access Token"
-summary = "OAuth 1.0a token identifying the connected X account."
-
-[secrets.x-access-token-secret]
-name = "X Access Token Secret"
-summary = "OAuth 1.0a token secret used to sign account requests."
-
-[powers.public-user-lookup]
-summary = "Read one public X profile by username."
+[powers.current-weather]
+summary = "Read current weather for one coordinate pair."
 approval = "never"
-secrets = ["x-bearer-token"]
+secrets = ["openweather-api-key"]
 
-[powers.identity-me]
-summary = "Read the identity of the connected X account."
+[powers.daily-forecast]
+summary = "Read a daily forecast for one coordinate pair."
 approval = "never"
-secrets = [
-  "x-api-key",
-  "x-api-key-secret",
-  "x-access-token",
-  "x-access-token-secret",
-]
-
-[powers.create-post]
-summary = "Publish one Post from the connected X account after explicit approval."
-approval = "always"
-secrets = [
-  "x-api-key",
-  "x-api-key-secret",
-  "x-access-token",
-  "x-access-token-secret",
-]
-
-[powers.delete-post]
-summary = "Delete one Post owned by the connected X account after explicit approval."
-approval = "always"
-secrets = [
-  "x-api-key",
-  "x-api-key-secret",
-  "x-access-token",
-  "x-access-token-secret",
-]`;
+secrets = ["openweather-api-key"]`;
 
 export const load: PageServerLoad = async () => ({
   manifest: await highlightCode(manifest, "toml"),

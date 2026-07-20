@@ -26,9 +26,9 @@
 <aside class="scope-note" aria-labelledby="permissions-current-title">
   <span id="permissions-current-title" class="kicker">Available today</span>
   <p>
-    The reviewed Shimpz Assistant release declares only <code>api.x.com</code>. The Team's authenticated
-    egress proxy blocks every other destination. Its X secrets do not widen that allowlist, and the allowlist
-    does not reveal or grant a secret.
+    A weather Assistant may declare only <code>api.openweathermap.org</code>. The Team's authenticated egress
+    proxy blocks every other destination. Its API key does not widen that allowlist, and the allowlist does
+    not reveal or grant a secret.
   </p>
 </aside>
 
@@ -56,9 +56,10 @@
     cannot make a credential available.
   </p>
   <p>
-    For the X example, every request is limited to <code>api.x.com</code>. Public profile lookup receives only
-    <code>x-bearer-token</code>; account identity and Post management receive only the four declared OAuth
-    1.0a values. See <a href="/developers/assistants/spec/secrets/">Secrets</a> for the delivery contract.
+    In the weather example, every request is limited to <code>api.openweathermap.org</code>, and both read
+    Powers receive only <code>openweather-api-key</code>. See <a href="/developers/assistants/spec/secrets/"
+      >Secrets</a
+    > for the delivery contract.
   </p>
 </section>
 

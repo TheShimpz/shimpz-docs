@@ -41,12 +41,11 @@
 </aside>
 
 <section class="guide-section" aria-labelledby="manifest-example-title">
-  <span class="section-label">Credentialed example</span>
+  <span class="section-label">BYOK example</span>
   <h2 id="manifest-example-title">Keep every dependency visible</h2>
   <p>
-    This complete X.com example names one exact host, five opaque secret IDs, and four Powers. It contains
-    no credential values. Each Power references only the IDs it needs, and both write Powers require explicit
-    approval.
+    This complete OpenWeather example names one exact host, one opaque secret ID, and two read-only Powers.
+    It contains no credential value. Each Power references only the ID it needs.
   </p>
   <CodeBlock
     label="Minimal Assistant Spec v2 manifest"

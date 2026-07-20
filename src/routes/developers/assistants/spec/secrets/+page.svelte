@@ -147,27 +147,41 @@
   </p>
 </section>
 
-<section class="guide-section" aria-labelledby="secret-x-title">
-  <span class="section-label">X.com reference</span>
-  <h2 id="secret-x-title">Give each Power only the X credentials it uses</h2>
+<section class="guide-section" aria-labelledby="secret-provider-title">
+  <span class="section-label">Provider API-key reference</span>
+  <h2 id="secret-provider-title">Give each Power only the provider key it uses</h2>
   <ul>
     <li>
-      <code>public-user-lookup</code> receives only <code>x-bearer-token</code> and uses
-      <code>approval = "never"</code> for a public read.
+      <code>current-weather</code> receives only <code>openweather-api-key</code> and uses
+      <code>approval = "never"</code> for a read.
     </li>
     <li>
-      <code>identity-me</code> receives <code>x-api-key</code>, <code>x-api-key-secret</code>,
-      <code>x-access-token</code>, and <code>x-access-token-secret</code> for an OAuth 1.0a account read.
-    </li>
-    <li>
-      <code>create-post</code> and <code>delete-post</code> receive the same four OAuth 1.0a values and each use
-      <code>approval = "always"</code> because they create an external effect.
+      <code>daily-forecast</code> may reuse that Team-and-Assistant-scoped value only because it explicitly
+      declares the same ID.
     </li>
   </ul>
   <p>
-    All four Powers may contact only the separately declared <code>api.x.com</code> host. A secret does not
-    grant egress, and <code>allowed_hosts</code> does not grant a secret. The controller must satisfy both
-    independent policies before any provider call.
+    Both Powers may contact only the separately declared <code>api.openweathermap.org</code> host. A secret
+    does not grant egress, and <code>allowed_hosts</code> does not grant a secret. The controller must satisfy
+    both independent policies before any provider call. OpenWeather's <a
+      class="external-link"
+      href="https://openweathermap.org/api/current"
+      target="_blank"
+      rel="noopener noreferrer"
+      >official current-weather API</a
+    > documents its account API key as the <code>appid</code> parameter.
+  </p>
+  <p>
+    Do not model an OAuth account connection as a password field. Providers that require an authorization
+    redirect, consent scopes, refresh tokens, or revocation need a platform-owned OAuth adapter; their
+    developer credentials do not belong in Assistant <code>secrets</code>. X specifically prohibits asking
+    people to provide developer application information directly; follow its <a
+      class="external-link"
+      href="https://docs.x.com/developer-terms/policy#x-passwords"
+      target="_blank"
+      rel="noopener noreferrer"
+      >developer policy</a
+    > and use a reviewed Sign in with X or OAuth adapter instead.
   </p>
 </section>
 

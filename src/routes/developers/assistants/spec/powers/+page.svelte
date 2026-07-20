@@ -41,7 +41,7 @@
   <span class="section-label">Declaration</span>
   <h2 id="powers-declaration-title">Name one useful outcome</h2>
   <CodeBlock
-    label="Read and write X Power declarations"
+    label="Read and write Power declarations"
     title="shimpz.assistant.toml · Powers"
     variant="code"
     {...data.power}
@@ -58,8 +58,8 @@
   <span class="section-label">Closed data</span>
   <h2 id="powers-schema-title">Accept only the fields you designed</h2>
   <CodeBlock
-    label="Closed public user lookup input"
-    title="schemas/public-user-lookup.input.schema.json"
+    label="Closed current-weather input"
+    title="schemas/current-weather.input.schema.json"
     variant="code"
     {...data.inputSchema}
   />
