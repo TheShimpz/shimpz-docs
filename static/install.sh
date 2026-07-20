@@ -3,7 +3,7 @@
 set -eu
 
 INSTALLER_VERSION="0.4.3-dev"
-IMAGE_REPOSITORY="ghcr.io/roxygens/shimpz-space"
+IMAGE_REPOSITORY="ghcr.io/theshimpz/shimpz-space"
 ADMIN_CHANNEL="dev"
 CONTROLLER_CHANNEL="team-driver-local-dev"
 BRAIN_RUNTIME_CHANNEL="brain-runtime-dev"
