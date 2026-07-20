@@ -110,8 +110,9 @@
     </li>
   </ul>
   <p>
-    Salesnator uses only synthetic data. Meta and notification tokens remain in Services, and campaign
-    mutations remain outside this MVP.
+    Salesnator uses only synthetic data and stores no tokens. A future live integration must declare
+    every provider Account or Secret on the exact Powers that need it; campaign mutations remain outside
+    this MVP.
   </p>
   <p>
     Creators may eventually distribute and sell Assistants. That marketplace is a later product layer,
