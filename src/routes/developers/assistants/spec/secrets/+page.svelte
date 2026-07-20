@@ -61,10 +61,9 @@
   <span class="section-label">Isolation</span>
   <h2 id="secret-scope-title">Scope every value to Team and Assistant</h2>
   <p>
-    Hosted and self-hosted controllers enforce the same scope: one stored value belongs to one Assistant
-    installation inside one Team. It is not Space-global, cannot be reused by another Assistant, and cannot
-    cross into another Team. Powers in that same installation may reuse it only when their admitted
-    declarations reference the same ID.
+    One stored value belongs to one Assistant installation inside one Team. It is not Space-global, cannot be
+    reused by another Assistant, and cannot cross into another Team. Powers in that same installation may
+    reuse it only when their admitted declarations reference the same ID.
   </p>
   <p>
     Each value is an independently authenticated AES-256-GCM envelope whose state and encryption key have
@@ -91,10 +90,9 @@
     merges and plaintext reads are never valid rotation mechanisms.
   </p>
   <p>
-    Spec v2 defines those semantics but the current Admin and controller expose only just-in-time first
-    collection. A dedicated rotate action is not part of this delivery. Until it is implemented, rotate at the
-    provider and reinstall or purge the affected local development Team instead of assuming that editing source
-    or submitting chat text replaces a stored value.
+    One atomic rotation may replace one or several declared IDs for the same Assistant, but every supplied value
+    is a complete replacement. All entries must validate before any generation changes, and a successful write
+    returns refreshed status and masks only—never an old or new plaintext value.
   </p>
 </section>
 
@@ -112,9 +110,9 @@
     <li>The controller validates and stores them under the current Team and Assistant, then resolves them for the invocation.</li>
   </ol>
   <p>
-    Both hosted and self-hosted controllers issue an opaque, one-use, Team-bound challenge that expires after
-    five minutes. The paused continuation stays only in controller memory, so a restart or expiry discards it
-    and the owner retries the turn. Already encrypted stored values persist independently of that continuation.
+    The controller issues an opaque, one-use, Team-bound challenge that expires after five minutes. The paused
+    continuation stays only in controller memory, so a restart or expiry discards it and the owner retries the
+    turn. Already encrypted stored values persist independently of that continuation.
   </p>
   <p>
     Closing the modal leaves the Power unexecuted. Saving a value never approves a Power: an
