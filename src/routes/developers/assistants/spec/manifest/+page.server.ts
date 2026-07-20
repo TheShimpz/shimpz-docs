@@ -4,24 +4,65 @@ import type { PageServerLoad } from "./$types";
 
 const manifest = `schema_version = 2
 name = "Shimpz Assistant"
-summary = "Find places and inspect current or forecast weather through Open-Meteo."
+summary = "Read public X profiles and manage approved Posts for one connected X account."
 creators = ["@roxygens"]
 github = "https://github.com/roxygens/shimpz-assistant"
-allowed_hosts = [
-  "api.open-meteo.com",
-  "geocoding-api.open-meteo.com",
+allowed_hosts = ["api.x.com"]
+
+[secrets.x-bearer-token]
+name = "X Bearer Token"
+summary = "App-only token used exclusively for public X profile reads."
+
+[secrets.x-api-key]
+name = "X API Key"
+summary = "OAuth 1.0a consumer key identifying the connected X application."
+
+[secrets.x-api-key-secret]
+name = "X API Key Secret"
+summary = "OAuth 1.0a consumer secret used to sign account requests."
+
+[secrets.x-access-token]
+name = "X Access Token"
+summary = "OAuth 1.0a token identifying the connected X account."
+
+[secrets.x-access-token-secret]
+name = "X Access Token Secret"
+summary = "OAuth 1.0a token secret used to sign account requests."
+
+[powers.public-user-lookup]
+summary = "Read one public X profile by username."
+approval = "never"
+secrets = ["x-bearer-token"]
+
+[powers.identity-me]
+summary = "Read the identity of the connected X account."
+approval = "never"
+secrets = [
+  "x-api-key",
+  "x-api-key-secret",
+  "x-access-token",
+  "x-access-token-secret",
 ]
 
-[powers.search-location]
-summary = "Find geographic coordinates for a city or postal code."
+[powers.create-post]
+summary = "Publish one Post from the connected X account after explicit approval."
+approval = "always"
+secrets = [
+  "x-api-key",
+  "x-api-key-secret",
+  "x-access-token",
+  "x-access-token-secret",
+]
 
-[powers.current-weather]
-summary = "Read the current weather for one coordinate."
-approval = "never"
-
-[powers.daily-forecast]
-summary = "Read a daily weather forecast for one coordinate."
-approval = "never"`;
+[powers.delete-post]
+summary = "Delete one Post owned by the connected X account after explicit approval."
+approval = "always"
+secrets = [
+  "x-api-key",
+  "x-api-key-secret",
+  "x-access-token",
+  "x-access-token-secret",
+]`;
 
 export const load: PageServerLoad = async () => ({
   manifest: await highlightCode(manifest, "toml"),

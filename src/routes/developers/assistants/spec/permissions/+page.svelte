@@ -26,9 +26,9 @@
 <aside class="scope-note" aria-labelledby="permissions-current-title">
   <span id="permissions-current-title" class="kicker">Available today</span>
   <p>
-    The reviewed Shimpz Assistant release declares only <code>api.open-meteo.com</code> and
-    <code>geocoding-api.open-meteo.com</code>. The Team's authenticated egress proxy blocks every other
-    destination. General third-party permission requests are not released in this MVP.
+    The reviewed Shimpz Assistant release declares only <code>api.x.com</code>. The Team's authenticated
+    egress proxy blocks every other destination. Its X secrets do not widen that allowlist, and the allowlist
+    does not reveal or grant a secret.
   </p>
 </aside>
 
@@ -43,6 +43,22 @@
   <p>
     This list gives users and reviewers one clear view of the Assistant's external destinations. It cannot
     expand authority by itself.
+  </p>
+</section>
+
+<section class="guide-section" aria-labelledby="permissions-two-keys-title">
+  <span class="section-label">Independent gates</span>
+  <h2 id="permissions-two-keys-title">Require both destination and capability</h2>
+  <p>
+    A Power that calls a provider must pass independent checks. Its destination must match
+    <code>allowed_hosts</code>, its declaration must name the exact secret IDs it needs, and the controller
+    must authorize the Power itself. A configured credential cannot create network access; an allowed host
+    cannot make a credential available.
+  </p>
+  <p>
+    For the X example, every request is limited to <code>api.x.com</code>. Public profile lookup receives only
+    <code>x-bearer-token</code>; account identity and Post management receive only the four declared OAuth
+    1.0a values. See <a href="/developers/assistants/spec/secrets/">Secrets</a> for the delivery contract.
   </p>
 </section>
 
@@ -64,6 +80,6 @@
 </section>
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec v2 guide">
-  <a href="/developers/assistants/spec/powers/"><span>Back</span><strong>Powers</strong></a>
+  <a href="/developers/assistants/spec/secrets/"><span>Back</span><strong>Secrets</strong></a>
   <a href="/developers/assistants/spec/routines/"><span>Next</span><strong>Routines</strong></a>
 </nav>

@@ -102,6 +102,11 @@
               description: "Declare safe actions",
             },
             {
+              href: "/developers/assistants/spec/secrets/",
+              label: "Secrets",
+              description: "Deliver private values just in time",
+            },
+            {
               href: "/developers/assistants/spec/permissions/",
               label: "Permissions",
               description: "Transparent egress, controller-owned grants",

@@ -41,15 +41,16 @@
   <span class="section-label">Declaration</span>
   <h2 id="powers-declaration-title">Name one useful outcome</h2>
   <CodeBlock
-    label="Current weather Power declaration"
-    title="shimpz.assistant.toml · Power"
+    label="Read and write X Power declarations"
+    title="shimpz.assistant.toml · Powers"
     variant="code"
     {...data.power}
   />
   <p>
     The table key is the stable lowercase kebab-case Power ID. <code>approval</code> accepts
     <code>never</code>, <code>once</code>, or <code>always</code> and defaults to <code>never</code> when
-    omitted. It never overrides an owner or controller decision.
+    omitted. It never overrides an owner or controller decision. <code>secrets</code> accepts only unique IDs
+    declared in the top-level <code>secrets</code> table and gives this Power no access to any other value.
   </p>
 </section>
 
@@ -57,8 +58,8 @@
   <span class="section-label">Closed data</span>
   <h2 id="powers-schema-title">Accept only the fields you designed</h2>
   <CodeBlock
-    label="Closed current weather input"
-    title="schemas/current-weather.input.schema.json"
+    label="Closed public user lookup input"
+    title="schemas/public-user-lookup.input.schema.json"
     variant="code"
     {...data.inputSchema}
   />
@@ -81,5 +82,5 @@
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec v2 guide">
   <a href="/developers/assistants/spec/help/"><span>Back</span><strong>Help</strong></a>
-  <a href="/developers/assistants/spec/permissions/"><span>Next</span><strong>Permissions</strong></a>
+  <a href="/developers/assistants/spec/secrets/"><span>Next</span><strong>Secrets</strong></a>
 </nav>

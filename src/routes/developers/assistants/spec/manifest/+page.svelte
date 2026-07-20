@@ -25,26 +25,28 @@
   <span class="section-label">Spec v2 · start here</span>
   <h1>Describe one Assistant.</h1>
   <p class="docs-lede">
-    <code>shimpz.assistant.toml</code> contains the identity, behavior, and exact external hosts requested by
-    the creator. Shimpz owns runtime enforcement, build, and file-layout decisions.
+    <code>shimpz.assistant.toml</code> contains identity, public secret metadata, narrow Powers, and exact
+    external hosts requested by the creator. Shimpz owns values, runtime enforcement, build, and file-layout
+    decisions.
   </p>
 </header>
 
 <aside class="scope-note" aria-labelledby="manifest-request-title">
   <span id="manifest-request-title" class="kicker">A request, not a grant</span>
   <p>
-    Power and <code>allowed_hosts</code> declarations describe intent. Installation, owner consent, catalog
-    review, and Team controller policy still decide what can run and which hosts can be reached.
+    Power, <code>secrets</code>, and <code>allowed_hosts</code> declarations describe intent. Installation,
+    owner consent, catalog review, and Team controller policy still decide what can run, which private values
+    can be delivered, and which hosts can be reached.
   </p>
 </aside>
 
 <section class="guide-section" aria-labelledby="manifest-example-title">
-  <span class="section-label">Smallest useful example</span>
-  <h2 id="manifest-example-title">Keep the first manifest boring</h2>
+  <span class="section-label">Credentialed example</span>
+  <h2 id="manifest-example-title">Keep every dependency visible</h2>
   <p>
-    This complete example names its creators, two exact Open-Meteo hosts, and three Powers. Omitting
-    <code>approval</code> uses the safe <code>never</code> default, so the first Power shows the shortest valid
-    form.
+    This complete X.com example names one exact host, five opaque secret IDs, and four Powers. It contains
+    no credential values. Each Power references only the IDs it needs, and both write Powers require explicit
+    approval.
   </p>
   <CodeBlock
     label="Minimal Assistant Spec v2 manifest"
@@ -67,7 +69,15 @@
       <code>allowed_hosts</code> is the required, reviewable list of exact public DNS hosts the Assistant may
       request through the Team proxy. Use <code>[]</code> when it needs no internet access.
     </li>
+    <li>
+      <code>secrets</code> is optional public metadata. Each kebab-case ID has only a human-readable
+      <code>name</code> and <code>summary</code>; values never belong in source.
+    </li>
     <li><code>powers</code> defines the only Assistant capabilities the Brain may request.</li>
+    <li>
+      <code>powers.&lt;id&gt;.secrets</code> lists the exact declared secret IDs delivered to that Power for one
+      invocation.
+    </li>
   </ul>
 </section>
 
@@ -75,10 +85,10 @@
   <span class="section-label">Fail closed</span>
   <h2 id="manifest-validation-title">Let validation catch drift early</h2>
   <p>
-    Unknown fields, invalid creator names, duplicate Power IDs, unsafe conventional files, open schemas,
-    and secret-like values are rejected. Each allowed host must be a unique, lowercase, exact public DNS
-    hostname. URLs, ports, paths, wildcards, IP addresses, localhost, and internal names are rejected. The
-    list accepts at most 32 hosts. The <a
+    Unknown fields, invalid creator names, duplicate IDs, undefined Power secret references, secret values in
+    source, unsafe conventional files, and open schemas are rejected. Each allowed host must be a unique,
+    lowercase, exact public DNS hostname. URLs, ports, paths, wildcards, IP addresses, localhost, and internal
+    names are rejected. The list accepts at most 32 hosts. The <a
       class="external-link"
       href="/specs/assistant/v2/manifest.schema.json"
       target="_blank"

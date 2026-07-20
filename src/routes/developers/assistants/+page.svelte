@@ -37,11 +37,14 @@
     <li>An Assistant belongs to one Team and shares only that Team's admitted resource budget.</li>
     <li>Genesis defines behavior and Power composition but cannot add authority.</li>
     <li>
-      Its manifest declares identity, named Powers, and a transparent exact-host allowlist; conventional files
-      carry closed schemas.
+      Its manifest declares identity, public secret metadata, named Powers, and a transparent exact-host
+      allowlist; conventional files carry closed schemas.
     </li>
     <li>Service operations and Assistant Powers are allowlisted by controller policy, never generic reach.</li>
-    <li>Secrets stay in the responsible Service; an Assistant manifest cannot request their values.</li>
+    <li>
+      Assistant secret values are write-only, scoped to one Team and Assistant installation, and delivered
+      only to a referencing Power through its private invocation envelope.
+    </li>
     <li>
       Egress is exact and proxy-brokered. The controller must match the packaged host list to the reviewed
       catalog policy before granting it.
@@ -82,9 +85,15 @@
       </a>
     </li>
     <li>
+      <a class="docs-entry-link" href="/developers/assistants/spec/secrets/">
+        <strong>Assistant secrets</strong>
+        <span>Team-scoped custody, just-in-time collection, and per-Power delivery</span>
+      </a>
+    </li>
+    <li>
       <a class="docs-entry-link" href="/developers/assistants/shimpz-assistant/">
         <strong>Shimpz Assistant</strong>
-        <span>Compose three typed weather Powers through one bounded public API</span>
+        <span>Use five private X declarations across four narrowly scoped Powers</span>
       </a>
     </li>
     <li>

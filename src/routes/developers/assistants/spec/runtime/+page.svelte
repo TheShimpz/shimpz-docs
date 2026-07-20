@@ -74,13 +74,18 @@
     <li>LangGraph gives that closed context to the configured model provider.</li>
     <li>The model may answer naturally as the Team or request one declared Power with structured input.</li>
     <li>The controller verifies Team ownership, Assistant installation, declaration, grant, approval, and schema.</li>
-    <li>A fixed adapter invokes the Power; the model cannot choose a command, URL, container, or route.</li>
+    <li>
+      The controller resolves only that Power's declared secrets just in time and a fixed adapter invokes it;
+      the model cannot choose a secret, command, URL, container, or route.
+    </li>
     <li>The controller validates the output and resumes the graph, which may request another bounded Power.</li>
     <li>The terminal response is attributed to the Team's name, never to an Assistant chosen by the user.</li>
   </ol>
   <p>
     A malformed request, undeclared Power, missing grant, unavailable Assistant, schema mismatch, or
-    unexpected result fails closed. Genesis provides instructions—not a fallback authorization mechanism.
+    unexpected result fails closed. Missing secrets pause for the authenticated Admin flow described in
+    <a href="/developers/assistants/spec/secrets/">Secrets</a>; Genesis provides instructions—not a fallback
+    authorization mechanism.
   </p>
 </section>
 

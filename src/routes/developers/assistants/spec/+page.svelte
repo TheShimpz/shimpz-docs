@@ -70,6 +70,12 @@
       </a>
     </li>
     <li>
+      <a class="docs-entry-link" href="/developers/assistants/spec/secrets/">
+        <strong>Secrets</strong>
+        <span>Declare public metadata and deliver private values only to the Power that needs them.</span>
+      </a>
+    </li>
+    <li>
       <a class="docs-entry-link" href="/developers/assistants/spec/permissions/">
         <strong>Permissions</strong>
         <span>Understand controller-owned grants and network policy.</span>
@@ -131,8 +137,9 @@
   <p>
     Spec v2 source validation and the reviewed Shimpz Assistant runtime contract are implemented. Generic
     third-party Store ingestion, generic Service bindings, and routine scheduling are not released yet.
-    The manifest exposes requested hosts through <code>allowed_hosts</code>, but network grants and routines
-    remain controller-owned runtime policy.
+    The manifest exposes requested hosts through <code>allowed_hosts</code> and public secret metadata through
+    <code>secrets</code>. Neither declaration grants access; network policy, secret custody, approval, and
+    routines remain controller-owned runtime policy.
   </p>
 </aside>
 

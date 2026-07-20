@@ -2,18 +2,28 @@ import { highlightCode } from "$lib/server/highlight";
 
 import type { PageServerLoad } from "./$types";
 
-const power = `[powers.current-weather]
-summary = "Read the current weather for one coordinate."
-approval = "never"`;
+const power = `[powers.public-user-lookup]
+summary = "Read one public X profile by username."
+approval = "never"
+secrets = ["x-bearer-token"]
+
+[powers.create-post]
+summary = "Publish one Post from the connected X account after explicit approval."
+approval = "always"
+secrets = [
+  "x-api-key",
+  "x-api-key-secret",
+  "x-access-token",
+  "x-access-token-secret",
+]`;
 
 const inputSchema = `{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "latitude": { "type": "number", "minimum": -90, "maximum": 90 },
-    "longitude": { "type": "number", "minimum": -180, "maximum": 180 }
+    "username": { "type": "string", "pattern": "^[A-Za-z0-9_]{1,15}$" }
   },
-  "required": ["latitude", "longitude"],
+  "required": ["username"],
   "additionalProperties": false
 }`;
 
