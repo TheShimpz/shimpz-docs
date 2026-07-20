@@ -2,7 +2,7 @@
 
 set -eu
 
-INSTALLER_VERSION="0.4.2-dev"
+INSTALLER_VERSION="0.4.3-dev"
 IMAGE_REPOSITORY="ghcr.io/roxygens/shimpz-space"
 ADMIN_CHANNEL="dev"
 CONTROLLER_CHANNEL="team-driver-local-dev"
@@ -351,6 +351,8 @@ validate_project_resources() {
 			"${PROJECT_NAME}_controller_storage|controller_storage"|\
 			"${PROJECT_NAME}_controller_inference|controller_inference"|\
 			"${PROJECT_NAME}_controller_power_journal|controller_power_journal"|\
+			"${PROJECT_NAME}_controller_assistant_secret_state|controller_assistant_secret_state"|\
+			"${PROJECT_NAME}_controller_assistant_secret_key|controller_assistant_secret_key"|\
 			"${PROJECT_NAME}_brain_runtime_token|brain_runtime_token"|\
 			"${PROJECT_NAME}_brain_runtime_state|brain_runtime_state"|\
 			"${PROJECT_NAME}_app_egress_policy|app_egress_policy"|\
@@ -844,6 +846,8 @@ services:
       - controller_storage:/var/lib/shimpz-local/storage:rw
       - controller_inference:/var/lib/shimpz-local/inference:rw
       - controller_power_journal:/var/lib/shimpz-local/power-journal:rw
+      - controller_assistant_secret_state:/var/lib/shimpz-local/assistant-secrets/state:rw
+      - controller_assistant_secret_key:/var/lib/shimpz-local/assistant-secrets/key:rw
       - app_egress_policy:/var/lib/shimpz-local/app-egress:rw
       - brain_runtime_token:/run/shimpz-brain-runtime:rw
     tmpfs:
@@ -1018,6 +1022,8 @@ volumes:
   controller_storage:
   controller_inference:
   controller_power_journal:
+  controller_assistant_secret_state:
+  controller_assistant_secret_key:
   app_egress_policy:
   app_egress_audit:
   brain_runtime_token:
