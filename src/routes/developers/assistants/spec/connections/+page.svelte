@@ -63,13 +63,14 @@
   <ol>
     <li>The Brain selects a declared Power; it never handles OAuth material.</li>
     <li>The controller checks the exact connection and scopes admitted for that Assistant release.</li>
-    <li>If missing or expired beyond refresh, the Power remains unexecuted and the Admin offers Connect X.</li>
-    <li>The controller creates a short-lived, one-use PKCE S256 challenge bound to the session, Team, Assistant, and connection.</li>
-    <li>After provider consent, the controller validates state, exchanges the code, seals the tokens, and resumes once.</li>
+    <li>If missing or expired beyond refresh, the Power remains unexecuted and the Admin opens a connection modal.</li>
+    <li>The user chooses Connect X; the controller creates a short-lived, one-use S256 PKCE challenge bound to the session, Team, Assistant, and connection.</li>
+    <li>X shows the requested scopes. After consent, the controller validates state, exchanges the code, seals the tokens, and resumes once.</li>
   </ol>
   <p>
-    Closing the flow leaves the Power unexecuted. Connecting an account never approves a write Power; its
-    <code>approval</code> policy is a separate decision after the connection becomes usable.
+    Closing the flow leaves the Power unexecuted. A turn resolves gates in one order:
+    <strong>connection → secrets → approval</strong>. Connecting an account never approves a write Power; its
+    <code>approval</code> policy remains a separate decision after private inputs are ready.
   </p>
 </section>
 
@@ -78,12 +79,14 @@
   <h2 id="connection-custody-title">Keep refresh and revocation outside the Assistant</h2>
   <p>
     Access and refresh tokens are independently encrypted for one Team, Assistant, connection ID, and release
-    generation. The controller serializes refresh, validates returned scopes, and revokes or deletes the
-    connection without exposing plaintext through the Admin API, Brain, logs, environment, or process arguments.
+    generation. The controller serializes refresh and validates returned scopes. Disconnect first revokes the
+    refresh and access grants, then deletes local ciphertext. A provider failure keeps the local connection
+    pending revocation so retry is safe and does not silently leave a remote grant behind.
   </p>
   <p>
     The Admin shows account identity, provider, scopes, status, and expiry metadata only. It may reconnect or
-    disconnect the account, but it can never reveal a stored token.
+    disconnect the account, but it can never reveal a stored token. Authorization codes, refresh tokens, PKCE
+    verifiers, and developer client secrets never enter the Brain, Admin UI, Assistant, logs, or turn history.
   </p>
 </section>
 
@@ -97,9 +100,11 @@
     {...data.envelope}
   />
   <p>
-    The connection object contains only the exact ID declared by the selected Power and a bounded access token.
-    Refresh tokens, authorization codes, PKCE verifiers, developer credentials, and unrelated connections are
-    rejected. The Assistant may send the access token only to an exact admitted <code>allowed_hosts</code> host.
+    The connection object contains only the exact ID declared by the selected Power and one bounded access
+    token for that private RPC invocation. It is never placed in the Brain, Admin UI, logs, environment,
+    process arguments, or turn history. Refresh tokens, authorization codes, PKCE verifiers, developer
+    credentials, and unrelated connections are rejected. The Assistant may send the access token only to an
+    exact admitted <code>allowed_hosts</code> host.
   </p>
 </section>
 
@@ -115,6 +120,24 @@
     Request only the scopes each published release needs. The reference Assistant declares
     <code>tweet.read</code>, <code>users.read</code>, <code>tweet.write</code>, and <code>offline.access</code>
     for identity, reading, posting, deletion, and controller-owned refresh.
+  </p>
+</section>
+
+<section class="guide-section" aria-labelledby="connection-x-operator-title">
+  <span class="section-label">Operator setup</span>
+  <h2 id="connection-x-operator-title">Register one public X client</h2>
+  <p>
+    Create a fresh public X OAuth Client ID and configure it as <code>SHIMPZ_X_OAUTH_CLIENT_ID</code>. Register
+    these callback URLs exactly; X rejects a callback that does not match:
+  </p>
+  <ul>
+    <li><code>http://127.0.0.1:7777/api/oauth/x/callback</code> for the local Admin.</li>
+    <li><code>https://shimpz.com/api/oauth/x/callback</code> for hosted Teams.</li>
+  </ul>
+  <p>
+    The public Client ID is controller configuration, never an Assistant manifest field. Do not configure or
+    collect an X client secret for this PKCE client. End users connect through X consent and never enter
+    developer credentials into Shimpz.
   </p>
 </section>
 

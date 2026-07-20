@@ -11,7 +11,7 @@
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/shimpz-assistant/" />
   <meta
     name="description"
-    content="Review the blocked X.com Shimpz Assistant reference and the OAuth boundary required before release."
+    content="Build from the Shimpz Assistant 0.5.0 X.com reference and its controller-owned OAuth boundary."
   />
 </svelte:head>
 
@@ -31,20 +31,20 @@
 </header>
 
 <aside class="scope-note" aria-labelledby="assistant-boundary-title">
-  <span id="assistant-boundary-title" class="kicker">Publication blocked</span>
+  <span id="assistant-boundary-title" class="kicker">Reference release · 0.5.0</span>
   <p>
-    This reference is not installable until X OAuth 2.0 Authorization Code with S256 PKCE is owned by the
-    controller. End users must never be asked for X developer keys, Bearer Tokens, access tokens, refresh
+    Install it from the Assistant Store. The first Power that needs X opens the Admin connection modal and
+    sends the user to X consent. End users never enter X developer keys, Bearer Tokens, access tokens, refresh
     tokens, or client secrets.
   </p>
 </aside>
 
 <section class="guide-section" aria-labelledby="assistant-install-title">
-  <span class="section-label">Current path</span>
-  <h2 id="assistant-install-title">Inspect it without installing</h2>
+  <span class="section-label">Install and connect</span>
+  <h2 id="assistant-install-title">Grant X access only when a Power needs it</h2>
   <p>
-    Clone the source and run its local checks. The Store must not advertise or install the X reference until
-    the reviewed connection release is bound to an immutable image.
+    Installing the immutable Assistant does not connect an account or run a Power. Consent happens just in
+    time, is scoped to one Team and Assistant, and remains separate from approval for a write Power.
   </p>
   <p><a href="/developers/assistants/spec/connections/">Review the OAuth connection boundary</a>.</p>
 </section>
@@ -78,7 +78,7 @@
 
   <li>
     <h2>Inspect the fail-closed process</h2>
-    <p>The current source deliberately refuses X provider calls until the OAuth connection exists.</p>
+    <p>The runtime rejects X calls unless the controller supplies the exact reviewed connection for that Power.</p>
     <CodeBlock
       label="Run Shimpz Assistant locally"
       title="Terminal one · Runtime"
@@ -87,14 +87,14 @@
   </li>
 
   <li>
-    <h2>Review the intended least-privilege Powers</h2>
+    <h2>Review the least-privilege Powers</h2>
     <p>
-      The future <code>public-user-lookup</code>, <code>identity-me</code>, <code>create-post</code>, and
+      The <code>public-user-lookup</code>, <code>identity-me</code>, <code>create-post</code>, and
       <code>delete-post</code> Powers reference one scoped X connection. Only a short-lived access token may
       enter the private Power envelope; both write Powers independently require explicit approval.
     </p>
     <CodeBlock
-      label="Inspect the blocked X source without exposing a credential"
+      label="Inspect the X manifest without exposing a credential"
       title="Terminal · Manifest"
       lines={[
         {
@@ -127,11 +127,11 @@
       admits only the matching packaged manifest, and the proxy blocks every other host.
     </li>
     <li>
-      A reviewed <code>connections.x</code> declaration will request provider consent without accepting X
+      The reviewed <code>connections.x</code> declaration requests provider consent without accepting X
       developer credentials in Assistant source or forms.
     </li>
     <li>Closed schemas bound every input and output; unknown fields and undeclared routes fail closed.</li>
-    <li>The controller, not Assistant code, will own PKCE state, refresh, revocation, and token custody.</li>
+    <li>The controller, not Assistant code, owns PKCE state, refresh, revocation, and durable token custody.</li>
   </ul>
   <p>
     Read the <a

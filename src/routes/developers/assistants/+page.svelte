@@ -91,9 +91,15 @@
       </a>
     </li>
     <li>
+      <a class="docs-entry-link" href="/developers/assistants/spec/connections/">
+        <strong>Assistant connections</strong>
+        <span>Controller-owned OAuth consent, refresh, revocation, and per-Power delivery</span>
+      </a>
+    </li>
+    <li>
       <a class="docs-entry-link" href="/developers/assistants/shimpz-assistant/">
         <strong>Shimpz Assistant</strong>
-        <span>Review the blocked X reference and its controller-owned OAuth boundary</span>
+        <span>Build from the X reference and its controller-owned OAuth connection</span>
       </a>
     </li>
     <li>
@@ -109,7 +115,7 @@
   </p>
   <p>
     Creators may eventually distribute and sell Assistants. That marketplace is a later product layer,
-    not permission to weaken the Team boundary or claim an unavailable checkout today.
+    not permission to weaken the Team boundary or imply that commerce is part of this delivery.
   </p>
 </section>
 

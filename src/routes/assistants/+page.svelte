@@ -21,11 +21,10 @@
 </header>
 
 <aside class="scope-note" aria-labelledby="assistant-evaluation-scope">
-  <span id="assistant-evaluation-scope" class="kicker">Release status</span>
+  <span id="assistant-evaluation-scope" class="kicker">Safe account connection</span>
   <p>
-    The X.com Shimpz Assistant is intentionally unavailable while its controller-owned OAuth 2.0 connection
-    is completed. Shimpz will never ask you to paste X developer keys, Bearer Tokens, access tokens, refresh
-    tokens, or client secrets into an Assistant form.
+    Shimpz Assistant 0.5.0 connects to X through the official X consent page. Shimpz never asks you to paste
+    X developer keys, Bearer Tokens, access tokens, refresh tokens, or client secrets into an Assistant form.
   </p>
 </aside>
 
@@ -42,8 +41,8 @@
   <li>
     <h2>Choose Shimpz Assistant</h2>
     <p>
-      Open <strong>Assistants</strong>. The X reference will appear only after its reviewed OAuth release is
-      available. A Store card may open a local confirmation, but it cannot install on its own.
+      Open <strong>Assistants</strong>, select <strong>Shimpz Assistant</strong>, and choose Install. The Store
+      card opens a local confirmation; it cannot install on its own.
     </p>
   </li>
 
@@ -57,10 +56,19 @@
   </li>
 
   <li>
+    <h2>Connect X when prompted</h2>
+    <p>
+      Ask the Team to use an X Power. If the account is not connected, the turn pauses and the Admin opens a
+      connection modal. Choose <strong>Connect X</strong>, review the scopes on X, and approve there. Shimpz
+      resumes the paused turn only after the callback is validated.
+    </p>
+  </li>
+
+  <li>
     <h2>Remove it cleanly</h2>
     <p>
-      Select <strong>Uninstall</strong> when you finish evaluating. This removes the Assistant container from
-      that Team without destroying the Team itself.
+      Disconnect X to revoke the connection, then select <strong>Uninstall</strong> when you finish evaluating.
+      This removes the Assistant container from that Team without destroying the Team itself.
     </p>
   </li>
 </ol>
@@ -123,7 +131,7 @@
   <p>
     Use <strong>Install</strong> again. Installation is idempotent: the controller starts a
     stopped runtime and replaces the stateless Shimpz Assistant container only when it remains unresponsive. If
-    the Admin reports that the local control plane is unavailable, run the install command again to repair
+    the Admin cannot reach the local control plane, run the install command again to repair
     the managed services without deleting your data.
   </p>
 </section>
