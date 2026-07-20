@@ -55,6 +55,17 @@
         "pattern": "^(?!.*\\.(?:arpa|example|home|internal|invalid|lan|local|localdomain|localhost|onion|test)$)(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?$"
       }
     },
+    "secrets": {
+      "description": "Public metadata for opaque Team-scoped values that the controller may provide only to Powers that reference them.",
+      "type": "object",
+      "maxProperties": 32,
+      "propertyNames": {
+        "$ref": "#/$defs/id"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/secret"
+      }
+    },
     "powers": {
       "type": "object",
       "minProperties": 1,
@@ -73,6 +84,28 @@
       "minLength": 1,
       "maxLength": 80,
       "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
+    "secret": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "summary"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "pattern": "^(?!\\s)(?!.*\\s$)[^\\r\\n]+$"
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "pattern": "^(?!\\s)(?!.*\\s$)[^\\r\\n]+$"
+        }
+      }
     },
     "power": {
       "type": "object",
@@ -94,6 +127,15 @@
             "once",
             "always"
           ]
+        },
+        "secrets": {
+          "description": "Opaque secret ids this Power requires. The controller resolves values just in time and never exposes them to the Brain.",
+          "type": "array",
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/id"
+          }
         }
       }
     }
