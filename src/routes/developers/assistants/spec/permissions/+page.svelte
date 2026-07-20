@@ -81,6 +81,6 @@
 </section>
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec v2 guide">
-  <a href="/developers/assistants/spec/secrets/"><span>Back</span><strong>Secrets</strong></a>
+  <a href="/developers/assistants/spec/connections/"><span>Back</span><strong>Connections</strong></a>
   <a href="/developers/assistants/spec/routines/"><span>Next</span><strong>Routines</strong></a>
 </nav>

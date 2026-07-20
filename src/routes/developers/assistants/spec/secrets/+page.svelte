@@ -130,9 +130,10 @@
   <h2 id="secret-envelope-title">Use one closed stdin envelope</h2>
   <p>
     Immediately before execution, either controller writes one bounded JSON object to the private RPC adapter's
-    standard input. The object has exactly the root keys <code>input</code> and <code>secrets</code>; the secret
-    object has exactly the IDs declared by that Power. Missing or additional roots, missing or additional
-    secret IDs, duplicate JSON keys, invalid UTF-8, or an invalid Power input fail closed.
+    standard input. The object has exactly the root keys <code>input</code>, <code>secrets</code>, and
+    <code>connections</code>; the secret object has exactly the IDs declared by that Power. Missing or
+    additional roots, missing or additional secret IDs, duplicate JSON keys, invalid UTF-8, or an invalid
+    Power input fail closed. A Power that declares no OAuth connection receives an empty connection object.
   </p>
   <CodeBlock
     label="Illustrative private invocation envelope; never paste a real value into source or a shell"
@@ -187,5 +188,5 @@
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec v2 guide">
   <a href="/developers/assistants/spec/powers/"><span>Back</span><strong>Powers</strong></a>
-  <a href="/developers/assistants/spec/permissions/"><span>Next</span><strong>Permissions</strong></a>
+  <a href="/developers/assistants/spec/connections/"><span>Next</span><strong>Connections</strong></a>
 </nav>

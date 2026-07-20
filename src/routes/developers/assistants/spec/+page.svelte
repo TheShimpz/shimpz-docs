@@ -76,6 +76,12 @@
       </a>
     </li>
     <li>
+      <a class="docs-entry-link" href="/developers/assistants/spec/connections/">
+        <strong>Connections</strong>
+        <span>Request reviewed OAuth scopes without collecting provider credentials.</span>
+      </a>
+    </li>
+    <li>
       <a class="docs-entry-link" href="/developers/assistants/spec/permissions/">
         <strong>Permissions</strong>
         <span>Understand controller-owned grants and network policy.</span>

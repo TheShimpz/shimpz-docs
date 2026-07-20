@@ -107,6 +107,11 @@
               description: "Deliver private values just in time",
             },
             {
+              href: "/developers/assistants/spec/connections/",
+              label: "Connections",
+              description: "Authorize OAuth providers safely",
+            },
+            {
               href: "/developers/assistants/spec/permissions/",
               label: "Permissions",
               description: "Transparent egress, controller-owned grants",

@@ -15,7 +15,8 @@ const envelope = `{
   "input": { "latitude": -23.55, "longitude": -46.63 },
   "secrets": {
     "openweather-api-key": "<resolved in memory>"
-  }
+  },
+  "connections": {}
 }`;
 
 export const load: PageServerLoad = async () => ({
