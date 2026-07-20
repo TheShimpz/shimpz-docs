@@ -2,24 +2,28 @@ import { highlightCode } from "$lib/server/highlight";
 
 import type { PageServerLoad } from "./$types";
 
-const power = `[powers.current-weather]
-summary = "Read current weather for one coordinate pair."
+const power = `[powers.list-direct-uploads]
+summary = "List recent Mux direct uploads."
 approval = "never"
-secrets = ["openweather-api-key"]
+secrets = ["mux-token-id", "mux-token-secret"]
 
-[powers.send-weather-alert]
-summary = "Send one weather alert after explicit approval."
+[powers.create-test-direct-upload]
+summary = "Create a short-lived Mux test upload intent without uploading media."
 approval = "always"
-secrets = ["alert-api-token"]`;
+secrets = ["mux-token-id", "mux-token-secret"]
+
+[powers.identity-me]
+summary = "Read the connected X account."
+approval = "never"
+accounts = ["x"]`;
 
 const inputSchema = `{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "latitude": { "type": "number", "minimum": -90, "maximum": 90 },
-    "longitude": { "type": "number", "minimum": -180, "maximum": 180 }
+    "limit": { "type": "integer", "minimum": 1, "maximum": 25 }
   },
-  "required": ["latitude", "longitude"],
+  "required": ["limit"],
   "additionalProperties": false
 }`;
 

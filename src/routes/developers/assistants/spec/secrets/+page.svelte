@@ -129,11 +129,11 @@
   <span class="section-label">Private RPC</span>
   <h2 id="secret-envelope-title">Use one closed stdin envelope</h2>
   <p>
-    Immediately before execution, either controller writes one bounded JSON object to the private RPC adapter's
-    standard input. The object has exactly the root keys <code>input</code>, <code>secrets</code>, and
-    <code>connections</code>; the secret object has exactly the IDs declared by that Power. Missing or
-    additional roots, missing or additional secret IDs, duplicate JSON keys, invalid UTF-8, or an invalid
-    Power input fail closed. A Power that declares no OAuth connection receives an empty connection object.
+    Immediately before execution, the controller writes one bounded JSON object to the private RPC adapter's
+    standard input. It has exactly the root keys <code>input</code>, <code>secrets</code>, and
+    <code>accounts</code>; the Secret object has exactly the IDs declared by that Power. Missing or additional
+    roots, missing or additional Secret IDs, duplicate JSON keys, invalid UTF-8, or invalid Power input fail
+    closed. A Power that declares no OAuth Account receives an empty Account object.
   </p>
   <CodeBlock
     label="Illustrative private invocation envelope; never paste a real value into source or a shell"
@@ -149,44 +149,42 @@
 </section>
 
 <section class="guide-section" aria-labelledby="secret-provider-title">
-  <span class="section-label">Provider API-key reference</span>
-  <h2 id="secret-provider-title">Give each Power only the provider key it uses</h2>
+  <span class="section-label">Mux BYOK reference</span>
+  <h2 id="secret-provider-title">Give each Power only the Mux values it uses</h2>
   <ul>
     <li>
-      <code>current-weather</code> receives only <code>openweather-api-key</code> and uses
-      <code>approval = "never"</code> for a read.
+      <code>list-direct-uploads</code> receives <code>mux-token-id</code> and <code>mux-token-secret</code>, then
+      uses <code>approval = "never"</code> for a bounded read.
     </li>
     <li>
-      <code>daily-forecast</code> may reuse that Team-and-Assistant-scoped value only because it explicitly
-      declares the same ID.
+      <code>create-test-direct-upload</code> and <code>cancel-direct-upload</code> receive that same pair only
+      because each references both IDs, and each uses <code>approval = "always"</code> for an external write.
+    </li>
+    <li>
+      <code>verify-mux-webhook</code> receives only <code>mux-webhook-signing-secret</code>. It verifies locally
+      and receives neither API credential nor network authority.
     </li>
   </ul>
   <p>
-    Both Powers may contact only the separately declared <code>api.openweathermap.org</code> host. A secret
-    does not grant egress, and <code>allowed_hosts</code> does not grant a secret. The controller must satisfy
-    both independent policies before any provider call. OpenWeather's <a
+    Mux API Powers may contact only the separately declared <code>api.mux.com</code> host. A Secret does not
+    grant egress, and <code>allowed_hosts</code> does not grant a Secret. The controller must satisfy both
+    independent policies before any provider call. Mux's <a
       class="external-link"
-      href="https://openweathermap.org/api/current"
+      href="https://www.mux.com/docs/core/make-api-requests"
       target="_blank"
       rel="noopener noreferrer"
-      >official current-weather API</a
-    > documents its account API key as the <code>appid</code> parameter.
+      >official API authentication guide</a
+    > documents Token ID and Token Secret as HTTP Basic credentials.
   </p>
   <p>
-    Do not model an OAuth account connection as a password field. Providers that require an authorization
-    redirect, consent scopes, refresh tokens, or revocation need a platform-owned OAuth adapter; their
-    developer credentials do not belong in Assistant <code>secrets</code>. X specifically prohibits asking
-    people to provide developer application information directly; follow its <a
-      class="external-link"
-      href="https://docs.x.com/developer-terms/policy#x-passwords"
-      target="_blank"
-      rel="noopener noreferrer"
-      >developer policy</a
-    > and use a reviewed Sign in with X or OAuth adapter instead.
+    Do not model an OAuth Account as a password field. Providers that require an authorization redirect,
+    consent scopes, refresh tokens, or revocation use <code>accounts</code>; their OAuth application
+    credentials do not belong in Assistant <code>secrets</code>. See <a
+      href="/developers/assistants/spec/accounts/">Accounts</a> for that separate contract.
   </p>
 </section>
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec v2 guide">
   <a href="/developers/assistants/spec/powers/"><span>Back</span><strong>Powers</strong></a>
-  <a href="/developers/assistants/spec/connections/"><span>Next</span><strong>Connections</strong></a>
+  <a href="/developers/assistants/spec/accounts/"><span>Next</span><strong>Accounts</strong></a>
 </nav>

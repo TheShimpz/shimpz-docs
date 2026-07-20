@@ -37,13 +37,13 @@
     <li>An Assistant belongs to one Team and shares only that Team's admitted resource budget.</li>
     <li>Genesis defines behavior and Power composition but cannot add authority.</li>
     <li>
-      Its manifest declares identity, public secret metadata, named Powers, and a transparent exact-host
-      allowlist; conventional files carry closed schemas.
+      Its manifest declares identity, named Powers, manual Secret metadata, OAuth Account intent, and a
+      transparent exact-host allowlist; conventional files carry closed schemas.
     </li>
     <li>Service operations and Assistant Powers are allowlisted by controller policy, never generic reach.</li>
     <li>
-      Assistant secret values are write-only, scoped to one Team and Assistant installation, and delivered
-      only to a referencing Power through its private invocation envelope.
+      Secret values are write-only and OAuth tokens are controller-owned. Both are isolated to one Team and
+      Assistant installation, then delivered only to a referencing Power through its private invocation envelope.
     </li>
     <li>
       Egress is exact and proxy-brokered. The controller must match the packaged host list to the reviewed
@@ -91,15 +91,15 @@
       </a>
     </li>
     <li>
-      <a class="docs-entry-link" href="/developers/assistants/spec/connections/">
-        <strong>Assistant connections</strong>
+      <a class="docs-entry-link" href="/developers/assistants/spec/accounts/">
+        <strong>Assistant Accounts</strong>
         <span>Controller-owned OAuth consent, refresh, revocation, and per-Power delivery</span>
       </a>
     </li>
     <li>
       <a class="docs-entry-link" href="/developers/assistants/shimpz-assistant/">
         <strong>Shimpz Assistant</strong>
-        <span>Build from the X reference and its controller-owned OAuth connection</span>
+        <span>Study X Accounts and Mux Secrets in one executable reference</span>
       </a>
     </li>
     <li>

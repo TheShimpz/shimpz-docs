@@ -2,21 +2,35 @@ import { highlightCode } from "$lib/server/highlight";
 
 import type { PageServerLoad } from "./$types";
 
-const declaration = `[secrets.openweather-api-key]
-name = "OpenWeather API key"
-summary = "Authenticates current-weather requests for this Team."
+const declaration = `[secrets.mux-token-id]
+name = "Mux Token ID"
+summary = "Identifies this Team to the Mux API."
 
-[powers.current-weather]
-summary = "Read current weather for one coordinate pair."
+[secrets.mux-token-secret]
+name = "Mux Token Secret"
+summary = "Authenticates this Team to the Mux API."
+
+[secrets.mux-webhook-signing-secret]
+name = "Mux Webhook Signing Secret"
+summary = "Verifies that a webhook payload was signed by Mux."
+
+[powers.list-direct-uploads]
+summary = "List recent Mux direct uploads."
 approval = "never"
-secrets = ["openweather-api-key"]`;
+secrets = ["mux-token-id", "mux-token-secret"]
+
+[powers.verify-mux-webhook]
+summary = "Verify one Mux webhook signature locally."
+approval = "never"
+secrets = ["mux-webhook-signing-secret"]`;
 
 const envelope = `{
-  "input": { "latitude": -23.55, "longitude": -46.63 },
+  "input": { "limit": 10 },
   "secrets": {
-    "openweather-api-key": "<resolved in memory>"
+    "mux-token-id": "<resolved in memory>",
+    "mux-token-secret": "<resolved in memory>"
   },
-  "connections": {}
+  "accounts": {}
 }`;
 
 export const load: PageServerLoad = async () => ({

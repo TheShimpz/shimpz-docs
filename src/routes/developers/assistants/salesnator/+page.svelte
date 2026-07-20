@@ -11,7 +11,7 @@
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/salesnator/" />
   <meta
     name="description"
-    content="Validate the deterministic, read-only Salesnator campaign-health Assistant reference without live provider credentials."
+    content="Understand a deterministic Salesnator Power that uses no Account, Secret, network host, or live provider data."
   />
 </svelte:head>
 
@@ -29,23 +29,23 @@
 </header>
 
 <aside class="scope-note" aria-labelledby="salesnator-status-title">
-  <span id="salesnator-status-title" class="kicker">No live account</span>
+  <span id="salesnator-status-title" class="kicker">Current v2 fixture</span>
   <p>
-    This reference does not connect to Meta Ads, Telegram, Cloudflare, or a customer account. It validates
-    the Assistant source contract and local Power behavior. Service binding, persistent notification
-    deduplication, scheduling, and delivery are future controller work.
+    This reference declares one <code>campaign-health</code> Power and no Account, Secret, or allowed host.
+    It evaluates synthetic input locally. It does not connect to Meta Ads, send a notification, or mutate a
+    campaign.
   </p>
 </aside>
 
 <section class="guide-section" aria-labelledby="salesnator-boundary-title">
-  <span class="section-label">Authority</span>
-  <h2 id="salesnator-boundary-title">Ask Services for two narrow operations</h2>
+  <span class="section-label">Manifest</span>
+  <h2 id="salesnator-boundary-title">Read its authority literally</h2>
   <ul>
-    <li><code>meta-ads.read</code> represents a mediated, read-only campaign snapshot.</li>
-    <li><code>notifications.send</code> represents one owner notification request.</li>
-    <li><code>customer-ad-account</code> and <code>owner-channel</code> are opaque binding names, not keys.</li>
-    <li>The Assistant declares <code>allowed_hosts = []</code> and never receives a provider credential.</li>
-    <li>No update, publish, budget, ad, ad-set, or campaign mutation Service operation or Power is declared.</li>
+    <li><code>[powers.campaign-health]</code> admits only the conventional closed input and output schemas.</li>
+    <li><code>allowed_hosts = []</code> means the Power receives no internet route.</li>
+    <li>No <code>[accounts.*]</code> table means Shimpz starts no OAuth consent or token delivery.</li>
+    <li>No <code>[secrets.*]</code> table means the Admin collects and delivers no manual credential.</li>
+    <li>The notification object in the result is an intent for inspection, not evidence of delivery.</li>
   </ul>
 </section>
 
@@ -71,8 +71,8 @@
   />
   <p>
     A repeated <code>run_id</code> keeps the verdict unchanged and sets <code>notification.enqueued</code> to
-    <code>false</code>. The example proves that behavior in one process; a future controller and Notifications
-    Service must persist the idempotency key across restarts.
+    <code>false</code>. The example proves only in-process deduplication; durable delivery and deduplication are
+    not part of this fixture.
   </p>
 </section>
 
@@ -96,17 +96,18 @@
   />
   <p>
     The tests use no provider, network mock, monkeypatch, or customer data. They execute the processor and a
-    real loopback HTTP server, prove the closed route, and verify notification deduplication.
+    real loopback HTTP server, prove the closed Power route, and verify the deterministic result.
   </p>
 </section>
 
 <section class="guide-section" aria-labelledby="salesnator-routine-title">
-  <span class="section-label">Routine</span>
-  <h2 id="salesnator-routine-title">Keep campaign-watch owner-disabled</h2>
+  <span class="section-label">Future integration</span>
+  <h2 id="salesnator-routine-title">Add authority only when it exists</h2>
   <p>
-    The manifest requests <code>campaign-watch</code> every 3,600 seconds with timeout, jitter,
-    single-flight, and a scheduled-time idempotency key. It starts disabled. The SDK validates those fields;
-    it does not schedule the Power or grant either Service capability.
+    A later live version may declare a provider <a href="/developers/assistants/spec/accounts/">Account</a>
+    for controller-owned OAuth, or named <a href="/developers/assistants/spec/secrets/">Secrets</a> when manual
+    BYOK is unavoidable. Each Power must reference only what it needs and list every exact public host it may
+    call. Scheduling and notification delivery are not creator-controlled Assistant Spec v2 fields.
   </p>
   <p>
     Read the <a

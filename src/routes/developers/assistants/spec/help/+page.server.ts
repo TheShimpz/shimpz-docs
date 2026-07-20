@@ -4,17 +4,18 @@ import type { PageServerLoad } from "./$types";
 
 const help = `# Shimpz Assistant
 
-Use this Assistant to read public X profiles and manage Posts for one connected X account.
+This reference Assistant demonstrates an X Account and manual Mux Secrets.
 
-## Try asking
+## Try these prompts
 
-- “Look up the public X profile @TheShimpz.”
-- “Which X account is connected?”
-- “Draft this Post and show me the exact text before asking to publish it.”
-- “Delete the Post we just created.”
+- “Who is @XDevelopers?”
+- “Draft a short launch Post and show it to me before publishing.”
+- “List my 5 most recent Mux direct uploads.”
+- “Create a Mux test upload intent, then cancel that exact upload.”
+- “Verify this raw Mux webhook body and its Mux-Signature header.”
 
-The Admin securely asks for a missing X credential when a Power needs it. Never paste a token or secret into
-chat. Publishing and deleting each require your explicit approval.`;
+The Admin opens X for Account consent or a password-style modal for missing Mux values. Never paste private
+values into chat. X writes and Mux create or cancel actions require explicit approval.`;
 
 export const load: PageServerLoad = async () => ({
   help: await highlightCode(help, "markdown"),

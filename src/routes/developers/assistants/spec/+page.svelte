@@ -41,6 +41,20 @@
   </p>
 </section>
 
+<section class="guide-section" aria-labelledby="assistant-files-title">
+  <span class="section-label">Contract at a glance</span>
+  <h2 id="assistant-files-title">Put each decision in one place</h2>
+  <ul>
+    <li><strong>What is it?</strong> Identity and summary live in <code>shimpz.assistant.toml</code>.</li>
+    <li><strong>How should it reason?</strong> Purpose and Power composition live in <code>GENESIS.md</code>.</li>
+    <li><strong>What may it execute?</strong> Named Powers and closed schemas define the callable surface.</li>
+    <li><strong>What private access is needed?</strong> Each Power references exact Secret and Account IDs.</li>
+    <li><strong>Where may it send data?</strong> <code>allowed_hosts</code> lists exact public DNS destinations.</li>
+    <li><strong>What does the user see?</strong> Localized <code>help/HELP-&lt;locale&gt;.md</code> files teach usage.</li>
+    <li><strong>What actually grants authority?</strong> Only controller admission, user consent, and runtime policy.</li>
+  </ul>
+</section>
+
 <section class="guide-section" aria-labelledby="assistant-topics-title">
   <span class="section-label">Spec v2 topics</span>
   <h2 id="assistant-topics-title">Learn each concept independently</h2>
@@ -76,8 +90,8 @@
       </a>
     </li>
     <li>
-      <a class="docs-entry-link" href="/developers/assistants/spec/connections/">
-        <strong>Connections</strong>
+      <a class="docs-entry-link" href="/developers/assistants/spec/accounts/">
+        <strong>Accounts</strong>
         <span>Request reviewed OAuth scopes without collecting provider credentials.</span>
       </a>
     </li>
@@ -143,9 +157,9 @@
   <p>
     Spec v2 source validation and the reviewed Shimpz Assistant runtime contract are implemented. Generic
     third-party Store ingestion, generic Service bindings, and routine scheduling are not released yet.
-    The manifest exposes requested hosts through <code>allowed_hosts</code> and public secret metadata through
-    <code>secrets</code>. Neither declaration grants access; network policy, secret custody, approval, and
-    routines remain controller-owned runtime policy.
+    The manifest exposes requested hosts through <code>allowed_hosts</code>, manual BYOK metadata through
+    <code>secrets</code>, and provider OAuth intent through <code>accounts</code>. None grants access by itself;
+    network policy, private-value custody, approval, and routines remain controller-owned runtime policy.
   </p>
 </aside>
 

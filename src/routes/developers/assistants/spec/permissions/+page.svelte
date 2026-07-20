@@ -26,9 +26,9 @@
 <aside class="scope-note" aria-labelledby="permissions-current-title">
   <span id="permissions-current-title" class="kicker">Available today</span>
   <p>
-    A weather Assistant may declare only <code>api.openweathermap.org</code>. The Team's authenticated egress
-    proxy blocks every other destination. Its API key does not widen that allowlist, and the allowlist does
-    not reveal or grant a secret.
+    Shimpz Assistant declares only <code>api.x.com</code> and <code>api.mux.com</code>. The Team's authenticated
+    egress proxy blocks every other destination. An Account token or Mux Secret does not widen that allowlist,
+    and the allowlist never reveals or grants a private value.
   </p>
 </aside>
 
@@ -51,15 +51,15 @@
   <h2 id="permissions-two-keys-title">Require both destination and capability</h2>
   <p>
     A Power that calls a provider must pass independent checks. Its destination must match
-    <code>allowed_hosts</code>, its declaration must name the exact secret IDs it needs, and the controller
-    must authorize the Power itself. A configured credential cannot create network access; an allowed host
-    cannot make a credential available.
+    <code>allowed_hosts</code>, its declaration must name the exact Secret and Account IDs it needs, and the
+    controller must authorize the Power itself. Configured private access cannot create network access; an
+    allowed host cannot make a Secret or Account available.
   </p>
   <p>
-    In the weather example, every request is limited to <code>api.openweathermap.org</code>, and both read
-    Powers receive only <code>openweather-api-key</code>. See <a href="/developers/assistants/spec/secrets/"
-      >Secrets</a
-    > for the delivery contract.
+    In the Mux example, API Powers may contact only <code>api.mux.com</code> and receive only the declared Token
+    ID and Token Secret. Local webhook verification receives only the signing Secret and needs no egress. See
+    <a href="/developers/assistants/spec/secrets/">Secrets</a> and
+    <a href="/developers/assistants/spec/accounts/">Accounts</a> for the two delivery contracts.
   </p>
 </section>
 
@@ -81,6 +81,6 @@
 </section>
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec v2 guide">
-  <a href="/developers/assistants/spec/connections/"><span>Back</span><strong>Connections</strong></a>
+  <a href="/developers/assistants/spec/accounts/"><span>Back</span><strong>Accounts</strong></a>
   <a href="/developers/assistants/spec/routines/"><span>Next</span><strong>Routines</strong></a>
 </nav>

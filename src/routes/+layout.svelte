@@ -107,9 +107,9 @@
               description: "Deliver private values just in time",
             },
             {
-              href: "/developers/assistants/spec/connections/",
-              label: "Connections",
-              description: "Authorize OAuth providers safely",
+              href: "/developers/assistants/spec/accounts/",
+              label: "Accounts",
+              description: "Authorize provider accounts safely",
             },
             {
               href: "/developers/assistants/spec/permissions/",
@@ -146,7 +146,7 @@
         {
           href: "/developers/assistants/shimpz-assistant/",
           label: "Shimpz Assistant",
-          description: "Executable X.com reference",
+          description: "Accounts + Secrets reference",
         },
         {
           href: "/developers/assistants/salesnator/",

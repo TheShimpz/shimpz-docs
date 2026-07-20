@@ -34,7 +34,10 @@
   <span class="section-label">Source contract</span>
   <h2 id="build-conventions-title">Keep the expected files together</h2>
   <ul>
-    <li><code>shimpz.assistant.toml</code> declares identity, exact allowed hosts, and Powers.</li>
+    <li>
+      <code>shimpz.assistant.toml</code> declares identity, exact allowed hosts, Powers, public Secret metadata,
+      and OAuth Account intent.
+    </li>
     <li><code>GENESIS.md</code> defines behavior, style, safety, and how declared Powers compose.</li>
     <li><code>help/HELP-&lt;locale&gt;.md</code> teaches the installed user in every Admin language.</li>
     <li><code>CHANGELOG.md</code> explains every published update in concise user-visible language.</li>

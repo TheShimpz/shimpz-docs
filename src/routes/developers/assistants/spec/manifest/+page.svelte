@@ -25,33 +25,49 @@
   <span class="section-label">Spec v2 · start here</span>
   <h1>Describe one Assistant.</h1>
   <p class="docs-lede">
-    <code>shimpz.assistant.toml</code> contains identity, public secret and connection intent, narrow Powers,
-    and exact external hosts requested by the creator. Shimpz owns private values, OAuth, runtime enforcement,
-    build, and file-layout decisions.
+    <code>shimpz.assistant.toml</code> contains identity, narrow Powers, public Secret metadata, OAuth Account
+    intent, and exact external hosts. Shimpz owns private values, OAuth execution, runtime enforcement,
+    packaging, and infrastructure decisions.
   </p>
 </header>
 
 <aside class="scope-note" aria-labelledby="manifest-request-title">
   <span id="manifest-request-title" class="kicker">A request, not a grant</span>
   <p>
-    Power, <code>secrets</code>, <code>connections</code>, and <code>allowed_hosts</code> declarations describe
-    intent. Installation, owner consent, catalog review, and Team controller policy still decide what can run,
-    which private values can be delivered, and which hosts can be reached.
+    Power, <code>secrets</code>, <code>accounts</code>, and <code>allowed_hosts</code> declarations describe intent.
+    Installation, owner consent, catalog review, and Team controller policy still decide what can run, which
+    private values can be delivered, and which hosts can be reached.
   </p>
 </aside>
 
 <section class="guide-section" aria-labelledby="manifest-example-title">
-  <span class="section-label">BYOK example</span>
-  <h2 id="manifest-example-title">Keep every dependency visible</h2>
+  <span class="section-label">Smallest example</span>
+  <h2 id="manifest-example-title">Start with no private access or egress</h2>
   <p>
-    This complete OpenWeather example names one exact host, one opaque secret ID, and two read-only Powers.
-    It contains no credential value. Each Power references only the ID it needs.
+    This is a complete manifest for one local, read-only Power. The conventional input and output schemas,
+    <code>GENESIS.md</code>, localized Help, and executable adapter live beside it; infrastructure details do not.
   </p>
   <CodeBlock
     label="Minimal Assistant Spec v2 manifest"
     title="shimpz.assistant.toml"
     variant="code"
-    {...data.manifest}
+    {...data.minimalManifest}
+  />
+</section>
+
+<section class="guide-section" aria-labelledby="manifest-private-title">
+  <span class="section-label">Private access example</span>
+  <h2 id="manifest-private-title">Declare each dependency where it is used</h2>
+  <p>
+    This example combines manual Mux BYOK with an OAuth X Account. Values and tokens are absent. Each Power
+    references only its own dependencies, so listing Mux uploads cannot receive X access and publishing to X
+    cannot receive Mux credentials.
+  </p>
+  <CodeBlock
+    label="Assistant manifest with Secrets and an Account"
+    title="shimpz.assistant.toml"
+    variant="code"
+    {...data.integrationManifest}
   />
 </section>
 
@@ -71,21 +87,22 @@
     <li>
       <code>secrets</code> is optional public metadata. Each kebab-case ID has only a human-readable
       <code>name</code> and <code>summary</code>, and is bounded to 64 characters so admission and encrypted
-      storage enforce the same identifier contract; values never belong in source.
+      storage enforce the same identifier contract. An Assistant may declare at most 32; values never belong
+      in source.
     </li>
     <li>
-      <code>connections</code> optionally names a reviewed OAuth provider and its narrow scopes. Endpoints,
-      callbacks, Client IDs, authorization codes, PKCE verifiers, and tokens are controller-owned and are not
-      manifest fields.
+      <code>accounts</code> optionally names a reviewed OAuth provider and its narrow scopes. Endpoints,
+      callbacks, Client IDs, authorization codes, PKCE verifiers, and tokens are controller-owned, not
+      manifest fields. An Assistant may declare at most 16 Accounts, with at most 32 scopes each.
     </li>
     <li><code>powers</code> defines the only Assistant capabilities the Brain may request.</li>
     <li>
       <code>powers.&lt;id&gt;.secrets</code> lists the exact declared secret IDs delivered to that Power for one
-      invocation.
+      invocation, with at most 16 references.
     </li>
     <li>
-      <code>powers.&lt;id&gt;.connections</code> lists the exact declared connections delivered to that Power for
-      one invocation.
+      <code>powers.&lt;id&gt;.accounts</code> lists the exact declared Accounts delivered to that Power for one
+      invocation, with at most four references.
     </li>
   </ul>
 </section>
@@ -94,10 +111,10 @@
   <span class="section-label">Fail closed</span>
   <h2 id="manifest-validation-title">Let validation catch drift early</h2>
   <p>
-    Unknown fields, invalid creator names, duplicate IDs, undefined Power secret or connection references,
-    provider credentials in source, unsafe conventional files, and open schemas are rejected. Each allowed host must be a unique,
-    lowercase, exact public DNS hostname. URLs, ports, paths, wildcards, IP addresses, localhost, and internal
-    names are rejected. The list accepts at most 32 hosts. The <a
+    Unknown fields, invalid creator names, duplicate IDs, unused Accounts, undefined Power Secret or Account
+    references, provider credentials in source, unsafe conventional files, and open schemas are rejected.
+    Each allowed host must be a unique, lowercase, exact public DNS hostname. URLs, ports, paths, wildcards,
+    IP addresses, localhost, and internal names are rejected. The list accepts at most 32 hosts. The <a
       class="external-link"
       href="/specs/assistant/v2/manifest.schema.json"
       target="_blank"

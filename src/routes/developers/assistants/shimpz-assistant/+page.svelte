@@ -11,7 +11,7 @@
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/shimpz-assistant/" />
   <meta
     name="description"
-    content="Build from the Shimpz Assistant 0.5.0 X.com reference and its controller-owned OAuth boundary."
+    content="Build from Shimpz Assistant 0.6.0, the executable reference for OAuth Accounts, BYOK Secrets, approvals, and exact-host egress."
   />
 </svelte:head>
 
@@ -25,28 +25,31 @@
   <span class="section-label">Executable source reference</span>
   <h1>Explore Shimpz Assistant.</h1>
   <p class="docs-lede">
-    Inspect the source and the release boundary for an X.com Assistant with localized Help, typed Powers,
-    explicit approval, and restricted network access.
+    Inspect one executable Assistant that demonstrates X OAuth Accounts, Mux BYOK Secrets, localized Help,
+    typed Powers, explicit approval, and exact-host network access.
   </p>
 </header>
 
 <aside class="scope-note" aria-labelledby="assistant-boundary-title">
-  <span id="assistant-boundary-title" class="kicker">Reference release · 0.5.0</span>
+  <span id="assistant-boundary-title" class="kicker">Reference release · 0.6.0</span>
   <p>
-    Install it from the Assistant Store. The first Power that needs X opens the Admin connection modal and
-    sends the user to X consent. End users never enter X developer keys, Bearer Tokens, access tokens, refresh
-    tokens, or client secrets.
+    Install it from the Assistant Store. An X Power opens the Account flow and sends the user to X consent. A
+    Mux Power opens the write-only Secret modal for only the missing Mux values. Neither mechanism runs during
+    installation, and private values never enter chat.
   </p>
 </aside>
 
 <section class="guide-section" aria-labelledby="assistant-install-title">
-  <span class="section-label">Install and connect</span>
-  <h2 id="assistant-install-title">Grant X access only when a Power needs it</h2>
+  <span class="section-label">Install and authorize</span>
+  <h2 id="assistant-install-title">Provide private access only when a Power needs it</h2>
   <p>
-    Installing the immutable Assistant does not connect an account or run a Power. Consent happens just in
-    time, is scoped to one Team and Assistant, and remains separate from approval for a write Power.
+    Installing the immutable Assistant does not connect an Account, collect a Secret, or run a Power. Private
+    access is requested just in time, isolated to one Team and Assistant, and remains separate from approval.
   </p>
-  <p><a href="/developers/assistants/spec/connections/">Review the OAuth connection boundary</a>.</p>
+  <p>
+    Read <a href="/developers/assistants/spec/accounts/">Accounts</a> for OAuth and
+    <a href="/developers/assistants/spec/secrets/">Secrets</a> for manual BYOK.
+  </p>
 </section>
 
 <ol class="step-list">
@@ -78,7 +81,10 @@
 
   <li>
     <h2>Inspect the fail-closed process</h2>
-    <p>The runtime rejects X calls unless the controller supplies the exact reviewed connection for that Power.</p>
+    <p>
+      The runtime rejects a call unless the controller supplies exactly the Account and Secret IDs declared by
+      that Power. It rejects missing, extra, malformed, or wrong-purpose private values.
+    </p>
     <CodeBlock
       label="Run Shimpz Assistant locally"
       title="Terminal one · Runtime"
@@ -87,11 +93,19 @@
   </li>
 
   <li>
-    <h2>Review the least-privilege Powers</h2>
+    <h2>Review all least-privilege Powers</h2>
     <p>
       The <code>public-user-lookup</code>, <code>identity-me</code>, <code>create-post</code>, and
-      <code>delete-post</code> Powers reference one scoped X connection. Only a short-lived access token may
-      enter the private Power envelope; both write Powers independently require explicit approval.
+      <code>delete-post</code> Powers reference one scoped X Account. Only a bounded access token may enter the
+      private Power envelope; both writes independently require explicit approval.
+    </p>
+    <p>
+      <code>list-direct-uploads</code>, <code>create-test-direct-upload</code>, and
+      <code>cancel-direct-upload</code> reference the Mux Token ID and Token Secret. The create and cancel
+      Powers always require approval. The test create fixes a 60-second timeout, <code>test = true</code>, and
+      basic video quality, uploads no media, and omits the signed URL from chat. <code>verify-mux-webhook</code>
+      receives only the signing Secret, verifies HMAC-SHA256 with constant-time comparison and a five-minute
+      freshness window, and performs no network request.
     </p>
     <CodeBlock
       label="Inspect the X manifest without exposing a credential"
@@ -123,15 +137,19 @@
       every Admin language.
     </li>
     <li>
-      <code>allowed_hosts</code> exposes <code>api.x.com</code> as the only external destination. The controller
-      admits only the matching packaged manifest, and the proxy blocks every other host.
+      <code>allowed_hosts</code> exposes exactly <code>api.x.com</code> and <code>api.mux.com</code>. The
+      controller admits only the matching packaged manifest, and the proxy blocks every other host.
     </li>
     <li>
-      The reviewed <code>connections.x</code> declaration requests provider consent without accepting X
-      developer credentials in Assistant source or forms.
+      The reviewed <code>accounts.x</code> declaration requests provider consent without accepting X developer
+      credentials in Assistant source or forms.
+    </li>
+    <li>
+      Three public Mux Secret declarations exercise a multi-value API credential and a separate webhook
+      signing key. Per-Power references prevent one purpose from receiving another purpose's values.
     </li>
     <li>Closed schemas bound every input and output; unknown fields and undeclared routes fail closed.</li>
-    <li>The controller, not Assistant code, owns PKCE state, refresh, revocation, and durable token custody.</li>
+    <li>The controller, not Assistant code, owns PKCE state, refresh, revocation, and durable private-value custody.</li>
   </ul>
   <p>
     Read the <a

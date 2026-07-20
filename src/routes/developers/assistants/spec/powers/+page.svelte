@@ -47,11 +47,26 @@
     {...data.power}
   />
   <p>
-    The table key is the stable lowercase kebab-case Power ID. <code>approval</code> accepts
-    <code>never</code>, <code>once</code>, or <code>always</code> and defaults to <code>never</code> when
-    omitted. It never overrides an owner or controller decision. <code>secrets</code> accepts only unique IDs
-    declared in the top-level <code>secrets</code> table; <code>connections</code> does the same for reviewed
-    OAuth intent. A Power receives no private value or connection it did not explicitly reference.
+    The table key is the stable lowercase kebab-case Power ID. <code>secrets</code> accepts only unique IDs
+    declared in the top-level <code>secrets</code> table; <code>accounts</code> does the same for reviewed OAuth
+    intent. A Power receives no private value or Account it did not explicitly reference.
+  </p>
+</section>
+
+<section class="guide-section" aria-labelledby="powers-approval-title">
+  <span class="section-label">User consent</span>
+  <h2 id="powers-approval-title">Choose the smallest approval policy</h2>
+  <ul>
+    <li><code>never</code> is the default. Use it for bounded reads and local verification with no external effect.</li>
+    <li>
+      <code>once</code> asks once, then remembers the grant only for that Team, Assistant, Power, and immutable
+      release. A new release requires a new decision.
+    </li>
+    <li><code>always</code> asks before every invocation. Use it for writes, deletion, publishing, and spending.</li>
+  </ul>
+  <p>
+    Approval is independent from credentials. Saving Secrets or connecting an Account never approves the
+    action, and approval never grants a Secret, Account, host, or undeclared Power.
   </p>
 </section>
 
@@ -59,8 +74,8 @@
   <span class="section-label">Closed data</span>
   <h2 id="powers-schema-title">Accept only the fields you designed</h2>
   <CodeBlock
-    label="Closed current-weather input"
-    title="schemas/current-weather.input.schema.json"
+    label="Closed list-direct-uploads input"
+    title="schemas/list-direct-uploads.input.schema.json"
     variant="code"
     {...data.inputSchema}
   />

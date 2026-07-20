@@ -21,10 +21,10 @@
 </header>
 
 <aside class="scope-note" aria-labelledby="assistant-evaluation-scope">
-  <span id="assistant-evaluation-scope" class="kicker">Safe account connection</span>
+  <span id="assistant-evaluation-scope" class="kicker">Safe private access</span>
   <p>
-    Shimpz Assistant 0.5.0 connects to X through the official X consent page. Shimpz never asks you to paste
-    X developer keys, Bearer Tokens, access tokens, refresh tokens, or client secrets into an Assistant form.
+    Shimpz Assistant connects an X Account through the official X consent page and asks for Mux API values
+    only when a Mux Power needs them. Never paste an API key, token, or password into chat.
   </p>
 </aside>
 
@@ -59,15 +59,24 @@
     <h2>Connect X when prompted</h2>
     <p>
       Ask the Team to use an X Power. If the account is not connected, the turn pauses and the Admin opens a
-      connection modal. Choose <strong>Connect X</strong>, review the scopes on X, and approve there. Shimpz
+      Account modal. Choose <strong>Connect X</strong>, review the scopes on X, and approve there. Shimpz
       resumes the paused turn only after the callback is validated.
+    </p>
+  </li>
+
+  <li>
+    <h2>Add Mux Secrets when prompted</h2>
+    <p>
+      Ask the Team to list Mux direct uploads. The turn pauses and the Admin opens one password-style modal
+      for the missing Token ID and Token Secret. Submit them there, never in chat. Webhook verification asks
+      separately for only its signing Secret.
     </p>
   </li>
 
   <li>
     <h2>Remove it cleanly</h2>
     <p>
-      Disconnect X to revoke the connection, then select <strong>Uninstall</strong> when you finish evaluating.
+      Disconnect X to revoke the Account, then select <strong>Uninstall</strong> when you finish evaluating.
       This removes the Assistant container from that Team without destroying the Team itself.
     </p>
   </li>
@@ -85,15 +94,15 @@
 
 <section class="guide-section" aria-labelledby="assistant-secrets-title">
   <span class="section-label">Private provider access</span>
-  <h2 id="assistant-secrets-title">Secrets and account connections are different</h2>
+  <h2 id="assistant-secrets-title">Secrets and Accounts are different</h2>
   <p>
     When a selected Power needs a value that is not configured, the Admin pauses the turn and opens a
     write-only form containing every missing opaque API key declared by that Power. Never paste a secret into
     chat.
   </p>
   <p>
-    OAuth account access uses a separate controller-owned connection and provider consent screen. X developer
-    credentials are not Assistant secrets. Saving either kind of private access is never approval for an
+    OAuth Account access uses a separate controller-owned flow and provider consent screen. X developer
+    credentials are not Assistant Secrets. Saving either kind of private access is never approval for an
     external effect; a write Power still needs its own explicit approval.
   </p>
 </section>

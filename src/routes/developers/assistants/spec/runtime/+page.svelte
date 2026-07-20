@@ -75,17 +75,37 @@
     <li>The model may answer naturally as the Team or request one declared Power with structured input.</li>
     <li>The controller verifies Team ownership, Assistant installation, declaration, grant, approval, and schema.</li>
     <li>
-      The controller resolves only that Power's declared secrets just in time and a fixed adapter invokes it;
-      the model cannot choose a secret, command, URL, container, or route.
+      The controller resolves only that Power's declared Accounts and Secrets just in time, then handles any
+      approval gate before a fixed adapter invokes it. The model cannot choose a private value, command, URL,
+      container, or route.
     </li>
     <li>The controller validates the output and resumes the graph, which may request another bounded Power.</li>
     <li>The terminal response is attributed to the Team's name, never to an Assistant chosen by the user.</li>
   </ol>
   <p>
     A malformed request, undeclared Power, missing grant, unavailable Assistant, schema mismatch, or
-    unexpected result fails closed. Missing secrets pause for the authenticated Admin flow described in
-    <a href="/developers/assistants/spec/secrets/">Secrets</a>; Genesis provides instructions—not a fallback
-    authorization mechanism.
+    unexpected result fails closed. Missing private access pauses for the authenticated Admin flows described
+    in <a href="/developers/assistants/spec/accounts/">Accounts</a> and
+    <a href="/developers/assistants/spec/secrets/">Secrets</a>; Genesis provides instructions, not fallback
+    authorization.
+  </p>
+</section>
+
+<section class="guide-section" aria-labelledby="assistant-runtime-title">
+  <span class="section-label">Assistant workload</span>
+  <h2 id="assistant-runtime-title">Run immutable code inside a disposable boundary</h2>
+  <ul>
+    <li>One installed Assistant runs from one reviewed, digest-pinned image inside one Team.</li>
+    <li>It runs as a fixed non-root user with all Linux capabilities dropped and no-new-privileges enabled.</li>
+    <li>Its root filesystem is read-only; it receives bounded temporary memory and no host or Team storage mount.</li>
+    <li>CPU, memory, process, file-descriptor, and log limits are controller policy, not manifest choices.</li>
+    <li>It joins only the Team's internal network and reaches admitted public hosts through an authenticated proxy.</li>
+    <li>One closed stdin envelope carries Power input and only its declared Secrets and Accounts.</li>
+    <li>One bounded, schema-validated response returns; logs, environment, and arguments never carry private values.</li>
+  </ul>
+  <p>
+    Container isolation limits damage but is not the only boundary. Catalog review, immutable digests, closed
+    schemas, per-Power private access, approval, and exact-host egress all remain independent checks.
   </p>
 </section>
 
@@ -172,13 +192,13 @@
 </section>
 
 <section class="guide-section" aria-labelledby="chat-author-title">
-  <span class="section-label">Developer rule</span>
+  <span class="section-label">Design guidance</span>
   <h2 id="chat-author-title">Design the narrowest useful Power</h2>
   <p>
-    Prefer a semantic Power such as <code>invoice.extract</code> over generic capabilities such as
-    <code>file.read</code>, <code>http.request</code>, or <code>code.run</code>. Close every input and output
-    shape, request only the required Service operations, and make sensitive actions require explicit owner
-    approval.
+    Prefer a semantic Power such as <code>invoice-extract</code> over generic capabilities such as
+    <code>file-read</code>, <code>http-request</code>, or <code>code-run</code>. Close every input and output
+    shape, reference only the Accounts and Secrets that Power needs, allow only its exact public hosts, and
+    make sensitive actions require explicit owner approval.
   </p>
 </section>
 
