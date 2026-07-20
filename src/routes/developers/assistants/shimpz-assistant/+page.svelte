@@ -154,7 +154,7 @@
   <p>
     Read the <a
       class="external-link"
-      href="https://github.com/roxygens/shimpz-assistant"
+      href="https://github.com/TheShimpz/shimpz-assistant"
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Shimpz Assistant source on GitHub (opens in a new tab)">complete source on GitHub</a
@@ -164,5 +164,5 @@
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant developer guide">
   <a href="/developers/assistants/spec/build-release/"><span>Back to</span><strong>Build and release</strong></a>
-  <a href="/developers/assistants/salesnator/"><span>Next</span><strong>Salesnator</strong></a>
+  <a href="/developers/assistants/"><span>Overview</span><strong>Assistants</strong></a>
 </nav>

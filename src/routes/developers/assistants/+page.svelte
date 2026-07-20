@@ -102,18 +102,7 @@
         <span>Study X Accounts and Mux Secrets in one executable reference</span>
       </a>
     </li>
-    <li>
-      <a class="docs-entry-link" href="/developers/assistants/salesnator/">
-        <strong>Salesnator</strong>
-        <span>Prove read-only campaign health and idempotent notification intent</span>
-      </a>
-    </li>
   </ul>
-  <p>
-    Salesnator uses only synthetic data and stores no tokens. A future live integration must declare
-    every provider Account or Secret on the exact Powers that need it; campaign mutations remain outside
-    this MVP.
-  </p>
   <p>
     Creators may eventually distribute and sell Assistants. That marketplace is a later product layer,
     not permission to weaken the Team boundary or imply that commerce is part of this delivery.

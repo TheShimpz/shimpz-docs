@@ -80,8 +80,8 @@
     {...data.inputSchema}
   />
   <p>
-    Define the output with the same closed JSON Schema pattern. The SDK rejects open objects, remote schema
-    references, credential-bearing fields, and unsupported schema features.
+    Define the output with the same closed JSON Schema pattern. Controller admission rejects open objects,
+    remote schema references, credential-bearing fields, and unsupported schema features.
   </p>
 </section>
 

@@ -51,7 +51,7 @@
   <h2 id="build-checklist-title">Publish only tested bytes</h2>
   <ol>
     <li>Update the required root <code>CHANGELOG.md</code> for this release.</li>
-    <li>Validate the complete source tree with the Assistant SDK.</li>
+    <li>Validate the complete source tree against the reviewed Assistant contract.</li>
     <li>Run focused source and contract tests.</li>
     <li>
       Build and smoke the supported platform images as an unprivileged, read-only runtime, including

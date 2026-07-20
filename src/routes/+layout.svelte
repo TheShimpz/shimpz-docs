@@ -148,11 +148,6 @@
           label: "Shimpz Assistant",
           description: "Accounts + Secrets reference",
         },
-        {
-          href: "/developers/assistants/salesnator/",
-          label: "Salesnator",
-          description: "Read-only campaign proof",
-        },
       ],
     },
   ];

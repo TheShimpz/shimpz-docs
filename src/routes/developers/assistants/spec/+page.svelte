@@ -1,7 +1,3 @@
-<script lang="ts">
-  import CodeBlock from "$lib/components/CodeBlock.svelte";
-</script>
-
 <svelte:head>
   <title>Shimpz Assistant Spec v2 — Shimpz docs</title>
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/spec/" />
@@ -128,35 +124,11 @@
   </ul>
 </section>
 
-<section class="guide-section" aria-labelledby="assistant-first-project-title">
-  <span class="section-label">Fastest path</span>
-  <h2 id="assistant-first-project-title">Scaffold and validate one Assistant</h2>
-  <p>From a checked-out <code>shimpz-sdk</code> repository with Python 3.14:</p>
-  <CodeBlock
-    label="Create and validate a minimal Assistant"
-    title="Terminal · two commands"
-    lines={[
-      {
-        value:
-          "SHIMPZ_LIB=$PWD/rootfs/opt/shimpz-lib python3 rootfs/usr/local/bin/shimpz-assistant new my-assistant /tmp/my-assistant",
-      },
-      {
-        value:
-          "SHIMPZ_LIB=$PWD/rootfs/opt/shimpz-lib python3 rootfs/usr/local/bin/shimpz-assistant validate /tmp/my-assistant",
-      },
-    ]}
-  />
-  <p>
-    Continue with the <a href="/developers/assistants/shimpz-assistant/">Shimpz Assistant walkthrough</a> to call its
-    first Power.
-  </p>
-</section>
-
 <aside class="scope-note" aria-labelledby="assistant-spec-status-title">
   <span id="assistant-spec-status-title" class="kicker">Available today</span>
   <p>
-    Spec v2 source validation and the reviewed Shimpz Assistant runtime contract are implemented. Generic
-    third-party Store ingestion, generic Service bindings, and routine scheduling are not released yet.
+    The reviewed Shimpz Assistant runtime contract is implemented. Generic third-party Store ingestion,
+    generic Service bindings, and routine scheduling are not released yet.
     The manifest exposes requested hosts through <code>allowed_hosts</code>, manual BYOK metadata through
     <code>secrets</code>, and provider OAuth intent through <code>accounts</code>. None grants access by itself;
     network policy, private-value custody, approval, and routines remain controller-owned runtime policy.
