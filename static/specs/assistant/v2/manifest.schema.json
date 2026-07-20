@@ -60,7 +60,7 @@
       "type": "object",
       "maxProperties": 32,
       "propertyNames": {
-        "$ref": "#/$defs/id"
+        "$ref": "#/$defs/secretId"
       },
       "additionalProperties": {
         "$ref": "#/$defs/secret"
@@ -83,6 +83,12 @@
       "type": "string",
       "minLength": 1,
       "maxLength": 80,
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
+    "secretId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
       "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
     },
     "secret": {
@@ -134,7 +140,7 @@
           "maxItems": 16,
           "uniqueItems": true,
           "items": {
-            "$ref": "#/$defs/id"
+            "$ref": "#/$defs/secretId"
           }
         }
       }

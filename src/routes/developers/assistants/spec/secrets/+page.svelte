@@ -49,7 +49,7 @@
     {...data.declaration}
   />
   <ul>
-    <li>The table key is a stable lowercase kebab-case secret ID.</li>
+    <li>The table key is a stable lowercase kebab-case secret ID of at most 64 characters.</li>
     <li>Each <code>[secrets.&lt;id&gt;]</code> table accepts exactly <code>name</code> and <code>summary</code>.</li>
     <li>There is no value, environment-variable name, default, or <code>required</code> flag in the manifest.</li>
     <li>A Power lists only unique IDs declared by the same Assistant; undefined references fail validation.</li>
@@ -61,16 +61,40 @@
   <span class="section-label">Isolation</span>
   <h2 id="secret-scope-title">Scope every value to Team and Assistant</h2>
   <p>
-    One stored value belongs to one Assistant installation inside one Team. It is not Space-global, cannot be
-    reused by another Assistant, and cannot cross into another Team. Powers in that same installation may
-    reuse it only when their admitted declarations reference the same ID.
+    Hosted and self-hosted controllers enforce the same scope: one stored value belongs to one Assistant
+    installation inside one Team. It is not Space-global, cannot be reused by another Assistant, and cannot
+    cross into another Team. Powers in that same installation may reuse it only when their admitted
+    declarations reference the same ID.
+  </p>
+  <p>
+    Each value is an independently authenticated AES-256-GCM envelope whose state and encryption key have
+    separate controller custody. Encryption at rest does not turn a compromised controller or host root into a
+    trusted boundary; Team isolation, exact per-Power declarations, reviewed code, and exact
+    <code>allowed_hosts</code> enforcement remain necessary.
   </p>
   <p>
     The Admin inventory groups entries by <strong>Team → Assistant</strong>. It shows each declared name,
     summary, and only a configured or missing status. Configured values use a bounded, length-aware identifier:
     short values reveal no characters, while longer values show at most four characters at each edge, such as
     <code>abcd…wxyz</code>. The inventory never returns plaintext, a hash, an encryption envelope, or enough
-    metadata to reconstruct a value. Rotation replaces the complete value through the same write-only boundary.
+    metadata to reconstruct a value.
+  </p>
+</section>
+
+<section class="guide-section" aria-labelledby="secret-rotation-title">
+  <span class="section-label">Declared lifecycle</span>
+  <h2 id="secret-rotation-title">Keep the ID stable when a value rotates</h2>
+  <p>
+    Rotation is a complete replacement of the value behind the same declared secret ID. Do not add a version,
+    timestamp, or provider generation to the manifest key. A rotation flow must use the same authenticated,
+    write-only boundary, create a new encrypted generation, and make the previous generation unusable; partial
+    merges and plaintext reads are never valid rotation mechanisms.
+  </p>
+  <p>
+    Spec v2 defines those semantics but the current Admin and controller expose only just-in-time first
+    collection. A dedicated rotate action is not part of this delivery. Until it is implemented, rotate at the
+    provider and reinstall or purge the affected local development Team instead of assuming that editing source
+    or submitting chat text replaces a stored value.
   </p>
 </section>
 
@@ -88,6 +112,11 @@
     <li>The controller validates and stores them under the current Team and Assistant, then resolves them for the invocation.</li>
   </ol>
   <p>
+    Both hosted and self-hosted controllers issue an opaque, one-use, Team-bound challenge that expires after
+    five minutes. The paused continuation stays only in controller memory, so a restart or expiry discards it
+    and the owner retries the turn. Already encrypted stored values persist independently of that continuation.
+  </p>
+  <p>
     Closing the modal leaves the Power unexecuted. Saving a value never approves a Power: an
     <code>approval = "once"</code> or <code>approval = "always"</code> decision remains a separate, explicit
     user action.
@@ -102,7 +131,7 @@
   <span class="section-label">Private RPC</span>
   <h2 id="secret-envelope-title">Use one closed stdin envelope</h2>
   <p>
-    Immediately before execution, the controller writes one bounded JSON object to the private RPC adapter's
+    Immediately before execution, either controller writes one bounded JSON object to the private RPC adapter's
     standard input. The object has exactly the root keys <code>input</code> and <code>secrets</code>; the secret
     object has exactly the IDs declared by that Power. Missing or additional roots, missing or additional
     secret IDs, duplicate JSON keys, invalid UTF-8, or an invalid Power input fail closed.

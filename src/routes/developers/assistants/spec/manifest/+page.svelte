@@ -71,7 +71,8 @@
     </li>
     <li>
       <code>secrets</code> is optional public metadata. Each kebab-case ID has only a human-readable
-      <code>name</code> and <code>summary</code>; values never belong in source.
+      <code>name</code> and <code>summary</code>, and is bounded to 64 characters so admission and encrypted
+      storage enforce the same identifier contract; values never belong in source.
     </li>
     <li><code>powers</code> defines the only Assistant capabilities the Brain may request.</li>
     <li>
