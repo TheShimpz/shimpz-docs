@@ -7,7 +7,7 @@ IMAGE_REPOSITORY="ghcr.io/roxygens/shimpz-space"
 ADMIN_CHANNEL="dev"
 CONTROLLER_CHANNEL="team-driver-local-dev"
 BRAIN_RUNTIME_CHANNEL="brain-runtime-dev"
-APP_EGRESS_RELEASE="${IMAGE_REPOSITORY}@sha256:39c4b3aa5a3112b567935d06da35ac56d233d6706bce05ce818d8374ade750b0"
+APP_EGRESS_RELEASE="${IMAGE_REPOSITORY}@sha256:8e5e2d97a9332304db265a9b2ccf052d50cef74eb11553adc40ec7c85e69a13f"
 PROJECT_NAME="shimpz-space"
 # Exact controller service shipped by 0.3.1. The retired identifier is split so
 # terminology audits do not mistake this migration-only value for an active API.
