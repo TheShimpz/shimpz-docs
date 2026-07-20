@@ -67,9 +67,10 @@
   </p>
   <p>
     The Admin inventory groups entries by <strong>Team → Assistant</strong>. It shows each declared name,
-    summary, and only a configured or missing status with a fixed mask such as <code>••••••••</code>. Listing
-    never returns plaintext, a suffix, a hash, an encryption envelope, or enough metadata to reconstruct a
-    value. Rotation replaces the complete value through the same write-only boundary.
+    summary, and only a configured or missing status. Configured values use a bounded, length-aware identifier:
+    short values reveal no characters, while longer values show at most four characters at each edge, such as
+    <code>abcd…wxyz</code>. The inventory never returns plaintext, a hash, an encryption envelope, or enough
+    metadata to reconstruct a value. Rotation replaces the complete value through the same write-only boundary.
   </p>
 </section>
 
@@ -80,8 +81,8 @@
     <li>The Brain requests one declared Power; it never receives or asks for the secret value in chat.</li>
     <li>The controller resolves the exact admitted secret IDs for that Power.</li>
     <li>
-      If one is missing, execution remains suspended and the Admin opens a contextual modal with the
-      declaration's name and summary.
+      If any are missing, the entire Power batch remains unexecuted and the Admin opens one contextual modal
+      containing every missing value, grouped by Assistant with each declaration's name and summary.
     </li>
     <li>The owner submits the missing values over the authenticated write-only channel.</li>
     <li>The controller validates and stores them under the current Team and Assistant, then resolves them for the invocation.</li>
@@ -90,6 +91,10 @@
     Closing the modal leaves the Power unexecuted. Saving a value never approves a Power: an
     <code>approval = "once"</code> or <code>approval = "always"</code> decision remains a separate, explicit
     user action.
+  </p>
+  <p>
+    The right-side secret inventory lists every installed Assistant and its configured or missing declarations.
+    It is status-only: reopening the inventory can never retrieve a stored value.
   </p>
 </section>
 
