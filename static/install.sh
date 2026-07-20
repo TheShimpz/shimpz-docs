@@ -351,6 +351,7 @@ validate_project_resources() {
 			"${PROJECT_NAME}_controller_storage|controller_storage"|\
 			"${PROJECT_NAME}_controller_inference|controller_inference"|\
 			"${PROJECT_NAME}_controller_power_journal|controller_power_journal"|\
+			"${PROJECT_NAME}_controller_approval_state|controller_approval_state"|\
 			"${PROJECT_NAME}_controller_assistant_secret_state|controller_assistant_secret_state"|\
 			"${PROJECT_NAME}_controller_assistant_secret_key|controller_assistant_secret_key"|\
 			"${PROJECT_NAME}_brain_runtime_token|brain_runtime_token"|\
@@ -837,6 +838,7 @@ services:
       SHIMPZ_BRAIN_RUNTIME_URL: http://brain-runtime:8080
       SHIMPZ_BRAIN_RUNTIME_TOKEN_FILE: /run/shimpz-brain-runtime/token
       SHIMPZ_LOCAL_POWER_JOURNAL_PATH: /var/lib/shimpz-local/power-journal/journal.sqlite3
+      SHIMPZ_LOCAL_APPROVAL_GRANTS_PATH: /var/lib/shimpz-local/assistant-approvals/grants.sqlite3
       SHIMPZ_APP_EGRESS_PROXY_CONTAINER: shimpz-space-app-egress-proxy-1
       SHIMPZ_APP_EGRESS_POLICY_DIR: /var/lib/shimpz-local/app-egress
     volumes:
@@ -846,6 +848,7 @@ services:
       - controller_storage:/var/lib/shimpz-local/storage:rw
       - controller_inference:/var/lib/shimpz-local/inference:rw
       - controller_power_journal:/var/lib/shimpz-local/power-journal:rw
+      - controller_approval_state:/var/lib/shimpz-local/assistant-approvals:rw
       - controller_assistant_secret_state:/var/lib/shimpz-local/assistant-secrets/state:rw
       - controller_assistant_secret_key:/var/lib/shimpz-local/assistant-secrets/key:rw
       - app_egress_policy:/var/lib/shimpz-local/app-egress:rw
@@ -1022,6 +1025,7 @@ volumes:
   controller_storage:
   controller_inference:
   controller_power_journal:
+  controller_approval_state:
   controller_assistant_secret_state:
   controller_assistant_secret_key:
   app_egress_policy:
