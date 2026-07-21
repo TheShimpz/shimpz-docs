@@ -7,7 +7,7 @@ IMAGE_REPOSITORY="ghcr.io/theshimpz/shimpz-space"
 # Read-only migration allowlist for digest-pinned installations created before the
 # package moved to TheShimpz. New releases are always pulled and written from IMAGE_REPOSITORY.
 PRIOR_IMAGE_REPOSITORY="ghcr.io/roxygens/shimpz-space"
-ADMIN_CHANNEL="dev"
+ADMIN_CHANNEL=""
 CONTROLLER_CHANNEL="${SHIMPZ_CONTROLLER_CHANNEL:-team-driver-local-dev}"
 BRAIN_RUNTIME_CHANNEL="brain-runtime-dev"
 APP_EGRESS_RELEASE="${IMAGE_REPOSITORY}@sha256:a35202dbe94660c2b56076c6cb55eaf826a9a37f750fd737e6b415691ed5692d"
@@ -167,6 +167,7 @@ setup_colors
 show_brand "$action"
 case "$INSTALL_PROFILE" in
 	default)
+		ADMIN_CHANNEL="dev"
 		PROJECT_NAME="shimpz-space"
 		SHIMPZ_HOME_NAME=".shimpz"
 		MARKER_VALUE="shimpz-space-managed-v1"
@@ -175,6 +176,7 @@ case "$INSTALL_PROFILE" in
 		reset_command="curl -fsSL https://install.shimpz.com | sh -s -- --reset"
 		;;
 	local-canary)
+		ADMIN_CHANNEL="admin-local-canary"
 		PROJECT_NAME="shimpz-local-canary"
 		SHIMPZ_HOME_NAME=".shimpz-local-canary"
 		MARKER_VALUE="shimpz-local-canary-managed-v1"
