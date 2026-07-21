@@ -2,8 +2,11 @@
 
 set -eu
 
-INSTALLER_VERSION="0.4.4-dev"
+INSTALLER_VERSION="0.4.5-dev"
 IMAGE_REPOSITORY="ghcr.io/theshimpz/shimpz-space"
+# Read-only migration allowlist for digest-pinned installations created before the
+# package moved to TheShimpz. New releases are always pulled and written from IMAGE_REPOSITORY.
+PRIOR_IMAGE_REPOSITORY="ghcr.io/roxygens/shimpz-space"
 ADMIN_CHANNEL="dev"
 CONTROLLER_CHANNEL="team-driver-local-dev"
 BRAIN_RUNTIME_CHANNEL="brain-runtime-dev"
@@ -247,15 +250,24 @@ space_id_from_env_file() {
 	printf '%s\n' "$space_lines"
 }
 
-validate_official_digest_image() {
+official_image_digest() {
 	image_value="$1"
-	image_digest="${image_value#"${IMAGE_REPOSITORY}@sha256:"}"
-	[ "$image_digest" != "$image_value" ] \
-		|| die "refusing reset: a managed container does not use the official digest-pinned image"
-	case "$image_digest" in
-		""|*[!0-9a-f]*) die "refusing reset: a managed image digest is invalid" ;;
-	esac
-	[ "${#image_digest}" -eq 64 ] || die "refusing reset: a managed image digest is invalid"
+	for image_repository in "$IMAGE_REPOSITORY" "$PRIOR_IMAGE_REPOSITORY"; do
+		image_digest="${image_value#"${image_repository}@sha256:"}"
+		[ "$image_digest" != "$image_value" ] || continue
+		case "$image_digest" in
+			""|*[!0-9a-f]*) return 1 ;;
+		esac
+		[ "${#image_digest}" -eq 64 ] || return 1
+		printf '%s\n' "$image_digest"
+		return 0
+	done
+	return 1
+}
+
+validate_official_digest_image() {
+	official_image_digest "$1" >/dev/null \
+		|| die "refusing reset: a managed container does not use an allowed official digest-pinned image"
 }
 
 controller_image_from_env_file() {
@@ -264,12 +276,7 @@ controller_image_from_env_file() {
 	[ -n "$controller_image_lines" ] || return 1
 	[ "$(printf '%s\n' "$controller_image_lines" | wc -l | tr -d ' ')" -eq 1 ] \
 		|| return 2
-	controller_image_digest="${controller_image_lines#"${IMAGE_REPOSITORY}@sha256:"}"
-	[ "$controller_image_digest" != "$controller_image_lines" ] || return 2
-	case "$controller_image_digest" in
-		""|*[!0-9a-f]*) return 2 ;;
-	esac
-	[ "${#controller_image_digest}" -eq 64 ] || return 2
+	official_image_digest "$controller_image_lines" >/dev/null || return 2
 	printf '%s\n' "$controller_image_lines"
 }
 
@@ -666,12 +673,8 @@ optional_env_value() {
 
 validate_pinned_release_ref() {
 	release_ref="$1"
-	release_digest="${release_ref#"${IMAGE_REPOSITORY}@sha256:"}"
-	[ "$release_digest" != "$release_ref" ] || die "the previous release is not pinned to the official image"
-	case "$release_digest" in
-		""|*[!0-9a-f]*) die "the previous release has an invalid image digest" ;;
-	esac
-	[ "${#release_digest}" -eq 64 ] || die "the previous release has a malformed image digest"
+	official_image_digest "$release_ref" >/dev/null \
+		|| die "the previous release is not pinned to an allowed official image"
 }
 
 load_previous_release() {
