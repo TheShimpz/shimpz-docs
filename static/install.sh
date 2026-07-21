@@ -2,13 +2,13 @@
 
 set -eu
 
-INSTALLER_VERSION="0.4.6-dev"
+INSTALLER_VERSION="0.4.7-dev"
 IMAGE_REPOSITORY="ghcr.io/theshimpz/shimpz-space"
 # Read-only migration allowlist for digest-pinned installations created before the
 # package moved to TheShimpz. New releases are always pulled and written from IMAGE_REPOSITORY.
 PRIOR_IMAGE_REPOSITORY="ghcr.io/roxygens/shimpz-space"
 ADMIN_CHANNEL="dev"
-CONTROLLER_CHANNEL="team-driver-local-dev"
+CONTROLLER_CHANNEL="${SHIMPZ_CONTROLLER_CHANNEL:-team-driver-local-dev}"
 BRAIN_RUNTIME_CHANNEL="brain-runtime-dev"
 APP_EGRESS_RELEASE="${IMAGE_REPOSITORY}@sha256:a35202dbe94660c2b56076c6cb55eaf826a9a37f750fd737e6b415691ed5692d"
 PROJECT_NAME="shimpz-space"
@@ -130,6 +130,9 @@ Usage:
 
 Environment:
   SHIMPZ_PORT            Loopback port for the Admin (default: 7777)
+  SHIMPZ_CONTROLLER_CHANNEL
+                         Controller channel: team-driver-local-dev (default) or
+                         team-driver-local-canary (operator validation only)
 
 Supported hosts:
   Linux amd64 with Docker Engine and Docker Compose v2.
@@ -162,6 +165,11 @@ esac
 
 setup_colors
 show_brand "$action"
+case "$CONTROLLER_CHANNEL" in
+	team-driver-local-dev|team-driver-local-canary) ;;
+	*) die "SHIMPZ_CONTROLLER_CHANNEL must select an official controller channel" ;;
+esac
+unset SHIMPZ_CONTROLLER_CHANNEL
 step "Checking Docker and Compose"
 
 command -v docker >/dev/null 2>&1 || die "Docker is required: https://docs.docker.com/get-started/get-docker/"
