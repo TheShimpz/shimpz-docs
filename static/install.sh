@@ -170,6 +170,7 @@ case "$INSTALL_PROFILE" in
 		PROJECT_NAME="shimpz-space"
 		SHIMPZ_HOME_NAME=".shimpz"
 		MARKER_VALUE="shimpz-space-managed-v1"
+		OAUTH_CALLBACK_MODE="loopback"
 		ADMIN_ALLOWED_ORIGINS="http://localhost:${SHIMPZ_PORT:-7777},http://127.0.0.1:${SHIMPZ_PORT:-7777}"
 		reset_command="curl -fsSL https://install.shimpz.com | sh -s -- --reset"
 		;;
@@ -177,6 +178,7 @@ case "$INSTALL_PROFILE" in
 		PROJECT_NAME="shimpz-local-canary"
 		SHIMPZ_HOME_NAME=".shimpz-local-canary"
 		MARKER_VALUE="shimpz-local-canary-managed-v1"
+		OAUTH_CALLBACK_MODE="canary"
 		ADMIN_ALLOWED_ORIGINS="http://localhost:${SHIMPZ_PORT:-7777},http://127.0.0.1:${SHIMPZ_PORT:-7777},https://local.shimpz.com"
 		reset_command="curl -fsSL https://install.shimpz.com | SHIMPZ_INSTALL_PROFILE=local-canary sh -s -- --reset"
 		;;
@@ -844,6 +846,7 @@ SHIMPZ_SPACE_ID=${space_id}
 SHIMPZ_CPUSET=${docker_cpuset}
 SHIMPZ_PROJECT_NAME=${PROJECT_NAME}
 SHIMPZ_ADMIN_ALLOWED_ORIGINS=${ADMIN_ALLOWED_ORIGINS}
+SHIMPZ_OAUTH_CALLBACK_MODE=${OAUTH_CALLBACK_MODE}
 EOF
 chmod 600 "${ENV_FILE}.tmp"
 
@@ -872,6 +875,7 @@ services:
       SHIMPZ_BRAIN_RUNTIME_TOKEN_FILE: /run/shimpz-brain-runtime/token
       SHIMPZ_LOCAL_POWER_JOURNAL_PATH: /var/lib/shimpz-local/power-journal/journal.sqlite3
       SHIMPZ_LOCAL_APPROVAL_GRANTS_PATH: /var/lib/shimpz-local/assistant-approvals/grants.sqlite3
+      SHIMPZ_OAUTH_CALLBACK_MODE: ${SHIMPZ_OAUTH_CALLBACK_MODE:?installer must pin the OAuth callback mode}
       SHIMPZ_APP_EGRESS_PROXY_CONTAINER: ${SHIMPZ_PROJECT_NAME:?installer must pin SHIMPZ_PROJECT_NAME}-app-egress-proxy-1
       SHIMPZ_APP_EGRESS_POLICY_DIR: /var/lib/shimpz-local/app-egress
     volumes:
