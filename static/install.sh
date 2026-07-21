@@ -11,13 +11,12 @@ ADMIN_CHANNEL="dev"
 CONTROLLER_CHANNEL="${SHIMPZ_CONTROLLER_CHANNEL:-team-driver-local-dev}"
 BRAIN_RUNTIME_CHANNEL="brain-runtime-dev"
 APP_EGRESS_RELEASE="${IMAGE_REPOSITORY}@sha256:a35202dbe94660c2b56076c6cb55eaf826a9a37f750fd737e6b415691ed5692d"
-PROJECT_NAME="shimpz-space"
 # Exact controller service shipped by 0.3.1. The retired identifier is split so
 # terminology audits do not mistake this migration-only value for an active API.
 PRIOR_CONTROLLER_SERVICE="cap""sule-driver-local"
-MARKER_VALUE="shimpz-space-managed-v1"
 LOCAL_PROFILE="single-owner-local-v1"
 SPACE_LABEL="com.shimpz.local.space-id"
+INSTALL_PROFILE="${SHIMPZ_INSTALL_PROFILE:-default}"
 
 OUT_RESET=""
 OUT_BOLD=""
@@ -133,6 +132,7 @@ Environment:
   SHIMPZ_CONTROLLER_CHANNEL
                          Controller channel: team-driver-local-dev (default) or
                          team-driver-local-canary (operator validation only)
+  SHIMPZ_INSTALL_PROFILE Deployment profile: default or local-canary
 
 Supported hosts:
   Linux amd64 with Docker Engine and Docker Compose v2.
@@ -165,6 +165,24 @@ esac
 
 setup_colors
 show_brand "$action"
+case "$INSTALL_PROFILE" in
+	default)
+		PROJECT_NAME="shimpz-space"
+		SHIMPZ_HOME_NAME=".shimpz"
+		MARKER_VALUE="shimpz-space-managed-v1"
+		ADMIN_ALLOWED_ORIGINS="http://localhost:${SHIMPZ_PORT:-7777},http://127.0.0.1:${SHIMPZ_PORT:-7777}"
+		reset_command="curl -fsSL https://install.shimpz.com | sh -s -- --reset"
+		;;
+	local-canary)
+		PROJECT_NAME="shimpz-local-canary"
+		SHIMPZ_HOME_NAME=".shimpz-local-canary"
+		MARKER_VALUE="shimpz-local-canary-managed-v1"
+		ADMIN_ALLOWED_ORIGINS="http://localhost:${SHIMPZ_PORT:-7777},http://127.0.0.1:${SHIMPZ_PORT:-7777},https://local.shimpz.com"
+		reset_command="curl -fsSL https://install.shimpz.com | SHIMPZ_INSTALL_PROFILE=local-canary sh -s -- --reset"
+		;;
+	*) die "SHIMPZ_INSTALL_PROFILE must be default or local-canary" ;;
+esac
+unset SHIMPZ_INSTALL_PROFILE
 case "$CONTROLLER_CHANNEL" in
 	team-driver-local-dev|team-driver-local-canary) ;;
 	*) die "SHIMPZ_CONTROLLER_CHANNEL must select an official controller channel" ;;
@@ -195,7 +213,7 @@ case "$HOME" in
 	*) die "HOME must be an absolute path" ;;
 esac
 
-SHIMPZ_HOME="${HOME}/.shimpz"
+SHIMPZ_HOME="${HOME}/${SHIMPZ_HOME_NAME}"
 COMPOSE_FILE="${SHIMPZ_HOME}/compose.yaml"
 ENV_FILE="${SHIMPZ_HOME}/.env"
 MARKER_FILE="${SHIMPZ_HOME}/.shimpz-space"
@@ -568,7 +586,7 @@ if [ "$action" = "reset" ]; then
 	success "Shimpz Space was reset"
 	printf '  Data     Managed Space, Team, and Assistant Docker data was removed\n'
 	printf '  Files    Known installer files were removed from %s\n' "$SHIMPZ_HOME"
-	printf '  Install  curl -fsSL https://install.shimpz.com | sh\n'
+	printf '  Install  %s\n' "${reset_command% -s -- --reset}"
 	exit 0
 fi
 
@@ -616,7 +634,7 @@ if [ -f "$MARKER_FILE" ]; then
 	[ "$(sed -n '1p' "$MARKER_FILE")" = "$MARKER_VALUE" ] || die "invalid install marker in ${SHIMPZ_HOME}"
 fi
 if [ ! -f "$MARKER_FILE" ] && project_resources_exist; then
-	die "an earlier Shimpz installation still has Docker data. Nothing was changed. Reset it first with: curl -fsSL https://install.shimpz.com | sh -s -- --reset"
+	die "an earlier Shimpz installation still has Docker data. Nothing was changed. Reset it first with: ${reset_command}"
 fi
 
 if [ -f "$MARKER_FILE" ]; then
@@ -824,11 +842,13 @@ SHIMPZ_DOCKER_GID=${docker_socket_gid}
 SHIMPZ_DOCKER_SOCKET=${docker_socket_source}
 SHIMPZ_SPACE_ID=${space_id}
 SHIMPZ_CPUSET=${docker_cpuset}
+SHIMPZ_PROJECT_NAME=${PROJECT_NAME}
+SHIMPZ_ADMIN_ALLOWED_ORIGINS=${ADMIN_ALLOWED_ORIGINS}
 EOF
 chmod 600 "${ENV_FILE}.tmp"
 
 cat >"${COMPOSE_FILE}.tmp" <<'COMPOSE'
-name: shimpz-space
+name: ${SHIMPZ_PROJECT_NAME:?installer must pin SHIMPZ_PROJECT_NAME}
 
 services:
   team-driver-local:
@@ -852,7 +872,7 @@ services:
       SHIMPZ_BRAIN_RUNTIME_TOKEN_FILE: /run/shimpz-brain-runtime/token
       SHIMPZ_LOCAL_POWER_JOURNAL_PATH: /var/lib/shimpz-local/power-journal/journal.sqlite3
       SHIMPZ_LOCAL_APPROVAL_GRANTS_PATH: /var/lib/shimpz-local/assistant-approvals/grants.sqlite3
-      SHIMPZ_APP_EGRESS_PROXY_CONTAINER: shimpz-space-app-egress-proxy-1
+      SHIMPZ_APP_EGRESS_PROXY_CONTAINER: ${SHIMPZ_PROJECT_NAME:?installer must pin SHIMPZ_PROJECT_NAME}-app-egress-proxy-1
       SHIMPZ_APP_EGRESS_POLICY_DIR: /var/lib/shimpz-local/app-egress
     volumes:
       - ${SHIMPZ_DOCKER_SOCKET:?installer must bind the platform Docker socket}:/var/run/docker.sock:rw
@@ -999,7 +1019,7 @@ services:
       SHIMPZ_TEAMDRIVER_URL: http://team-driver-local:7077
       SHIMPZ_TEAMDRIVER_TOKEN_FILE: /run/shimpz-local/token
       SHIMPZ_TEAM_CREDENTIALS_ENABLED: "0"
-      SHIMPZ_ADMIN_ALLOWED_ORIGINS: "http://localhost:${SHIMPZ_PORT:?installer must pin local Admin port},http://127.0.0.1:${SHIMPZ_PORT:?installer must pin local Admin port}"
+      SHIMPZ_ADMIN_ALLOWED_ORIGINS: ${SHIMPZ_ADMIN_ALLOWED_ORIGINS:?installer must pin Admin origins}
     volumes:
       - config:/repo
       - data:/data
@@ -1113,4 +1133,4 @@ printf '  AdminImg %s\n' "$admin_image_ref"
 printf '  Control  %s\n' "$controller_image_ref"
 printf '  Brain    %s\n' "$brain_runtime_image_ref"
 printf '  Egress   %s\n' "$app_egress_image_ref"
-printf '  Reset    curl -fsSL https://install.shimpz.com | sh -s -- --reset\n'
+printf '  Reset    %s\n' "$reset_command"
