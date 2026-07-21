@@ -2,7 +2,7 @@
 
 set -eu
 
-INSTALLER_VERSION="0.4.5-dev"
+INSTALLER_VERSION="0.4.6-dev"
 IMAGE_REPOSITORY="ghcr.io/theshimpz/shimpz-space"
 # Read-only migration allowlist for digest-pinned installations created before the
 # package moved to TheShimpz. New releases are always pulled and written from IMAGE_REPOSITORY.
@@ -10,7 +10,7 @@ PRIOR_IMAGE_REPOSITORY="ghcr.io/roxygens/shimpz-space"
 ADMIN_CHANNEL="dev"
 CONTROLLER_CHANNEL="team-driver-local-dev"
 BRAIN_RUNTIME_CHANNEL="brain-runtime-dev"
-APP_EGRESS_RELEASE="${IMAGE_REPOSITORY}@sha256:8e5e2d97a9332304db265a9b2ccf052d50cef74eb11553adc40ec7c85e69a13f"
+APP_EGRESS_RELEASE="${IMAGE_REPOSITORY}@sha256:a35202dbe94660c2b56076c6cb55eaf826a9a37f750fd737e6b415691ed5692d"
 PROJECT_NAME="shimpz-space"
 # Exact controller service shipped by 0.3.1. The retired identifier is split so
 # terminology audits do not mistake this migration-only value for an active API.
