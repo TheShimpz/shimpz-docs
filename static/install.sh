@@ -2,7 +2,7 @@
 
 set -eu
 
-INSTALLER_VERSION="0.4.3-dev"
+INSTALLER_VERSION="0.4.4-dev"
 IMAGE_REPOSITORY="ghcr.io/theshimpz/shimpz-space"
 ADMIN_CHANNEL="dev"
 CONTROLLER_CHANNEL="team-driver-local-dev"
@@ -127,8 +127,10 @@ Usage:
 
 Environment:
   SHIMPZ_PORT            Loopback port for the Admin (default: 7777)
-  SHIMPZ_X_OAUTH_CLIENT_ID
-                         Public X OAuth client id for the development Account flow
+  SHIMPZ_CLOUDFLARE_OAUTH_CLIENT_ID
+                         Cloudflare OAuth client id for the Account flow
+  SHIMPZ_CLOUDFLARE_OAUTH_CLIENT_SECRET
+                         Cloudflare OAuth client secret (kept in the local mode-600 environment file)
 
 Supported hosts:
   Linux amd64 with Docker Engine and Docker Compose v2.
@@ -229,11 +231,18 @@ validate_space_id() {
 	[ "${#space_hex}" -eq 24 ] || die "invalid Shimpz Space identity"
 }
 
-validate_x_oauth_client_id() {
+validate_cloudflare_oauth_credentials() {
 	client_id_value="$1"
-	[ -z "$client_id_value" ] && return 0
+	client_secret_value="$2"
+	if [ -z "$client_id_value" ] && [ -z "$client_secret_value" ]; then
+		return 0
+	fi
+	[ -n "$client_id_value" ] && [ -n "$client_secret_value" ] \
+		|| die "Cloudflare OAuth client id and secret must be configured together"
 	printf '%s\n' "$client_id_value" | LC_ALL=C grep -Eq "^[A-Za-z0-9._~-]{8,256}$" \
-		|| die "SHIMPZ_X_OAUTH_CLIENT_ID is invalid"
+		|| die "SHIMPZ_CLOUDFLARE_OAUTH_CLIENT_ID is invalid"
+	printf '%s\n' "$client_secret_value" | LC_ALL=C grep -Eq "^[A-Za-z0-9._~-]{16,512}$" \
+		|| die "SHIMPZ_CLOUDFLARE_OAUTH_CLIENT_SECRET is invalid"
 }
 
 generated_space_id() {
@@ -765,11 +774,17 @@ controller_can_reach_docker() {
 		>/dev/null 2>&1
 }
 
-x_oauth_client_id="${SHIMPZ_X_OAUTH_CLIENT_ID:-}"
-if [ -z "$x_oauth_client_id" ] && [ -f "$ENV_FILE" ]; then
-	x_oauth_client_id="$(optional_env_value SHIMPZ_X_OAUTH_CLIENT_ID "$ENV_FILE")"
+cloudflare_oauth_client_id="${SHIMPZ_CLOUDFLARE_OAUTH_CLIENT_ID:-}"
+cloudflare_oauth_client_secret="${SHIMPZ_CLOUDFLARE_OAUTH_CLIENT_SECRET:-}"
+if [ -f "$ENV_FILE" ]; then
+	if [ -z "$cloudflare_oauth_client_id" ]; then
+		cloudflare_oauth_client_id="$(optional_env_value SHIMPZ_CLOUDFLARE_OAUTH_CLIENT_ID "$ENV_FILE")"
+	fi
+	if [ -z "$cloudflare_oauth_client_secret" ]; then
+		cloudflare_oauth_client_secret="$(optional_env_value SHIMPZ_CLOUDFLARE_OAUTH_CLIENT_SECRET "$ENV_FILE")"
+	fi
 fi
-validate_x_oauth_client_id "$x_oauth_client_id"
+validate_cloudflare_oauth_credentials "$cloudflare_oauth_client_id" "$cloudflare_oauth_client_secret"
 
 admin_tag_ref="${IMAGE_REPOSITORY}:${ADMIN_CHANNEL}"
 controller_tag_ref="${IMAGE_REPOSITORY}:${CONTROLLER_CHANNEL}"
@@ -828,7 +843,8 @@ SHIMPZ_DOCKER_GID=${docker_socket_gid}
 SHIMPZ_DOCKER_SOCKET=${docker_socket_source}
 SHIMPZ_SPACE_ID=${space_id}
 SHIMPZ_CPUSET=${docker_cpuset}
-SHIMPZ_X_OAUTH_CLIENT_ID=${x_oauth_client_id}
+SHIMPZ_CLOUDFLARE_OAUTH_CLIENT_ID=${cloudflare_oauth_client_id}
+SHIMPZ_CLOUDFLARE_OAUTH_CLIENT_SECRET=${cloudflare_oauth_client_secret}
 EOF
 chmod 600 "${ENV_FILE}.tmp"
 
@@ -857,7 +873,8 @@ services:
       SHIMPZ_BRAIN_RUNTIME_TOKEN_FILE: /run/shimpz-brain-runtime/token
       SHIMPZ_LOCAL_POWER_JOURNAL_PATH: /var/lib/shimpz-local/power-journal/journal.sqlite3
       SHIMPZ_LOCAL_APPROVAL_GRANTS_PATH: /var/lib/shimpz-local/assistant-approvals/grants.sqlite3
-      SHIMPZ_X_OAUTH_CLIENT_ID: ${SHIMPZ_X_OAUTH_CLIENT_ID:-}
+      SHIMPZ_CLOUDFLARE_OAUTH_CLIENT_ID: ${SHIMPZ_CLOUDFLARE_OAUTH_CLIENT_ID:-}
+      SHIMPZ_CLOUDFLARE_OAUTH_CLIENT_SECRET: ${SHIMPZ_CLOUDFLARE_OAUTH_CLIENT_SECRET:-}
       SHIMPZ_APP_EGRESS_PROXY_CONTAINER: shimpz-space-app-egress-proxy-1
       SHIMPZ_APP_EGRESS_POLICY_DIR: /var/lib/shimpz-local/app-egress
     volumes:
