@@ -43,11 +43,6 @@
 		path /developers/drivers/postgresql /developers/drivers/postgresql/
 	}
 	redir @legacy_driver_postgresql /developers/services/postgresql/ 308
-	@legacy_driver_r2 {
-		host docs.shimpz.com
-		path /developers/drivers/r2 /developers/drivers/r2/
-	}
-	redir @legacy_driver_r2 /developers/services/r2/ 308
 	@legacy_assistant_v1 {
 		host docs.shimpz.com
 		path /developers/assistants/spec/v1 /developers/assistants/spec/v1/

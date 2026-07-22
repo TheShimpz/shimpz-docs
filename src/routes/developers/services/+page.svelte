@@ -37,7 +37,7 @@
     <li>The Service authenticates the caller and derives the exact Team resource server-side.</li>
     <li>The future binding lets Assistants request named operations without receiving a Service control credential.</li>
     <li>BYOK is optional and remains encrypted, Team-bound, rotatable, and revocable in the Service.</li>
-    <li>PostgreSQL and Cloudflare R2 are the current Spec v1 references.</li>
+    <li>PostgreSQL is the current Spec v1 reference.</li>
   </ul>
 </section>
 
@@ -55,12 +55,6 @@
       <a class="docs-entry-link" href="/developers/services/postgresql/">
         <strong>PostgreSQL Service</strong>
         <span>Space-shared control with exact Team and workload database scope</span>
-      </a>
-    </li>
-    <li>
-      <a class="docs-entry-link" href="/developers/services/r2/">
-        <strong>Cloudflare R2 Service</strong>
-        <span>Brokered object storage and optional Team-scoped BYOK</span>
       </a>
     </li>
   </ul>

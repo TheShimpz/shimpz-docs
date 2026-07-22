@@ -144,5 +144,5 @@
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the developer guide">
   <a href="/developers/services/spec/"><span>Back to</span><strong>Service Spec v1</strong></a>
-  <a href="/developers/services/r2/"><span>Next</span><strong>Cloudflare R2 Service</strong></a>
+  <a href="/developers/assistants/"><span>Next</span><strong>Assistants</strong></a>
 </nav>

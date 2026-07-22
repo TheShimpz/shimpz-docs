@@ -284,8 +284,7 @@
   <p>
     PostgreSQL is the only durable coordination datastore in the current runtime. Assistant composition
     happens through reviewed Powers and Controller authorization; there is no separate event-bus credential
-    or cross-Team topic path. The Service credential runtime executes the R2
-    <code>secret-fields</code> lifecycle without placing secret material in Assistant environments.
+    or cross-Team topic path.
   </p>
 </section>
 
