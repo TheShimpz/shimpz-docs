@@ -112,6 +112,11 @@
               description: "Authorize provider accounts safely",
             },
             {
+              href: "/developers/assistants/spec/accounts/providers/",
+              label: "OAuth providers",
+              description: "Implement and validate provider adapters",
+            },
+            {
               href: "/developers/assistants/spec/permissions/",
               label: "Permissions",
               description: "Transparent egress, controller-owned grants",

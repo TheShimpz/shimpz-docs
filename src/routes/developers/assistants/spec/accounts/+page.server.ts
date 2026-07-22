@@ -2,25 +2,25 @@ import { highlightCode } from "$lib/server/highlight";
 
 import type { PageServerLoad } from "./$types";
 
-const declaration = `[accounts.x]
-provider = "x"
-scopes = ["tweet.read", "users.read", "tweet.write", "offline.access"]
+const declaration = `[accounts.cloudflare]
+provider = "cloudflare"
+scopes = ["zone.read", "dns.read", "offline_access"]
 
-[powers.identity-me]
-summary = "Read the connected X account."
+[powers.list-zones]
+summary = "List a bounded page of Cloudflare zones."
 approval = "never"
-accounts = ["x"]
+accounts = ["cloudflare"]
 
-[powers.create-post]
-summary = "Publish one post from the connected X account."
-approval = "always"
-accounts = ["x"]`;
+[powers.list-dns-records]
+summary = "List a bounded page of DNS records for one zone."
+approval = "never"
+accounts = ["cloudflare"]`;
 
 const envelope = `{
   "input": { "text": "Hello from my Team." },
   "secrets": {},
   "accounts": {
-    "x": {
+    "cloudflare": {
       "type": "oauth2-bearer",
       "access_token": "<short-lived access token>"
     }

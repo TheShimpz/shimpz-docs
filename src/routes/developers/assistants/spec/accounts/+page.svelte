@@ -44,7 +44,7 @@
   <span class="section-label">Public contract</span>
   <h2 id="account-contract-title">Reference one reviewed Account from each Power</h2>
   <CodeBlock
-    label="X Account intent and two Power references"
+    label="Cloudflare Account intent and two read-only Power references"
     title="shimpz.assistant.toml"
     variant="code"
     {...data.declaration}
@@ -111,18 +111,25 @@
   </p>
 </section>
 
-<section class="guide-section" aria-labelledby="account-x-title">
-  <span class="section-label">X reference</span>
-  <h2 id="account-x-title">Use the official X Account adapter</h2>
+<section class="guide-section" aria-labelledby="account-cloudflare-title">
+  <span class="section-label">Validated reference</span>
+  <h2 id="account-cloudflare-title">Start from the Cloudflare Account adapter</h2>
   <p>
-    The X adapter fixes the authorization, token, and revocation endpoints inside Shimpz and uses OAuth 2.0
-    Authorization Code with S256 PKCE. The reference Assistant requests only <code>tweet.read</code>,
-    <code>users.read</code>, <code>tweet.write</code>, and <code>offline.access</code>. Its only Assistant API
-    destination is <code>api.x.com</code>; redirect following is disabled.
+    Cloudflare is the first complete Account reference. It uses OAuth 2.0 Authorization Code with S256 PKCE,
+    exact callbacks, short-lived single-use state, strict token responses, encrypted local token custody,
+    serialized refresh, revocation, and exact API egress. The reference Assistant requests only
+    <code>zone.read</code>, <code>dns.read</code>, and <code>offline_access</code>. Its only API destination is
+    <code>api.cloudflare.com</code>; redirect following is disabled.
+  </p>
+  <p>
+    The flow has been validated with real consent and real read-only zone and DNS-record calls. This does not
+    mean every OAuth provider can be enabled by changing a name. Authorization servers differ in scope syntax,
+    client authentication, token rotation, issuer support, and response contracts. Platform maintainers must
+    implement and prove one closed adapter for each provider.
   </p>
 </section>
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec v2 guide">
   <a href="/developers/assistants/spec/secrets/"><span>Back</span><strong>Secrets</strong></a>
-  <a href="/developers/assistants/spec/permissions/"><span>Next</span><strong>Permissions</strong></a>
+  <a href="/developers/assistants/spec/accounts/providers/"><span>Next</span><strong>OAuth providers</strong></a>
 </nav>
