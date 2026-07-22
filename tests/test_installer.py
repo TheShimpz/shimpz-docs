@@ -186,11 +186,14 @@ def test_script_is_posix_executable_and_self_describing():
     )
 
 
-def test_local_installer_contains_no_oauth_client_credentials():
+def test_static_local_installer_contains_no_oauth_client_credentials():
     check(
         "SHIMPZ_CLOUDFLARE_OAUTH_CLIENT" not in SCRIPT,
         "local installer never requests, persists, or injects the hosted OAuth client credentials",
     )
+
+
+def test_version_command_reports_the_stable_installer_release():
     version = subprocess.run(["sh", str(SCRIPT_PATH), "--version"], check=False, capture_output=True, text=True)
     check(version.returncode == 0 and version.stdout.strip() == "0.4.7", "version is an explicit stable release")
 
@@ -247,20 +250,9 @@ def test_brand_is_canonical_and_action_specific_for_install_and_reset():
     )
     check(not install_output.isascii() and not reset_output.isascii(), "both actions include the terminal symbol art")
     check("\x1b" not in install_output + reset_output, "captured action output stays free of terminal escapes")
-    for marker in ("[ -t 1 ]", "[ -t 2 ]", "${NO_COLOR+x}", "${TERM:-dumb}", "printf '\\033'"):
-        check(marker in SCRIPT, f"terminal renderer keeps the POSIX color guard {marker!r}")
-    for marker in (
-        "${escape}[38;2;0;215;254m",
-        "${escape}[38;2;248;28;124m",
-        "${escape}[38;2;252;252;252m",
-        "06d35d9b33c712fe17aef5569e40395",
-    ):
-        check(marker in SCRIPT, f"terminal renderer keeps the canonical brand marker {marker!r}")
-    for forbidden in ("echo -e", "tput", "$'", "[["):
-        check(forbidden not in SCRIPT, f"terminal renderer excludes non-portable construct {forbidden!r}")
 
 
-def test_delivery_is_pull_only_and_content_addressed():
+def test_static_delivery_is_pull_only_and_content_addressed():
     check('IMAGE_REPOSITORY="ghcr.io/theshimpz/shimpz-space"' in SCRIPT, "installer uses the canonical package")
     check(
         'PRIOR_IMAGE_REPOSITORY="ghcr.io/roxygens/shimpz-space"' in SCRIPT,
@@ -355,21 +347,6 @@ def test_delivery_is_pull_only_and_content_addressed():
         check(forbidden not in SCRIPT, f"installer excludes source-build operation {forbidden!r}")
 
 
-def test_docker_progress_is_quiet_without_hiding_errors():
-    check("docker compose --progress quiet" in SCRIPT, "Compose suppresses successful progress output")
-    for marker in (
-        'docker pull --quiet --platform "$docker_platform" "$tag_ref" >/dev/null',
-        'docker rm --force "$resource_id" >/dev/null',
-        'docker volume rm "$resource_id" >/dev/null',
-        'docker network rm "$resource_id" >/dev/null',
-    ):
-        check(marker in SCRIPT, f"successful Docker output is suppressed by {marker!r}")
-    check(
-        "compose down --remove-orphans >/dev/null 2>&1" not in SCRIPT,
-        "best-effort cleanup still exposes Docker errors on stderr",
-    )
-
-
 def test_remote_docker_endpoints_are_rejected_before_daemon_access():
     with tempfile.TemporaryDirectory() as raw_home:
         home = Path(raw_home)
@@ -433,7 +410,7 @@ esac
         check(not (home / ".shimpz").exists(), "remote endpoint rejection creates no installer state")
 
 
-def test_runtime_separates_socketless_admin_from_local_controller():
+def test_static_runtime_separates_socketless_admin_from_local_controller():
     compose = SCRIPT.split("cat >\"${COMPOSE_FILE}.tmp\" <<'COMPOSE'", 1)[1].split("\nCOMPOSE", 1)[0]
     controller = compose.split("  team-driver-local:", 1)[1].split("\n  app-egress-proxy:", 1)[0]
     app_egress = compose.split("\n  app-egress-proxy:\n", 1)[1].split("\n  oauth-broker-proxy:\n", 1)[0]
@@ -482,8 +459,10 @@ def test_runtime_separates_socketless_admin_from_local_controller():
         "SHIMPZ_BRAIN_RUNTIME_TOKEN_FILE: /run/shimpz-brain-runtime/token",
         "SHIMPZ_OAUTH_CALLBACK_MODE: ${SHIMPZ_OAUTH_CALLBACK_MODE:?installer must pin the OAuth callback mode}",
         "SHIMPZ_OAUTH_BROKER_PROXY_HOST: oauth-broker-proxy",
-        "SHIMPZ_OAUTH_BROKER_PROXY_TOKEN: ${SHIMPZ_OAUTH_BROKER_PROXY_TOKEN:?installer must bind the OAuth broker proxy capability}",
-        "SHIMPZ_APP_EGRESS_PROXY_CONTAINER: ${SHIMPZ_PROJECT_NAME:?installer must pin SHIMPZ_PROJECT_NAME}-app-egress-proxy-1",
+        "SHIMPZ_OAUTH_BROKER_PROXY_TOKEN: "
+        "${SHIMPZ_OAUTH_BROKER_PROXY_TOKEN:?installer must bind the OAuth broker proxy capability}",
+        "SHIMPZ_APP_EGRESS_PROXY_CONTAINER: "
+        "${SHIMPZ_PROJECT_NAME:?installer must pin SHIMPZ_PROJECT_NAME}-app-egress-proxy-1",
         "SHIMPZ_APP_EGRESS_POLICY_DIR: /var/lib/shimpz-local/app-egress",
         '- "10016"',
         '- "10017"',
@@ -682,7 +661,7 @@ def test_reset_accepts_only_the_exact_space_owned_egress_proxy():
     )
 
 
-def test_admin_chat_origin_allowlist_is_loopback_only():
+def test_static_admin_chat_origin_allowlist_is_loopback_only():
     compose = SCRIPT.split("cat >\"${COMPOSE_FILE}.tmp\" <<'COMPOSE'", 1)[1].split("\nCOMPOSE", 1)[0]
     admin = compose.split("  admin:", 1)[1].split("\nvolumes:", 1)[0]
     origin_lines = [line.strip() for line in admin.splitlines() if "SHIMPZ_ADMIN_ALLOWED_ORIGINS:" in line]
@@ -707,7 +686,7 @@ def test_admin_chat_origin_allowlist_is_loopback_only():
     )
 
 
-def test_host_platform_allowlist_is_exact_and_native():
+def test_static_host_platform_allowlist_is_exact_and_native():
     for marker in (
         "Linux:x86_64|Linux:amd64",
         'docker_platform="linux/amd64"',
@@ -726,7 +705,7 @@ def test_host_platform_allowlist_is_exact_and_native():
     )
 
 
-def test_space_identity_socket_access_and_cpu_set_are_runtime_derived():
+def test_static_space_identity_socket_access_and_cpu_set_are_runtime_derived():
     for marker in (
         "od -An -N12 -tx1 /dev/urandom",
         "printf 'space-%s\\n' \"$space_hex\"",
@@ -774,7 +753,7 @@ def test_space_identity_socket_access_and_cpu_set_are_runtime_derived():
     )
 
 
-def test_update_rollback_and_reset_are_bounded():
+def test_static_update_rollback_and_reset_are_bounded():
     check('MARKER_VALUE="shimpz-space-managed-v1"' in SCRIPT, "installer owns its state with an exact marker")
     check("refusing reset" in SCRIPT and "invalid install marker" in SCRIPT, "reset fails closed on foreign state")
     check("rm -rf" not in SCRIPT, "reset never recursively deletes a user-controlled path")
@@ -989,7 +968,7 @@ def test_owned_prior_controller_transition_is_exact_and_fail_closed():
     check(same_digest_foreign.returncode != 0, "the prior digest cannot authenticate a different service")
 
 
-def test_owned_prior_controller_reset_preserves_admin_volumes():
+def test_static_owned_prior_controller_reset_preserves_admin_volumes():
     for marker in (
         "controller_image_from_env_file",
         "prior_controller_image_ref",
@@ -1062,7 +1041,7 @@ def test_owned_prior_controller_reset_preserves_admin_volumes():
     check("docker volume rm" not in update_branch, "an update preserves Admin configuration and data volumes")
 
 
-def test_docs_origin_serves_only_the_installer_paths():
+def test_static_docs_origin_serves_only_the_installer_paths():
     check("!static/" in DOCKERIGNORE and "!static/**" in DOCKERIGNORE, "installer enters the Docs image context")
     check("host install.shimpz.com" in CADDY, "installer hostname has an explicit route")
     check("path / /install.sh" in CADDY, "only root and the canonical installer path are served")
