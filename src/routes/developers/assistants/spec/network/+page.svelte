@@ -1,5 +1,9 @@
 <script lang="ts">
   import CodeBlock from "$lib/components/CodeBlock.svelte";
+
+  import type { PageData } from "./$types";
+
+  let { data }: { data: PageData } = $props();
 </script>
 
 <svelte:head>
@@ -28,7 +32,8 @@
   <CodeBlock
     label="No requested network access"
     title="shimpz.assistant.toml"
-    lines={[{ value: "allowed_hosts = []" }]}
+    variant="code"
+    {...data.none}
   />
   <p>If all Powers work from their inputs and private envelopes, the Assistant does not need an external host.</p>
 </section>
@@ -39,7 +44,8 @@
   <CodeBlock
     label="One requested API host"
     title="shimpz.assistant.toml"
-    lines={[{ value: 'allowed_hosts = ["api.open-meteo.com"]' }]}
+    variant="code"
+    {...data.oneHost}
   />
   <p>
     Do not include <code>https://</code>, a port, path, query, fragment, wildcard, or trailing slash. A second

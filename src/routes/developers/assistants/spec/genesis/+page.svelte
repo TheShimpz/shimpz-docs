@@ -1,5 +1,9 @@
 <script lang="ts">
   import CodeBlock from "$lib/components/CodeBlock.svelte";
+
+  import type { PageData } from "./$types";
+
+  let { data }: { data: PageData } = $props();
 </script>
 
 <svelte:head>
@@ -27,21 +31,8 @@
   <CodeBlock
     label="Minimal Genesis"
     title="GENESIS.md"
-    lines={[
-      { value: "# Record Reader" },
-      { value: "" },
-      { value: "## Purpose" },
-      { value: "Inspect a record only when the person provides its identifier." },
-      { value: "" },
-      { value: "## Powers" },
-      { value: "Use `inspect-record` for one identifier at a time." },
-      { value: "" },
-      { value: "## Boundaries" },
-      { value: "Never claim that the record was changed or deleted." },
-      { value: "" },
-      { value: "## Response" },
-      { value: "Explain the returned status in plain language." },
-    ]}
+    variant="code"
+    {...data.genesis}
   />
 </section>
 

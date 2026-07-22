@@ -1,5 +1,9 @@
 <script lang="ts">
   import CodeBlock from "$lib/components/CodeBlock.svelte";
+
+  import type { PageData } from "./$types";
+
+  let { data }: { data: PageData } = $props();
 </script>
 
 <svelte:head>
@@ -28,18 +32,8 @@
   <CodeBlock
     label="Minimal Assistant manifest"
     title="shimpz.assistant.toml"
-    lines={[
-      { value: "schema_version = 2" },
-      { value: 'name = "Record Reader"' },
-      { value: 'summary = "Inspect one record and return its public status."' },
-      { value: 'creators = ["@octocat"]' },
-      { value: 'github = "https://github.com/octocat/record-reader"' },
-      { value: "allowed_hosts = []" },
-      { value: "" },
-      { value: "[powers.inspect-record]" },
-      { value: 'summary = "Inspect one record by its identifier."' },
-      { value: 'approval = "never"' },
-    ]}
+    variant="code"
+    {...data.manifest}
   />
   <p>
     <code>schema_version = 2</code> is a fixed machine value in the current contract. There is still only one

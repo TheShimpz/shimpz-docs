@@ -1,5 +1,9 @@
 <script lang="ts">
   import CodeBlock from "$lib/components/CodeBlock.svelte";
+
+  import type { PageData } from "./$types";
+
+  let { data }: { data: PageData } = $props();
 </script>
 
 <svelte:head>
@@ -28,11 +32,8 @@
   <CodeBlock
     label="One Power"
     title="shimpz.assistant.toml"
-    lines={[
-      { value: "[powers.inspect-record]" },
-      { value: 'summary = "Inspect one record by its identifier."' },
-      { value: 'approval = "never"' },
-    ]}
+    variant="code"
+    {...data.power}
   />
   <p>
     Power IDs use lowercase kebab-case, begin with a letter, and are 1–80 characters. A manifest supports from
@@ -46,20 +47,8 @@
   <CodeBlock
     label="Power input schema"
     title="schemas/inspect-record.input.schema.json"
-    lines={[
-      { value: "{" },
-      { value: '  "$schema": "https://json-schema.org/draft/2020-12/schema",' },
-      { value: '  "type": "object",' },
-      { value: '  "additionalProperties": false,' },
-      { value: '  "required": ["record_id"],' },
-      { value: '  "properties": {' },
-      { value: '    "record_id": {' },
-      { value: '      "type": "string",' },
-      { value: '      "pattern": "^[a-z0-9-]{1,64}$"' },
-      { value: "    }" },
-      { value: "  }" },
-      { value: "}" },
-    ]}
+    variant="code"
+    {...data.input}
   />
   <p>
     Avoid input fields such as <code>url</code>, <code>host</code>, <code>method</code>, <code>path</code>,
@@ -73,18 +62,8 @@
   <CodeBlock
     label="Power output schema"
     title="schemas/inspect-record.output.schema.json"
-    lines={[
-      { value: "{" },
-      { value: '  "$schema": "https://json-schema.org/draft/2020-12/schema",' },
-      { value: '  "type": "object",' },
-      { value: '  "additionalProperties": false,' },
-      { value: '  "required": ["name", "status"],' },
-      { value: '  "properties": {' },
-      { value: '    "name": { "type": "string", "maxLength": 120 },' },
-      { value: '    "status": { "enum": ["active", "inactive"] }' },
-      { value: "  }" },
-      { value: "}" },
-    ]}
+    variant="code"
+    {...data.output}
   />
   <p>
     Do not return credentials, raw provider responses, debug traces, request headers, or fields the person did

@@ -1,5 +1,9 @@
 <script lang="ts">
   import CodeBlock from "$lib/components/CodeBlock.svelte";
+
+  import type { PageData } from "./$types";
+
+  let { data }: { data: PageData } = $props();
 </script>
 
 <svelte:head>
@@ -27,11 +31,8 @@
   <CodeBlock
     label="OAuth Account declaration"
     title="shimpz.assistant.toml"
-    lines={[
-      { value: "[accounts.records]" },
-      { value: 'provider = "registered-provider"' },
-      { value: 'scopes = ["records.read"]' },
-    ]}
+    variant="code"
+    {...data.account}
   />
   <p>
     <code>records</code> is the local Account ID used by Powers. <code>registered-provider</code> is a placeholder:
@@ -45,12 +46,8 @@
   <CodeBlock
     label="Power Account reference"
     title="shimpz.assistant.toml"
-    lines={[
-      { value: "[powers.inspect-record]" },
-      { value: 'summary = "Inspect one private record."' },
-      { value: 'approval = "never"' },
-      { value: 'accounts = ["records"]' },
-    ]}
+    variant="code"
+    {...data.power}
   />
   <p>A Power without the reference receives no Account envelope, even when another Power uses that Account.</p>
 </section>

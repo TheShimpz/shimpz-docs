@@ -1,5 +1,9 @@
 <script lang="ts">
   import CodeBlock from "$lib/components/CodeBlock.svelte";
+
+  import type { PageData } from "./$types";
+
+  let { data }: { data: PageData } = $props();
 </script>
 
 <svelte:head>
@@ -27,17 +31,8 @@
   <CodeBlock
     label="Minimal user Help"
     title="help/HELP-en.md"
-    lines={[
-      { value: "# Record Reader" },
-      { value: "" },
-      { value: "Use this Assistant to inspect one record you already know." },
-      { value: "" },
-      { value: "Try asking:" },
-      { value: "" },
-      { value: "> Inspect record customer-42 and explain its status." },
-      { value: "" },
-      { value: "It reads information only. It does not change or delete records." },
-    ]}
+    variant="code"
+    {...data.help}
   />
 </section>
 

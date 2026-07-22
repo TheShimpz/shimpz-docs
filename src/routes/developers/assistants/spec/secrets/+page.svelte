@@ -1,5 +1,9 @@
 <script lang="ts">
   import CodeBlock from "$lib/components/CodeBlock.svelte";
+
+  import type { PageData } from "./$types";
+
+  let { data }: { data: PageData } = $props();
 </script>
 
 <svelte:head>
@@ -27,11 +31,8 @@
   <CodeBlock
     label="Secret declaration"
     title="shimpz.assistant.toml"
-    lines={[
-      { value: "[secrets.records-api-key]" },
-      { value: 'name = "Records API key"' },
-      { value: 'summary = "Read-only key used to inspect records."' },
-    ]}
+    variant="code"
+    {...data.secret}
   />
   <p>The actual key must never appear in this file, Genesis, Help, source code, tests, examples, or logs.</p>
 </section>
@@ -42,12 +43,8 @@
   <CodeBlock
     label="Power Secret reference"
     title="shimpz.assistant.toml"
-    lines={[
-      { value: "[powers.inspect-record]" },
-      { value: 'summary = "Inspect one record."' },
-      { value: 'approval = "never"' },
-      { value: 'secrets = ["records-api-key"]' },
-    ]}
+    variant="code"
+    {...data.power}
   />
 </section>
 

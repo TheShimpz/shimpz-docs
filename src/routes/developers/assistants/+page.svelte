@@ -1,5 +1,9 @@
 <script lang="ts">
   import CodeBlock from "$lib/components/CodeBlock.svelte";
+
+  import type { PageData } from "./$types";
+
+  let { data }: { data: PageData } = $props();
 </script>
 
 <svelte:head>
@@ -29,15 +33,8 @@
   <CodeBlock
     label="Small Assistant project"
     title="Project · SPEC files"
-    lines={[
-      { value: "shimpz.assistant.toml", kind: "output" },
-      { value: "GENESIS.md", kind: "output" },
-      { value: "help/", kind: "output" },
-      { value: "  HELP-en.md", kind: "output" },
-      { value: "schemas/", kind: "output" },
-      { value: "  inspect-record.input.schema.json", kind: "output" },
-      { value: "  inspect-record.output.schema.json", kind: "output" },
-    ]}
+    variant="code"
+    {...data.projectFiles}
   />
 </section>
 

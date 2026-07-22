@@ -1,5 +1,9 @@
 <script lang="ts">
   import CodeBlock from "$lib/components/CodeBlock.svelte";
+
+  import type { PageData } from "./$types";
+
+  let { data }: { data: PageData } = $props();
 </script>
 
 <svelte:head>
@@ -40,15 +44,8 @@
   <CodeBlock
     label="Different approval policies"
     title="shimpz.assistant.toml"
-    lines={[
-      { value: "[powers.inspect-record]" },
-      { value: 'summary = "Inspect one record."' },
-      { value: 'approval = "never"' },
-      { value: "" },
-      { value: "[powers.update-record]" },
-      { value: 'summary = "Change one record after confirmation."' },
-      { value: 'approval = "always"' },
-    ]}
+    variant="code"
+    {...data.approvals}
   />
 </section>
 
