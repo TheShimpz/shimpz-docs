@@ -16,7 +16,7 @@
   <span class="section-label">Keep it current</span>
   <h1>Update or reset</h1>
   <p class="docs-lede">
-    Run the install command again to pull the current development images. The installer keeps the
+    Run the install command again to pull the current stable images. The installer keeps the
     previous digests and restores them when a replacement does not become healthy.
   </p>
 </header>
