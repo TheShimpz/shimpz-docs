@@ -2,20 +2,18 @@ import { highlightCode } from "$lib/server/highlight";
 
 import type { PageServerLoad } from "./$types";
 
-const help = `# Shimpz Assistant
+const help = `# Shimpz Cloudflare
 
-This reference Assistant demonstrates an X Account and manual Mux Secrets.
+This reference Assistant lists Cloudflare zones and DNS records through a read-only OAuth Account.
 
 ## Try these prompts
 
-- “Who is @XDevelopers?”
-- “Draft a short launch Post and show it to me before publishing.”
-- “List my 5 most recent Mux direct uploads.”
-- “Create a Mux test upload intent, then cancel that exact upload.”
-- “Verify this raw Mux webhook body and its Mux-Signature header.”
+- “List my Cloudflare zones.”
+- “Show the DNS records for example.com.”
+- “Which zones are currently paused?”
 
-The Admin opens X for Account consent or a password-style modal for missing Mux values. Never paste private
-values into chat. X writes and Mux create or cancel actions require explicit approval.`;
+The Admin opens Cloudflare for Account consent when required. Never paste private values into chat. Both Powers
+are read-only and the controller delivers the token only to the declared invocation.`;
 
 export const load: PageServerLoad = async () => ({
   help: await highlightCode(help, "markdown"),

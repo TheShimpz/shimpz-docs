@@ -59,12 +59,11 @@
   <span class="section-label">Private access example</span>
   <h2 id="manifest-private-title">Declare each dependency where it is used</h2>
   <p>
-    This example combines manual Mux BYOK with an OAuth X Account. Values and tokens are absent. Each Power
-    references only its own dependencies, so listing Mux uploads cannot receive X access and publishing to X
-    cannot receive Mux credentials.
+    This example declares one Cloudflare OAuth Account without embedding any value or token. Each Power must
+    explicitly reference that Account before the controller can deliver its short-lived private envelope.
   </p>
   <CodeBlock
-    label="Assistant manifest with Secrets and an Account"
+    label="Cloudflare Assistant manifest with an Account"
     title="shimpz.assistant.toml"
     variant="code"
     {...data.integrationManifest}

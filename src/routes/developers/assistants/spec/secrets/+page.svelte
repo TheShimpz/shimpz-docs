@@ -149,32 +149,26 @@
 </section>
 
 <section class="guide-section" aria-labelledby="secret-provider-title">
-  <span class="section-label">Mux BYOK reference</span>
-  <h2 id="secret-provider-title">Give each Power only the Mux values it uses</h2>
+  <span class="section-label">Manual BYOK reference</span>
+  <h2 id="secret-provider-title">Give each Power only the provider values it uses</h2>
   <ul>
     <li>
-      <code>list-direct-uploads</code> receives <code>mux-token-id</code> and <code>mux-token-secret</code>, then
+      <code>list-media-assets</code> receives <code>media-token-id</code> and <code>media-token-secret</code>, then
       uses <code>approval = "never"</code> for a bounded read.
     </li>
     <li>
-      <code>create-test-direct-upload</code> and <code>cancel-direct-upload</code> receive that same pair only
+      Any mutation Power receives that same pair only
       because each references both IDs, and each uses <code>approval = "always"</code> for an external write.
     </li>
     <li>
-      <code>verify-mux-webhook</code> receives only <code>mux-webhook-signing-secret</code>. It verifies locally
+      <code>verify-media-webhook</code> receives only <code>media-webhook-signing-secret</code>. It verifies locally
       and receives neither API credential nor network authority.
     </li>
   </ul>
   <p>
-    Mux API Powers may contact only the separately declared <code>api.mux.com</code> host. A Secret does not
-    grant egress, and <code>allowed_hosts</code> does not grant a Secret. The controller must satisfy both
-    independent policies before any provider call. Mux's <a
-      class="external-link"
-      href="https://www.mux.com/docs/core/make-api-requests"
-      target="_blank"
-      rel="noopener noreferrer"
-      >official API authentication guide</a
-    > documents Token ID and Token Secret as HTTP Basic credentials.
+    Provider API Powers may contact only their separately reviewed exact host. A Secret does not grant egress,
+    and <code>allowed_hosts</code> does not grant a Secret. The controller must satisfy both independent policies
+    before any provider call.
   </p>
   <p>
     Do not model an OAuth Account as a password field. Providers that require an authorization redirect,

@@ -2,7 +2,7 @@
   <title>Install your first Assistant — Shimpz docs</title>
   <meta
     name="description"
-    content="Create a local Team, install Shimpz Assistant, and chat with the Team from the Shimpz Admin."
+    content="Create a local Team, install Shimpz Cloudflare, and chat with the Team from the Shimpz Admin."
   />
 </svelte:head>
 
@@ -15,7 +15,7 @@
   <span class="section-label">First local evaluation</span>
   <h1>Install your first Assistant</h1>
   <p class="docs-lede">
-    Create an empty Team and install Shimpz Assistant. The Admin keeps the destination choice and install
+    Create an empty Team and install Shimpz Cloudflare. The Admin keeps the destination choice and install
     authority local; the Store never receives your Admin token or internal Team identifier.
   </p>
 </header>
@@ -23,8 +23,8 @@
 <aside class="scope-note" aria-labelledby="assistant-evaluation-scope">
   <span id="assistant-evaluation-scope" class="kicker">Safe private access</span>
   <p>
-    Shimpz Assistant connects an X Account through the official X consent page and asks for Mux API values
-    only when a Mux Power needs them. Never paste an API key, token, or password into chat.
+    Shimpz Cloudflare connects an OAuth Account through the official Cloudflare consent page only when a
+    declared Power needs it. Never paste an API key, token, or password into chat.
   </p>
 </aside>
 
@@ -39,9 +39,9 @@
   </li>
 
   <li>
-    <h2>Choose Shimpz Assistant</h2>
+    <h2>Choose Shimpz Cloudflare</h2>
     <p>
-      Open <strong>Assistants</strong>, select <strong>Shimpz Assistant</strong>, and choose Install. The Store
+      Open <strong>Assistants</strong>, select <strong>Shimpz Cloudflare</strong>, and choose Install. The Store
       card opens a local confirmation; it cannot install on its own.
     </p>
   </li>
@@ -50,33 +50,32 @@
     <h2>Confirm the exact Team</h2>
     <p>
       Select the destination Team in the local dialog and confirm. The controller admits only the published
-      Shimpz Assistant digest and waits for readiness. Installation does not invoke a Power or start a chat turn;
+      Shimpz Cloudflare digest and waits for readiness. Installation does not invoke a Power or start a chat turn;
       the Store marks the Assistant as installed when it is ready.
     </p>
   </li>
 
   <li>
-    <h2>Connect X when prompted</h2>
+    <h2>Connect Cloudflare when prompted</h2>
     <p>
-      Ask the Team to use an X Power. If the account is not connected, the turn pauses and the Admin opens a
-      Account modal. Choose <strong>Connect X</strong>, review the scopes on X, and approve there. Shimpz
+      Ask the Team to list your Cloudflare zones. If the account is not connected, the turn pauses and the Admin
+      opens an Account modal. Choose <strong>Connect Cloudflare</strong>, review the read scopes there, and approve. Shimpz
       resumes the paused turn only after the callback is validated.
     </p>
   </li>
 
   <li>
-    <h2>Add Mux Secrets when prompted</h2>
+    <h2>Inspect DNS records</h2>
     <p>
-      Ask the Team to list Mux direct uploads. The turn pauses and the Admin opens one password-style modal
-      for the missing Token ID and Token Secret. Submit them there, never in chat. Webhook verification asks
-      separately for only its signing Secret.
+      Ask the Team to list DNS records for one of the returned zones. The same connected Account is reused only
+      for the declared read-only Power; no token is returned to the browser, chat, or Assistant output.
     </p>
   </li>
 
   <li>
     <h2>Remove it cleanly</h2>
     <p>
-      Disconnect X to revoke the Account, then select <strong>Uninstall</strong> when you finish evaluating.
+      Disconnect Cloudflare to revoke the Account, then select <strong>Uninstall</strong> when you finish evaluating.
       This removes the Assistant container from that Team without destroying the Team itself.
     </p>
   </li>
@@ -101,7 +100,7 @@
     chat.
   </p>
   <p>
-    OAuth Account access uses a separate controller-owned flow and provider consent screen. X developer
+    OAuth Account access uses a separate controller-owned flow and provider consent screen. OAuth client
     credentials are not Assistant Secrets. Saving either kind of private access is never approval for an
     external effect; a write Power still needs its own explicit approval.
   </p>
@@ -139,7 +138,7 @@
   <h2 id="assistant-failure-title">Retry safely</h2>
   <p>
     Use <strong>Install</strong> again. Installation is idempotent: the controller starts a
-    stopped runtime and replaces the stateless Shimpz Assistant container only when it remains unresponsive. If
+    stopped runtime and replaces the stateless Shimpz Cloudflare container only when it remains unresponsive. If
     the Admin cannot reach the local control plane, run the install command again to repair
     the managed services without deleting your data.
   </p>

@@ -65,5 +65,5 @@
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec v2 guide">
   <a href="/developers/assistants/spec/changelog/"><span>Back</span><strong>Changelog</strong></a>
-  <a href="/developers/assistants/shimpz-assistant/"><span>Next</span><strong>Shimpz Assistant</strong></a>
+  <a href="/developers/assistants/shimpz-cloudflare/"><span>Next</span><strong>Shimpz Cloudflare</strong></a>
 </nav>

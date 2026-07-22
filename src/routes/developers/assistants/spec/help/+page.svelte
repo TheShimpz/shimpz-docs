@@ -43,7 +43,7 @@
   <span class="section-label">Small useful example</span>
   <h2 id="help-example-title">Say what it does, then show what to ask</h2>
   <CodeBlock
-    label="User help for Shimpz Assistant"
+    label="User help for Shimpz Cloudflare"
     title="help/HELP-en.md"
     variant="code"
     {...data.help}

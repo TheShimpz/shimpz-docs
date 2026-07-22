@@ -13,33 +13,25 @@ summary = "Summarize one supplied text."
 approval = "never"`;
 
 const integrationManifest = `schema_version = 2
-name = "Media Publisher"
-summary = "Inspect Mux uploads and publish approved X posts."
-creators = ["@your-github-user"]
-github = "https://github.com/your-github-user/media-publisher"
-allowed_hosts = ["api.mux.com", "api.x.com"]
+name = "Shimpz Cloudflare"
+summary = "List Cloudflare zones and inspect their DNS records through OAuth."
+creators = ["@roxygens"]
+github = "https://github.com/TheShimpz/shimpz-cloudflare"
+allowed_hosts = ["api.cloudflare.com"]
 
-[secrets.mux-token-id]
-name = "Mux Token ID"
-summary = "Identifies this Team to the Mux API."
+[accounts.cloudflare]
+provider = "cloudflare"
+scopes = ["zone.read", "dns.read", "offline_access"]
 
-[secrets.mux-token-secret]
-name = "Mux Token Secret"
-summary = "Authenticates this Team to the Mux API."
-
-[accounts.x]
-provider = "x"
-scopes = ["tweet.read", "users.read", "tweet.write", "offline.access"]
-
-[powers.list-direct-uploads]
-summary = "List recent Mux direct uploads."
+[powers.list-zones]
+summary = "List a bounded page of Cloudflare zones and domains."
 approval = "never"
-secrets = ["mux-token-id", "mux-token-secret"]
+accounts = ["cloudflare"]
 
-[powers.create-post]
-summary = "Publish one approved X post."
-approval = "always"
-accounts = ["x"]`;
+[powers.list-dns-records]
+summary = "List a bounded page of DNS records from one Cloudflare zone."
+approval = "never"
+accounts = ["cloudflare"]`;
 
 export const load: PageServerLoad = async () => ({
   minimalManifest: await highlightCode(minimalManifest, "toml"),

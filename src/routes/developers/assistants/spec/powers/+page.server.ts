@@ -2,28 +2,24 @@ import { highlightCode } from "$lib/server/highlight";
 
 import type { PageServerLoad } from "./$types";
 
-const power = `[powers.list-direct-uploads]
-summary = "List recent Mux direct uploads."
+const power = `[powers.list-zones]
+summary = "List a bounded page of Cloudflare zones and domains."
 approval = "never"
-secrets = ["mux-token-id", "mux-token-secret"]
+accounts = ["cloudflare"]
 
-[powers.create-test-direct-upload]
-summary = "Create a short-lived Mux test upload intent without uploading media."
-approval = "always"
-secrets = ["mux-token-id", "mux-token-secret"]
-
-[powers.identity-me]
-summary = "Read the connected X account."
+[powers.list-dns-records]
+summary = "List a bounded page of DNS records from one Cloudflare zone."
 approval = "never"
-accounts = ["x"]`;
+accounts = ["cloudflare"]`;
 
 const inputSchema = `{
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
-    "limit": { "type": "integer", "minimum": 1, "maximum": 25 }
+    "page": { "type": "integer", "minimum": 1, "maximum": 100000 },
+    "per_page": { "type": "integer", "minimum": 1, "maximum": 100 }
   },
-  "required": ["limit"],
+  "required": ["page", "per_page"],
   "additionalProperties": false
 }`;
 

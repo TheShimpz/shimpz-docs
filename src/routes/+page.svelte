@@ -35,8 +35,8 @@
   <span id="validated-scope-title" class="kicker">Validated scope</span>
   <p>
     This development delivery can create an empty local Team and run provider-backed Team chat with a
-    separately configured model API key. Shimpz Assistant connects to X just in time through the official
-    X consent page; end users never enter X developer credentials. Commerce remains outside this delivery.
+    separately configured model API key. Shimpz Cloudflare connects just in time through the official
+    Cloudflare consent page; end users never enter OAuth client credentials. Commerce remains outside this delivery.
   </p>
 </aside>
 

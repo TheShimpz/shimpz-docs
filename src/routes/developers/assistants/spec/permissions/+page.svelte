@@ -26,8 +26,8 @@
 <aside class="scope-note" aria-labelledby="permissions-current-title">
   <span id="permissions-current-title" class="kicker">Available today</span>
   <p>
-    Shimpz Assistant declares only <code>api.x.com</code> and <code>api.mux.com</code>. The Team's authenticated
-    egress proxy blocks every other destination. An Account token or Mux Secret does not widen that allowlist,
+    Shimpz Cloudflare declares only <code>api.cloudflare.com</code>. The Team's authenticated egress proxy blocks
+    every other destination. An Account token does not widen that allowlist,
     and the allowlist never reveals or grants a private value.
   </p>
 </aside>
@@ -56,8 +56,8 @@
     allowed host cannot make a Secret or Account available.
   </p>
   <p>
-    In the Mux example, API Powers may contact only <code>api.mux.com</code> and receive only the declared Token
-    ID and Token Secret. Local webhook verification receives only the signing Secret and needs no egress. See
+    In the Cloudflare reference, both Powers may contact only <code>api.cloudflare.com</code> and receive only the
+    declared Account bearer. A different Power receives no token merely because it shares the same Team. See
     <a href="/developers/assistants/spec/secrets/">Secrets</a> and
     <a href="/developers/assistants/spec/accounts/">Accounts</a> for the two delivery contracts.
   </p>

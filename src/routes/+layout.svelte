@@ -144,9 +144,9 @@
       label: "Assistant examples",
       items: [
         {
-          href: "/developers/assistants/shimpz-assistant/",
-          label: "Shimpz Assistant",
-          description: "Accounts + Secrets reference",
+          href: "/developers/assistants/shimpz-cloudflare/",
+          label: "Shimpz Cloudflare",
+          description: "OAuth Account reference",
         },
       ],
     },

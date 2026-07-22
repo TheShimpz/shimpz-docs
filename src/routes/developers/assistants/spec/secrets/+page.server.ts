@@ -2,33 +2,33 @@ import { highlightCode } from "$lib/server/highlight";
 
 import type { PageServerLoad } from "./$types";
 
-const declaration = `[secrets.mux-token-id]
-name = "Mux Token ID"
-summary = "Identifies this Team to the Mux API."
+const declaration = `[secrets.media-token-id]
+name = "Media API Token ID"
+summary = "Identifies this Team to the media API."
 
-[secrets.mux-token-secret]
-name = "Mux Token Secret"
-summary = "Authenticates this Team to the Mux API."
+[secrets.media-token-secret]
+name = "Media API Token Secret"
+summary = "Authenticates this Team to the media API."
 
-[secrets.mux-webhook-signing-secret]
-name = "Mux Webhook Signing Secret"
-summary = "Verifies that a webhook payload was signed by Mux."
+[secrets.media-webhook-signing-secret]
+name = "Media Webhook Signing Secret"
+summary = "Verifies that a webhook payload was signed by the provider."
 
-[powers.list-direct-uploads]
-summary = "List recent Mux direct uploads."
+[powers.list-media-assets]
+summary = "List recent media assets."
 approval = "never"
-secrets = ["mux-token-id", "mux-token-secret"]
+secrets = ["media-token-id", "media-token-secret"]
 
-[powers.verify-mux-webhook]
-summary = "Verify one Mux webhook signature locally."
+[powers.verify-media-webhook]
+summary = "Verify one media webhook signature locally."
 approval = "never"
-secrets = ["mux-webhook-signing-secret"]`;
+secrets = ["media-webhook-signing-secret"]`;
 
 const envelope = `{
   "input": { "limit": 10 },
   "secrets": {
-    "mux-token-id": "<resolved in memory>",
-    "mux-token-secret": "<resolved in memory>"
+    "media-token-id": "<resolved in memory>",
+    "media-token-secret": "<resolved in memory>"
   },
   "accounts": {}
 }`;

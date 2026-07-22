@@ -50,7 +50,7 @@
   <span class="section-label">Minimal example</span>
   <h2 id="changelog-example-title">Lead with the newest release</h2>
   <CodeBlock
-    label="User-visible release history for Shimpz Assistant"
+    label="User-visible release history for Shimpz Cloudflare"
     title="CHANGELOG.md"
     variant="code"
     {...data.changelog}

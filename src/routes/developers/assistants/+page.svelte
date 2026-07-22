@@ -24,7 +24,7 @@
   <span id="assistant-status-title" class="kicker">What is available now</span>
   <p>
     Assistant Spec v2 defines the intent-only manifest, Genesis, Powers, closed schemas, and user Help.
-    Shimpz Assistant is the executable runtime reference. For each turn, the provider-neutral LangGraph Brain
+    Shimpz Cloudflare is the executable runtime reference. For each turn, the provider-neutral LangGraph Brain
     receives only the enabled Assistants' validated context and Powers, while the controller retains all
     execution authority.
   </p>
@@ -97,9 +97,9 @@
       </a>
     </li>
     <li>
-      <a class="docs-entry-link" href="/developers/assistants/shimpz-assistant/">
-        <strong>Shimpz Assistant</strong>
-        <span>Study X Accounts and Mux Secrets in one executable reference</span>
+      <a class="docs-entry-link" href="/developers/assistants/shimpz-cloudflare/">
+        <strong>Shimpz Cloudflare</strong>
+        <span>Study a least-privilege OAuth Account in one executable reference</span>
       </a>
     </li>
   </ul>
