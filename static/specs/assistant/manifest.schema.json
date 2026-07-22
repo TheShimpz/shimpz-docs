@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://docs.shimpz.com/specs/assistant/v2/manifest.schema.json",
-  "title": "Shimpz Assistant Manifest v2",
+  "$id": "https://docs.shimpz.com/specs/assistant/manifest.schema.json",
+  "title": "Shimpz Assistant Manifest",
   "description": "Closed representation of shimpz.assistant.toml. Accounts and Secrets declare public dependency intent without private values; allowed_hosts declares transparent network intent but never grants egress. The Team runtime owns and enforces effective policy.",
   "type": "object",
   "additionalProperties": false,

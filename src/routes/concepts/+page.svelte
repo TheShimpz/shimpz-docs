@@ -24,13 +24,13 @@
   <dd>The language model that answers as the Team and chooses which available Power can help.</dd>
 
   <dt><strong>Assistant</strong></dt>
-  <dd>A focused capability installed in one Team, such as Shimpz Cloudflare.</dd>
+  <dd>A focused capability installed in one Team.</dd>
 
   <dt><strong>Power</strong></dt>
-  <dd>One named, bounded action an Assistant can perform, such as listing zones.</dd>
+  <dd>One named, bounded action an Assistant can perform, such as looking up one record.</dd>
 
   <dt><strong>Account</strong></dt>
-  <dd>An OAuth connection you authorize directly with a provider, such as your Cloudflare account.</dd>
+  <dd>An OAuth connection you authorize directly with its provider.</dd>
 </dl>
 
 <aside class="scope-note" aria-labelledby="infrastructure-title">

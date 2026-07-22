@@ -3,92 +3,77 @@
 </script>
 
 <svelte:head>
-  <title>Build a Shimpz Assistant — Shimpz docs</title>
+  <title>Assistant project files — Shimpz docs</title>
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/" />
-  <meta name="description" content="Build a focused Shimpz Assistant by following the production Cloudflare project." />
+  <meta name="description" content="Create the files of a Shimpz Assistant SPEC project in small steps." />
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/">Developers</a><span aria-hidden="true">/</span><strong>Assistant project</strong>
+  <a href="/developers/">Developers</a><span aria-hidden="true">/</span>
+  <a href="/developers/assistants/spec/">Assistant SPEC</a><span aria-hidden="true">/</span>
+  <strong>Project files</strong>
 </nav>
 
 <header class="docs-page-header">
-  <span class="section-label">Practical project guide</span>
-  <h1>Build one useful Power first</h1>
+  <span class="section-label">Baby step 1</span>
+  <h1>Create four kinds of files</h1>
   <p class="docs-lede">
-    A good Assistant does one provider job clearly. Begin with a single read-only user outcome, request the
-    minimum access it needs, and make every input and output explicit.
+    Start with the public contract, not with API code. A small Assistant project has one manifest, one
+    Genesis document, Help for people, and two schemas for every Power.
   </p>
 </header>
 
-<ol class="step-list">
-  <li>
-    <h2>Read the working reference</h2>
-    <CodeBlock
-      label="Clone Shimpz Cloudflare"
-      title="Terminal · source"
-      lines={[
-        { value: "git clone https://github.com/TheShimpz/shimpz-cloudflare.git" },
-        { value: "cd shimpz-cloudflare" },
-      ]}
-    />
-  </li>
-
-  <li>
-    <h2>Understand the small project shape</h2>
-    <CodeBlock
-      label="Assistant project files"
-      title="Project · important files"
-      lines={[
-        { value: "shimpz.assistant.toml     # identity, hosts, Accounts, and Powers", kind: "output" },
-        { value: "GENESIS.md                # behavior and Power composition", kind: "output" },
-        { value: "help/HELP-en.md           # examples shown to the person using it", kind: "output" },
-        { value: "schemas/*.schema.json     # closed Power inputs and outputs", kind: "output" },
-        { value: "assistant/                # bounded runtime code", kind: "output" },
-        { value: "tests/                    # success, failure, and redaction proofs", kind: "output" },
-        { value: "CHANGELOG.md              # user-visible release changes", kind: "output" },
-      ]}
-    />
-  </li>
-
-  <li>
-    <h2>Define the outcome before the API call</h2>
-    <p>Write one sentence a non-developer can understand. For example:</p>
-    <blockquote>List the DNS records for a domain I already connected.</blockquote>
-    <p>
-      From that sentence, derive one Power, its smallest provider scope, one exact API host, bounded pagination,
-      and closed JSON schemas. Do not start with a generic HTTP client.
-    </p>
-  </li>
-
-  <li>
-    <h2>Run the same checks on every change</h2>
-    <CodeBlock
-      label="Validate an Assistant"
-      title="Terminal · Python 3.14"
-      lines={[
-        { value: "uv sync --frozen" },
-        { value: "uv run python -m unittest discover -s tests -v" },
-        { value: "uvx --from ruff==0.15.4 ruff format --check ." },
-        { value: "uvx --from ruff==0.15.4 ruff check ." },
-      ]}
-    />
-  </li>
-</ol>
-
-<section class="guide-section" aria-labelledby="review-title">
-  <span class="section-label">Review questions</span>
-  <h2 id="review-title">Make every test earn its CPU</h2>
-  <ul>
-    <li>Does this Power solve a real user request, or merely expose a provider endpoint?</li>
-    <li>Can its input choose a host, URL, method, path, or arbitrary payload? If so, narrow it.</li>
-    <li>Do tests cover timeouts, redirects, invalid JSON, oversized responses, redaction, and unknown fields?</li>
-    <li>Can a reader understand the Help example without knowing the provider API?</li>
-    <li>Would removing a test leave a meaningful security or behavior contract unprotected?</li>
-  </ul>
+<section class="guide-section" aria-labelledby="shape-title">
+  <span class="section-label">Folder shape</span>
+  <h2 id="shape-title">Give every decision one home</h2>
+  <CodeBlock
+    label="Small Assistant project"
+    title="Project · SPEC files"
+    lines={[
+      { value: "shimpz.assistant.toml", kind: "output" },
+      { value: "GENESIS.md", kind: "output" },
+      { value: "help/", kind: "output" },
+      { value: "  HELP-en.md", kind: "output" },
+      { value: "schemas/", kind: "output" },
+      { value: "  inspect-record.input.schema.json", kind: "output" },
+      { value: "  inspect-record.output.schema.json", kind: "output" },
+    ]}
+  />
 </section>
 
-<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the developer guide">
-  <a href="/developers/"><span>Back</span><strong>Developer quick start</strong></a>
-  <a href="/developers/assistants/spec/"><span>Next</span><strong>Current contract</strong></a>
+<section class="guide-section" aria-labelledby="meaning-title">
+  <span class="section-label">What each file answers</span>
+  <h2 id="meaning-title">Read the project as four questions</h2>
+  <ol>
+    <li><strong>Manifest:</strong> What is this Assistant, and what access does it request?</li>
+    <li><strong>Genesis:</strong> How should the Brain use its Powers and explain the result?</li>
+    <li><strong>Help:</strong> What can a person ask in normal language?</li>
+    <li><strong>Schemas:</strong> Which exact JSON may enter and leave each Power?</li>
+  </ol>
+</section>
+
+<section class="guide-section" aria-labelledby="order-title">
+  <span class="section-label">Recommended order</span>
+  <h2 id="order-title">Make one Power understandable before adding another</h2>
+  <ol>
+    <li>Write one sentence describing a useful result.</li>
+    <li>Name one Power for that result using lowercase kebab-case.</li>
+    <li>Define the smallest possible input and output schemas.</li>
+    <li>Add only the Account, Secret, or external host that Power needs.</li>
+    <li>Explain the Power in Genesis and show one plain-language prompt in Help.</li>
+  </ol>
+  <blockquote>Inspect one record by its identifier and return its name and status.</blockquote>
+</section>
+
+<aside class="scope-note" aria-labelledby="outside-title">
+  <span id="outside-title" class="kicker">Not part of the SPEC</span>
+  <p>
+    Container orchestration, databases, provider registration, release channels, CI, and Store publishing are
+    platform concerns. They do not belong in these files and are not documented as Assistant SPEC fields.
+  </p>
+</aside>
+
+<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant SPEC">
+  <a href="/developers/assistants/spec/"><span>Back</span><strong>SPEC overview</strong></a>
+  <a href="/developers/assistants/spec/manifest/"><span>Next</span><strong>Manifest and identity</strong></a>
 </nav>

@@ -44,7 +44,7 @@
       label: "Your Space",
       items: [
         { href: "/admin/", label: "First access", description: "Create a Team and configure its Brain" },
-        { href: "/assistants/", label: "Connect Cloudflare", description: "Install, authorize, and test" },
+        { href: "/assistants/", label: "Install an Assistant", description: "Add a capability to a Team" },
         { href: "/manage/", label: "Update or remove", description: "Safe maintenance commands" },
       ],
     },
@@ -62,33 +62,57 @@
       ],
     },
     {
-      label: "Build an Assistant",
+      label: "Assistant SPEC",
       items: [
-        { href: "/developers/assistants/", label: "Project guide", description: "Copy, change, test" },
         {
           href: "/developers/assistants/spec/",
-          label: "Current contract",
-          description: "Manifest, Powers, Accounts, and safety",
+          label: "SPEC overview",
+          description: "The complete public contract",
         },
         {
-          href: "/developers/assistants/shimpz-cloudflare/",
-          label: "Cloudflare example",
-          description: "A complete production Assistant",
-        },
-      ],
-    },
-    {
-      label: "OAuth and release",
-      items: [
-        {
-          href: "/developers/assistants/spec/accounts/providers/",
-          label: "Add an OAuth provider",
-          description: "What is shared and what must change",
+          href: "/developers/assistants/",
+          label: "Project files",
+          description: "Create the smallest project",
         },
         {
-          href: "/developers/assistants/spec/build-release/",
-          label: "Validate and release",
-          description: "Evidence required before stable",
+          href: "/developers/assistants/spec/manifest/",
+          label: "Manifest and identity",
+          description: "Name and describe the Assistant",
+        },
+        {
+          href: "/developers/assistants/spec/genesis/",
+          label: "Genesis",
+          description: "Teach behavior and boundaries",
+        },
+        {
+          href: "/developers/assistants/spec/powers/",
+          label: "Powers and schemas",
+          description: "Define callable operations",
+        },
+        {
+          href: "/developers/assistants/spec/approvals/",
+          label: "Approvals",
+          description: "Choose when people confirm",
+        },
+        {
+          href: "/developers/assistants/spec/accounts/",
+          label: "Accounts",
+          description: "Request OAuth access safely",
+        },
+        {
+          href: "/developers/assistants/spec/secrets/",
+          label: "Secrets",
+          description: "Request opaque private values",
+        },
+        {
+          href: "/developers/assistants/spec/network/",
+          label: "Network access",
+          description: "List exact external hosts",
+        },
+        {
+          href: "/developers/assistants/spec/help/",
+          label: "Help",
+          description: "Teach people what to ask",
         },
       ],
     },

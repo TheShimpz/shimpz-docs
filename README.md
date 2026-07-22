@@ -1,9 +1,8 @@
 # shimpz-docs
 
 The public documentation for **[Shimpz](https://shimpz.com)**. The User guide installs the stable Space,
-creates a Team, configures its Brain, connects Cloudflare through OAuth, and maintains the local installation.
-The Developer guide documents only the current Assistant Spec v2 surface, the production Cloudflare example,
-and the reviewed path for adding another OAuth provider.
+creates a Team, configures its Brain, installs Assistants, and maintains the local installation.
+The Developer guide explains the single current Assistant SPEC in small, independent steps.
 Served at
 **docs.shimpz.com**; the same hardened origin serves the pull-only bootstrap at
 **install.shimpz.com**.

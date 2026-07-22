@@ -2,7 +2,7 @@
   <title>Start with Shimpz — Shimpz docs</title>
   <meta
     name="description"
-    content="Install Shimpz, create your first Team, and connect Cloudflare with a guided local setup."
+    content="Install Shimpz, create your first Team, and add an Assistant with a guided local setup."
   />
 </svelte:head>
 
@@ -34,8 +34,8 @@
 <aside class="scope-note" aria-labelledby="before-start-title">
   <span id="before-start-title" class="kicker">Before you start</span>
   <p>
-    You need Docker, an OpenAI or Anthropic API key for the Team's Brain, and about ten minutes. Cloudflare is
-    connected later through its official authorization page; never paste Cloudflare credentials into chat.
+    You need Docker, an OpenAI or Anthropic API key for the Team's Brain, and about ten minutes. If an Assistant
+    needs an Account or Secret, Shimpz asks for it only when a Power actually needs it.
   </p>
 </aside>
 
@@ -72,7 +72,7 @@
   <ol>
     <li><strong>Create a Team.</strong> A clean installation will not continue until at least one Team exists.</li>
     <li><strong>Configure its Brain.</strong> Choose a supported model and save your model provider API key.</li>
-    <li><strong>Install Cloudflare.</strong> Ask for your zones, authorize read access, and receive the result in chat.</li>
+    <li><strong>Install an Assistant.</strong> Choose one useful capability from the Store and add it to the Team.</li>
   </ol>
 </section>
 

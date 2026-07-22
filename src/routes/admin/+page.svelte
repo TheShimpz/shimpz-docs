@@ -72,5 +72,5 @@
 </section>
 
 <nav class="docs-page-nav" aria-label="Continue the user guide">
-  <a href="/assistants/"><span>Next</span><strong>Connect Cloudflare</strong></a>
+  <a href="/assistants/"><span>Next</span><strong>Install an Assistant</strong></a>
 </nav>
