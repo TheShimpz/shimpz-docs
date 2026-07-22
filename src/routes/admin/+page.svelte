@@ -3,52 +3,74 @@
 </script>
 
 <svelte:head>
-  <title>Open the Shimpz Admin — Shimpz docs</title>
-  <meta name="description" content="Open the local Shimpz Admin after installing your Space." />
+  <title>First access — Shimpz docs</title>
+  <meta name="description" content="Open Shimpz, create your first Team, and configure its Brain." />
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/">User guide</a><span aria-hidden="true">/</span><span>Your Space</span
-  ><span aria-hidden="true">/</span><strong>Open the Admin</strong>
+  <a href="/">User guide</a><span aria-hidden="true">/</span><strong>First access</strong>
 </nav>
 
 <header class="docs-page-header">
   <span class="section-label">After installation</span>
-  <h1>Open the Admin</h1>
+  <h1>Create your first Team</h1>
   <p class="docs-lede">
-    The installer keeps private state in <code>$HOME/.shimpz</code>, publishes the Admin only on host
-    loopback, and waits for its health check before reporting success.
+    A Team is your private workspace. It keeps its own conversation, Assistants, Accounts, model settings,
+    and files separate from every other Team.
   </p>
 </header>
 
-<aside class="scope-note" aria-labelledby="local-trust-boundary">
-  <span id="local-trust-boundary" class="kicker">Single-owner local profile</span>
+<ol class="step-list">
+  <li>
+    <h2>Open the local Admin</h2>
+    <CodeBlock
+      label="Local Shimpz Admin address"
+      title="Browser · local Admin"
+      lines={[{ value: "http://127.0.0.1:7777", prompt: "›" }]}
+    />
+    <p>Create the initial Admin password when asked. Use at least 12 characters and do not reuse it elsewhere.</p>
+  </li>
+
+  <li>
+    <h2>Name the Team</h2>
+    <p>
+      On a clean installation, Shimpz opens <strong>Create a Team</strong> automatically. Enter a simple name,
+      such as <code>Marketing</code>, then choose <strong>Create Team</strong>. You cannot enter chat without a Team.
+    </p>
+  </li>
+
+  <li>
+    <h2>Configure the Brain</h2>
+    <p>
+      Open the Team's model settings, choose OpenAI or Anthropic and a supported model, then use the key button
+      beside the chat composer to save the matching API key. The key is write-only: Shimpz never shows it again.
+    </p>
+    <p>
+      The Brain writes the Team's replies and decides when a Power can help. Do not paste API keys, passwords,
+      or OAuth tokens into the message box.
+    </p>
+  </li>
+</ol>
+
+<aside class="scope-note" aria-labelledby="local-safety-title">
+  <span id="local-safety-title" class="kicker">Keep it private</span>
   <p>
-    Use this development build only on a personal or otherwise trusted host. Anyone who controls your
-    operating-system account or Docker daemon is inside the same trust boundary. Keep port
-    <code>7777</code> on loopback and create the Admin password immediately after installation.
+    Port <code>7777</code> is intentionally available only on this computer. Anyone who controls your operating
+    system account or Docker daemon is inside the same trust boundary. Do not expose this port directly to the internet.
   </p>
 </aside>
 
-<CodeBlock
-  label="Local Shimpz Admin address"
-  title="Browser · local Admin"
-  lines={[{ value: "http://127.0.0.1:7777", prompt: "›" }]}
-/>
-<p>Create the initial Admin password with at least 12 characters.</p>
-
-<section class="guide-section" aria-labelledby="remote-linux-title">
-  <span class="section-label">Remote access</span>
-  <h2 id="remote-linux-title">Remote Linux host</h2>
-  <p>Keep the Admin private and forward its loopback port over SSH:</p>
+<section class="guide-section" aria-labelledby="remote-access-title">
+  <span class="section-label">Optional</span>
+  <h2 id="remote-access-title">Open a remote Linux installation safely</h2>
+  <p>Forward its private port through SSH, leave the terminal open, and use the same local address in your browser.</p>
   <CodeBlock
-    label="Forward a remote Linux Admin over SSH"
-    title="Terminal · SSH tunnel"
+    label="Forward a remote Admin through SSH"
+    title="Terminal · your computer"
     lines={[{ value: "ssh -L 7777:127.0.0.1:7777 user@your-server" }]}
   />
-  <p>Leave that session open, then visit <code>http://127.0.0.1:7777</code> on your own computer.</p>
 </section>
 
 <nav class="docs-page-nav" aria-label="Continue the user guide">
-  <a href="/assistants/"><span>Next</span><strong>Install your first Assistant</strong></a>
+  <a href="/assistants/"><span>Next</span><strong>Connect Cloudflare</strong></a>
 </nav>

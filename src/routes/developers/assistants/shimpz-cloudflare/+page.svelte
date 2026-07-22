@@ -1,64 +1,35 @@
 <script lang="ts">
   import CodeBlock from "$lib/components/CodeBlock.svelte";
-
-  import type { PageData } from "./$types";
-
-  let { data }: { data: PageData } = $props();
 </script>
 
 <svelte:head>
-  <title>Shimpz Cloudflare — Shimpz docs</title>
+  <title>Shimpz Cloudflare example — Shimpz docs</title>
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/shimpz-cloudflare/" />
-  <meta
-    name="description"
-    content="Build from Shimpz Cloudflare, the executable OAuth Account and read-only Power reference."
-  />
+  <meta name="description" content="Follow the complete production Cloudflare Assistant from OAuth intent to DNS output." />
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/assistants/">Assistants</a><span aria-hidden="true">/</span><strong
-    >Shimpz Cloudflare</strong
-  >
+  <a href="/developers/">Developers</a><span aria-hidden="true">/</span><strong>Cloudflare example</strong>
 </nav>
 
 <header class="docs-page-header">
-  <span class="section-label">Executable source reference</span>
-  <h1>Explore Shimpz Cloudflare.</h1>
+  <span class="section-label">Production reference · 0.1.5</span>
+  <h1>Follow one complete Assistant</h1>
   <p class="docs-lede">
-    Inspect one small production Assistant that demonstrates a controller-owned OAuth Account, two typed
-    read-only Powers, localized Help, closed schemas, and exact-host egress.
+    Shimpz Cloudflare lists zones and DNS records through one controller-owned OAuth Account. Its source is
+    intentionally small enough to read before creating the next provider integration.
   </p>
 </header>
 
-<aside class="scope-note" aria-labelledby="assistant-boundary-title">
-  <span id="assistant-boundary-title" class="kicker">Current first-party reference</span>
-  <p>
-    Installation never connects Cloudflare or runs a Power. The first Power that needs the Account pauses the
-    turn, opens Cloudflare consent, and resumes only after the controller validates the callback.
-  </p>
-</aside>
-
 <ol class="step-list">
   <li>
-    <h2>Read the complete source</h2>
-    <p>Clone the same public repository used to build the immutable Store release.</p>
+    <h2>Clone and validate it</h2>
     <CodeBlock
-      label="Clone Shimpz Cloudflare"
-      title="Terminal · Source"
+      label="Validate Shimpz Cloudflare"
+      title="Terminal · reference source"
       lines={[
         { value: "git clone https://github.com/TheShimpz/shimpz-cloudflare.git" },
         { value: "cd shimpz-cloudflare" },
-      ]}
-    />
-  </li>
-
-  <li>
-    <h2>Run the focused checks</h2>
-    <p>The frozen Python environment validates the OAuth envelope, schemas, API transport, and redaction.</p>
-    <CodeBlock
-      label="Validate Shimpz Cloudflare"
-      title="Terminal · Tests"
-      lines={[
         { value: "uv sync --frozen" },
         { value: "uv run python -m unittest discover -s tests -v" },
       ]}
@@ -66,49 +37,54 @@
   </li>
 
   <li>
-    <h2>Review the least-privilege contract</h2>
+    <h2>Start with the manifest</h2>
     <p>
-      <code>list-zones</code> returns one bounded page of zones. <code>list-dns-records</code> receives one exact
-      zone ID and returns one bounded page of records. Both reference only <code>accounts.cloudflare</code>, are
-      read-only, and require no execution approval.
+      <code>allowed_hosts</code> contains only <code>api.cloudflare.com</code>. The <code>cloudflare</code> Account
+      requests <code>zone.read</code>, <code>dns.read</code>, and <code>offline_access</code>. Both Powers reference
+      that Account and are read-only.
     </p>
     <CodeBlock
-      label="Inspect the Cloudflare manifest"
-      title="Terminal · Manifest"
+      label="Open the Assistant manifest"
+      title="Terminal · contract"
       lines={[{ value: "sed -n '1,220p' shimpz.assistant.toml" }]}
     />
-    <CodeBlock
-      label="Schema-validated zone response"
-      title="list-zones · JSON"
-      variant="code"
-      {...data.response}
-    />
+  </li>
+
+  <li>
+    <h2>Trace the runtime</h2>
+    <ul>
+      <li><code>assistant/main.py</code> exposes health and the fixed RPC loop.</li>
+      <li><code>assistant/rpc.py</code> validates the private invocation and dispatches only known Powers.</li>
+      <li><code>assistant/cloudflare_api.py</code> builds fixed Cloudflare requests and rejects redirects.</li>
+      <li><code>schemas/</code> closes every input and output object.</li>
+      <li><code>tests/</code> proves transport limits, failures, contract shape, and token redaction.</li>
+    </ul>
   </li>
 </ol>
 
-<section class="guide-section" aria-labelledby="assistant-proof-title">
-  <span class="section-label">Reusable pattern</span>
-  <h2 id="assistant-proof-title">What this reference proves</h2>
-  <ul>
-    <li><code>allowed_hosts</code> exposes only <code>api.cloudflare.com</code>.</li>
-    <li>The Account requests only <code>zone.read</code>, <code>dns.read</code>, and <code>offline_access</code>.</li>
-    <li>The controller owns PKCE state, token exchange, refresh, revocation, and durable encrypted custody.</li>
-    <li>The token enters only the private invocation envelope of a Power that declares the Account.</li>
-    <li>Closed schemas bound every input and output; unknown fields and undeclared routes fail closed.</li>
-    <li>Provider responses are treated as untrusted data and cannot expose Account tokens in chat or logs.</li>
-  </ul>
-  <p>
-    Read the <a
-      class="external-link"
-      href="https://github.com/TheShimpz/shimpz-cloudflare"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Shimpz Cloudflare source on GitHub (opens in a new tab)">complete source on GitHub</a
-    >.
-  </p>
+<section class="guide-section" aria-labelledby="new-power-title">
+  <span class="section-label">Adding one Power</span>
+  <h2 id="new-power-title">Change every layer deliberately</h2>
+  <ol>
+    <li>Describe one user outcome in Help and Genesis.</li>
+    <li>Add the Power and only its necessary Account scopes to the manifest.</li>
+    <li>Add closed input and output schemas with bounded arrays and strings.</li>
+    <li>Implement one fixed provider operation; do not expose arbitrary URLs or methods.</li>
+    <li>Test success, provider errors, malformed data, limits, timeouts, redirects, and redaction.</li>
+    <li>Update the version and changelog, then use the stable release gate.</li>
+  </ol>
 </section>
 
-<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant developer guide">
-  <a href="/developers/assistants/spec/build-release/"><span>Back to</span><strong>Build and release</strong></a>
-  <a href="/developers/assistants/"><span>Overview</span><strong>Assistants</strong></a>
+<p>
+  Read the <a
+    class="external-link"
+    href="https://github.com/TheShimpz/shimpz-cloudflare"
+    target="_blank"
+    rel="noopener noreferrer">complete source on GitHub</a
+  >.
+</p>
+
+<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the developer guide">
+  <a href="/developers/assistants/spec/"><span>Back</span><strong>Current contract</strong></a>
+  <a href="/developers/assistants/spec/accounts/providers/"><span>Next</span><strong>Add an OAuth provider</strong></a>
 </nav>

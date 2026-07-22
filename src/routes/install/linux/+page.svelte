@@ -68,5 +68,5 @@
 </ol>
 
 <nav class="docs-page-nav" aria-label="Continue the user guide">
-  <a href="/admin/"><span>Next</span><strong>Open the Admin</strong></a>
+  <a href="/admin/"><span>Next</span><strong>First access</strong></a>
 </nav>

@@ -857,7 +857,7 @@ if [ -f "$COMPOSE_FILE" ] && [ -f "$ENV_FILE" ]; then
 fi
 
 if [ "$prior_runtime_transition" -eq 1 ]; then
-	notice "The previous development runtime uses retired Team metadata"
+	notice "The previous runtime uses retired Team metadata"
 	notice "Your Admin password and settings stay intact; Teams and Assistants must be created again"
 	step "Safely retiring previous Team and Assistant resources"
 	reset_dynamic_space
@@ -1227,7 +1227,7 @@ if [ "$install_mode" = "update" ]; then
 	printf '  Admin    %shttp://127.0.0.1:%s%s\n' "$OUT_CYAN" "$install_port" "$OUT_RESET"
 	printf '  Data     Admin settings and password were preserved\n'
 	if [ "$prior_runtime_transition" -eq 1 ]; then
-		printf '  Teams    Recreate previous development Teams and Assistants in the Admin\n'
+		printf '  Teams    Recreate previous Teams and Assistants in the Admin\n'
 	fi
 else
 	success "Shimpz Space is ready"

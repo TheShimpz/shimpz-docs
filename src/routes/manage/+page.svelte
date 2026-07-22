@@ -3,34 +3,48 @@
 </script>
 
 <svelte:head>
-  <title>Update or reset Shimpz — Shimpz docs</title>
-  <meta name="description" content="Update or reset a local Shimpz Space installation safely." />
+  <title>Update or remove Shimpz — Shimpz docs</title>
+  <meta name="description" content="Update a stable Shimpz installation or remove its local data." />
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/">User guide</a><span aria-hidden="true">/</span><span>Your Space</span
-  ><span aria-hidden="true">/</span><strong>Update or reset</strong>
+  <a href="/">User guide</a><span aria-hidden="true">/</span><strong>Update or remove</strong>
 </nav>
 
 <header class="docs-page-header">
-  <span class="section-label">Keep it current</span>
-  <h1>Update or reset</h1>
+  <span class="section-label">Maintenance</span>
+  <h1>Use the same installer</h1>
   <p class="docs-lede">
-    Run the install command again to pull the current stable images. The installer keeps the
-    previous digests and restores them when a replacement does not become healthy.
+    Running the installation command again updates Shimpz to the current stable images. Existing Teams,
+    Accounts, settings, and conversations remain in place.
   </p>
 </header>
 
-<p>
-  Reset first asks the local controller to remove its owned Assistants and Teams, then stops the managed
-  Space and permanently removes its Admin and controller data:
-</p>
 <CodeBlock
-  label="Reset the Shimpz installation"
-  title="Terminal · Shimpz reset"
-  lines={[{ value: "curl -fsSL https://install.shimpz.com | sh -s -- --reset" }]}
+  label="Update Shimpz"
+  title="Terminal · stable update"
+  lines={[{ value: "curl -fsSL https://install.shimpz.com | sh" }]}
 />
 
+<p>
+  The installer checks the replacement before switching to it. If the new version does not become healthy,
+  it keeps or restores the previous working version.
+</p>
+
+<section class="guide-section" aria-labelledby="reset-title">
+  <span class="section-label">Permanent removal</span>
+  <h2 id="reset-title">Reset only when you want to delete everything</h2>
+  <p>
+    Reset removes the managed Assistants, Teams, Accounts, Admin state, and local Shimpz data. It cannot be
+    undone. Disconnect provider Accounts first when possible.
+  </p>
+  <CodeBlock
+    label="Permanently reset Shimpz"
+    title="Terminal · destructive reset"
+    lines={[{ value: "curl -fsSL https://install.shimpz.com | sh -s -- --reset" }]}
+  />
+</section>
+
 <nav class="docs-page-nav" aria-label="Continue the user guide">
-  <a href="/concepts/"><span>Next</span><strong>Core concepts</strong></a>
+  <a href="/concepts/"><span>Next</span><strong>Simple glossary</strong></a>
 </nav>

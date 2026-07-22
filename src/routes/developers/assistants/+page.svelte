@@ -1,115 +1,94 @@
+<script lang="ts">
+  import CodeBlock from "$lib/components/CodeBlock.svelte";
+</script>
+
 <svelte:head>
-  <title>Build Shimpz Assistants — Shimpz docs</title>
+  <title>Build a Shimpz Assistant — Shimpz docs</title>
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/" />
-  <meta
-    name="description"
-    content="Understand the Team-owned Shimpz Assistant boundary before building your first Assistant."
-  />
+  <meta name="description" content="Build a focused Shimpz Assistant by following the production Cloudflare project." />
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <span>Developer guide</span><span aria-hidden="true">/</span><strong>Assistants</strong>
+  <a href="/developers/">Developers</a><span aria-hidden="true">/</span><strong>Assistant project</strong>
 </nav>
 
 <header class="docs-page-header">
-  <span class="section-label">Developer preview</span>
-  <h1>Give one Team a focused capability.</h1>
+  <span class="section-label">Practical project guide</span>
+  <h1>Build one useful Power first</h1>
   <p class="docs-lede">
-    An Assistant is an immutable workload owned by one isolated Team. It combines a Genesis operating
-    playbook, user Help, and named Powers without inheriting Space-level authority.
+    A good Assistant does one provider job clearly. Begin with a single read-only user outcome, request the
+    minimum access it needs, and make every input and output explicit.
   </p>
 </header>
 
-<aside class="scope-note" aria-labelledby="assistant-status-title">
-  <span id="assistant-status-title" class="kicker">What is available now</span>
-  <p>
-    Assistant Spec v2 defines the intent-only manifest, Genesis, Powers, closed schemas, and user Help.
-    Shimpz Cloudflare is the executable runtime reference. For each turn, the provider-neutral LangGraph Brain
-    receives only the enabled Assistants' validated context and Powers, while the controller retains all
-    execution authority.
-  </p>
-</aside>
+<ol class="step-list">
+  <li>
+    <h2>Read the working reference</h2>
+    <CodeBlock
+      label="Clone Shimpz Cloudflare"
+      title="Terminal · source"
+      lines={[
+        { value: "git clone https://github.com/TheShimpz/shimpz-cloudflare.git" },
+        { value: "cd shimpz-cloudflare" },
+      ]}
+    />
+  </li>
 
-<section class="guide-section" aria-labelledby="assistant-model-title">
-  <span class="section-label">Boundary</span>
-  <h2 id="assistant-model-title">Team-owned by construction</h2>
+  <li>
+    <h2>Understand the small project shape</h2>
+    <CodeBlock
+      label="Assistant project files"
+      title="Project · important files"
+      lines={[
+        { value: "shimpz.assistant.toml     # identity, hosts, Accounts, and Powers", kind: "output" },
+        { value: "GENESIS.md                # behavior and Power composition", kind: "output" },
+        { value: "help/HELP-en.md           # examples shown to the person using it", kind: "output" },
+        { value: "schemas/*.schema.json     # closed Power inputs and outputs", kind: "output" },
+        { value: "assistant/                # bounded runtime code", kind: "output" },
+        { value: "tests/                    # success, failure, and redaction proofs", kind: "output" },
+        { value: "CHANGELOG.md              # user-visible release changes", kind: "output" },
+      ]}
+    />
+  </li>
+
+  <li>
+    <h2>Define the outcome before the API call</h2>
+    <p>Write one sentence a non-developer can understand. For example:</p>
+    <blockquote>List the DNS records for a domain I already connected.</blockquote>
+    <p>
+      From that sentence, derive one Power, its smallest provider scope, one exact API host, bounded pagination,
+      and closed JSON schemas. Do not start with a generic HTTP client.
+    </p>
+  </li>
+
+  <li>
+    <h2>Run the same checks on every change</h2>
+    <CodeBlock
+      label="Validate an Assistant"
+      title="Terminal · Python 3.14"
+      lines={[
+        { value: "uv sync --frozen" },
+        { value: "uv run python -m unittest discover -s tests -v" },
+        { value: "uvx --from ruff==0.15.4 ruff format --check ." },
+        { value: "uvx --from ruff==0.15.4 ruff check ." },
+      ]}
+    />
+  </li>
+</ol>
+
+<section class="guide-section" aria-labelledby="review-title">
+  <span class="section-label">Review questions</span>
+  <h2 id="review-title">Make every test earn its CPU</h2>
   <ul>
-    <li>An Assistant belongs to one Team and shares only that Team's admitted resource budget.</li>
-    <li>Genesis defines behavior and Power composition but cannot add authority.</li>
-    <li>
-      Its manifest declares identity, named Powers, manual Secret metadata, OAuth Account intent, and a
-      transparent exact-host allowlist; conventional files carry closed schemas.
-    </li>
-    <li>Service operations and Assistant Powers are allowlisted by controller policy, never generic reach.</li>
-    <li>
-      Secret values are write-only and OAuth tokens are controller-owned. Both are isolated to one Team and
-      Assistant installation, then delivered only to a referencing Power through its private invocation envelope.
-    </li>
-    <li>
-      Egress is exact and proxy-brokered. The controller must match the packaged host list to the reviewed
-      catalog policy before granting it.
-    </li>
+    <li>Does this Power solve a real user request, or merely expose a provider endpoint?</li>
+    <li>Can its input choose a host, URL, method, path, or arbitrary payload? If so, narrow it.</li>
+    <li>Do tests cover timeouts, redirects, invalid JSON, oversized responses, redaction, and unknown fields?</li>
+    <li>Can a reader understand the Help example without knowing the provider API?</li>
+    <li>Would removing a test leave a meaningful security or behavior contract unprotected?</li>
   </ul>
-  <p>
-    OpenAI and Anthropic inference use API keys configured in the authenticated Admin. A key is never exposed
-    to an Assistant or returned to the browser; it is delivered to the Brain only in memory for the provider
-    request. The Brain has no ambient shell, filesystem, network, or provider-native tools.
-  </p>
-</section>
-
-<section class="guide-section" aria-labelledby="assistant-collaboration-title">
-  <span class="section-label">Collaboration</span>
-  <h2 id="assistant-collaboration-title">Compose Powers without crossing boundaries</h2>
-  <p>
-    The user talks to the Team, not to a selected Assistant. Its Brain can request declared Powers from
-    multiple installed Assistants and continue the graph until it can answer naturally under the Team's
-    name. Each request still goes through the controller and never grants direct access to another
-    Assistant's workspace, database, container, secrets, or generic network endpoint.
-  </p>
-</section>
-
-<section class="guide-section" aria-labelledby="assistant-reference-title">
-  <span class="section-label">First references</span>
-  <h2 id="assistant-reference-title">Prove the smallest useful loop</h2>
-  <ul class="docs-entry-list">
-    <li>
-      <a class="docs-entry-link" href="/developers/assistants/spec/">
-        <strong>Assistant Spec v2</strong>
-        <span>Intent-only manifest, Genesis, Help, Powers, and runtime boundaries</span>
-      </a>
-    </li>
-    <li>
-      <a class="docs-entry-link" href="/developers/assistants/spec/runtime/">
-        <strong>Brain runtime</strong>
-        <span>LangGraph inference, controller-owned Powers, API keys, and opaque files</span>
-      </a>
-    </li>
-    <li>
-      <a class="docs-entry-link" href="/developers/assistants/spec/secrets/">
-        <strong>Assistant secrets</strong>
-        <span>Team-scoped custody, just-in-time collection, and per-Power delivery</span>
-      </a>
-    </li>
-    <li>
-      <a class="docs-entry-link" href="/developers/assistants/spec/accounts/">
-        <strong>Assistant Accounts</strong>
-        <span>Controller-owned OAuth consent, refresh, revocation, and per-Power delivery</span>
-      </a>
-    </li>
-    <li>
-      <a class="docs-entry-link" href="/developers/assistants/shimpz-cloudflare/">
-        <strong>Shimpz Cloudflare</strong>
-        <span>Study a least-privilege OAuth Account in one executable reference</span>
-      </a>
-    </li>
-  </ul>
-  <p>
-    Creators may eventually distribute and sell Assistants. That marketplace is a later product layer,
-    not permission to weaken the Team boundary or imply that commerce is part of this delivery.
-  </p>
 </section>
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the developer guide">
-  <a href="/developers/services/"><span>Back</span><strong>Services</strong></a>
-  <a href="/developers/assistants/spec/"><span>Next</span><strong>Assistant Spec v2</strong></a>
+  <a href="/developers/"><span>Back</span><strong>Developer quick start</strong></a>
+  <a href="/developers/assistants/spec/"><span>Next</span><strong>Current contract</strong></a>
 </nav>

@@ -1,15 +1,15 @@
 <svelte:head>
-  <title>Install your Shimpz Space — Shimpz docs</title>
+  <title>Start with Shimpz — Shimpz docs</title>
   <meta
     name="description"
-    content="Choose the Shimpz Space installation guide for Linux amd64, Apple Silicon macOS, or Windows x64 via WSL2."
+    content="Install Shimpz, create your first Team, and connect Cloudflare with a guided local setup."
   />
 </svelte:head>
 
 <section id="start" class="docs-hero" aria-labelledby="page-title">
-  <div class="terminal-prompt" aria-label="Shimpz User installation guide">
+  <div class="terminal-prompt" aria-label="Shimpz quick start">
     <span aria-hidden="true">$</span>
-    <span>shimpz docs --user</span>
+    <span>shimpz start</span>
     <span class="terminal-cursor" aria-hidden="true"></span>
   </div>
 
@@ -21,48 +21,61 @@
       width="1254"
       height="1254"
     />
-    <h1 id="page-title">Install your <span class="gradient-text">Shimpz Space</span>.</h1>
+    <h1 id="page-title">Run your own <span class="gradient-text">Shimpz Space</span>.</h1>
   </div>
 
   <p class="docs-lede">
-    Choose your computer below. The development installer pulls the prebuilt Admin and local Team
-    controller, pins both registry digests, and opens the Admin. It does not clone repositories or build
-    Shimpz on your machine.
+    Shimpz runs on your computer with Docker. The installer downloads tested stable images, opens a private
+    Admin at <code>127.0.0.1:7777</code>, and guides you through the rest. You do not need to clone code or
+    build anything.
   </p>
 </section>
 
-<aside class="scope-note" aria-labelledby="validated-scope-title">
-  <span id="validated-scope-title" class="kicker">Validated scope</span>
+<aside class="scope-note" aria-labelledby="before-start-title">
+  <span id="before-start-title" class="kicker">Before you start</span>
   <p>
-    This development delivery can create an empty local Team and run provider-backed Team chat with a
-    separately configured model API key. Shimpz Cloudflare connects just in time through the official
-    Cloudflare consent page; end users never enter OAuth client credentials. Commerce remains outside this delivery.
+    You need Docker, an OpenAI or Anthropic API key for the Team's Brain, and about ten minutes. Cloudflare is
+    connected later through its official authorization page; never paste Cloudflare credentials into chat.
   </p>
 </aside>
 
 <section class="guide-section" aria-labelledby="choose-system-title">
-  <span class="section-label">Installation guides</span>
+  <span class="section-label">Step 1</span>
   <h2 id="choose-system-title">Choose your computer</h2>
-  <p>Open the guide that matches the computer where you want to run Shimpz.</p>
+  <p>Open the guide that matches the computer where Docker will run.</p>
 
   <ul class="docs-entry-list">
     <li>
       <a class="docs-entry-link" href="/install/linux/">
         <strong>Linux</strong>
-        <span>Linux amd64 · Supported</span>
+        <span>64-bit Intel or AMD · <code>x86_64</code></span>
       </a>
     </li>
     <li>
       <a class="docs-entry-link" href="/install/macos/">
         <strong>macOS</strong>
-        <span>Apple Silicon Mac · Supported</span>
+        <span>Apple Silicon · M1 or newer</span>
       </a>
     </li>
     <li>
       <a class="docs-entry-link" href="/install/windows/">
         <strong>Windows</strong>
-        <span>Windows x64 via WSL2 · Supported</span>
+        <span>64-bit Windows through Ubuntu on WSL2</span>
       </a>
     </li>
   </ul>
 </section>
+
+<section class="guide-section" aria-labelledby="after-install-title">
+  <span class="section-label">What happens next</span>
+  <h2 id="after-install-title">Three short guided steps</h2>
+  <ol>
+    <li><strong>Create a Team.</strong> A clean installation will not continue until at least one Team exists.</li>
+    <li><strong>Configure its Brain.</strong> Choose a supported model and save your model provider API key.</li>
+    <li><strong>Install Cloudflare.</strong> Ask for your zones, authorize read access, and receive the result in chat.</li>
+  </ol>
+</section>
+
+<nav class="docs-page-nav" aria-label="Continue the user guide">
+  <a href="/admin/"><span>Next</span><strong>First access</strong></a>
+</nav>

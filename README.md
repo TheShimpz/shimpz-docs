@@ -1,13 +1,14 @@
 # shimpz-docs
 
-The public documentation for **[Shimpz](https://shimpz.com)**. The User guide installs the development
-Space, opens its loopback-only Admin, creates a Team, installs its first Assistant, explains the boundaries,
-and resets it. The separate Developer guide covers Service Spec v1 and the concept-based Assistant Spec v2.
+The public documentation for **[Shimpz](https://shimpz.com)**. The User guide installs the stable Space,
+creates a Team, configures its Brain, connects Cloudflare through OAuth, and maintains the local installation.
+The Developer guide documents only the current Assistant Spec v2 surface, the production Cloudflare example,
+and the reviewed path for adding another OAuth provider.
 Served at
 **docs.shimpz.com**; the same hardened origin serves the pull-only bootstrap at
 **install.shimpz.com**.
 
 ```sh
-pnpm install && pnpm run build   # → ./build (static)
+pnpm install && pnpm run build   # Node.js 24 → ./build (static)
 docker build -t shimpz-docs .    # multi-arch static site on :8080
 ```

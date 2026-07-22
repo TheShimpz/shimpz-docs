@@ -1,141 +1,104 @@
+<script lang="ts">
+  import CodeBlock from "$lib/components/CodeBlock.svelte";
+</script>
+
 <svelte:head>
-  <title>Shimpz Assistant Spec v2 — Shimpz docs</title>
+  <title>Assistant Spec v2 — Shimpz docs</title>
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/spec/" />
-  <meta
-    name="description"
-    content="Start with the Shimpz Assistant Spec v2 and learn each concept through one short, practical guide."
-  />
+  <meta name="description" content="The current Shimpz Assistant manifest, runtime flow, and security contract." />
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/assistants/">Assistants</a><span aria-hidden="true">/</span><strong>Spec v2</strong>
+  <a href="/developers/">Developers</a><span aria-hidden="true">/</span>
+  <a href="/developers/assistants/">Assistants</a><span aria-hidden="true">/</span><strong>Contract</strong>
 </nav>
 
 <header class="docs-page-header">
-  <span class="section-label">Current Assistant contract</span>
-  <h1>Build one safe capability at a time.</h1>
+  <span class="section-label">Assistant Spec v2</span>
+  <h1>Declare intent, not authority</h1>
   <p class="docs-lede">
-    Assistant Spec v2 keeps behavior, authority, and execution separate. Start with a tiny project, validate
-    it locally, then add only the Powers your Assistant needs.
+    The manifest tells Shimpz what an Assistant is and what it may request. The controller still decides what
+    can run, where it can connect, and which private value may enter one invocation.
   </p>
 </header>
 
-<section class="guide-section" aria-labelledby="assistant-flow-title">
-  <span class="section-label">Mental model</span>
-  <h2 id="assistant-flow-title">Genesis guides. Powers act.</h2>
+<section class="guide-section" aria-labelledby="manifest-title">
+  <span class="section-label">Small complete example</span>
+  <h2 id="manifest-title">Cloudflare's production manifest</h2>
+  <CodeBlock
+    label="shimpz.assistant.toml"
+    title="TOML · Assistant contract"
+    lines={[
+      { value: "schema_version = 2" },
+      { value: 'name = "Shimpz Cloudflare"' },
+      { value: 'summary = "List Cloudflare zones and inspect their DNS records through OAuth."' },
+      { value: 'creators = ["@roxygens"]' },
+      { value: 'github = "https://github.com/TheShimpz/shimpz-cloudflare"' },
+      { value: 'allowed_hosts = ["api.cloudflare.com"]' },
+      { value: "" },
+      { value: "[accounts.cloudflare]" },
+      { value: 'provider = "cloudflare"' },
+      { value: 'scopes = ["zone.read", "dns.read", "offline_access"]' },
+      { value: "" },
+      { value: "[powers.list-zones]" },
+      { value: 'summary = "List a bounded page of Cloudflare zones and domains."' },
+      { value: 'approval = "never"' },
+      { value: 'accounts = ["cloudflare"]' },
+      { value: "" },
+      { value: "[powers.list-dns-records]" },
+      { value: 'summary = "List a bounded page of DNS records from one Cloudflare zone."' },
+      { value: 'approval = "never"' },
+      { value: 'accounts = ["cloudflare"]' },
+    ]}
+  />
+</section>
+
+<section class="guide-section" aria-labelledby="fields-title">
+  <span class="section-label">What each part means</span>
+  <h2 id="fields-title">Four decisions, four boundaries</h2>
+  <dl>
+    <dt><code>allowed_hosts</code></dt>
+    <dd>Exact public DNS hosts requested by the Assistant. It is not permission for arbitrary internet access.</dd>
+    <dt><code>accounts</code></dt>
+    <dd>Provider and scope intent. Client credentials, endpoints, codes, and tokens never belong here.</dd>
+    <dt><code>powers</code></dt>
+    <dd>Named actions the Brain may request. Every Power has conventional closed input and output schemas.</dd>
+    <dt><code>approval</code></dt>
+    <dd><code>never</code> is only appropriate for reviewed read operations. Writes need an explicit policy.</dd>
+  </dl>
+</section>
+
+<section class="guide-section" aria-labelledby="runtime-title">
+  <span class="section-label">Runtime flow</span>
+  <h2 id="runtime-title">Private data takes the shortest path</h2>
   <ol>
-    <li>Each enabled Assistant contributes its validated Genesis and declared Powers to its Team.</li>
-    <li>The Brain decides which Assistant Power, if any, can help answer the Team's current turn.</li>
-    <li>The controller validates the request and decides whether it is granted.</li>
-    <li>The Assistant executes the bounded Power and returns a schema-validated result.</li>
+    <li>The Brain requests one declared Power with schema-shaped input.</li>
+    <li>The controller validates the Team, installed image, Power, input, approval, Account, and scopes.</li>
+    <li>The egress proxy admits only reviewed hosts for this Assistant.</li>
+    <li>The controller delivers a short-lived Account envelope only to the selected Power.</li>
+    <li>The Assistant calls the fixed provider API and returns bounded, schema-valid JSON.</li>
+    <li>The Brain receives the result, never the Account token or internal execution envelope.</li>
   </ol>
+</section>
+
+<aside class="scope-note" aria-labelledby="account-secret-title">
+  <span id="account-secret-title" class="kicker">Account is not Secret</span>
   <p>
-    The provider-neutral LangGraph Brain can chain Powers from the Team's enabled Assistants before it
-    answers naturally as the Team. Genesis defines behavior, response style, safety guidance, and Power
-    composition, but never grants authority. Only the controller can validate and execute an authorized
-    Power; the Brain never receives an ambient shell, filesystem, general network, or host tools.
-  </p>
-</section>
-
-<section class="guide-section" aria-labelledby="assistant-files-title">
-  <span class="section-label">Contract at a glance</span>
-  <h2 id="assistant-files-title">Put each decision in one place</h2>
-  <ul>
-    <li><strong>What is it?</strong> Identity and summary live in <code>shimpz.assistant.toml</code>.</li>
-    <li><strong>How should it reason?</strong> Purpose and Power composition live in <code>GENESIS.md</code>.</li>
-    <li><strong>What may it execute?</strong> Named Powers and closed schemas define the callable surface.</li>
-    <li><strong>What private access is needed?</strong> Each Power references exact Secret and Account IDs.</li>
-    <li><strong>Where may it send data?</strong> <code>allowed_hosts</code> lists exact public DNS destinations.</li>
-    <li><strong>What does the user see?</strong> Localized <code>help/HELP-&lt;locale&gt;.md</code> files teach usage.</li>
-    <li><strong>What actually grants authority?</strong> Only controller admission, user consent, and runtime policy.</li>
-  </ul>
-</section>
-
-<section class="guide-section" aria-labelledby="assistant-topics-title">
-  <span class="section-label">Spec v2 topics</span>
-  <h2 id="assistant-topics-title">Learn each concept independently</h2>
-  <ul class="docs-entry-list">
-    <li>
-      <a class="docs-entry-link" href="/developers/assistants/spec/manifest/">
-        <strong>Project manifest</strong>
-        <span>Map one minimal Assistant project in a single file.</span>
-      </a>
-    </li>
-    <li>
-      <a class="docs-entry-link" href="/developers/assistants/spec/genesis/">
-        <strong>Genesis</strong>
-        <span>Define behavior, style, safety, and how declared Powers compose.</span>
-      </a>
-    </li>
-    <li>
-      <a class="docs-entry-link" href="/developers/assistants/spec/help/">
-        <strong>Help</strong>
-        <span>Show people what the Assistant can do and what to ask.</span>
-      </a>
-    </li>
-    <li>
-      <a class="docs-entry-link" href="/developers/assistants/spec/powers/">
-        <strong>Powers</strong>
-        <span>Declare one safe action with closed input and output.</span>
-      </a>
-    </li>
-    <li>
-      <a class="docs-entry-link" href="/developers/assistants/spec/secrets/">
-        <strong>Secrets</strong>
-        <span>Declare public metadata and deliver private values only to the Power that needs them.</span>
-      </a>
-    </li>
-    <li>
-      <a class="docs-entry-link" href="/developers/assistants/spec/accounts/">
-        <strong>Accounts</strong>
-        <span>Request reviewed OAuth scopes without collecting provider credentials.</span>
-      </a>
-    </li>
-    <li>
-      <a class="docs-entry-link" href="/developers/assistants/spec/permissions/">
-        <strong>Permissions</strong>
-        <span>Understand controller-owned grants and network policy.</span>
-      </a>
-    </li>
-    <li>
-      <a class="docs-entry-link" href="/developers/assistants/spec/routines/">
-        <strong>Routines</strong>
-        <span>Understand the boundary for future owner-managed schedules.</span>
-      </a>
-    </li>
-    <li>
-      <a class="docs-entry-link" href="/developers/assistants/spec/runtime/">
-        <strong>Brain runtime</strong>
-        <span>Use LangGraph inference without giving the model ambient authority.</span>
-      </a>
-    </li>
-    <li>
-      <a class="docs-entry-link" href="/developers/assistants/spec/changelog/">
-        <strong>Changelog</strong>
-        <span>Explain each published update and notify only the people using it.</span>
-      </a>
-    </li>
-    <li>
-      <a class="docs-entry-link" href="/developers/assistants/spec/build-release/">
-        <strong>Build and release</strong>
-        <span>Validate locally and release one immutable artifact.</span>
-      </a>
-    </li>
-  </ul>
-</section>
-
-<aside class="scope-note" aria-labelledby="assistant-spec-status-title">
-  <span id="assistant-spec-status-title" class="kicker">Available today</span>
-  <p>
-    The reviewed Shimpz Assistant runtime contract is implemented. Generic third-party Store ingestion,
-    generic Service bindings, and routine scheduling are not released yet.
-    The manifest exposes requested hosts through <code>allowed_hosts</code>, manual BYOK metadata through
-    <code>secrets</code>, and provider OAuth intent through <code>accounts</code>. None grants access by itself;
-    network policy, private-value custody, approval, and routines remain controller-owned runtime policy.
+    An OAuth integration is always an Account. The optional <code>secrets</code> manifest table exists for
+    manually supplied opaque values, but it must never be used to collect an OAuth client secret or user token.
   </p>
 </aside>
 
-<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant developer guide">
-  <a href="/developers/assistants/"><span>Back</span><strong>Assistants overview</strong></a>
-  <a href="/developers/assistants/spec/manifest/"><span>Next</span><strong>Project manifest</strong></a>
+<section class="guide-section" aria-labelledby="schema-title">
+  <span class="section-label">Machine-readable reference</span>
+  <h2 id="schema-title">Validate the exact document</h2>
+  <p>
+    The <a href="/specs/assistant/v2/manifest.schema.json">Assistant v2 JSON Schema</a> is closed: unknown
+    fields fail validation. Runtime admission is still the authority; passing the schema grants nothing.
+  </p>
+</section>
+
+<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the developer guide">
+  <a href="/developers/assistants/"><span>Back</span><strong>Project guide</strong></a>
+  <a href="/developers/assistants/shimpz-cloudflare/"><span>Next</span><strong>Cloudflare example</strong></a>
 </nav>

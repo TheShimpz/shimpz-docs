@@ -1,46 +1,58 @@
 <svelte:head>
-  <title>Shimpz core concepts — Shimpz docs</title>
-  <meta name="description" content="Understand the current Space, Service, Team, and Assistant boundaries." />
+  <title>Shimpz glossary — Shimpz docs</title>
+  <meta name="description" content="Understand Space, Team, Brain, Assistant, Power, and Account in plain language." />
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/">User guide</a><span aria-hidden="true">/</span><span>Reference</span
-  ><span aria-hidden="true">/</span><strong>Core concepts</strong>
+  <a href="/">User guide</a><span aria-hidden="true">/</span><strong>Simple glossary</strong>
 </nav>
 
 <header class="docs-page-header">
-  <span class="section-label">Reference</span>
-  <h1>Know the boundaries</h1>
+  <span class="section-label">Six useful names</span>
+  <h1>Know what owns what</h1>
+  <p class="docs-lede">You do not need to understand the internal containers. These six names are enough.</p>
 </header>
 
-<ul>
-  <li><strong>Space</strong> is the server-wide Shimpz installation owned by this machine.</li>
-  <li>
-    <strong>Service</strong> is a shared capability operated by the Space. It authorizes each Team and
-    keeps its own provider or administrator credentials outside Assistants.
-  </li>
-  <li>
-    <strong>Team</strong> is an isolated environment that owns its Assistants, files, conversation state,
-    and resource budget. Chat addresses the Team by its chosen name.
-  </li>
-  <li>
-    <strong>Assistant</strong> belongs to exactly one Team. It contributes a Genesis playbook and named Powers
-    to that Team, but is not a speaker the user selects. Genesis guides behavior and Power composition but
-    grants nothing. Its own declared secret values are scoped to that Team and Assistant and delivered only
-    to a referencing Power. It cannot access another Team's Assistants, secrets, files, or resources.
-  </li>
-</ul>
+<dl>
+  <dt><strong>Space</strong></dt>
+  <dd>Your complete Shimpz installation on one machine.</dd>
 
-<aside class="scope-note" aria-labelledby="canonical-names-title">
-  <span id="canonical-names-title" class="kicker">Canonical platform names</span>
+  <dt><strong>Team</strong></dt>
+  <dd>An isolated workspace with its own chat, Brain settings, Assistants, Accounts, and files.</dd>
+
+  <dt><strong>Brain</strong></dt>
+  <dd>The language model that answers as the Team and chooses which available Power can help.</dd>
+
+  <dt><strong>Assistant</strong></dt>
+  <dd>A focused capability installed in one Team, such as Shimpz Cloudflare.</dd>
+
+  <dt><strong>Power</strong></dt>
+  <dd>One named, bounded action an Assistant can perform, such as listing zones.</dd>
+
+  <dt><strong>Account</strong></dt>
+  <dd>An OAuth connection you authorize directly with a provider, such as your Cloudflare account.</dd>
+</dl>
+
+<aside class="scope-note" aria-labelledby="infrastructure-title">
+  <span id="infrastructure-title" class="kicker">What about PostgreSQL?</span>
   <p>
-    A Team is the platform's isolation boundary. Code, routes, and payloads use the same concept through
-    names such as <code>team_id</code> and <code>Team Controller</code>. Internal implementation surfaces may
-    still say <code>Driver</code> for Service and <code>App</code> for Assistant; those names do not create a
-    second product concept.
+    PostgreSQL and the internal controllers are platform infrastructure. They are not Accounts, Assistants,
+    or Store items, and you do not connect them through OAuth. Shimpz operates them as part of the Space.
   </p>
 </aside>
 
+<section class="guide-section" aria-labelledby="flow-title">
+  <span class="section-label">One message</span>
+  <h2 id="flow-title">How the pieces work together</h2>
+  <ol>
+    <li>You send a message to a Team.</li>
+    <li>Its Brain decides whether an installed Assistant Power is useful.</li>
+    <li>The controller checks the Power, Team, Account, scopes, and input.</li>
+    <li>The Assistant runs only that Power and returns a validated result.</li>
+    <li>The Brain turns the result into the Team's answer.</li>
+  </ol>
+</section>
+
 <nav class="docs-page-nav" aria-label="Return to the beginning">
-  <a href="/"><span>Back to</span><strong>Overview</strong></a>
+  <a href="/"><span>Back to</span><strong>Quick start</strong></a>
 </nav>

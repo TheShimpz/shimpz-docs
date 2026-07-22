@@ -30,7 +30,7 @@
   const userNavigation: NavigationSection[] = [
     {
       label: "Start here",
-      items: [{ href: "/", label: "Overview", description: "Choose your computer" }],
+      items: [{ href: "/", label: "Quick start", description: "What you need and what happens" }],
     },
     {
       label: "Installation",
@@ -43,110 +43,52 @@
     {
       label: "Your Space",
       items: [
-        { href: "/admin/", label: "Open the Admin", description: "First access" },
-        { href: "/assistants/", label: "First Assistant", description: "Create, install, and chat" },
-        { href: "/manage/", label: "Update or reset", description: "Keep it current" },
+        { href: "/admin/", label: "First access", description: "Create a Team and configure its Brain" },
+        { href: "/assistants/", label: "Connect Cloudflare", description: "Install, authorize, and test" },
+        { href: "/manage/", label: "Update or remove", description: "Safe maintenance commands" },
       ],
     },
     {
       label: "Reference",
-      items: [{ href: "/concepts/", label: "Core concepts", description: "Space, Services, Teams, Assistants" }],
+      items: [{ href: "/concepts/", label: "Simple glossary", description: "The six names you will see" }],
     },
   ];
 
   const developerNavigation: NavigationSection[] = [
     {
-      label: "Services",
+      label: "Start here",
       items: [
-        { href: "/developers/services/", label: "Overview", description: "Shared Space capabilities" },
-        { href: "/developers/services/spec/", label: "Service Spec v1", description: "Versioned compatibility contract" },
-        {
-          href: "/developers/services/postgresql/",
-          label: "PostgreSQL",
-          description: "First v1 reference",
-        },
+        { href: "/developers/", label: "Developer quick start", description: "Choose the smallest useful change" },
       ],
     },
     {
-      label: "Assistants",
+      label: "Build an Assistant",
       items: [
-        { href: "/developers/assistants/", label: "Overview", description: "Team-owned capabilities" },
+        { href: "/developers/assistants/", label: "Project guide", description: "Copy, change, test" },
         {
           href: "/developers/assistants/spec/",
-          label: "Assistant Spec v2",
-          description: "Start with the current contract",
-          children: [
-            {
-              href: "/developers/assistants/spec/manifest/",
-              label: "Project manifest",
-              description: "One file maps the project",
-            },
-            {
-              href: "/developers/assistants/spec/genesis/",
-              label: "Genesis",
-              description: "Define behavior and compose Powers",
-            },
-            {
-              href: "/developers/assistants/spec/help/",
-              label: "Help",
-              description: "Guide the person using it",
-            },
-            {
-              href: "/developers/assistants/spec/powers/",
-              label: "Powers",
-              description: "Declare safe actions",
-            },
-            {
-              href: "/developers/assistants/spec/secrets/",
-              label: "Secrets",
-              description: "Deliver private values just in time",
-            },
-            {
-              href: "/developers/assistants/spec/accounts/",
-              label: "Accounts",
-              description: "Authorize provider accounts safely",
-            },
-            {
-              href: "/developers/assistants/spec/accounts/providers/",
-              label: "OAuth providers",
-              description: "Implement and validate provider adapters",
-            },
-            {
-              href: "/developers/assistants/spec/permissions/",
-              label: "Permissions",
-              description: "Transparent egress, controller-owned grants",
-            },
-            {
-              href: "/developers/assistants/spec/routines/",
-              label: "Routines",
-              description: "Future owner schedules",
-            },
-            {
-              href: "/developers/assistants/spec/runtime/",
-              label: "Brain runtime",
-              description: "LangGraph, API keys, and files",
-            },
-            {
-              href: "/developers/assistants/spec/changelog/",
-              label: "Changelog",
-              description: "Explain every published update",
-            },
-            {
-              href: "/developers/assistants/spec/build-release/",
-              label: "Build and release",
-              description: "Validate and pin artifacts",
-            },
-          ],
+          label: "Current contract",
+          description: "Manifest, Powers, Accounts, and safety",
+        },
+        {
+          href: "/developers/assistants/shimpz-cloudflare/",
+          label: "Cloudflare example",
+          description: "A complete production Assistant",
         },
       ],
     },
     {
-      label: "Assistant examples",
+      label: "OAuth and release",
       items: [
         {
-          href: "/developers/assistants/shimpz-cloudflare/",
-          label: "Shimpz Cloudflare",
-          description: "OAuth Account reference",
+          href: "/developers/assistants/spec/accounts/providers/",
+          label: "Add an OAuth provider",
+          description: "What is shared and what must change",
+        },
+        {
+          href: "/developers/assistants/spec/build-release/",
+          label: "Validate and release",
+          description: "Evidence required before stable",
         },
       ],
     },
@@ -156,7 +98,7 @@
   const navigation = $derived(isDeveloperGuide ? developerNavigation : userNavigation);
   const guideLabel = $derived(isDeveloperGuide ? "Developer guide" : "User guide");
   const guideSummary = $derived(
-    isDeveloperGuide ? "build Services and Assistants" : "install and use your Space",
+    isDeveloperGuide ? "build and validate Assistants" : "install and use your Space",
   );
   const navigationTitleId = $derived(isDeveloperGuide ? "developer-navigation-title" : "user-navigation-title");
 
@@ -221,7 +163,7 @@
       aria-current={!isDeveloperGuide ? "page" : undefined}>User</a
     >
     <a
-      href="/developers/services/"
+      href="/developers/"
       class="chip justify-center"
       class:is-active={isDeveloperGuide}
       aria-current={isDeveloperGuide ? "page" : undefined}>Developers</a
