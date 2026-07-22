@@ -10,7 +10,7 @@ PRIOR_IMAGE_REPOSITORY="ghcr.io/roxygens/shimpz-space"
 ADMIN_CHANNEL="stable"
 CONTROLLER_CHANNEL="team-driver-local-stable"
 BRAIN_RUNTIME_CHANNEL="brain-runtime-stable"
-APP_EGRESS_RELEASE="${IMAGE_REPOSITORY}@sha256:a35202dbe94660c2b56076c6cb55eaf826a9a37f750fd737e6b415691ed5692d"
+APP_EGRESS_RELEASE="${IMAGE_REPOSITORY}@sha256:190b8ab6bc3880071e387363c2a9a5876480cc642e7597e36b8be6365218c1c8"
 # Exact controller service shipped by 0.3.1. The retired identifier is split so
 # terminology audits do not mistake this migration-only value for an active API.
 PRIOR_CONTROLLER_SERVICE="cap""sule-driver-local"
@@ -820,7 +820,7 @@ controller_can_reach_docker() {
 admin_tag_ref="${IMAGE_REPOSITORY}:${ADMIN_CHANNEL}"
 controller_tag_ref="${IMAGE_REPOSITORY}:${CONTROLLER_CHANNEL}"
 brain_runtime_tag_ref="${IMAGE_REPOSITORY}:${BRAIN_RUNTIME_CHANNEL}"
-step "Pulling and verifying the Admin development image"
+step "Pulling and verifying the stable Admin image"
 admin_image_ref="$(pull_verified_ref "$admin_tag_ref")"
 step "Pulling and verifying the local Team controller image"
 controller_image_ref="$(pull_verified_ref "$controller_tag_ref")"
