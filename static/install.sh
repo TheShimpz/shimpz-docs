@@ -2,21 +2,20 @@
 
 set -eu
 
-INSTALLER_VERSION="0.4.7-dev"
+INSTALLER_VERSION="0.4.7"
 IMAGE_REPOSITORY="ghcr.io/theshimpz/shimpz-space"
 # Read-only migration allowlist for digest-pinned installations created before the
 # package moved to TheShimpz. New releases are always pulled and written from IMAGE_REPOSITORY.
 PRIOR_IMAGE_REPOSITORY="ghcr.io/roxygens/shimpz-space"
-ADMIN_CHANNEL=""
-CONTROLLER_CHANNEL="${SHIMPZ_CONTROLLER_CHANNEL:-team-driver-local-dev}"
-BRAIN_RUNTIME_CHANNEL="brain-runtime-dev"
+ADMIN_CHANNEL="stable"
+CONTROLLER_CHANNEL="team-driver-local-stable"
+BRAIN_RUNTIME_CHANNEL="brain-runtime-stable"
 APP_EGRESS_RELEASE="${IMAGE_REPOSITORY}@sha256:a35202dbe94660c2b56076c6cb55eaf826a9a37f750fd737e6b415691ed5692d"
 # Exact controller service shipped by 0.3.1. The retired identifier is split so
 # terminology audits do not mistake this migration-only value for an active API.
 PRIOR_CONTROLLER_SERVICE="cap""sule-driver-local"
 LOCAL_PROFILE="single-owner-local-v1"
 SPACE_LABEL="com.shimpz.local.space-id"
-INSTALL_PROFILE="${SHIMPZ_INSTALL_PROFILE:-default}"
 
 OUT_RESET=""
 OUT_BOLD=""
@@ -73,7 +72,7 @@ show_brand() {
 			subtitle_color="$OUT_MAGENTA"
 			;;
 		*)
-			subtitle="space installer // dev"
+			subtitle="space installer // stable"
 			subtitle_color="$OUT_CYAN"
 			;;
 	esac
@@ -119,7 +118,7 @@ warn() {
 
 usage() {
 	cat <<'EOF'
-Install the Shimpz Space development channel.
+Install the stable Shimpz Space release.
 
 Usage:
   install.sh             Install or safely update Shimpz Space
@@ -129,10 +128,6 @@ Usage:
 
 Environment:
   SHIMPZ_PORT            Loopback port for the Admin (default: 7777)
-  SHIMPZ_CONTROLLER_CHANNEL
-                         Controller channel: team-driver-local-dev (default) or
-                         team-driver-local-canary (operator validation only)
-  SHIMPZ_INSTALL_PROFILE Deployment profile: default or local-canary
 
 Supported hosts:
   Linux amd64 with Docker Engine and Docker Compose v2.
@@ -165,33 +160,12 @@ esac
 
 setup_colors
 show_brand "$action"
-case "$INSTALL_PROFILE" in
-	default)
-		ADMIN_CHANNEL="dev"
-		PROJECT_NAME="shimpz-space"
-		SHIMPZ_HOME_NAME=".shimpz"
-		MARKER_VALUE="shimpz-space-managed-v1"
-		OAUTH_CALLBACK_MODE="loopback"
-		ADMIN_ALLOWED_ORIGINS="http://localhost:${SHIMPZ_PORT:-7777},http://127.0.0.1:${SHIMPZ_PORT:-7777}"
-		reset_command="curl -fsSL https://install.shimpz.com | sh -s -- --reset"
-		;;
-	local-canary)
-		ADMIN_CHANNEL="admin-local-canary"
-		PROJECT_NAME="shimpz-local-canary"
-		SHIMPZ_HOME_NAME=".shimpz-local-canary"
-		MARKER_VALUE="shimpz-local-canary-managed-v1"
-		OAUTH_CALLBACK_MODE="canary"
-		ADMIN_ALLOWED_ORIGINS="http://localhost:${SHIMPZ_PORT:-7777},http://127.0.0.1:${SHIMPZ_PORT:-7777},https://local.shimpz.com"
-		reset_command="curl -fsSL https://install.shimpz.com | SHIMPZ_INSTALL_PROFILE=local-canary sh -s -- --reset"
-		;;
-	*) die "SHIMPZ_INSTALL_PROFILE must be default or local-canary" ;;
-esac
-unset SHIMPZ_INSTALL_PROFILE
-case "$CONTROLLER_CHANNEL" in
-	team-driver-local-dev|team-driver-local-canary) ;;
-	*) die "SHIMPZ_CONTROLLER_CHANNEL must select an official controller channel" ;;
-esac
-unset SHIMPZ_CONTROLLER_CHANNEL
+PROJECT_NAME="shimpz-space"
+SHIMPZ_HOME_NAME=".shimpz"
+MARKER_VALUE="shimpz-space-managed-v1"
+OAUTH_CALLBACK_MODE="loopback"
+ADMIN_ALLOWED_ORIGINS="http://localhost:${SHIMPZ_PORT:-7777},http://127.0.0.1:${SHIMPZ_PORT:-7777}"
+reset_command="curl -fsSL https://install.shimpz.com | sh -s -- --reset"
 step "Checking Docker and Compose"
 
 command -v docker >/dev/null 2>&1 || die "Docker is required: https://docs.docker.com/get-started/get-docker/"

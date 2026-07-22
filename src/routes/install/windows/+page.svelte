@@ -6,7 +6,7 @@
   <title>Install Shimpz on Windows with WSL2 — Shimpz docs</title>
   <meta
     name="description"
-    content="Install the Shimpz Space development channel on Windows x64 through Ubuntu on WSL2."
+    content="Install the stable Shimpz Space release on Windows x64 through Ubuntu on WSL2."
   />
 </svelte:head>
 

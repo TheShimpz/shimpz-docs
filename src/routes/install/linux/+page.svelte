@@ -6,7 +6,7 @@
   <title>Install Shimpz on Linux — Shimpz docs</title>
   <meta
     name="description"
-    content="Install the Shimpz Space development channel on a Linux amd64 computer or server."
+    content="Install the stable Shimpz Space release on a Linux amd64 computer or server."
   />
 </svelte:head>
 

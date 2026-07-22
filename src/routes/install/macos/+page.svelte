@@ -6,7 +6,7 @@
   <title>Install Shimpz on macOS — Shimpz docs</title>
   <meta
     name="description"
-    content="Install the Shimpz Space development channel on an Apple Silicon Mac."
+    content="Install the stable Shimpz Space release on an Apple Silicon Mac."
   />
 </svelte:head>
 

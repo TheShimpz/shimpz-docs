@@ -85,14 +85,14 @@
 
 <section class="guide-section" aria-labelledby="provider-evidence-title">
   <span class="section-label">Release evidence</span>
-  <h2 id="provider-evidence-title">Prove the provider from malformed input to real canary</h2>
+  <h2 id="provider-evidence-title">Prove the provider before enabling it in stable</h2>
   <ol>
     <li>Test exact metadata and reject unknown hosts, ports, schemes, fragments, scopes, and fields.</li>
     <li>Test state replay, expiry, identity mismatch, wrong issuer, wrong provider, and wrong callback.</li>
     <li>Test strict token, refresh, and revocation responses, including duplicate JSON and scope escalation.</li>
     <li>Test vault encryption, authenticated metadata, migration, tampering, redaction, and client-secret rotation.</li>
     <li>Test the local handoff, paused-turn continuation, cancellation, restart, and stale execution state.</li>
-    <li>Deploy immutable canary images, complete real consent, and run one real least-privilege read Power.</li>
+    <li>Deploy the immutable stable candidate, complete real owner consent, and run one least-privilege read Power.</li>
     <li>Verify refresh and disconnect where supported, inspect logs for secrets, and require green GitHub Actions.</li>
   </ol>
   <p>
@@ -110,7 +110,7 @@
     <li>Broker state, grants, leases, audit events, and encrypted records bind provider and exact scopes.</li>
     <li>Provider mix-up has an automated negative test.</li>
     <li>Hosted transaction state is shared before the broker is horizontally distributed.</li>
-    <li>Cloudflare still passes its real canary through the common path without a compatibility branch.</li>
+    <li>Cloudflare still passes the same production smoke test through the common path without a compatibility branch.</li>
   </ul>
 </section>
 
