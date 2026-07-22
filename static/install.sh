@@ -624,8 +624,8 @@ case "${host_os}:${host_arch}" in
 		docker_platform="linux/arm64"
 		docker_socket_candidates="/var/run/docker.sock.raw /var/run/docker.sock"
 		;;
-	Darwin:*) die "this development installer supports Apple Silicon Macs only" ;;
-	Linux:*) die "this development installer supports Linux amd64 only" ;;
+	Darwin:*) die "this stable installer supports Apple Silicon Macs only" ;;
+	Linux:*) die "this stable installer supports Linux amd64 only" ;;
 	*) die "supported hosts are Linux amd64 and Apple Silicon macOS arm64" ;;
 esac
 
