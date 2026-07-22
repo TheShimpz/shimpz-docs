@@ -88,6 +88,14 @@
     tokens.
   </p>
   <p>
+    Scope growth is explicit. When an Account needs one more permission, Shimpz asks the provider for the union
+    of the previously granted scopes and the new declared scopes; it never assumes that a provider will carry old
+    permissions into a replacement token. The controller replaces the stored grant only after the callback returns
+    that exact union. A missing scope fails closed and preserves the existing grant. Powers that reference the same
+    Account declaration share its reviewed scope set, so later Powers do not require another consent unless that
+    declaration changes. Different Assistants or Account IDs remain separate grants.
+  </p>
+  <p>
     Shimpz registers and operates the official OAuth application for Store Assistants. Provider client
     configuration is platform state, not creator or user input. A future private-development flow may offer a
     separate bring-your-own OAuth application contract; it is not part of Assistant Spec v2.
