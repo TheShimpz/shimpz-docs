@@ -105,9 +105,8 @@
     submitted access key into an Assistant or Team environment.
   </p>
   <p>
-    OAuth, passkeys, and Redpanda are not part of this R2 runtime. Their Service Spec shapes are architecture
-    for later platform-owned adapters and events, not a claim that Cloudflare OAuth or passkey authorization
-    is available today.
+    OAuth and passkeys are not part of this R2 runtime. Their Service Spec shapes describe platform-owned
+    identity adapters and do not widen the R2 credential boundary.
   </p>
   <p>
     Production Team operations are hard-gated on gVisor. Because <code>runsc</code> is not registered on

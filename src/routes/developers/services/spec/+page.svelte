@@ -282,19 +282,10 @@
     but is never a Service profile, provider credential, or value forwarded to a Service.
   </p>
   <p>
-    Redpanda may receive post-commit events containing opaque credential references, generation, operation,
-    status, and trace identifiers. Form values, authorization codes, access or refresh tokens, ciphertext,
-    nonces, and encryption keys never enter an event or topic.
-  </p>
-  <p>
-    The target Redpanda topology is one Service instance per Space. Each Team receives its own
-    authenticated principal, bounded topic and group prefixes, ACLs, and quotas; sharing between Assistants
-    or Teams requires literal, reviewed grants. It carries only post-commit events and never secrets.
-  </p>
-  <p>
-    The OAuth broker, Cloudflare adapter, passkey sign-in, and Redpanda event integration described here are
-    architecture/spec only. The current Service credential runtime executes the R2
-    <code>secret-fields</code> lifecycle; it does not implement those identity and event components.
+    PostgreSQL is the only durable coordination datastore in the current runtime. Assistant composition
+    happens through reviewed Powers and Controller authorization; there is no separate event-bus credential
+    or cross-Team topic path. The Service credential runtime executes the R2
+    <code>secret-fields</code> lifecycle without placing secret material in Assistant environments.
   </p>
 </section>
 
