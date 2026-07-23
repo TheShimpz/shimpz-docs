@@ -410,13 +410,7 @@ esac
         check(not (home / ".shimpz").exists(), "remote endpoint rejection creates no installer state")
 
 
-def test_static_runtime_separates_socketless_admin_from_local_controller():
-    compose = SCRIPT.split("cat >\"${COMPOSE_FILE}.tmp\" <<'COMPOSE'", 1)[1].split("\nCOMPOSE", 1)[0]
-    controller = compose.split("  team-driver-local:", 1)[1].split("\n  app-egress-proxy:", 1)[0]
-    app_egress = compose.split("\n  app-egress-proxy:\n", 1)[1].split("\n  oauth-broker-proxy:\n", 1)[0]
-    oauth_broker = compose.split("\n  oauth-broker-proxy:\n", 1)[1].split("\n  brain-runtime:\n", 1)[0]
-    brain_runtime = compose.split("  brain-runtime:", 1)[1].split("\n  admin:", 1)[0]
-    admin = compose.split("  admin:", 1)[1].split("\nvolumes:", 1)[0]
+def _check_admin_runtime(admin: str, compose: str) -> None:
     for marker in (
         '"127.0.0.1:${SHIMPZ_PORT:-7777}:4600"',
         'user: "1000:1000"',
@@ -437,6 +431,9 @@ def test_static_runtime_separates_socketless_admin_from_local_controller():
         == 1,
         "only the controller receives the socket",
     )
+
+
+def _check_controller_runtime(controller: str) -> None:
     for marker in (
         'user: "10001:10001"',
         '"${SHIMPZ_DOCKER_GID:?installer must bind the Docker socket group}"',
@@ -476,6 +473,9 @@ def test_static_runtime_separates_socketless_admin_from_local_controller():
         "pids_limit: 128",
     ):
         check(marker in controller, f"local controller enforces {marker!r}")
+
+
+def _check_brain_runtime(brain_runtime: str) -> None:
     for marker in (
         "${SHIMPZ_BRAIN_RUNTIME_IMAGE:?installer must pin SHIMPZ_BRAIN_RUNTIME_IMAGE}",
         'user: "10001:10001"',
@@ -514,6 +514,9 @@ def test_static_runtime_separates_socketless_admin_from_local_controller():
         "controller_chat_continuation_" not in brain_runtime,
         "Brain runtime never mounts encrypted chat continuations or their key",
     )
+
+
+def _check_compose_isolation(admin: str, compose: str, controller: str) -> None:
     for marker in (
         'group_add:\n      - "10010"',
         "SHIMPZ_TEAMDRIVER_URL: http://team-driver-local:7077",
@@ -584,6 +587,8 @@ def test_static_runtime_separates_socketless_admin_from_local_controller():
     check("postgres" not in SCRIPT, "bootstrap does not claim an unshipped PostgreSQL dependency")
     check("at least 12 characters" in SCRIPT, "success output states the real initial password minimum")
 
+
+def _check_app_egress_runtime(app_egress: str, compose: str) -> None:
     for marker in (
         "${SHIMPZ_APP_EGRESS_IMAGE:?installer must pin SHIMPZ_APP_EGRESS_IMAGE}",
         'user: "10005:10005"',
@@ -614,6 +619,8 @@ def test_static_runtime_separates_socketless_admin_from_local_controller():
     check("- control" not in app_egress and "- egress" not in app_egress, "proxy starts only on its outbound plane")
     check("app_egress_out:\n    driver: bridge" in compose, "Assistant egress uses a dedicated outbound network")
 
+
+def _check_oauth_broker_runtime(oauth_broker: str, compose: str) -> None:
     for marker in (
         "${SHIMPZ_APP_EGRESS_IMAGE:?installer must pin SHIMPZ_APP_EGRESS_IMAGE}",
         'user: "10005:10005"',
@@ -647,6 +654,21 @@ def test_static_runtime_separates_socketless_admin_from_local_controller():
         "printf '[\"shimpz.com\"]\\n'",
     ):
         check(marker in SCRIPT, f"installer owns the fixed OAuth broker capability via {marker!r}")
+
+
+def test_static_runtime_separates_socketless_admin_from_local_controller():
+    compose = SCRIPT.split("cat >\"${COMPOSE_FILE}.tmp\" <<'COMPOSE'", 1)[1].split("\nCOMPOSE", 1)[0]
+    controller = compose.split("  team-driver-local:", 1)[1].split("\n  app-egress-proxy:", 1)[0]
+    app_egress = compose.split("\n  app-egress-proxy:\n", 1)[1].split("\n  oauth-broker-proxy:\n", 1)[0]
+    oauth_broker = compose.split("\n  oauth-broker-proxy:\n", 1)[1].split("\n  brain-runtime:\n", 1)[0]
+    brain_runtime = compose.split("  brain-runtime:", 1)[1].split("\n  admin:", 1)[0]
+    admin = compose.split("  admin:", 1)[1].split("\nvolumes:", 1)[0]
+    _check_admin_runtime(admin, compose)
+    _check_controller_runtime(controller)
+    _check_brain_runtime(brain_runtime)
+    _check_compose_isolation(admin, compose, controller)
+    _check_app_egress_runtime(app_egress, compose)
+    _check_oauth_broker_runtime(oauth_broker, compose)
 
 
 def test_reset_accepts_only_the_exact_space_owned_egress_proxy():
