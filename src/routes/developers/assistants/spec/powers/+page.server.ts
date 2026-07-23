@@ -2,39 +2,53 @@ import { highlightCode } from "$lib/server/highlight";
 
 import type { PageServerLoad } from "./$types";
 
-const declaration = `[powers.inspect-record]
-summary = "Inspect one record by its identifier."
-approval = "never"`;
+const power = `from typing import TypedDict
 
-const inputSchema = `{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "additionalProperties": false,
-  "required": ["record_id"],
-  "properties": {
-    "record_id": {
-      "type": "string",
-      "pattern": "^[a-z0-9-]{1,64}$"
-    }
+from shimpz import field, power
+
+
+class ZoneResult(TypedDict):
+    zone_id: str
+    status: str
+
+
+@power(accounts=["cloudflare"])
+async def inspect_zone(
+    domain=field(str, prompt="The domain to inspect."),
+    ctx=None,
+) -> ZoneResult:
+    token = ctx.accounts.cloudflare.access_token
+    result = await fetch_zone(domain, token)
+    return {"zone_id": result["id"], "status": result["status"]}`;
+
+const contract = `{
+  "id": "inspect_zone",
+  "method": "POST",
+  "path": "/v1/powers/inspect_zone",
+  "accounts": ["cloudflare"],
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "domain": {
+        "type": "string",
+        "description": "The domain to inspect."
+      }
+    },
+    "required": ["domain"],
+    "additionalProperties": false
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "zone_id": {"type": "string"},
+      "status": {"type": "string"}
+    },
+    "required": ["zone_id", "status"],
+    "additionalProperties": false
   }
 }`;
 
-const outputSchema = `{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "type": "object",
-  "additionalProperties": false,
-  "required": ["name", "status"],
-  "properties": {
-    "name": { "type": "string", "maxLength": 120 },
-    "status": { "enum": ["active", "inactive"] }
-  }
-}`;
-
-export const load: PageServerLoad = async () => {
-  const [power, input, output] = await Promise.all([
-    highlightCode(declaration, "toml"),
-    highlightCode(inputSchema, "json"),
-    highlightCode(outputSchema, "json"),
-  ]);
-  return { power, input, output };
-};
+export const load: PageServerLoad = async () => ({
+  power: await highlightCode(power, "python"),
+  contract: await highlightCode(contract, "json"),
+});
