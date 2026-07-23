@@ -25,6 +25,17 @@
   </p>
 </header>
 
+<aside class="scope-note" aria-labelledby="availability-title">
+  <span id="availability-title" class="kicker">Local execution only for gated Powers</span>
+  <p>
+    The installed local Admin/controller supports <code>once</code> and <code>always</code> challenge-and-resume
+    execution. Hosted Store chat currently uses <code>shimpz.chat.v2</code>, which has no approval challenge
+    frames: the hosted controller returns a terminal <code>409</code> and does not execute a Power whose policy is
+    <code>once</code> or <code>always</code>. Use <code>never</code> only when the operation is safe without a prompt;
+    otherwise treat that Power as local-only until hosted approval execution ships.
+  </p>
+</aside>
+
 <section class="guide-section" aria-labelledby="values-title">
   <span class="section-label">Three supported values</span>
   <h2 id="values-title">Ask the right number of times</h2>

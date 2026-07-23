@@ -172,7 +172,7 @@
           "pattern": "^(?!\\s)(?!.*\\s$)[^\\r\\n]+$"
         },
         "approval": {
-          "description": "Defaults to never when omitted.",
+          "description": "Defaults to never when omitted. The installed local controller executes once/always through an approval challenge. Hosted Store chat v2 currently returns terminal 409 without executing Powers that declare once or always.",
           "enum": [
             "never",
             "once",
