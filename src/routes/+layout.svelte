@@ -117,7 +117,7 @@
         {
           href: "/developers/assistants/spec/network/",
           label: "Network access",
-          description: "List exact external hosts",
+          description: "Allow exact outbound hosts",
         },
         {
           href: "/developers/assistants/spec/help/",

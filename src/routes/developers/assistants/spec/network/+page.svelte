@@ -13,16 +13,16 @@
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/assistants/spec/">Assistant SPEC</a><span aria-hidden="true">/</span>
+  <a href="/developers/assistants/spec/">Assistant Spec v3</a><span aria-hidden="true">/</span>
   <strong>Network access</strong>
 </nav>
 
 <header class="docs-page-header">
-  <span class="section-label">Baby step 8</span>
-  <h1>List exact destinations, not “the internet”</h1>
+  <span class="section-label">Outbound access</span>
+  <h1>Allow exact destinations, not “the internet”</h1>
   <p class="docs-lede">
-    <code>allowed_hosts</code> makes external network intent visible and reviewable. It is required even when
-    empty, and it never grants access by itself.
+    <code>allowed_hosts</code> makes outbound network intent visible and reviewable. It is required even
+    when empty, denies everything not listed, and never grants access by itself.
   </p>
 </header>
 
@@ -31,11 +31,14 @@
   <h2 id="none-title">Prefer an empty list</h2>
   <CodeBlock
     label="No requested network access"
-    title="shimpz.assistant.toml"
+    title="shimpz.toml"
     variant="code"
     {...data.none}
   />
-  <p>If all Powers work from their inputs and private envelopes, the Assistant does not need an external host.</p>
+  <p>
+    If every Power works from its inputs and Controller-injected context, the Assistant does not need an
+    external host.
+  </p>
 </section>
 
 <section class="guide-section" aria-labelledby="host-title">
@@ -43,13 +46,13 @@
   <h2 id="host-title">Write only the public DNS hostname</h2>
   <CodeBlock
     label="One requested API host"
-    title="shimpz.assistant.toml"
+    title="shimpz.toml"
     variant="code"
     {...data.oneHost}
   />
   <p>
-    Do not include <code>https://</code>, a port, path, query, fragment, wildcard, or trailing slash. A second
-    API hostname is a second explicit list item.
+    Do not include <code>https://</code>, a port, path, query, fragment, wildcard, or trailing slash.
+    HTTPS and WSS are the only admitted protocols; a second API hostname is a second explicit list item.
   </p>
 </section>
 
@@ -62,18 +65,20 @@
     <li>No IP addresses, single-label names, wildcards, URLs, or localhost.</li>
     <li>No reserved internal or test suffixes such as <code>.local</code>, <code>.internal</code>, or <code>.test</code>.</li>
     <li>Redirects do not silently expand the list; the final host must also be declared and admitted.</li>
+    <li>An Account-backed API host, such as <code>api.cloudflare.com</code>, must still appear in this list.</li>
   </ul>
 </section>
 
 <aside class="scope-note" aria-labelledby="intent-title">
   <span id="intent-title" class="kicker">Intent is not authority</span>
   <p>
-    The list states the maximum network intent of the package. Shimpz still applies reviewed policy and an
-    authenticated egress boundary. A host in the manifest may be denied; an absent host must never be reached.
+    The list states the maximum network intent of the package. Shimpz still applies reviewed policy, DNS and
+    address checks, and an authenticated egress boundary. A listed host may be denied; an absent host must
+    never be reached.
   </p>
 </aside>
 
-<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant SPEC">
-  <a href="/developers/assistants/spec/secrets/"><span>Back</span><strong>Secrets</strong></a>
-  <a href="/developers/assistants/spec/help/"><span>Next</span><strong>Help</strong></a>
+<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec">
+  <a href="/developers/assistants/spec/accounts/"><span>Back</span><strong>Accounts</strong></a>
+  <a href="/developers/assistants/spec/help/"><span>Next</span><strong>Runtime documents</strong></a>
 </nav>
