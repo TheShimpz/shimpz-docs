@@ -2,16 +2,14 @@ import { highlightCode } from "$lib/server/highlight";
 
 import type { PageServerLoad } from "./$types";
 
-const manifest = `schema_version = 2
-name = "Record Reader"
-summary = "Inspect one record and return its public status."
-creators = ["@octocat"]
-github = "https://github.com/octocat/record-reader"
-allowed_hosts = []
+const manifest = `name = "Demo Assistant"
+summary = "Demo assistant."
+creators = ["@julianoamg"]
+allowed_hosts = ["api.cloudflare.com"]
+github = "https://github.com/TheShimpz/shimpz-demo-assistant"
 
-[powers.inspect-record]
-summary = "Inspect one record by its identifier."
-approval = "never"`;
+[accounts.cloudflare]
+scopes = ["zone.read", "dns.read", "offline_access"]`;
 
 export const load: PageServerLoad = async () => ({
   manifest: await highlightCode(manifest, "toml"),
