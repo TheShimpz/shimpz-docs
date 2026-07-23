@@ -62,22 +62,22 @@
       ],
     },
     {
-      label: "Assistant SPEC",
+      label: "Assistant Spec v3",
       items: [
         {
           href: "/developers/assistants/spec/",
-          label: "SPEC overview",
-          description: "The complete public contract",
-        },
-        {
-          href: "/developers/assistants/",
-          label: "Project files",
-          description: "Create the smallest project",
+          label: "Overview",
+          description: "Two files, one reviewed contract",
         },
         {
           href: "/developers/assistants/spec/manifest/",
-          label: "Manifest and identity",
-          description: "Name and describe the Assistant",
+          label: "shimpz.toml",
+          description: "Declare identity and security intent",
+        },
+        {
+          href: "/developers/assistants/",
+          label: "app.py",
+          description: "Author Python behavior",
         },
         {
           href: "/developers/assistants/spec/genesis/",

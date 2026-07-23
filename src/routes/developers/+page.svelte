@@ -1,65 +1,65 @@
 <svelte:head>
-  <title>Shimpz developer quick start — Shimpz docs</title>
+  <title>Build a Shimpz Assistant — Shimpz docs</title>
   <link rel="canonical" href="https://docs.shimpz.com/developers/" />
   <meta
     name="description"
-    content="Learn the Shimpz Assistant SPEC one small concept at a time."
+    content="Build a Python Assistant from shimpz.toml and app.py with the Shimpz SDK."
   />
 </svelte:head>
 
 <header class="docs-page-header">
   <span class="section-label">Developer quick start</span>
-  <h1>Learn one contract, one step at a time</h1>
+  <h1>Build an Assistant from two authored files</h1>
   <p class="docs-lede">
-    Shimpz has one public extension contract: the Assistant SPEC. Each page below explains one part, why it
-    exists, what to write, and what Shimpz will reject.
+    Put security intent in <code>shimpz.toml</code> and Python behavior in <code>app.py</code>.
+    The Shimpz SDK turns them into the one machine contract that the Controller reviews and executes.
   </p>
 </header>
 
-<aside class="scope-note" aria-labelledby="current-scope-title">
-  <span id="current-scope-title" class="kicker">Current stable scope</span>
-  <p>
-    This guide covers only fields and files that belong to the Assistant SPEC. Internal controllers, databases,
-    provider registration, deployment channels, and Store operations are deliberately outside this guide.
-  </p>
-</aside>
-
-<section class="guide-section" aria-labelledby="choose-path-title">
-  <span class="section-label">Choose your task</span>
-  <h2 id="choose-path-title">Follow the SPEC in this order</h2>
+<section class="guide-section" aria-labelledby="path-title">
+  <span class="section-label">Learning path</span>
+  <h2 id="path-title">Start with the model, then write the files</h2>
   <ul class="docs-entry-list">
     <li>
       <a class="docs-entry-link" href="/developers/assistants/spec/">
-        <strong>1. Understand the complete contract</strong>
-        <span>See what belongs to an Assistant and what never does.</span>
-      </a>
-    </li>
-    <li>
-      <a class="docs-entry-link" href="/developers/assistants/">
-        <strong>2. Create the project files</strong>
-        <span>Build the smallest valid folder before writing runtime code.</span>
+        <strong>1. Understand Assistant Spec v3</strong>
+        <span>See how authored intent becomes a reviewed runtime contract.</span>
       </a>
     </li>
     <li>
       <a class="docs-entry-link" href="/developers/assistants/spec/manifest/">
-        <strong>3. Fill the manifest</strong>
-        <span>Start with identity, no network, and one Power.</span>
+        <strong>2. Declare security intent</strong>
+        <span>Name the Assistant, allow exact hosts, and request OAuth scopes.</span>
+      </a>
+    </li>
+    <li>
+      <a class="docs-entry-link" href="/developers/assistants/">
+        <strong>3. Write the Python application</strong>
+        <span>Define typed inputs and async Powers with the SDK.</span>
       </a>
     </li>
   </ul>
 </section>
 
-<section class="guide-section" aria-labelledby="mental-model-title">
-  <span class="section-label">One sentence to remember</span>
-  <h2 id="mental-model-title">The SPEC declares intent; it grants nothing</h2>
+<section class="guide-section" aria-labelledby="boundary-title">
+  <span class="section-label">Trust boundary</span>
+  <h2 id="boundary-title">The SDK describes; the Controller decides</h2>
   <ol>
-    <li>You describe the Assistant and its named Powers.</li>
-    <li>You attach only the Accounts, Secrets, and hosts each Power needs.</li>
-    <li>Shimpz validates those declarations before anything can execute.</li>
-    <li>Unknown fields and undeclared access fail instead of being guessed.</li>
+    <li>The SDK derives a machine contract from <code>app.py</code>.</li>
+    <li>The image carries that contract beside <code>shimpz.toml</code>.</li>
+    <li>The Controller validates both artifacts and rejects inconsistencies.</li>
+    <li>Every input and output is validated again when a Power runs.</li>
   </ol>
 </section>
 
+<aside class="scope-note" aria-labelledby="python-title">
+  <span id="python-title" class="kicker">Reference SDK</span>
+  <p>
+    Python is the complete reference implementation. The wire contract is language-neutral so other
+    SDKs can implement the same behavior without changing the Controller.
+  </p>
+</aside>
+
 <nav class="docs-page-nav" aria-label="Continue the developer guide">
-  <a href="/developers/assistants/spec/"><span>Next</span><strong>Assistant SPEC overview</strong></a>
+  <a href="/developers/assistants/spec/"><span>Next</span><strong>Assistant Spec v3</strong></a>
 </nav>
