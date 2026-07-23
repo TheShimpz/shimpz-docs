@@ -457,8 +457,7 @@ def test_static_runtime_separates_socketless_admin_from_local_controller():
         "brain_runtime_token:/run/shimpz-brain-runtime:rw",
         "SHIMPZ_LOCAL_POWER_JOURNAL_PATH: /var/lib/shimpz-local/power-journal/journal.sqlite3",
         "SHIMPZ_LOCAL_APPROVAL_GRANTS_PATH: /var/lib/shimpz-local/assistant-approvals/grants.sqlite3",
-        "SHIMPZ_LOCAL_CHAT_CONTINUATIONS_STATE_PATH: "
-        "/var/lib/shimpz-local/chat-continuations/state/continuations.json",
+        "SHIMPZ_LOCAL_CHAT_CONTINUATIONS_STATE_PATH: /var/lib/shimpz-local/chat-continuations/state/continuations.json",
         "SHIMPZ_LOCAL_CHAT_CONTINUATIONS_KEY_PATH: /var/lib/shimpz-local/chat-continuations/key/aes256.key",
         "SHIMPZ_BRAIN_RUNTIME_URL: http://brain-runtime:8080",
         "SHIMPZ_BRAIN_RUNTIME_TOKEN_FILE: /run/shimpz-brain-runtime/token",
