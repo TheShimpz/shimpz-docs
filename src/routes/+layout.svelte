@@ -95,9 +95,14 @@
           description: "Declare typed Brain inputs",
         },
         {
+          href: "/developers/assistants/spec/human/",
+          label: "Human requests",
+          description: "Pause for typed human input",
+        },
+        {
           href: "/developers/assistants/spec/approvals/",
           label: "Approvals",
-          description: "Choose when people confirm",
+          description: "Confirm sensitive actions in the body",
         },
         {
           href: "/developers/assistants/spec/accounts/",

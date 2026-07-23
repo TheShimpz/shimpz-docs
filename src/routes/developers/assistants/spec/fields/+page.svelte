@@ -71,5 +71,5 @@
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec">
   <a href="/developers/assistants/spec/powers/"><span>Back</span><strong>@power</strong></a>
-  <a href="/developers/assistants/spec/approvals/"><span>Next</span><strong>Human interaction</strong></a>
+  <a href="/developers/assistants/spec/human/"><span>Next</span><strong>ctx.human.request</strong></a>
 </nav>
