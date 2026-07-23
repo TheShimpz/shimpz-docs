@@ -125,6 +125,11 @@
           description: "Isolate, suspend, and replay Powers",
         },
         {
+          href: "/developers/assistants/quickstart/",
+          label: "Python quickstart",
+          description: "Run the minimal starter end to end",
+        },
+        {
           href: "/developers/assistants/spec/help/",
           label: "Help",
           description: "Teach people what to ask",

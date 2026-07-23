@@ -67,5 +67,5 @@
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec">
   <a href="/developers/assistants/spec/network/"><span>Back</span><strong>Network access</strong></a>
-  <a href="/developers/assistants/spec/help/"><span>Next</span><strong>Runtime documents</strong></a>
+  <a href="/developers/assistants/quickstart/"><span>Next</span><strong>Python quickstart</strong></a>
 </nav>
