@@ -12,13 +12,11 @@ async def create_dns(
         title="IP address",
         summary="Enter the IP address for the DNS record.",
     )
-    approved = await ctx.human.approval(
+    await ctx.human.approval(
         title="Create DNS record",
         summary=f"Point {domain} to {ip}?",
         runs="always",
     )
-    if not approved:
-        return {"created": False}
 
     return await create_record(domain, ip, ctx.accounts.cloudflare.access_token)`;
 

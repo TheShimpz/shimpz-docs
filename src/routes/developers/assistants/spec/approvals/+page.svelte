@@ -54,8 +54,8 @@
   <h2 id="surfaces-title">The same challenge works locally and through the Store</h2>
   <p>
     Local Admin chat and hosted Store chat both relay typed approval challenges and resume the
-    encrypted continuation. A rejection returns <code>false</code> to the replayed call; the Power
-    must stop before the protected effect.
+    encrypted continuation. Only an explicit affirmative decision appends the approval answer and
+    resumes the protected segment. Cancelling or declining does not run the protected effect.
   </p>
 </section>
 
