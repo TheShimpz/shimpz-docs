@@ -86,8 +86,8 @@
         },
         {
           href: "/developers/assistants/spec/powers/",
-          label: "Powers and schemas",
-          description: "Define callable operations",
+          label: "@power",
+          description: "Define callable async operations",
         },
         {
           href: "/developers/assistants/spec/approvals/",

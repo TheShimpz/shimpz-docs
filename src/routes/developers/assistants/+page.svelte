@@ -7,70 +7,63 @@
 </script>
 
 <svelte:head>
-  <title>Assistant project files — Shimpz docs</title>
+  <title>app.py project layout — Shimpz docs</title>
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/" />
-  <meta name="description" content="Create the files of a Shimpz Assistant SPEC project in small steps." />
+  <meta name="description" content="Structure the Python application of a Shimpz Assistant." />
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/">Developers</a><span aria-hidden="true">/</span>
-  <a href="/developers/assistants/spec/">Assistant SPEC</a><span aria-hidden="true">/</span>
-  <strong>Project files</strong>
+  <a href="/developers/assistants/spec/">Assistant Spec v3</a><span aria-hidden="true">/</span>
+  <strong>app.py</strong>
 </nav>
 
 <header class="docs-page-header">
-  <span class="section-label">Baby step 1</span>
-  <h1>Create four kinds of files</h1>
+  <span class="section-label">Authored file 2 of 2</span>
+  <h1>Put all Assistant behavior in app.py</h1>
   <p class="docs-lede">
-    Start with the public contract, not with API code. A small Assistant project has one manifest, one
-    Genesis document, Help for people, and two schemas for every Power.
+    Import <code>field</code> and <code>power</code> from the Python SDK, then write ordinary async
+    functions. The decorators supply the metadata needed to generate the machine contract.
   </p>
 </header>
 
 <section class="guide-section" aria-labelledby="shape-title">
-  <span class="section-label">Folder shape</span>
-  <h2 id="shape-title">Give every decision one home</h2>
-  <CodeBlock
-    label="Small Assistant project"
-    title="Project · SPEC files"
-    variant="code"
-    {...data.projectFiles}
-  />
-</section>
-
-<section class="guide-section" aria-labelledby="meaning-title">
-  <span class="section-label">What each file answers</span>
-  <h2 id="meaning-title">Read the project as four questions</h2>
-  <ol>
-    <li><strong>Manifest:</strong> What is this Assistant, and what access does it request?</li>
-    <li><strong>Genesis:</strong> How should the Brain use its Powers and explain the result?</li>
-    <li><strong>Help:</strong> What can a person ask in normal language?</li>
-    <li><strong>Schemas:</strong> Which exact JSON may enter and leave each Power?</li>
-  </ol>
-</section>
-
-<section class="guide-section" aria-labelledby="order-title">
-  <span class="section-label">Recommended order</span>
-  <h2 id="order-title">Make one Power understandable before adding another</h2>
-  <ol>
-    <li>Write one sentence describing a useful result.</li>
-    <li>Name one Power for that result using lowercase kebab-case.</li>
-    <li>Define the smallest possible input and output schemas.</li>
-    <li>Add only the Account, Secret, or external host that Power needs.</li>
-    <li>Explain the Power in Genesis and show one plain-language prompt in Help.</li>
-  </ol>
-  <blockquote>Inspect one record by its identifier and return its name and status.</blockquote>
-</section>
-
-<aside class="scope-note" aria-labelledby="outside-title">
-  <span id="outside-title" class="kicker">Not part of the SPEC</span>
+  <span class="section-label">Repository shape</span>
+  <h2 id="shape-title">Keep authored intent separate from delivery</h2>
+  <CodeBlock label="Minimal Assistant project" title="Project files" variant="code" {...data.projectFiles} />
   <p>
-    Container orchestration, databases, provider registration, release channels, CI, and Store publishing are
-    platform concerns. They do not belong in these files and are not documented as Assistant SPEC fields.
+    Only <code>shimpz.toml</code> and <code>app.py</code> define the v3 Assistant contract.
+    Dependency, container, test, Genesis, and Help files support packaging or current runtime surfaces;
+    they do not add hidden Powers or authority.
+  </p>
+</section>
+
+<section class="guide-section" aria-labelledby="application-title">
+  <span class="section-label">Smallest application</span>
+  <h2 id="application-title">One typed Power is enough</h2>
+  <CodeBlock label="Minimal SDK-authored application" title="app.py" variant="code" {...data.application} />
+</section>
+
+<section class="guide-section" aria-labelledby="rules-title">
+  <span class="section-label">Authoring rules</span>
+  <h2 id="rules-title">Let Python remain Python</h2>
+  <ul>
+    <li>Power bodies are <code>async def</code> functions decorated with <code>@power(...)</code>.</li>
+    <li>Parameters exposed to the Brain use <code>field(type, prompt=...)</code>.</li>
+    <li><code>ctx</code> receives Accounts, human interaction, execution metadata, and logs.</li>
+    <li>A typed return annotation becomes the closed output schema.</li>
+    <li>Helper functions and internal Python values remain private implementation details.</li>
+  </ul>
+</section>
+
+<aside class="scope-note" aria-labelledby="artifact-title">
+  <span id="artifact-title" class="kicker">Build artifact</span>
+  <p>
+    Run <code>shimpz-assistant-contract</code> while building the image. It imports <code>app.py</code>
+    and writes the canonical <code>shimpz.contract.json</code>; creators do not hand-edit that file.
   </p>
 </aside>
 
-<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant SPEC">
-  <a href="/developers/assistants/spec/"><span>Back</span><strong>SPEC overview</strong></a>
-  <a href="/developers/assistants/spec/manifest/"><span>Next</span><strong>Manifest and identity</strong></a>
+<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec">
+  <a href="/developers/assistants/spec/manifest/"><span>Back</span><strong>shimpz.toml</strong></a>
+  <a href="/developers/assistants/spec/powers/"><span>Next</span><strong>@power</strong></a>
 </nav>
