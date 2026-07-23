@@ -401,6 +401,8 @@ validate_project_resources() {
 			"${PROJECT_NAME}_controller_assistant_secret_key|controller_assistant_secret_key"|\
 			"${PROJECT_NAME}_controller_assistant_account_state|controller_assistant_account_state"|\
 			"${PROJECT_NAME}_controller_assistant_account_key|controller_assistant_account_key"|\
+			"${PROJECT_NAME}_controller_chat_continuation_state|controller_chat_continuation_state"|\
+			"${PROJECT_NAME}_controller_chat_continuation_key|controller_chat_continuation_key"|\
 			"${PROJECT_NAME}_brain_runtime_token|brain_runtime_token"|\
 			"${PROJECT_NAME}_brain_runtime_state|brain_runtime_state"|\
 			"${PROJECT_NAME}_app_egress_policy|app_egress_policy"|\
@@ -907,6 +909,8 @@ services:
       SHIMPZ_BRAIN_RUNTIME_TOKEN_FILE: /run/shimpz-brain-runtime/token
       SHIMPZ_LOCAL_POWER_JOURNAL_PATH: /var/lib/shimpz-local/power-journal/journal.sqlite3
       SHIMPZ_LOCAL_APPROVAL_GRANTS_PATH: /var/lib/shimpz-local/assistant-approvals/grants.sqlite3
+      SHIMPZ_LOCAL_CHAT_CONTINUATIONS_STATE_PATH: /var/lib/shimpz-local/chat-continuations/state/continuations.json
+      SHIMPZ_LOCAL_CHAT_CONTINUATIONS_KEY_PATH: /var/lib/shimpz-local/chat-continuations/key/aes256.key
       SHIMPZ_OAUTH_CALLBACK_MODE: ${SHIMPZ_OAUTH_CALLBACK_MODE:?installer must pin the OAuth callback mode}
       SHIMPZ_OAUTH_BROKER_PROXY_HOST: oauth-broker-proxy
       SHIMPZ_OAUTH_BROKER_PROXY_TOKEN: ${SHIMPZ_OAUTH_BROKER_PROXY_TOKEN:?installer must bind the OAuth broker proxy capability}
@@ -924,6 +928,8 @@ services:
       - controller_assistant_secret_key:/var/lib/shimpz-local/assistant-secrets/key:rw
       - controller_assistant_account_state:/var/lib/shimpz-local/assistant-accounts/state:rw
       - controller_assistant_account_key:/var/lib/shimpz-local/assistant-accounts/key:rw
+      - controller_chat_continuation_state:/var/lib/shimpz-local/chat-continuations/state:rw
+      - controller_chat_continuation_key:/var/lib/shimpz-local/chat-continuations/key:rw
       - app_egress_policy:/var/lib/shimpz-local/app-egress:rw
       - brain_runtime_token:/run/shimpz-brain-runtime:rw
     tmpfs:
@@ -1164,6 +1170,8 @@ volumes:
   controller_assistant_secret_key:
   controller_assistant_account_state:
   controller_assistant_account_key:
+  controller_chat_continuation_state:
+  controller_chat_continuation_key:
   app_egress_policy:
   app_egress_audit:
   oauth_broker_egress_audit:

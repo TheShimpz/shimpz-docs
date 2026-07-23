@@ -451,10 +451,15 @@ def test_static_runtime_separates_socketless_admin_from_local_controller():
         "controller_assistant_secret_key:/var/lib/shimpz-local/assistant-secrets/key:rw",
         "controller_assistant_account_state:/var/lib/shimpz-local/assistant-accounts/state:rw",
         "controller_assistant_account_key:/var/lib/shimpz-local/assistant-accounts/key:rw",
+        "controller_chat_continuation_state:/var/lib/shimpz-local/chat-continuations/state:rw",
+        "controller_chat_continuation_key:/var/lib/shimpz-local/chat-continuations/key:rw",
         "app_egress_policy:/var/lib/shimpz-local/app-egress:rw",
         "brain_runtime_token:/run/shimpz-brain-runtime:rw",
         "SHIMPZ_LOCAL_POWER_JOURNAL_PATH: /var/lib/shimpz-local/power-journal/journal.sqlite3",
         "SHIMPZ_LOCAL_APPROVAL_GRANTS_PATH: /var/lib/shimpz-local/assistant-approvals/grants.sqlite3",
+        "SHIMPZ_LOCAL_CHAT_CONTINUATIONS_STATE_PATH: "
+        "/var/lib/shimpz-local/chat-continuations/state/continuations.json",
+        "SHIMPZ_LOCAL_CHAT_CONTINUATIONS_KEY_PATH: /var/lib/shimpz-local/chat-continuations/key/aes256.key",
         "SHIMPZ_BRAIN_RUNTIME_URL: http://brain-runtime:8080",
         "SHIMPZ_BRAIN_RUNTIME_TOKEN_FILE: /run/shimpz-brain-runtime/token",
         "SHIMPZ_OAUTH_CALLBACK_MODE: ${SHIMPZ_OAUTH_CALLBACK_MODE:?installer must pin the OAuth callback mode}",
@@ -506,6 +511,10 @@ def test_static_runtime_separates_socketless_admin_from_local_controller():
         "controller_assistant_account_" not in brain_runtime,
         "Brain runtime never mounts encrypted Assistant OAuth state or its key",
     )
+    check(
+        "controller_chat_continuation_" not in brain_runtime,
+        "Brain runtime never mounts encrypted chat continuations or their key",
+    )
     for marker in (
         'group_add:\n      - "10010"',
         "SHIMPZ_TEAMDRIVER_URL: http://team-driver-local:7077",
@@ -538,6 +547,10 @@ def test_static_runtime_separates_socketless_admin_from_local_controller():
         "controller_assistant_account_" not in admin,
         "Admin never mounts encrypted Assistant OAuth state or its key",
     )
+    check(
+        "controller_chat_continuation_" not in admin,
+        "Admin never mounts encrypted chat continuations or their key",
+    )
     check(SCRIPT.count("  controller_power_journal:") == 1, "Compose declares exactly one Power journal volume")
     check(
         SCRIPT.count("  controller_approval_state:") == 1,
@@ -558,6 +571,14 @@ def test_static_runtime_separates_socketless_admin_from_local_controller():
     check(
         SCRIPT.count("  controller_assistant_account_key:") == 1,
         "Compose declares exactly one independent Assistant OAuth-key volume",
+    )
+    check(
+        SCRIPT.count("  controller_chat_continuation_state:") == 1,
+        "Compose declares exactly one encrypted chat-continuation state volume",
+    )
+    check(
+        SCRIPT.count("  controller_chat_continuation_key:") == 1,
+        "Compose declares exactly one independent chat-continuation key volume",
     )
     check("SHIMPZ_CLOUDFLARE_OAUTH_CLIENT" not in SCRIPT, "installer contains no OAuth client credentials")
     check("SHIMPZ_X_OAUTH_CLIENT_ID" not in SCRIPT, "installer contains no retired X OAuth configuration")
@@ -839,6 +860,8 @@ def test_static_update_rollback_and_reset_are_bounded():
         '"${PROJECT_NAME}_controller_assistant_secret_key|controller_assistant_secret_key"',
         '"${PROJECT_NAME}_controller_assistant_account_state|controller_assistant_account_state"',
         '"${PROJECT_NAME}_controller_assistant_account_key|controller_assistant_account_key"',
+        '"${PROJECT_NAME}_controller_chat_continuation_state|controller_chat_continuation_state"',
+        '"${PROJECT_NAME}_controller_chat_continuation_key|controller_chat_continuation_key"',
         '"${PROJECT_NAME}_brain_runtime_token|brain_runtime_token"',
         '"${PROJECT_NAME}_brain_runtime_state|brain_runtime_state"',
         '"${PROJECT_NAME}_app_egress_policy|app_egress_policy"',
