@@ -7,80 +7,67 @@
 </script>
 
 <svelte:head>
-  <title>Assistant Power approvals — Shimpz docs</title>
+  <title>ctx.human.approval — Shimpz docs</title>
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/spec/approvals/" />
-  <meta name="description" content="Choose never, once, or always approval for each Assistant Power." />
+  <meta name="description" content="Request dynamic human approval inside a Shimpz Power." />
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/assistants/spec/">Assistant SPEC</a><span aria-hidden="true">/</span><strong>Approvals</strong>
+  <a href="/developers/assistants/spec/">Assistant Spec v3</a><span aria-hidden="true">/</span>
+  <strong>ctx.human.approval</strong>
 </nav>
 
 <header class="docs-page-header">
-  <span class="section-label">Baby step 5</span>
-  <h1>Choose when a person must confirm</h1>
+  <span class="section-label">Human authorization</span>
+  <h1>Confirm the exact action at the point of risk</h1>
   <p class="docs-lede">
-    Approval belongs to each Power, not to the whole Assistant. Pick the strictest policy that still makes the
-    intended workflow understandable.
+    <code>ctx.human.approval(...)</code> is a dynamic suspension inside the Power body. Its summary
+    can show the real values collected during execution, immediately before a sensitive side effect.
   </p>
 </header>
 
-<aside class="scope-note" aria-labelledby="availability-title">
-  <span id="availability-title" class="kicker">Local execution only for gated Powers</span>
-  <p>
-    The installed local Admin/controller supports <code>once</code> and <code>always</code> challenge-and-resume
-    execution. Hosted Store chat currently uses <code>shimpz.chat.v2</code>, which has no approval challenge
-    frames: the hosted controller returns a terminal <code>409</code> and does not execute a Power whose policy is
-    <code>once</code> or <code>always</code>. Use <code>never</code> only when the operation is safe without a prompt;
-    otherwise treat that Power as local-only until hosted approval execution ships.
-  </p>
-</aside>
-
-<section class="guide-section" aria-labelledby="values-title">
-  <span class="section-label">Three supported values</span>
-  <h2 id="values-title">Ask the right number of times</h2>
+<section class="guide-section" aria-labelledby="runs-title">
+  <span class="section-label">Frequency</span>
+  <h2 id="runs-title">Choose always or once</h2>
   <dl>
-    <dt><code>never</code></dt>
-    <dd>No execution prompt. Use only for reviewed operations with no meaningful side effect.</dd>
-    <dt><code>once</code></dt>
-    <dd>Ask once for this Power and Assistant release. A new release or revoked grant requires approval again.</dd>
-    <dt><code>always</code></dt>
-    <dd>Ask before every execution. This is the safe starting point for writes, deletes, sends, and purchases.</dd>
+    <dt><code>runs="always"</code></dt>
+    <dd>
+      Ask on every execution. Start here for writes, deletes, sends, purchases, permission changes,
+      and any action whose exact arguments deserve review.
+    </dd>
+    <dt><code>runs="once"</code></dt>
+    <dd>
+      Ask once, then reuse a durable grant bound to the Team, Assistant, Power, image release, and
+      approval site. Updating the image or revoking the grant requires approval again.
+    </dd>
   </dl>
 </section>
 
 <section class="guide-section" aria-labelledby="example-title">
   <span class="section-label">Example</span>
-  <h2 id="example-title">Separate reading from changing</h2>
-  <CodeBlock
-    label="Different approval policies"
-    title="shimpz.assistant.toml"
-    variant="code"
-    {...data.approvals}
-  />
+  <h2 id="example-title">Gather values, approve, then act</h2>
+  <CodeBlock label="In-body approval" title="app.py" variant="code" {...data.approval} />
 </section>
 
-<section class="guide-section" aria-labelledby="steps-title">
-  <span class="section-label">Decision steps</span>
-  <h2 id="steps-title">Classify the real effect, not the HTTP method</h2>
-  <ol>
-    <li>Can the operation change external or stored state?</li>
-    <li>Can it send a message, spend money, publish, revoke, or delete?</li>
-    <li>Could repeating it produce a second effect?</li>
-    <li>Would a reasonable person expect to review the exact input first?</li>
-  </ol>
-  <p>If any answer is yes, start with <code>always</code>. Reduce prompts only after a dedicated safety review.</p>
-</section>
-
-<aside class="scope-note" aria-labelledby="default-title">
-  <span id="default-title" class="kicker">Omitted means never</span>
+<section class="guide-section" aria-labelledby="surfaces-title">
+  <span class="section-label">Execution surfaces</span>
+  <h2 id="surfaces-title">The same challenge works locally and through the Store</h2>
   <p>
-    The manifest schema defaults an omitted <code>approval</code> to <code>never</code>. Write the field explicitly
-    anyway: reviewers should not have to remember a security-sensitive default.
+    Local Admin chat and hosted Store chat both relay typed approval challenges and resume the
+    encrypted continuation. A rejection returns <code>false</code> to the replayed call; the Power
+    must stop before the protected effect.
+  </p>
+</section>
+
+<aside class="scope-note" aria-labelledby="dynamic-title">
+  <span id="dynamic-title" class="kicker">No static approval field</span>
+  <p>
+    Approval does not belong in <code>shimpz.toml</code> or <code>@power</code>. If a Power needs no
+    approval, simply omit the call. This keeps authorization next to the action it protects.
   </p>
 </aside>
 
-<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant SPEC">
-  <a href="/developers/assistants/spec/powers/"><span>Back</span><strong>Powers and schemas</strong></a>
+<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec">
+  <a href="/developers/assistants/spec/human/"><span>Back</span><strong>ctx.human.request</strong></a>
   <a href="/developers/assistants/spec/accounts/"><span>Next</span><strong>Accounts</strong></a>
 </nav>
