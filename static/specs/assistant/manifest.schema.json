@@ -52,7 +52,7 @@
       }
     },
     "accounts": {
-      "description": "OAuth Accounts keyed by provider id. Endpoints, client credentials, grants, and tokens are controller-owned and cannot be declared here.",
+      "description": "OAuth Accounts keyed by provider id. Provider and scope enums are a release-pinned snapshot of the Controller provider catalog and must be regenerated with any catalog change. Endpoints, client credentials, grants, and tokens are controller-owned and cannot be declared here.",
       "type": "object",
       "maxProperties": 16,
       "propertyNames": {

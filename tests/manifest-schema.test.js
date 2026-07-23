@@ -23,6 +23,8 @@ test('published shimpz.toml schema exposes only the v3 authored surface', () => 
     'summary',
   ]);
   assert.deepEqual(schema.properties.accounts.propertyNames.enum, ['cloudflare']);
+  assert.match(schema.properties.accounts.description, /release-pinned snapshot/);
+  assert.match(schema.properties.accounts.description, /must be regenerated/);
   assert.deepEqual(schema.$defs.account.required, ['scopes']);
   assert.equal(schema.$defs.account.additionalProperties, false);
   assert.equal('provider' in schema.$defs.account.properties, false);

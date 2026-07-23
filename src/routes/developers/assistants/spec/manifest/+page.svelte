@@ -59,7 +59,9 @@
     <dt><code>[accounts.&lt;provider&gt;]</code></dt>
     <dd>
       An optional table keyed by a registered provider id. Its only key is a unique, non-empty
-      <code>scopes</code> list from that provider's supported catalog.
+      <code>scopes</code> list from that provider's supported catalog. The published provider and
+      scope enums are a release-pinned snapshot of the Controller catalog, so a provider-catalog
+      change regenerates the schema in the same release; Controller admission remains authoritative.
     </dd>
   </dl>
 </section>
