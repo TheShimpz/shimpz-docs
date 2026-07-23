@@ -2,19 +2,19 @@ import { highlightCode } from "$lib/server/highlight";
 
 import type { PageServerLoad } from "./$types";
 
-const declaration = `[accounts.records]
-provider = "registered-provider"
-scopes = ["records.read"]`;
+const manifest = `[accounts.cloudflare]
+scopes = ["zone.read", "dns.read", "offline_access"]`;
 
-const reference = `[powers.inspect-record]
-summary = "Inspect one private record."
-approval = "never"
-accounts = ["records"]`;
+const power = `@power(accounts=["cloudflare"])
+async def inspect_zone(
+    domain=field(str, prompt="The domain to inspect."),
+    ctx=None,
+):
+    access_token = ctx.accounts.cloudflare.access_token
+    response = await fetch_zone(domain, access_token)
+    return {"zone_id": response["id"], "status": response["status"]}`;
 
-export const load: PageServerLoad = async () => {
-  const [account, power] = await Promise.all([
-    highlightCode(declaration, "toml"),
-    highlightCode(reference, "toml"),
-  ]);
-  return { account, power };
-};
+export const load: PageServerLoad = async () => ({
+  manifest: await highlightCode(manifest, "toml"),
+  power: await highlightCode(power, "python"),
+});

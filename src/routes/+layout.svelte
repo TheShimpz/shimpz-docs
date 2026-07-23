@@ -107,7 +107,7 @@
         {
           href: "/developers/assistants/spec/accounts/",
           label: "Accounts",
-          description: "Request OAuth access safely",
+          description: "Request reviewed OAuth scopes",
         },
         {
           href: "/developers/assistants/spec/secrets/",

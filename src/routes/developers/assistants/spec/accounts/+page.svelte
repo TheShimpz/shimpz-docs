@@ -7,84 +7,68 @@
 </script>
 
 <svelte:head>
-  <title>Assistant Accounts — Shimpz docs</title>
+  <title>Accounts and ctx.accounts — Shimpz docs</title>
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/spec/accounts/" />
-  <meta name="description" content="Declare OAuth Account intent and attach it only to Powers that need it." />
+  <meta name="description" content="Request reviewed OAuth scopes and consume a bounded Account token." />
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/assistants/spec/">Assistant SPEC</a><span aria-hidden="true">/</span><strong>Accounts</strong>
+  <a href="/developers/assistants/spec/">Assistant Spec v3</a><span aria-hidden="true">/</span>
+  <strong>Accounts</strong>
 </nav>
 
 <header class="docs-page-header">
-  <span class="section-label">Baby step 6</span>
-  <h1>Request an OAuth identity without handling tokens</h1>
+  <span class="section-label">OAuth access</span>
+  <h1>Declare scopes; let the Controller own credentials</h1>
   <p class="docs-lede">
-    An Account says which registered provider and scopes a Power needs. The manifest contains public intent
-    only; OAuth endpoints, client credentials, authorization codes, and tokens never belong in it.
+    An Account connects one registered OAuth provider to the Powers that need it. The provider id is
+    the Account id, so the declaration cannot redirect authorization or token exchange.
   </p>
 </header>
 
 <section class="guide-section" aria-labelledby="declare-title">
-  <span class="section-label">Step 1</span>
-  <h2 id="declare-title">Name the Account and its complete scope set</h2>
-  <CodeBlock
-    label="OAuth Account declaration"
-    title="shimpz.assistant.toml"
-    variant="code"
-    {...data.account}
-  />
+  <span class="section-label">Security intent</span>
+  <h2 id="declare-title">Request a reviewed scope set in shimpz.toml</h2>
+  <CodeBlock label="Cloudflare Account intent" title="shimpz.toml" variant="code" {...data.manifest} />
   <p>
-    <code>records</code> is the local Account ID used by Powers. <code>registered-provider</code> is a placeholder:
-    a real provider ID and every scope must already exist in Shimpz's trusted provider registry.
+    The current catalog registers <code>cloudflare</code> with <code>zone.read</code>,
+    <code>dns.read</code>, and <code>offline_access</code>. Unknown providers, unsupported scopes,
+    duplicates, and empty lists fail admission.
   </p>
 </section>
 
-<section class="guide-section" aria-labelledby="attach-title">
-  <span class="section-label">Step 2</span>
-  <h2 id="attach-title">Attach it only to the Power that needs it</h2>
-  <CodeBlock
-    label="Power Account reference"
-    title="shimpz.assistant.toml"
-    variant="code"
-    {...data.power}
-  />
-  <p>A Power without the reference receives no Account envelope, even when another Power uses that Account.</p>
+<section class="guide-section" aria-labelledby="consume-title">
+  <span class="section-label">Power boundary</span>
+  <h2 id="consume-title">Attach and read the Account in app.py</h2>
+  <CodeBlock label="Power-scoped Account access" title="app.py" variant="code" {...data.power} />
+  <p>
+    A Power receives only Accounts listed in its <code>@power(accounts=[...])</code> declaration.
+    Read the bearer token from <code>ctx.accounts.&lt;provider&gt;.access_token</code>.
+  </p>
 </section>
 
-<section class="guide-section" aria-labelledby="runtime-title">
-  <span class="section-label">What the declaration causes</span>
-  <h2 id="runtime-title">Consent happens only when needed</h2>
+<section class="guide-section" aria-labelledby="flow-title">
+  <span class="section-label">Token flow</span>
+  <h2 id="flow-title">Private material enters at the last boundary</h2>
   <ol>
-    <li>The Brain requests a Power that references the Account.</li>
-    <li>If the Account is missing or expired, Shimpz pauses the turn.</li>
-    <li>The person reviews the provider and exact scopes on the provider's website.</li>
-    <li>Shimpz resumes the same turn after successful authorization.</li>
-    <li>Only the selected Power receives a bounded private Account envelope.</li>
+    <li>The Controller resolves provider metadata from its reviewed catalog.</li>
+    <li>The person authorizes the exact scopes; Shimpz stores tokens encrypted and refreshes them.</li>
+    <li>Immediately before execution, the Controller injects a bearer token only for the selected Power.</li>
+    <li>The SDK exposes that token through <code>ctx.accounts</code> in the isolated process.</li>
+    <li>Outputs containing injected tokens are rejected before the Brain receives them.</li>
   </ol>
 </section>
 
-<section class="guide-section" aria-labelledby="limits-title">
-  <span class="section-label">Closed limits</span>
-  <h2 id="limits-title">Keep Account intent small</h2>
-  <ul>
-    <li>At most 16 Accounts per Assistant.</li>
-    <li>Account IDs are lowercase kebab-case and at most 64 characters.</li>
-    <li>Each Account has 1–32 unique scopes; each scope is at most 80 characters.</li>
-    <li>Each Power may reference at most four declared Accounts.</li>
-    <li>Undefined Account IDs and unregistered providers or scopes fail admission.</li>
-  </ul>
-</section>
-
-<aside class="scope-note" aria-labelledby="not-secret-title">
-  <span id="not-secret-title" class="kicker">Account is not Secret</span>
+<aside class="scope-note" aria-labelledby="secrets-title">
+  <span id="secrets-title" class="kicker">No static Secrets surface</span>
   <p>
-    Never collect an OAuth client secret, access token, or refresh token through <code>secrets</code>. OAuth
-    identities always use <code>accounts</code> so Shimpz can own consent, encrypted custody, refresh, and revocation.
+    Durable credentials use Accounts. Per-execution values use <code>ctx.human.request</code>.
+    Never put client secrets, access tokens, refresh tokens, or ad-hoc private values in
+    <code>shimpz.toml</code>, source, logs, arguments, or returned data.
   </p>
 </aside>
 
-<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant SPEC">
-  <a href="/developers/assistants/spec/approvals/"><span>Back</span><strong>Approvals</strong></a>
-  <a href="/developers/assistants/spec/secrets/"><span>Next</span><strong>Secrets</strong></a>
+<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec">
+  <a href="/developers/assistants/spec/approvals/"><span>Back</span><strong>ctx.human.approval</strong></a>
+  <a href="/developers/assistants/spec/network/"><span>Next</span><strong>Network access</strong></a>
 </nav>
