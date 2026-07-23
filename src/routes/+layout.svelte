@@ -90,6 +90,11 @@
           description: "Define callable async operations",
         },
         {
+          href: "/developers/assistants/spec/fields/",
+          label: "field()",
+          description: "Declare typed Brain inputs",
+        },
+        {
           href: "/developers/assistants/spec/approvals/",
           label: "Approvals",
           description: "Choose when people confirm",

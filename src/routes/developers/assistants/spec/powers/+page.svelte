@@ -64,5 +64,5 @@
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec">
   <a href="/developers/assistants/"><span>Back</span><strong>app.py</strong></a>
-  <a href="/developers/assistants/spec/approvals/"><span>Next</span><strong>Human interaction</strong></a>
+  <a href="/developers/assistants/spec/fields/"><span>Next</span><strong>field()</strong></a>
 </nav>
