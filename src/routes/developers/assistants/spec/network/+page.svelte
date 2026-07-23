@@ -80,5 +80,5 @@
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec">
   <a href="/developers/assistants/spec/accounts/"><span>Back</span><strong>Accounts</strong></a>
-  <a href="/developers/assistants/spec/help/"><span>Next</span><strong>Runtime documents</strong></a>
+  <a href="/developers/assistants/spec/execution/"><span>Next</span><strong>Execution model</strong></a>
 </nav>

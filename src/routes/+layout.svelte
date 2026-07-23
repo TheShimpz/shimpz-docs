@@ -120,6 +120,11 @@
           description: "Allow exact outbound hosts",
         },
         {
+          href: "/developers/assistants/spec/execution/",
+          label: "Execution model",
+          description: "Isolate, suspend, and replay Powers",
+        },
+        {
           href: "/developers/assistants/spec/help/",
           label: "Help",
           description: "Teach people what to ask",
