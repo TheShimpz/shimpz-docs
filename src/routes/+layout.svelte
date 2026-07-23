@@ -80,11 +80,6 @@
           description: "Author Python behavior",
         },
         {
-          href: "/developers/assistants/spec/genesis/",
-          label: "Genesis",
-          description: "Teach behavior and boundaries",
-        },
-        {
           href: "/developers/assistants/spec/powers/",
           label: "@power",
           description: "Define callable async operations",
@@ -110,11 +105,6 @@
           description: "Request reviewed OAuth scopes",
         },
         {
-          href: "/developers/assistants/spec/secrets/",
-          label: "Secrets",
-          description: "Request opaque private values",
-        },
-        {
           href: "/developers/assistants/spec/network/",
           label: "Network access",
           description: "Allow exact outbound hosts",
@@ -128,11 +118,6 @@
           href: "/developers/assistants/quickstart/",
           label: "Python quickstart",
           description: "Run the minimal starter end to end",
-        },
-        {
-          href: "/developers/assistants/spec/help/",
-          label: "Help",
-          description: "Teach people what to ask",
         },
       ],
     },
