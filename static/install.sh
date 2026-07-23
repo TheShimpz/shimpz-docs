@@ -1116,6 +1116,7 @@ services:
       SHIMPZ_TEAMDRIVER_URL: http://team-driver-local:7077
       SHIMPZ_TEAMDRIVER_TOKEN_FILE: /run/shimpz-local/token
       SHIMPZ_TEAM_CREDENTIALS_ENABLED: "0"
+      SHIMPZ_ADMIN_LOOPBACK_PORT: ${SHIMPZ_PORT:-7777}
       SHIMPZ_ADMIN_ALLOWED_ORIGINS: ${SHIMPZ_ADMIN_ALLOWED_ORIGINS:?installer must pin Admin origins}
       SHIMPZ_OAUTH_CALLBACK_MODE: ${SHIMPZ_OAUTH_CALLBACK_MODE:?installer must pin the Admin OAuth callback mode}
     volumes:

@@ -664,8 +664,18 @@ def test_reset_accepts_only_the_exact_space_owned_egress_proxy():
 def test_static_admin_chat_origin_allowlist_is_loopback_only():
     compose = SCRIPT.split("cat >\"${COMPOSE_FILE}.tmp\" <<'COMPOSE'", 1)[1].split("\nCOMPOSE", 1)[0]
     admin = compose.split("  admin:", 1)[1].split("\nvolumes:", 1)[0]
+    loopback_port_lines = [line.strip() for line in admin.splitlines() if "SHIMPZ_ADMIN_LOOPBACK_PORT:" in line]
     origin_lines = [line.strip() for line in admin.splitlines() if "SHIMPZ_ADMIN_ALLOWED_ORIGINS:" in line]
     oauth_lines = [line.strip() for line in admin.splitlines() if "SHIMPZ_OAUTH_CALLBACK_MODE:" in line]
+    check(
+        loopback_port_lines == ["SHIMPZ_ADMIN_LOOPBACK_PORT: ${SHIMPZ_PORT:-7777}"],
+        "local Admin derives its OAuth loopback port from the published installer port",
+    )
+    custom_port_admin = admin.replace("${SHIMPZ_PORT:-7777}", "8123")
+    check(
+        '"127.0.0.1:8123:4600"' in custom_port_admin and "SHIMPZ_ADMIN_LOOPBACK_PORT: 8123" in custom_port_admin,
+        "a custom installer port drives both the published port and OAuth callback origin",
+    )
     check(
         origin_lines
         == ["SHIMPZ_ADMIN_ALLOWED_ORIGINS: ${SHIMPZ_ADMIN_ALLOWED_ORIGINS:?installer must pin Admin origins}"],
