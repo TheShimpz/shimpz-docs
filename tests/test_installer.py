@@ -14,7 +14,7 @@ CADDY = (ROOT / "Caddyfile").read_text(encoding="utf-8")
 DOCKERIGNORE = (ROOT / ".dockerignore").read_text(encoding="utf-8")
 IMAGE_REPOSITORY_FOR_TESTS = "ghcr.io/theshimpz/shimpz-space"
 PRIOR_IMAGE_REPOSITORY_FOR_TESTS = "ghcr.io/roxygens/shimpz-space"
-APP_EGRESS_DIGEST = "190b8ab6bc3880071e387363c2a9a5876480cc642e7597e36b8be6365218c1c8"
+APP_EGRESS_DIGEST = "2911302477bf0bf5025c91e0ab34096b32ffb509df13bd6c8d822519a48c47ed"
 
 
 def check(condition: object, message: str) -> None:
