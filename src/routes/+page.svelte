@@ -16,10 +16,14 @@
   <div class="docs-hero-title">
     <img
       class="docs-hero-mark"
-      src="/brand/shimpz-cyberchimp-friendly-v2.png"
+      src="/brand/shimpz-cyberchimp-friendly-v2-144.png"
+      srcset="
+        /brand/shimpz-cyberchimp-friendly-v2-144.png 1x,
+        /brand/shimpz-cyberchimp-friendly-v2-288.png 2x
+      "
       alt=""
-      width="1254"
-      height="1254"
+      width="144"
+      height="144"
     />
     <h1 id="page-title">Run your own <span class="gradient-text">Shimpz Space</span>.</h1>
   </div>

@@ -209,11 +209,15 @@
   <div class="wrap flex h-16 items-center gap-4">
     <a href="/" class="brand-name" aria-label="Shimpz Docs home">
       <img
-        src="/brand/shimpz-cyberchimp-friendly-v2.png"
+        src="/brand/shimpz-cyberchimp-friendly-v2-40.png"
+        srcset="
+          /brand/shimpz-cyberchimp-friendly-v2-40.png 1x,
+          /brand/shimpz-cyberchimp-friendly-v2-80.png 2x
+        "
         class="brand-mark"
         alt=""
-        width="1254"
-        height="1254"
+        width="40"
+        height="40"
       />
       <span>Shimpz</span>
     </a>
