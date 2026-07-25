@@ -54,6 +54,32 @@
   </p>
 </section>
 
+<section class="guide-section" aria-labelledby="package-contract-title">
+  <span class="section-label">Published contract</span>
+  <h2 id="package-contract-title">Source packages have one byte-level authority</h2>
+  <p>
+    <code>shimpz publish</code> creates an uncompressed canonical POSIX ustar archive. Its exact
+    allowlist, limits, normalized metadata, golden vectors, and verifier are published together:
+  </p>
+  <ul>
+    <li><a href="/specs/source-package/v1/README.md">Source package v1 overview</a></li>
+    <li><a href="/specs/source-package/v1/contract.json">Machine-readable contract</a></li>
+    <li><a href="/specs/source-package/v1/vectors.json">Golden vectors</a></li>
+    <li><a href="/specs/source-package/v1/verify.py">Reference verifier</a></li>
+    <li><a href="/specs/source-package/v1/contract-files.sha256">File checksums</a></li>
+  </ul>
+  <dl>
+    <dt>Umbrella commit</dt>
+    <dd>
+      <a href="https://github.com/TheShimpz/shimpz/commit/6ea4ef44cdc280567f767b186e5f75b3b3fdf1bd">
+        <code>6ea4ef44cdc280567f767b186e5f75b3b3fdf1bd</code>
+      </a>
+    </dd>
+    <dt>Contract tree</dt>
+    <dd><code>c6d8875d0e36513f4b1c4645c8df63dfb66ee00c</code></dd>
+  </dl>
+</section>
+
 <aside class="scope-note" aria-labelledby="closed-title">
   <span id="closed-title" class="kicker">Version 1 is the only version</span>
   <p>
