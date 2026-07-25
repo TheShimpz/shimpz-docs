@@ -443,9 +443,6 @@ def _check_controller_runtime(controller: str) -> None:
         "controller_storage:/var/lib/shimpz-local/storage:rw",
         "controller_inference:/var/lib/shimpz-local/inference:rw",
         "controller_power_journal:/var/lib/shimpz-local/power-journal:rw",
-        "controller_approval_state:/var/lib/shimpz-local/assistant-approvals:rw",
-        "controller_assistant_secret_state:/var/lib/shimpz-local/assistant-secrets/state:rw",
-        "controller_assistant_secret_key:/var/lib/shimpz-local/assistant-secrets/key:rw",
         "controller_assistant_account_state:/var/lib/shimpz-local/assistant-accounts/state:rw",
         "controller_assistant_account_key:/var/lib/shimpz-local/assistant-accounts/key:rw",
         "controller_chat_continuation_state:/var/lib/shimpz-local/chat-continuations/state:rw",
@@ -453,7 +450,6 @@ def _check_controller_runtime(controller: str) -> None:
         "app_egress_policy:/var/lib/shimpz-local/app-egress:rw",
         "brain_runtime_token:/run/shimpz-brain-runtime:rw",
         "SHIMPZ_LOCAL_POWER_JOURNAL_PATH: /var/lib/shimpz-local/power-journal/journal.sqlite3",
-        "SHIMPZ_LOCAL_APPROVAL_GRANTS_PATH: /var/lib/shimpz-local/assistant-approvals/grants.sqlite3",
         "SHIMPZ_LOCAL_CHAT_CONTINUATIONS_STATE_PATH: /var/lib/shimpz-local/chat-continuations/state/continuations.json",
         "SHIMPZ_LOCAL_CHAT_CONTINUATIONS_KEY_PATH: /var/lib/shimpz-local/chat-continuations/key/aes256.key",
         "SHIMPZ_BRAIN_RUNTIME_URL: http://brain-runtime:8080",
@@ -501,11 +497,6 @@ def _check_brain_runtime(brain_runtime: str) -> None:
     check("controller_token" not in brain_runtime, "Brain runtime never receives the Admin/Controller bearer")
     check("controller_inference" not in brain_runtime, "Brain runtime never mounts Team metadata")
     check("controller_power_journal" not in brain_runtime, "Brain runtime never mounts Power execution state")
-    check("controller_approval_state" not in brain_runtime, "Brain runtime never mounts remembered approvals")
-    check(
-        "controller_assistant_secret_" not in brain_runtime,
-        "Brain runtime never mounts encrypted Assistant secret state or its key",
-    )
     check(
         "controller_assistant_account_" not in brain_runtime,
         "Brain runtime never mounts encrypted Assistant OAuth state or its key",
@@ -540,11 +531,6 @@ def _check_compose_isolation(admin: str, compose: str, controller: str) -> None:
     check("- oauth_broker_out" not in controller, "Controller cannot bypass the OAuth broker proxy")
     check("controller_storage" not in admin, "Admin never mounts opaque Team storage")
     check("controller_power_journal" not in admin, "Admin never mounts Power execution state")
-    check("controller_approval_state" not in admin, "Admin never mounts remembered approvals")
-    check(
-        "controller_assistant_secret_" not in admin,
-        "Admin never mounts encrypted Assistant secret state or its key",
-    )
     check(
         "controller_assistant_account_" not in admin,
         "Admin never mounts encrypted Assistant OAuth state or its key",
@@ -554,18 +540,6 @@ def _check_compose_isolation(admin: str, compose: str, controller: str) -> None:
         "Admin never mounts encrypted chat continuations or their key",
     )
     check(SCRIPT.count("  controller_power_journal:") == 1, "Compose declares exactly one Power journal volume")
-    check(
-        SCRIPT.count("  controller_approval_state:") == 1,
-        "Compose declares exactly one remembered-approval volume",
-    )
-    check(
-        SCRIPT.count("  controller_assistant_secret_state:") == 1,
-        "Compose declares exactly one encrypted Assistant secret-state volume",
-    )
-    check(
-        SCRIPT.count("  controller_assistant_secret_key:") == 1,
-        "Compose declares exactly one independent Assistant secret-key volume",
-    )
     check(
         SCRIPT.count("  controller_assistant_account_state:") == 1,
         "Compose declares exactly one encrypted Assistant OAuth-state volume",
@@ -876,9 +850,6 @@ def test_static_update_rollback_and_reset_are_bounded():
         '"${PROJECT_NAME}_controller_storage|controller_storage"',
         '"${PROJECT_NAME}_controller_inference|controller_inference"',
         '"${PROJECT_NAME}_controller_power_journal|controller_power_journal"',
-        '"${PROJECT_NAME}_controller_approval_state|controller_approval_state"',
-        '"${PROJECT_NAME}_controller_assistant_secret_state|controller_assistant_secret_state"',
-        '"${PROJECT_NAME}_controller_assistant_secret_key|controller_assistant_secret_key"',
         '"${PROJECT_NAME}_controller_assistant_account_state|controller_assistant_account_state"',
         '"${PROJECT_NAME}_controller_assistant_account_key|controller_assistant_account_key"',
         '"${PROJECT_NAME}_controller_chat_continuation_state|controller_chat_continuation_state"',

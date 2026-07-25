@@ -396,9 +396,6 @@ validate_project_resources() {
 			"${PROJECT_NAME}_controller_storage|controller_storage"|\
 			"${PROJECT_NAME}_controller_inference|controller_inference"|\
 			"${PROJECT_NAME}_controller_power_journal|controller_power_journal"|\
-			"${PROJECT_NAME}_controller_approval_state|controller_approval_state"|\
-			"${PROJECT_NAME}_controller_assistant_secret_state|controller_assistant_secret_state"|\
-			"${PROJECT_NAME}_controller_assistant_secret_key|controller_assistant_secret_key"|\
 			"${PROJECT_NAME}_controller_assistant_account_state|controller_assistant_account_state"|\
 			"${PROJECT_NAME}_controller_assistant_account_key|controller_assistant_account_key"|\
 			"${PROJECT_NAME}_controller_chat_continuation_state|controller_chat_continuation_state"|\
@@ -908,7 +905,6 @@ services:
       SHIMPZ_BRAIN_RUNTIME_URL: http://brain-runtime:8080
       SHIMPZ_BRAIN_RUNTIME_TOKEN_FILE: /run/shimpz-brain-runtime/token
       SHIMPZ_LOCAL_POWER_JOURNAL_PATH: /var/lib/shimpz-local/power-journal/journal.sqlite3
-      SHIMPZ_LOCAL_APPROVAL_GRANTS_PATH: /var/lib/shimpz-local/assistant-approvals/grants.sqlite3
       SHIMPZ_LOCAL_CHAT_CONTINUATIONS_STATE_PATH: /var/lib/shimpz-local/chat-continuations/state/continuations.json
       SHIMPZ_LOCAL_CHAT_CONTINUATIONS_KEY_PATH: /var/lib/shimpz-local/chat-continuations/key/aes256.key
       SHIMPZ_OAUTH_CALLBACK_MODE: ${SHIMPZ_OAUTH_CALLBACK_MODE:?installer must pin the OAuth callback mode}
@@ -923,9 +919,6 @@ services:
       - controller_storage:/var/lib/shimpz-local/storage:rw
       - controller_inference:/var/lib/shimpz-local/inference:rw
       - controller_power_journal:/var/lib/shimpz-local/power-journal:rw
-      - controller_approval_state:/var/lib/shimpz-local/assistant-approvals:rw
-      - controller_assistant_secret_state:/var/lib/shimpz-local/assistant-secrets/state:rw
-      - controller_assistant_secret_key:/var/lib/shimpz-local/assistant-secrets/key:rw
       - controller_assistant_account_state:/var/lib/shimpz-local/assistant-accounts/state:rw
       - controller_assistant_account_key:/var/lib/shimpz-local/assistant-accounts/key:rw
       - controller_chat_continuation_state:/var/lib/shimpz-local/chat-continuations/state:rw
@@ -1165,9 +1158,6 @@ volumes:
   controller_storage:
   controller_inference:
   controller_power_journal:
-  controller_approval_state:
-  controller_assistant_secret_state:
-  controller_assistant_secret_key:
   controller_assistant_account_state:
   controller_assistant_account_key:
   controller_chat_continuation_state:
