@@ -2,6 +2,10 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import test from "node:test";
 
+/**
+ * @param {URL} directory
+ * @returns {URL[]}
+ */
 function svelteFiles(directory) {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const base = directory.href.endsWith("/") ? directory : new URL(`${directory.href}/`);
