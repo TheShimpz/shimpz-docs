@@ -6,6 +6,7 @@
   "additionalProperties": false,
   "required": [
     "spec",
+    "id",
     "version",
     "name",
     "summary",
@@ -17,6 +18,9 @@
   "properties": {
     "spec": {
       "const": 1
+    },
+    "id": {
+      "$ref": "#/$defs/assistantIdentifier"
     },
     "version": {
       "type": "string",
@@ -73,6 +77,18 @@
     }
   },
   "$defs": {
+    "assistantIdentifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 40,
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+      "not": {
+        "enum": [
+          "postgres",
+          "app-egress-proxy"
+        ]
+      }
+    },
     "identifier": {
       "type": "string",
       "minLength": 1,

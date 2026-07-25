@@ -14,6 +14,7 @@ test("published shimpz.toml schema is the closed Spec v1 contract", () => {
   assert.equal(schema.additionalProperties, false);
   assert.deepEqual(schema.required, [
     "spec",
+    "id",
     "version",
     "name",
     "summary",
@@ -32,11 +33,15 @@ test("published shimpz.toml schema exposes only authored Spec v1 fields", () => 
     "creators",
     "genesis",
     "github",
+    "id",
     "name",
     "spec",
     "summary",
     "version",
   ]);
+  assert.deepEqual(schema.properties.id, { $ref: "#/$defs/assistantIdentifier" });
+  assert.equal(schema.$defs.assistantIdentifier.maxLength, 40);
+  assert.deepEqual(schema.$defs.assistantIdentifier.not.enum, ["postgres", "app-egress-proxy"]);
   assert.equal(schema.properties.accounts.propertyNames.$ref, "#/$defs/identifier");
   assert.deepEqual(schema.$defs.account.required, ["scopes"]);
   assert.equal(schema.$defs.account.additionalProperties, false);
