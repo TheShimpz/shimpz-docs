@@ -4,7 +4,7 @@ import type { PageServerLoad } from "./$types";
 
 const power = `from typing import TypedDict
 
-from shimpz import field, power
+from shimpz import Context, power
 
 
 class ZoneResult(TypedDict):
@@ -13,27 +13,19 @@ class ZoneResult(TypedDict):
 
 
 @power(accounts=["cloudflare"])
-async def inspect_zone(
-    domain=field(str, prompt="The domain to inspect."),
-    ctx=None,
-) -> ZoneResult:
+async def run(domain: str, *, ctx: Context = None) -> ZoneResult:
     token = ctx.accounts.cloudflare.access_token
     result = await fetch_zone(domain, token)
     return {"zone_id": result["id"], "status": result["status"]}`;
 
 const contract = `{
-  "id": "inspect_zone",
+  "id": "inspect-zone",
   "method": "POST",
-  "path": "/v1/powers/inspect_zone",
+  "path": "/v1/powers/inspect-zone",
   "accounts": ["cloudflare"],
   "input_schema": {
     "type": "object",
-    "properties": {
-      "domain": {
-        "type": "string",
-        "description": "The domain to inspect."
-      }
-    },
+    "properties": {"domain": {"type": "string"}},
     "required": ["domain"],
     "additionalProperties": false
   },

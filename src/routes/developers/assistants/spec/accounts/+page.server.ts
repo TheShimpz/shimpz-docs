@@ -5,11 +5,11 @@ import type { PageServerLoad } from "./$types";
 const manifest = `[accounts.cloudflare]
 scopes = ["zone.read", "dns.read", "offline_access"]`;
 
-const power = `@power(accounts=["cloudflare"])
-async def inspect_zone(
-    domain=field(str, prompt="The domain to inspect."),
-    ctx=None,
-):
+const power = `from shimpz import Context, power
+
+
+@power(accounts=["cloudflare"])
+async def run(domain: str, *, ctx: Context = None) -> dict[str, str]:
     access_token = ctx.accounts.cloudflare.access_token
     response = await fetch_zone(domain, access_token)
     return {"zone_id": response["id"], "status": response["status"]}`;

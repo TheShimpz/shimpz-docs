@@ -9,7 +9,7 @@
 <svelte:head>
   <title>Python Assistant quickstart — Shimpz docs</title>
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/quickstart/" />
-  <meta name="description" content="Run, test, and containerize a minimal Python Shimpz Assistant." />
+  <meta name="description" content="Create and test a Python Shimpz Assistant without Docker." />
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
@@ -18,56 +18,56 @@
 </nav>
 
 <header class="docs-page-header">
-  <span class="section-label">Runnable starter</span>
-  <h1>Build one Power end to end</h1>
+  <span class="section-label">Docker-free development</span>
+  <h1>Test one Power with two CLI commands</h1>
   <p class="docs-lede">
-    Start from the SDK's tested template, edit the two authored files, generate the machine contract,
-    and invoke the same one-shot runner used by the Controller.
+    Create three small source files, then let the native <code>shimpz</code> CLI manage Python 3.14,
+    <code>uv</code>, and the released SDK.
   </p>
 </header>
 
 <aside class="scope-note" aria-labelledby="requirements-title">
-  <span id="requirements-title" class="kicker">Requirements</span>
+  <span id="requirements-title" class="kicker">Install the CLI</span>
   <p>
-    Install Git, Python 3.14, <code>uv</code>, Docker, and <code>curl</code>. The starter locks its
-    Python dependencies and pins the image bases used by its Dockerfile.
+    Download the native binary from
+    <a href="https://github.com/TheShimpz/shimpz-cli/releases">GitHub Releases</a>, or run
+    <code>cargo install shimpz-cli --locked</code>. Both install the <code>shimpz</code> command.
   </p>
 </aside>
 
-<section class="guide-section" aria-labelledby="copy-title">
-  <span class="section-label">1 · Copy</span>
-  <h2 id="copy-title">Create a working project beside the starter</h2>
-  <CodeBlock label="Copy the SDK starter" title="Terminal" variant="code" {...data.copy} />
-</section>
-
 <section class="guide-section" aria-labelledby="manifest-title">
-  <span class="section-label">2 · Declare</span>
-  <h2 id="manifest-title">Edit shimpz.toml</h2>
-  <CodeBlock label="No network and no Accounts" title="shimpz.toml" variant="code" {...data.manifest} />
+  <span class="section-label">1 · Manifest</span>
+  <h2 id="manifest-title">Create shimpz.toml</h2>
+  <CodeBlock label="Identity and Genesis" title="shimpz.toml" variant="code" {...data.manifest} />
 </section>
 
-<section class="guide-section" aria-labelledby="app-title">
-  <span class="section-label">3 · Author</span>
-  <h2 id="app-title">Edit app.py</h2>
-  <CodeBlock label="One closed Echo Power" title="app.py" variant="code" {...data.app} />
+<section class="guide-section" aria-labelledby="project-title">
+  <span class="section-label">2 · Python</span>
+  <h2 id="project-title">Create pyproject.toml</h2>
+  <CodeBlock label="Released Python SDK" title="pyproject.toml" variant="code" {...data.project} />
+</section>
+
+<section class="guide-section" aria-labelledby="power-title">
+  <span class="section-label">3 · Power</span>
+  <h2 id="power-title">Create powers/echo.py</h2>
+  <CodeBlock label="One closed Echo Power" title="powers/echo.py" variant="code" {...data.power} />
 </section>
 
 <section class="guide-section" aria-labelledby="verify-title">
   <span class="section-label">4 · Verify</span>
-  <h2 id="verify-title">Run the test and inspect the generated contract</h2>
-  <CodeBlock label="Reproducible local checks" title="Terminal" variant="code" {...data.verify} />
-  <p>
-    <code>shimpz.contract.json</code> is generated output. Review it, but do not add fields by hand.
-  </p>
+  <h2 id="verify-title">Check the project and invoke echo</h2>
+  <CodeBlock label="Native local checks" title="Terminal" variant="code" {...data.verify} />
+  <p>The test prints the direct validated result:</p>
+  <CodeBlock label="Power result" title="stdout" variant="code" {...data.result} />
 </section>
 
-<section class="guide-section" aria-labelledby="container-title">
-  <span class="section-label">5 · Execute</span>
-  <h2 id="container-title">Build the image and call its RPC runner</h2>
-  <CodeBlock label="Container smoke test" title="Terminal" variant="code" {...data.container} />
-  <p>The final RPC call prints:</p>
-  <CodeBlock label="Validated Power response" title="stdout" variant="code" {...data.result} />
-</section>
+<aside class="scope-note" aria-labelledby="artifact-title">
+  <span id="artifact-title" class="kicker">Nothing else to commit</span>
+  <p>
+    The platform generates the machine contract, lock files, and container/runtime artifacts before
+    building the Assistant. Local Power tests do not require Docker.
+  </p>
+</aside>
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the developer guide">
   <a href="/developers/assistants/spec/execution/"><span>Back</span><strong>Execution model</strong></a>

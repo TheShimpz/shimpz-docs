@@ -2,20 +2,19 @@ import { highlightCode } from "$lib/server/highlight";
 
 import type { PageServerLoad } from "./$types";
 
-const projectFiles = `demo-assistant/
-├── shimpz.toml       # authored security intent
-├── app.py            # authored Python behavior
-├── pyproject.toml    # Python dependency lock input
-├── uv.lock           # reproducible dependencies
-├── Dockerfile        # immutable image recipe
-├── GENESIS.md        # current Brain runtime document
-├── help/
-│   └── HELP-en.md    # current user help document
-└── test_app.py       # creator-owned tests`;
+const projectFiles = `my-assistant/
+├── shimpz.toml
+├── powers/
+│   ├── create_dns.py
+│   ├── delete_dns.py
+│   └── list_dns.py
+├── lib/
+│   └── cloudflare.py
+└── pyproject.toml`;
 
-const application = `from typing import TypedDict
+const power = `from typing import TypedDict
 
-from shimpz import field, power
+from shimpz import power
 
 
 class EchoResult(TypedDict):
@@ -23,13 +22,10 @@ class EchoResult(TypedDict):
 
 
 @power()
-async def echo(
-    message=field(str, prompt="The message to return."),
-    ctx=None,
-) -> EchoResult:
+async def run(message: str) -> EchoResult:
     return {"message": message}`;
 
 export const load: PageServerLoad = async () => ({
   projectFiles: await highlightCode(projectFiles, "text"),
-  application: await highlightCode(application, "python"),
+  power: await highlightCode(power, "python"),
 });

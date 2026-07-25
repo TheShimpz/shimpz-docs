@@ -3,39 +3,39 @@
   <link rel="canonical" href="https://docs.shimpz.com/developers/" />
   <meta
     name="description"
-    content="Build a Python Assistant from shimpz.toml and app.py with the Shimpz SDK."
+    content="Build and test a file-backed Python Assistant with the Shimpz SDK and CLI."
   />
 </svelte:head>
 
 <header class="docs-page-header">
   <span class="section-label">Developer quick start</span>
-  <h1>Build an Assistant from two authored files</h1>
+  <h1>Write Powers, not infrastructure</h1>
   <p class="docs-lede">
-    Put security intent in <code>shimpz.toml</code> and Python behavior in <code>app.py</code>.
-    The Shimpz SDK turns them into the one machine contract that the Controller reviews and executes.
+    Put identity and Genesis in <code>shimpz.toml</code>. Put each Power in its own Python file.
+    The Shimpz CLI validates and tests the project locally without Docker.
   </p>
 </header>
 
 <section class="guide-section" aria-labelledby="path-title">
   <span class="section-label">Learning path</span>
-  <h2 id="path-title">Start with the model, then write the files</h2>
+  <h2 id="path-title">Start with the contract, then write one Power</h2>
   <ul class="docs-entry-list">
     <li>
       <a class="docs-entry-link" href="/developers/assistants/spec/">
-        <strong>1. Understand Assistant Spec v3</strong>
-        <span>See how authored intent becomes a reviewed runtime contract.</span>
-      </a>
-    </li>
-    <li>
-      <a class="docs-entry-link" href="/developers/assistants/spec/manifest/">
-        <strong>2. Declare security intent</strong>
-        <span>Name the Assistant, allow exact hosts, and request OAuth scopes.</span>
+        <strong>1. Understand Assistant Spec v1</strong>
+        <span>See what belongs in source and what Shimpz generates during pre-build.</span>
       </a>
     </li>
     <li>
       <a class="docs-entry-link" href="/developers/assistants/">
-        <strong>3. Write the Python application</strong>
-        <span>Define typed inputs and async Powers with the SDK.</span>
+        <strong>2. Create the minimal project</strong>
+        <span>Use the required powers directory and one async run function per file.</span>
+      </a>
+    </li>
+    <li>
+      <a class="docs-entry-link" href="/developers/assistants/quickstart/">
+        <strong>3. Test it with the native CLI</strong>
+        <span>Run shimpz check and shimpz test without building a container.</span>
       </a>
     </li>
   </ul>
@@ -45,21 +45,21 @@
   <span class="section-label">Trust boundary</span>
   <h2 id="boundary-title">The SDK describes; the Controller decides</h2>
   <ol>
-    <li>The SDK derives a machine contract from <code>app.py</code>.</li>
-    <li>The image carries that contract beside <code>shimpz.toml</code>.</li>
-    <li>The Controller validates both artifacts and rejects inconsistencies.</li>
+    <li>Shimpz Genesis derives a machine contract from the files in <code>powers/</code>.</li>
+    <li>The platform generates locks and runtime/container artifacts during pre-build.</li>
+    <li>The Controller validates the manifest and generated contract without importing source.</li>
     <li>Every input and output is validated again when a Power runs.</li>
   </ol>
 </section>
 
-<aside class="scope-note" aria-labelledby="python-title">
-  <span id="python-title" class="kicker">Reference SDK</span>
+<aside class="scope-note" aria-labelledby="sdk-title">
+  <span id="sdk-title" class="kicker">SDK architecture</span>
   <p>
-    Python is the complete reference implementation. The wire contract is language-neutral so other
-    SDKs can implement the same behavior without changing the Controller.
+    Shared deterministic behavior lives in the Rust <code>shimpz-genesis</code> foundation. The public
+    Python package and import are both <code>shimpz</code>.
   </p>
 </aside>
 
 <nav class="docs-page-nav" aria-label="Continue the developer guide">
-  <a href="/developers/assistants/spec/"><span>Next</span><strong>Assistant Spec v3</strong></a>
+  <a href="/developers/assistants/spec/"><span>Next</span><strong>Assistant Spec v1</strong></a>
 </nav>

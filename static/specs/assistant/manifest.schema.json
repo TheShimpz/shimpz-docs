@@ -1,29 +1,36 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://docs.shimpz.com/specs/assistant/manifest.schema.json",
-  "title": "Shimpz Assistant security intent",
-  "description": "Closed representation of shimpz.toml. The SDK-authored shimpz.contract.json defines Powers; this file declares only public metadata, exact egress hosts, and controller-owned OAuth Account intent.",
+  "$id": "https://schemas.shimpz.com/assistant/v1/manifest.schema.json",
+  "title": "Shimpz Assistant manifest v1",
   "type": "object",
   "additionalProperties": false,
   "required": [
+    "spec",
+    "version",
     "name",
     "summary",
     "creators",
     "github",
-    "allowed_hosts"
+    "allowed_hosts",
+    "genesis"
   ],
   "properties": {
+    "spec": {
+      "const": 1
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
     "name": {
       "type": "string",
       "minLength": 1,
-      "maxLength": 80,
-      "pattern": "^(?!\\s)(?!.*\\s$)[^\\r\\n]+$"
+      "maxLength": 80
     },
     "summary": {
       "type": "string",
       "minLength": 1,
-      "maxLength": 160,
-      "pattern": "^(?!\\s)(?!.*\\s$)[^\\r\\n]+$"
+      "maxLength": 160
     },
     "creators": {
       "type": "array",
@@ -37,28 +44,28 @@
     },
     "github": {
       "type": "string",
-      "maxLength": 220,
-      "pattern": "^https://github\\.com/[A-Za-z0-9](?:[A-Za-z0-9-]{0,38}[A-Za-z0-9])?/[A-Za-z0-9_.-]{1,100}$"
+      "pattern": "^https://github\\.com/[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?/[A-Za-z0-9](?:[A-Za-z0-9_.-]{0,98}[A-Za-z0-9])?$"
     },
     "allowed_hosts": {
-      "description": "Exact public DNS hostnames the Assistant may contact through the authenticated egress proxy. An empty array disables internet access.",
       "type": "array",
       "maxItems": 32,
       "uniqueItems": true,
       "items": {
         "type": "string",
-        "maxLength": 253,
-        "pattern": "^(?!.*\\.(?:arpa|example|home|internal|invalid|lan|local|localdomain|localhost|onion|test)$)(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?$"
+        "minLength": 1,
+        "maxLength": 253
       }
     },
+    "genesis": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 65536
+    },
     "accounts": {
-      "description": "OAuth Accounts keyed by provider id. Provider and scope enums are a release-pinned snapshot of the Controller provider catalog and must be regenerated with any catalog change. Endpoints, client credentials, grants, and tokens are controller-owned and cannot be declared here.",
       "type": "object",
       "maxProperties": 16,
       "propertyNames": {
-        "enum": [
-          "cloudflare"
-        ]
+        "$ref": "#/$defs/identifier"
       },
       "additionalProperties": {
         "$ref": "#/$defs/account"
@@ -66,12 +73,16 @@
     }
   },
   "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
     "account": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "scopes"
-      ],
+      "required": ["scopes"],
       "properties": {
         "scopes": {
           "type": "array",
@@ -79,11 +90,10 @@
           "maxItems": 32,
           "uniqueItems": true,
           "items": {
-            "enum": [
-              "dns.read",
-              "offline_access",
-              "zone.read"
-            ]
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[a-z0-9][a-z0-9.:/_-]*$"
           }
         }
       }

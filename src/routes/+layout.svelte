@@ -62,12 +62,12 @@
       ],
     },
     {
-      label: "Assistant Spec v3",
+      label: "Assistant Spec v1",
       items: [
         {
           href: "/developers/assistants/spec/",
           label: "Overview",
-          description: "Two files, one reviewed contract",
+          description: "Minimal source, generated runtime",
         },
         {
           href: "/developers/assistants/spec/manifest/",
@@ -76,28 +76,13 @@
         },
         {
           href: "/developers/assistants/",
-          label: "app.py",
-          description: "Author Python behavior",
+          label: "Project layout",
+          description: "One Python file per Power",
         },
         {
           href: "/developers/assistants/spec/powers/",
-          label: "@power",
-          description: "Define callable async operations",
-        },
-        {
-          href: "/developers/assistants/spec/fields/",
-          label: "field()",
-          description: "Declare typed Brain inputs",
-        },
-        {
-          href: "/developers/assistants/spec/human/",
-          label: "Human requests",
-          description: "Pause for typed human input",
-        },
-        {
-          href: "/developers/assistants/spec/approvals/",
-          label: "Approvals",
-          description: "Confirm sensitive actions in the body",
+          label: "Powers",
+          description: "Define one async run per file",
         },
         {
           href: "/developers/assistants/spec/accounts/",
@@ -112,7 +97,7 @@
         {
           href: "/developers/assistants/spec/execution/",
           label: "Execution model",
-          description: "Isolate, suspend, and replay Powers",
+          description: "Pre-build and invoke Powers",
         },
         {
           href: "/developers/assistants/quickstart/",

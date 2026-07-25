@@ -13,7 +13,7 @@
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/assistants/spec/">Assistant Spec v3</a><span aria-hidden="true">/</span>
+  <a href="/developers/assistants/spec/">Assistant Spec v1</a><span aria-hidden="true">/</span>
   <strong>Accounts</strong>
 </nav>
 
@@ -39,8 +39,8 @@
 
 <section class="guide-section" aria-labelledby="consume-title">
   <span class="section-label">Power boundary</span>
-  <h2 id="consume-title">Attach and read the Account in app.py</h2>
-  <CodeBlock label="Power-scoped Account access" title="app.py" variant="code" {...data.power} />
+  <h2 id="consume-title">Attach and read the Account in one Power file</h2>
+  <CodeBlock label="Power-scoped Account access" title="powers/inspect_zone.py" variant="code" {...data.power} />
   <p>
     A Power receives only Accounts listed in its <code>@power(accounts=[...])</code> declaration.
     Read the bearer token from <code>ctx.accounts.&lt;provider&gt;.access_token</code>.
@@ -62,13 +62,13 @@
 <aside class="scope-note" aria-labelledby="secrets-title">
   <span id="secrets-title" class="kicker">No static Secrets surface</span>
   <p>
-    Durable credentials use Accounts. Per-execution values use <code>ctx.human.request</code>.
-    Never put client secrets, access tokens, refresh tokens, or ad-hoc private values in
+    OAuth credentials use Accounts. Assistant Spec v1 has no ad-hoc secret or human-input channel.
+    Never put client secrets, access tokens, refresh tokens, or private values in
     <code>shimpz.toml</code>, source, logs, arguments, or returned data.
   </p>
 </aside>
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec">
-  <a href="/developers/assistants/spec/approvals/"><span>Back</span><strong>ctx.human.approval</strong></a>
+  <a href="/developers/assistants/spec/powers/"><span>Back</span><strong>Powers</strong></a>
   <a href="/developers/assistants/spec/network/"><span>Next</span><strong>Network access</strong></a>
 </nav>

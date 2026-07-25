@@ -2,21 +2,24 @@ import { highlightCode } from "$lib/server/highlight";
 
 import type { PageServerLoad } from "./$types";
 
-const copy = `git clone https://github.com/TheShimpz/shimpz.git
-cd shimpz
-cp -R packages/python/shimpz/templates/starter \\
-  packages/python/shimpz/templates/my-assistant
-cd packages/python/shimpz/templates/my-assistant`;
-
-const manifest = `name = "Echo Assistant"
+const manifest = `spec = 1
+version = "0.1.0"
+name = "Echo Assistant"
 summary = "Returns a message unchanged."
 creators = ["@your-handle"]
+github = "https://github.com/your-handle/echo-assistant"
 allowed_hosts = []
-github = "https://github.com/your-handle/echo-assistant"`;
+genesis = "Use echo when the user asks you to repeat a short message."`;
 
-const app = `from typing import TypedDict
+const project = `[project]
+name = "echo-assistant"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = ["shimpz==0.1.0"]`;
 
-from shimpz import field, power
+const power = `from typing import TypedDict
+
+from shimpz import power
 
 
 class EchoResult(TypedDict):
@@ -24,37 +27,18 @@ class EchoResult(TypedDict):
 
 
 @power()
-async def echo(
-    message=field(str, prompt="The message to return."),
-    ctx=None,
-) -> EchoResult:
+async def run(message: str) -> EchoResult:
     return {"message": message}`;
 
-const verify = `uv sync --frozen
-uv run python test_app.py
-uv run shimpz-assistant-contract
-uv run python -m json.tool shimpz.contract.json`;
+const verify = `shimpz check
+shimpz test echo --input '{"message":"hello"}'`;
 
-const container = `uv build ../.. --wheel --out-dir .build/sdk
-docker build --tag echo-assistant:dev .
-docker run --detach --rm --name echo-assistant \\
-  --publish 127.0.0.1:8080:8080 echo-assistant:dev
-
-curl --fail http://127.0.0.1:8080/healthz
-printf '%s' \\
-  '{"input":{"message":"hello"},"secrets":{},"accounts":{},"answers":[]}' \\
-  | docker exec --interactive echo-assistant \\
-      shimpz-assistant-rpc POST /v1/powers/echo
-
-docker stop echo-assistant`;
-
-const result = `{"result":{"message":"hello"}}`;
+const result = `{"message":"hello"}`;
 
 export const load: PageServerLoad = async () => ({
-  copy: await highlightCode(copy, "bash"),
   manifest: await highlightCode(manifest, "toml"),
-  app: await highlightCode(app, "python"),
+  project: await highlightCode(project, "toml"),
+  power: await highlightCode(power, "python"),
   verify: await highlightCode(verify, "bash"),
-  container: await highlightCode(container, "bash"),
   result: await highlightCode(result, "json"),
 });
