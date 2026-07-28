@@ -171,7 +171,7 @@ die() { printf '%s\n' "$*" >&2; exit 1; }
         )
 
 
-def _run_reserved_name_validator(*, exists: bool, project: str) -> subprocess.CompletedProcess[str]:
+def _run_reserved_name_validator(*, name: str, exists: bool, project: str) -> subprocess.CompletedProcess[str]:
     """Exercise the shipped global-name preflight against one fake collision."""
     with tempfile.TemporaryDirectory() as raw_home:
         home = Path(raw_home)
@@ -183,7 +183,7 @@ def _run_reserved_name_validator(*, exists: bool, project: str) -> subprocess.Co
 for argument in "$@"; do
     reserved_name="$argument"
 done
-[ "$reserved_name" = "shimpz-admin" ] || exit 1
+[ "$reserved_name" = "$FAKE_NAME" ] || exit 1
 [ "$FAKE_EXISTS" = "1" ] || exit 1
 printf '%s\n' "$FAKE_PROJECT"
 """,
@@ -191,13 +191,17 @@ printf '%s\n' "$FAKE_PROJECT"
         )
         docker.chmod(0o700)
         shell = home / "validator.sh"
+        reserved_names_assignment = next(
+            line for line in SCRIPT.splitlines() if line.startswith("RESERVED_CONTAINER_NAMES=")
+        )
         shell.write_text(
             """#!/bin/sh
 set -eu
 PROJECT_NAME="shimpz-space"
-RESERVED_CONTAINER_NAMES="shimpz-admin shimpz-team shimpz-brain shimpz-egress shimpz-account"
 die() { printf '%s\n' "$*" >&2; exit 1; }
 """
+            + reserved_names_assignment
+            + "\n"
             + _shell_functions("validate_reserved_container_names", "validate_space_id")
             + "\nvalidate_reserved_container_names\n",
             encoding="utf-8",
@@ -211,6 +215,7 @@ die() { printf '%s\n' "$*" >&2; exit 1; }
             env={
                 "HOME": str(home),
                 "PATH": f"{binary_dir}:/usr/bin:/bin",
+                "FAKE_NAME": name,
                 "FAKE_EXISTS": "1" if exists else "0",
                 "FAKE_PROJECT": project,
             },
@@ -368,6 +373,11 @@ def test_static_delivery_is_pull_only_and_content_addressed():
         container_names
         == ["shimpz-team", "shimpz-egress", "shimpz-account", "shimpz-brain", "shimpz-admin"],
         "Compose assigns the five stable, memorable container names exactly once",
+    )
+    reserved_line = next(line for line in SCRIPT.splitlines() if line.startswith("RESERVED_CONTAINER_NAMES="))
+    check(
+        sorted(reserved_line.split('"')[1].split()) == sorted(container_names),
+        "the reserved-name preflight covers exactly the Compose container names",
     )
     check("image: ${SHIMPZ_ADMIN_IMAGE:?" in SCRIPT, "Compose fails closed without the pinned Admin reference")
     check(
@@ -745,7 +755,7 @@ def test_reset_accepts_only_the_exact_space_owned_egress_proxy():
     )
     for confused in (
         valid.replace("app-egress-proxy", "oauth-broker-proxy"),
-        oauth.replace("/shimpz-account", "/shimpz-egress"),
+        valid.replace("/shimpz-egress", "/shimpz-account"),
         oauth.replace("/shimpz-account", "/shimpz-space-foreign-1"),
     ):
         rejected = _run_dynamic_validator(confused)
@@ -1101,6 +1111,11 @@ def test_project_validator_enforces_stable_and_migration_container_names():
                 controller_environments=environments,
             )
             check(accepted.returncode == 0, f"the exact {accepted_name} project container is accepted")
+            expected_state = f"current|{space_id}|1|0" if service == "team-driver-local" else "||0|0"
+            check(
+                accepted.stdout.strip() == expected_state,
+                f"the exact {accepted_name} project container records only its intended role",
+            )
 
     for record in (
         f"/shimpz-account|app-egress-proxy|{image}",
@@ -1206,18 +1221,22 @@ def test_static_owned_prior_controller_reset_preserves_admin_volumes():
 
 
 def test_reserved_container_name_preflight_is_early_and_fail_closed():
-    own = _run_reserved_name_validator(exists=True, project="shimpz-space")
+    own = _run_reserved_name_validator(name="shimpz-admin", exists=True, project="shimpz-space")
     check(own.returncode == 0, f"the managed project may retain its reserved names: {own.stderr.strip()}")
 
-    missing = _run_reserved_name_validator(exists=False, project="")
+    missing = _run_reserved_name_validator(name="shimpz-admin", exists=False, project="")
     check(missing.returncode == 0, f"unused reserved names remain available: {missing.stderr.strip()}")
 
     for foreign_project in ("", "another-project"):
-        foreign = _run_reserved_name_validator(exists=True, project=foreign_project)
+        foreign = _run_reserved_name_validator(name="shimpz-admin", exists=True, project=foreign_project)
         check(foreign.returncode != 0, "an unlabeled or foreign container cannot claim a reserved Shimpz name")
         check("another Docker container is already named shimpz-admin" in foreign.stderr, "the collision is named")
 
-    preflight = SCRIPT.index('validate_reserved_container_names\n\nif [ -f "$MARKER_FILE" ]; then')
+    final_name = _run_reserved_name_validator(name="shimpz-account", exists=True, project="another-project")
+    check(final_name.returncode != 0, "the reserved-name preflight checks through its final name")
+    check("already named shimpz-account" in final_name.stderr, "a collision on the final reserved name is identified")
+
+    preflight = SCRIPT.index("\nvalidate_reserved_container_names\n")
     first_state_write = SCRIPT.index('umask 077\nmkdir -p "$SHIMPZ_HOME"')
     check(preflight < first_state_write, "reserved names are validated before installer state is written")
 
