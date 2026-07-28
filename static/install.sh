@@ -369,6 +369,8 @@ validate_project_resources() {
 		container_service="${container_rest%%|*}"
 		container_image="${container_rest#*|}"
 		validate_official_digest_image "$container_image"
+		# Migration-only: 0.4.7 let Compose generate project-scoped names. Keep those alternatives
+		# only while direct updates and resets from 0.4.7 remain supported.
 		case "${container_name}|${container_service}" in
 			"/shimpz-admin|admin"|"/${PROJECT_NAME}-admin-1|admin")
 				[ "$admin_seen" -eq 0 ] || die "refusing reset: duplicate managed Admin container"
@@ -466,6 +468,7 @@ validate_dynamic_resources() {
 		[ "$managed_value" = "1" ] && [ "$profile_value" = "$LOCAL_PROFILE" ] \
 			&& [ "$space_value" = "$reset_space_id" ] \
 			|| die "refusing reset: a Space-labeled container has invalid ownership labels"
+		# The two Compose proxies carry Space labels and need the same 0.4.7 migration allowance.
 		case "$kind_value" in
 			assistant)
 				case "$dynamic_name" in "/shimpz-local-"*) ;; *) die "refusing reset: invalid managed Assistant name" ;; esac
