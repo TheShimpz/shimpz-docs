@@ -63,6 +63,7 @@ case "$*" in
             prior) printf '%s\n' "$FAKE_PRIOR_RECORD" ;;
             prior_two) printf '%s\n' "$FAKE_PRIOR_TWO_RECORD" ;;
             foreign) printf '%s\n' "$FAKE_FOREIGN_RECORD" ;;
+            oauth) printf '%s\n' "$FAKE_OAUTH_RECORD" ;;
             *) exit 72 ;;
         esac
         ;;
@@ -112,6 +113,7 @@ printf '%s|%s|%s|%s\n' \
             "FAKE_PRIOR_RECORD": fake_records.get("prior", ""),
             "FAKE_PRIOR_TWO_RECORD": fake_records.get("prior_two", ""),
             "FAKE_FOREIGN_RECORD": fake_records.get("foreign", ""),
+            "FAKE_OAUTH_RECORD": fake_records.get("oauth", ""),
             "FAKE_CURRENT_ENV": controller_environments.get("current", ""),
             "FAKE_PRIOR_ENV": controller_environments.get("prior", ""),
             "FAKE_PRIOR_TWO_ENV": controller_environments.get("prior_two", ""),
@@ -1117,6 +1119,23 @@ def test_project_validator_enforces_stable_and_migration_container_names():
                 f"the exact {accepted_name} project container records only its intended role",
             )
 
+    healthy_project = _run_project_validator(
+        [
+            f"current|/shimpz-team|team-driver-local|{image}",
+            f"prior|/shimpz-admin|admin|{image}",
+            f"prior_two|/shimpz-brain|brain-runtime|{image}",
+            f"foreign|/shimpz-egress|app-egress-proxy|{image}",
+            f"oauth|/shimpz-account|oauth-broker-proxy|{image}",
+        ],
+        prior_image=image,
+        controller_environments={"current": f"SHIMPZ_SPACE_ID={space_id}"},
+    )
+    check(
+        healthy_project.returncode == 0
+        and healthy_project.stdout.strip() == f"current|{space_id}|1|0",
+        "a complete stable-named project validates in one pass",
+    )
+
     for record in (
         f"/shimpz-account|app-egress-proxy|{image}",
         f"/shimpz-admin|brain-runtime|{image}",
@@ -1236,9 +1255,13 @@ def test_reserved_container_name_preflight_is_early_and_fail_closed():
     check(final_name.returncode != 0, "the reserved-name preflight checks through its final name")
     check("already named shimpz-account" in final_name.stderr, "a collision on the final reserved name is identified")
 
+    docker_ready = SCRIPT.index("docker info >/dev/null 2>&1 || die")
     preflight = SCRIPT.index("\nvalidate_reserved_container_names\n")
     first_state_write = SCRIPT.index('umask 077\nmkdir -p "$SHIMPZ_HOME"')
-    check(preflight < first_state_write, "reserved names are validated before installer state is written")
+    check(
+        docker_ready < preflight < first_state_write,
+        "reserved names are validated after Docker is proven and before installer state is written",
+    )
 
 
 def test_static_docs_origin_serves_only_the_installer_paths():
