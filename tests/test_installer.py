@@ -467,6 +467,7 @@ def _check_controller_runtime(controller: str) -> None:
         "${SHIMPZ_OAUTH_BROKER_PROXY_TOKEN:?installer must bind the OAuth broker proxy capability}",
         "SHIMPZ_APP_EGRESS_PROXY_CONTAINER: shimpz-egress",
         "SHIMPZ_APP_EGRESS_POLICY_DIR: /var/lib/shimpz-local/app-egress",
+        "app-egress-proxy:\n        condition: service_started",
         '- "10016"',
         '- "10017"',
         'cpus: "1.0"',

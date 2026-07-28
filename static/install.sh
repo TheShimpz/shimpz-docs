@@ -944,6 +944,8 @@ services:
         max-size: "1m"
         max-file: "2"
     depends_on:
+      app-egress-proxy:
+        condition: service_started
       oauth-broker-proxy:
         condition: service_healthy
     networks:
