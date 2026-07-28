@@ -3,6 +3,7 @@ import { highlightCode } from "$lib/server/highlight";
 import type { PageServerLoad } from "./$types";
 
 const manifest = `spec = 1
+id = "echo-demo"
 version = "0.1.0"
 name = "Echo Assistant"
 summary = "Returns a message unchanged."
