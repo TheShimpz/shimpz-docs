@@ -171,6 +171,52 @@ die() { printf '%s\n' "$*" >&2; exit 1; }
         )
 
 
+def _run_reserved_name_validator(*, exists: bool, project: str) -> subprocess.CompletedProcess[str]:
+    """Exercise the shipped global-name preflight against one fake collision."""
+    with tempfile.TemporaryDirectory() as raw_home:
+        home = Path(raw_home)
+        binary_dir = home / "bin"
+        binary_dir.mkdir()
+        docker = binary_dir / "docker"
+        docker.write_text(
+            """#!/bin/sh
+for argument in "$@"; do
+    reserved_name="$argument"
+done
+[ "$reserved_name" = "shimpz-admin" ] || exit 1
+[ "$FAKE_EXISTS" = "1" ] || exit 1
+printf '%s\n' "$FAKE_PROJECT"
+""",
+            encoding="utf-8",
+        )
+        docker.chmod(0o700)
+        shell = home / "validator.sh"
+        shell.write_text(
+            """#!/bin/sh
+set -eu
+PROJECT_NAME="shimpz-space"
+RESERVED_CONTAINER_NAMES="shimpz-admin shimpz-team shimpz-brain shimpz-egress shimpz-account"
+die() { printf '%s\n' "$*" >&2; exit 1; }
+"""
+            + _shell_functions("validate_reserved_container_names", "validate_space_id")
+            + "\nvalidate_reserved_container_names\n",
+            encoding="utf-8",
+        )
+        shell.chmod(0o700)
+        return subprocess.run(
+            ["/bin/sh", str(shell)],
+            check=False,
+            capture_output=True,
+            text=True,
+            env={
+                "HOME": str(home),
+                "PATH": f"{binary_dir}:/usr/bin:/bin",
+                "FAKE_EXISTS": "1" if exists else "0",
+                "FAKE_PROJECT": project,
+            },
+        )
+
+
 def test_script_is_posix_executable_and_self_describing():
     check(SCRIPT.startswith("#!/bin/sh\n\nset -eu\n"), "installer is fail-fast POSIX shell")
     check(SCRIPT_PATH.stat().st_mode & stat.S_IXUSR, "installer is executable in the published artifact")
@@ -1156,6 +1202,23 @@ def test_static_owned_prior_controller_reset_preserves_admin_volumes():
     )
     check("compose down --volumes" not in update_branch, "an update never removes persistent Compose volumes")
     check("docker volume rm" not in update_branch, "an update preserves Admin configuration and data volumes")
+
+
+def test_reserved_container_name_preflight_is_early_and_fail_closed():
+    own = _run_reserved_name_validator(exists=True, project="shimpz-space")
+    check(own.returncode == 0, f"the managed project may retain its reserved names: {own.stderr.strip()}")
+
+    missing = _run_reserved_name_validator(exists=False, project="")
+    check(missing.returncode == 0, f"unused reserved names remain available: {missing.stderr.strip()}")
+
+    for foreign_project in ("", "another-project"):
+        foreign = _run_reserved_name_validator(exists=True, project=foreign_project)
+        check(foreign.returncode != 0, "an unlabeled or foreign container cannot claim a reserved Shimpz name")
+        check("another Docker container is already named shimpz-admin" in foreign.stderr, "the collision is named")
+
+    preflight = SCRIPT.index('validate_reserved_container_names\n\nif [ -f "$MARKER_FILE" ]; then')
+    first_state_write = SCRIPT.index('umask 077\nmkdir -p "$SHIMPZ_HOME"')
+    check(preflight < first_state_write, "reserved names are validated before installer state is written")
 
 
 def test_static_docs_origin_serves_only_the_installer_paths():

@@ -161,6 +161,7 @@ esac
 setup_colors
 show_brand "$action"
 PROJECT_NAME="shimpz-space"
+RESERVED_CONTAINER_NAMES="shimpz-admin shimpz-team shimpz-brain shimpz-egress shimpz-account"
 SHIMPZ_HOME_NAME=".shimpz"
 MARKER_VALUE="shimpz-space-managed-v1"
 OAUTH_CALLBACK_MODE="loopback"
@@ -224,6 +225,16 @@ project_resources_exist() {
 	volume_ids="$(project_volume_ids)" || die "could not inspect existing Shimpz Space volumes"
 	network_ids="$(project_network_ids)" || die "could not inspect existing Shimpz Space networks"
 	[ -n "${container_ids}${volume_ids}${network_ids}" ]
+}
+
+validate_reserved_container_names() {
+	for reserved_name in $RESERVED_CONTAINER_NAMES; do
+		reserved_project="$(docker inspect --type=container \
+			--format '{{index .Config.Labels "com.docker.compose.project"}}' \
+			"$reserved_name" 2>/dev/null)" || continue
+		[ "$reserved_project" = "$PROJECT_NAME" ] \
+			|| die "another Docker container is already named ${reserved_name}. Nothing was changed. Rename or remove it, then run the installer again"
+	done
 }
 
 validate_space_id() {
@@ -662,6 +673,7 @@ fi
 if [ ! -f "$MARKER_FILE" ] && project_resources_exist; then
 	die "an earlier Shimpz installation still has Docker data. Nothing was changed. Reset it first with: ${reset_command}"
 fi
+validate_reserved_container_names
 
 if [ -f "$MARKER_FILE" ]; then
 	install_mode="update"
