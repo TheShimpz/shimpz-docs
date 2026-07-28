@@ -13,7 +13,6 @@ SCRIPT = SCRIPT_PATH.read_text(encoding="utf-8")
 CADDY = (ROOT / "Caddyfile").read_text(encoding="utf-8")
 DOCKERIGNORE = (ROOT / ".dockerignore").read_text(encoding="utf-8")
 IMAGE_REPOSITORY_FOR_TESTS = "ghcr.io/theshimpz/shimpz-space"
-PRIOR_IMAGE_REPOSITORY_FOR_TESTS = "ghcr.io/roxygens/shimpz-space"
 APP_EGRESS_DIGEST = "2911302477bf0bf5025c91e0ab34096b32ffb509df13bd6c8d822519a48c47ed"
 
 
@@ -32,7 +31,6 @@ def _shell_functions(start_name: str, end_name: str) -> str:
 def _run_project_validator(
     records: list[str],
     *,
-    prior_image: str,
     controller_environments: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
     """Drive the exact shipped validator through a tiny executable Docker fake."""
@@ -52,16 +50,16 @@ case "$*" in
     *"range .Config.Env"*)
         case "$resource_id" in
             current) printf '%s\n' "$FAKE_CURRENT_ENV" ;;
-            prior) printf '%s\n' "$FAKE_PRIOR_ENV" ;;
-            prior_two) printf '%s\n' "$FAKE_PRIOR_TWO_ENV" ;;
+            second) printf '%s\n' "$FAKE_SECOND_ENV" ;;
+            third) printf '%s\n' "$FAKE_THIRD_ENV" ;;
             *) exit 71 ;;
         esac
         ;;
     *)
         case "$resource_id" in
             current) printf '%s\n' "$FAKE_CURRENT_RECORD" ;;
-            prior) printf '%s\n' "$FAKE_PRIOR_RECORD" ;;
-            prior_two) printf '%s\n' "$FAKE_PRIOR_TWO_RECORD" ;;
+            second) printf '%s\n' "$FAKE_SECOND_RECORD" ;;
+            third) printf '%s\n' "$FAKE_THIRD_RECORD" ;;
             foreign) printf '%s\n' "$FAKE_FOREIGN_RECORD" ;;
             oauth) printf '%s\n' "$FAKE_OAUTH_RECORD" ;;
             *) exit 72 ;;
@@ -72,33 +70,22 @@ esac
             encoding="utf-8",
         )
         docker.chmod(0o700)
-        env_file = home / ".env"
-        env_file.write_text(f"SHIMPZ_CONTROLLER_IMAGE={prior_image}\n", encoding="utf-8")
         shell = home / "validator.sh"
-        prior_service_assignment = next(
-            line for line in SCRIPT.splitlines() if line.startswith("PRIOR_CONTROLLER_SERVICE=")
-        )
         shell.write_text(
             """#!/bin/sh
 set -eu
 PROJECT_NAME="shimpz-space"
 IMAGE_REPOSITORY="ghcr.io/theshimpz/shimpz-space"
-PRIOR_IMAGE_REPOSITORY="ghcr.io/roxygens/shimpz-space"
-ENV_FILE="$TEST_ENV_FILE"
 CONTAINER_IDS="$TEST_CONTAINER_IDS"
 die() { printf '%s\n' "$*" >&2; exit 1; }
 project_container_ids() { printf '%s\n' "$CONTAINER_IDS"; }
 project_volume_ids() { :; }
 project_network_ids() { :; }
 """
-            + prior_service_assignment
-            + "\n"
             + _shell_functions("validate_space_id", "dynamic_container_ids")
             + """
-prior_controller_image_ref="$(controller_image_from_env_file)"
 validate_project_resources
-printf '%s|%s|%s|%s\n' \
-    "$controller_id" "$controller_space_id" "$controller_seen" "$prior_controller_seen"
+printf '%s|%s|%s\n' "$controller_id" "$controller_space_id" "$controller_seen"
 """,
             encoding="utf-8",
         )
@@ -107,16 +94,15 @@ printf '%s|%s|%s|%s\n' \
         environment = {
             "HOME": str(home),
             "PATH": f"{binary_dir}:/usr/bin:/bin",
-            "TEST_ENV_FILE": str(env_file),
             "TEST_CONTAINER_IDS": " ".join(fake_records),
             "FAKE_CURRENT_RECORD": fake_records.get("current", ""),
-            "FAKE_PRIOR_RECORD": fake_records.get("prior", ""),
-            "FAKE_PRIOR_TWO_RECORD": fake_records.get("prior_two", ""),
+            "FAKE_SECOND_RECORD": fake_records.get("second", ""),
+            "FAKE_THIRD_RECORD": fake_records.get("third", ""),
             "FAKE_FOREIGN_RECORD": fake_records.get("foreign", ""),
             "FAKE_OAUTH_RECORD": fake_records.get("oauth", ""),
             "FAKE_CURRENT_ENV": controller_environments.get("current", ""),
-            "FAKE_PRIOR_ENV": controller_environments.get("prior", ""),
-            "FAKE_PRIOR_TWO_ENV": controller_environments.get("prior_two", ""),
+            "FAKE_SECOND_ENV": controller_environments.get("second", ""),
+            "FAKE_THIRD_ENV": controller_environments.get("third", ""),
         }
         return subprocess.run(
             ["/bin/sh", str(shell)],
@@ -248,7 +234,7 @@ def test_static_local_installer_contains_no_oauth_client_credentials():
 
 def test_version_command_reports_the_stable_installer_release():
     version = subprocess.run(["sh", str(SCRIPT_PATH), "--version"], check=False, capture_output=True, text=True)
-    check(version.returncode == 0 and version.stdout.strip() == "0.4.8", "version is an explicit stable release")
+    check(version.returncode == 0 and version.stdout.strip() == "0.4.9", "version is an explicit stable release")
 
 
 def test_brand_is_canonical_and_action_specific_for_install_and_reset():
@@ -307,9 +293,10 @@ def test_brand_is_canonical_and_action_specific_for_install_and_reset():
 
 def test_static_delivery_is_pull_only_and_content_addressed():
     check('IMAGE_REPOSITORY="ghcr.io/theshimpz/shimpz-space"' in SCRIPT, "installer uses the canonical package")
+    digest_validator = _shell_functions("official_image_digest", "validate_official_digest_image")
     check(
-        'PRIOR_IMAGE_REPOSITORY="ghcr.io/roxygens/shimpz-space"' in SCRIPT,
-        "installer allowlists the retired official package only for digest-pinned migration",
+        digest_validator.count("IMAGE_REPOSITORY") == 1 and "for image_repository" not in digest_validator,
+        "only the canonical package can authenticate a managed digest-pinned image",
     )
     check('ADMIN_CHANNEL="stable"' in SCRIPT, "installer selects only the stable Admin channel")
     check(
@@ -372,8 +359,7 @@ def test_static_delivery_is_pull_only_and_content_addressed():
     compose = SCRIPT.split("cat >\"${COMPOSE_FILE}.tmp\" <<'COMPOSE'", 1)[1].split("\nCOMPOSE", 1)[0]
     container_names = re.findall(r"^    container_name: (\S+)$", compose, re.MULTILINE)
     check(
-        container_names
-        == ["shimpz-team", "shimpz-egress", "shimpz-account", "shimpz-brain", "shimpz-admin"],
+        container_names == ["shimpz-team", "shimpz-egress", "shimpz-account", "shimpz-brain", "shimpz-admin"],
         "Compose assigns the five stable, memorable container names exactly once",
     )
     reserved_line = next(line for line in SCRIPT.splitlines() if line.startswith("RESERVED_CONTAINER_NAMES="))
@@ -622,7 +608,7 @@ def _check_compose_isolation(admin: str, compose: str, controller: str) -> None:
         "Compose declares exactly one independent chat-continuation key volume",
     )
     check("SHIMPZ_CLOUDFLARE_OAUTH_CLIENT" not in SCRIPT, "installer contains no OAuth client credentials")
-    check("SHIMPZ_X_OAUTH_CLIENT_ID" not in SCRIPT, "installer contains no retired X OAuth configuration")
+    check("SHIMPZ_X_OAUTH_CLIENT_ID" not in SCRIPT, "installer contains no unsupported X OAuth configuration")
     check("postgres" not in SCRIPT, "bootstrap does not claim an unshipped PostgreSQL dependency")
     check("at least 12 characters" in SCRIPT, "success output states the real initial password minimum")
 
@@ -734,26 +720,11 @@ def test_reset_accepts_only_the_exact_space_owned_egress_proxy():
         rejected = _run_dynamic_validator(invalid)
         check(rejected.returncode != 0, f"an egress proxy with a foreign {label} fails closed")
 
-    legacy = valid.replace("/shimpz-egress", "/shimpz-space-app-egress-proxy-1")
-    accepted_legacy = _run_dynamic_validator(legacy)
-    check(
-        accepted_legacy.returncode == 0,
-        f"the previous Compose egress name remains accepted for migration: {accepted_legacy.stderr.strip()}",
-    )
-
-    oauth = valid.replace("/shimpz-egress", "/shimpz-account").replace(
-        "app-egress-proxy", "oauth-broker-proxy"
-    )
+    oauth = valid.replace("/shimpz-egress", "/shimpz-account").replace("app-egress-proxy", "oauth-broker-proxy")
     accepted_oauth = _run_dynamic_validator(oauth)
     check(
         accepted_oauth.returncode == 0,
         f"the exact Compose OAuth broker proxy is accepted: {accepted_oauth.stderr.strip()}",
-    )
-    legacy_oauth = oauth.replace("/shimpz-account", "/shimpz-space-oauth-broker-proxy-1")
-    accepted_legacy_oauth = _run_dynamic_validator(legacy_oauth)
-    check(
-        accepted_legacy_oauth.returncode == 0,
-        f"the previous Compose OAuth name remains accepted for migration: {accepted_legacy_oauth.stderr.strip()}",
     )
     for confused in (
         valid.replace("app-egress-proxy", "oauth-broker-proxy"),
@@ -875,17 +846,20 @@ def test_static_update_rollback_and_reset_are_bounded():
         'step "Removing verified rollback leftovers"' in SCRIPT,
         "reset revalidates and removes volumes left by a rolled-back newer Compose contract",
     )
-    check(SCRIPT.count(".previous") >= 8, "update preserves and restores the prior Compose release")
+    check(SCRIPT.count(".previous") >= 8, "update preserves and restores the previous Compose release")
     check("rollback also failed" in SCRIPT, "a failed rollback is surfaced rather than hidden")
     startup = "compose up -d --wait --wait-timeout 120 --no-build --pull never --remove-orphans"
     check(
         SCRIPT.count(startup) == 2,
-        "candidate and rollback startup remove containers retired by the managed Compose release",
+        "candidate and rollback startup remove containers absent from the managed Compose release",
     )
     for marker in (
-        "optional_env_value",
+        "previous_env_value",
         "load_previous_release",
-        "SHIMPZ_SPACE_IMAGE",
+        "SHIMPZ_ADMIN_IMAGE",
+        "previous_admin_ref",
+        "SHIMPZ_CONTROLLER_IMAGE",
+        "previous_controller_ref",
         "SHIMPZ_BRAIN_RUNTIME_IMAGE",
         "previous_brain_runtime_ref",
         "SHIMPZ_APP_EGRESS_IMAGE",
@@ -924,13 +898,13 @@ def test_static_update_rollback_and_reset_are_bounded():
     check("umask 077" in SCRIPT and "chmod 700" in SCRIPT, "local installer state is private")
     check(SCRIPT.count("chmod 600") >= 3, "generated config, environment, and marker are owner-only")
     for marker in (
-        "an earlier Shimpz installation still has Docker data",
+        "managed Shimpz Docker data exists without an install marker",
         "validate_project_resources",
-        '"/shimpz-admin|admin"|"/${PROJECT_NAME}-admin-1|admin"',
-        '"/shimpz-team|team-driver-local"|"/${PROJECT_NAME}-team-driver-local-1|team-driver-local"',
-        '"/shimpz-brain|brain-runtime"|"/${PROJECT_NAME}-brain-runtime-1|brain-runtime"',
-        '"/shimpz-egress|app-egress-proxy"|"/${PROJECT_NAME}-app-egress-proxy-1|app-egress-proxy"',
-        '"/shimpz-account|oauth-broker-proxy"|"/${PROJECT_NAME}-oauth-broker-proxy-1|oauth-broker-proxy"',
+        '"/shimpz-admin|admin"',
+        '"/shimpz-team|team-driver-local"',
+        '"/shimpz-brain|brain-runtime"',
+        '"/shimpz-egress|app-egress-proxy"',
+        '"/shimpz-account|oauth-broker-proxy"',
         '"${PROJECT_NAME}_config|config"',
         '"${PROJECT_NAME}_data|data"',
         '"${PROJECT_NAME}_controller_token|controller_token"',
@@ -971,272 +945,71 @@ def test_static_update_rollback_and_reset_are_bounded():
     )
 
 
-def test_owned_prior_controller_transition_is_exact_and_fail_closed():
-    old_service = "cap" + "sule-driver-local"
-    prior_image = f"{IMAGE_REPOSITORY_FOR_TESTS}@sha256:{'a' * 64}"
-    other_image = f"{IMAGE_REPOSITORY_FOR_TESTS}@sha256:{'b' * 64}"
-    space_id = f"space-{'1' * 24}"
-    prior_record = f"/shimpz-space-{old_service}-1|{old_service}|{prior_image}"
-    current_record = f"/shimpz-space-team-driver-local-1|team-driver-local|{other_image}"
-
-    accepted = _run_project_validator(
-        [f"prior|{prior_record}"],
-        prior_image=prior_image,
-        controller_environments={"prior": f"SHIMPZ_SPACE_ID={space_id}"},
-    )
-    check(accepted.returncode == 0, f"the exact owned prior controller is accepted: {accepted.stderr.strip()}")
-    check(
-        accepted.stdout.strip() == f"prior|{space_id}|1|1",
-        "the prior controller records its identity and transition state",
-    )
-
-    legacy_image = f"{PRIOR_IMAGE_REPOSITORY_FOR_TESTS}@sha256:{'c' * 64}"
-    legacy_prior_record = f"/shimpz-space-{old_service}-1|{old_service}|{legacy_image}"
-    accepted_legacy = _run_project_validator(
-        [f"prior|{legacy_prior_record}"],
-        prior_image=legacy_image,
-        controller_environments={"prior": f"SHIMPZ_SPACE_ID={space_id}"},
-    )
-    check(
-        accepted_legacy.returncode == 0 and accepted_legacy.stdout.strip() == f"prior|{space_id}|1|1",
-        f"the exact digest-pinned legacy registry is accepted for migration: {accepted_legacy.stderr.strip()}",
-    )
-
-    legacy_current_record = f"/shimpz-space-team-driver-local-1|team-driver-local|{legacy_image}"
-    accepted_legacy_current = _run_project_validator(
-        [f"current|{legacy_current_record}"],
-        prior_image=legacy_image,
-        controller_environments={"current": f"SHIMPZ_SPACE_ID={space_id}"},
-    )
-    check(
-        accepted_legacy_current.returncode == 0 and accepted_legacy_current.stdout.strip() == f"current|{space_id}|1|0",
-        "a current controller pinned to the retired official registry remains updatable",
-    )
-
-    named_current_record = f"/shimpz-team|team-driver-local|{other_image}"
-    accepted_named_current = _run_project_validator(
-        [f"current|{named_current_record}"],
-        prior_image=prior_image,
-        controller_environments={"current": f"SHIMPZ_SPACE_ID={space_id}"},
-    )
-    check(
-        accepted_named_current.returncode == 0
-        and accepted_named_current.stdout.strip() == f"current|{space_id}|1|0",
-        "the stable controller container name is accepted",
-    )
-
-    lookalike_legacy = _run_project_validator(
-        [f"prior|{legacy_prior_record}"],
-        prior_image=f"ghcr.io/roxygens-evil/shimpz-space@sha256:{'c' * 64}",
-        controller_environments={"prior": f"SHIMPZ_SPACE_ID={space_id}"},
-    )
-    check(lookalike_legacy.returncode != 0, "a lookalike legacy registry remains rejected")
-
-    digest_mismatch = _run_project_validator(
-        [f"prior|/shimpz-space-{old_service}-1|{old_service}|{other_image}"],
-        prior_image=prior_image,
-        controller_environments={"prior": f"SHIMPZ_SPACE_ID={space_id}"},
-    )
-    check(digest_mismatch.returncode != 0, "a prior service with a different digest fails closed")
-
-    ambiguous_owned_digest = _run_project_validator(
-        [f"prior|{prior_record}"],
-        prior_image=f"{prior_image}\nSHIMPZ_CONTROLLER_IMAGE={other_image}",
-        controller_environments={"prior": f"SHIMPZ_SPACE_ID={space_id}"},
-    )
-    check(ambiguous_owned_digest.returncode != 0, "ambiguous owned controller digests fail closed")
-
-    name_mismatch = _run_project_validator(
-        [f"prior|/shimpz-space-not-the-service-1|{old_service}|{prior_image}"],
-        prior_image=prior_image,
-        controller_environments={"prior": f"SHIMPZ_SPACE_ID={space_id}"},
-    )
-    check(name_mismatch.returncode != 0, "a prior service whose Compose name does not match fails closed")
-
-    service_mismatch = _run_project_validator(
-        [f"prior|/shimpz-space-{old_service}-1|not-the-service|{prior_image}"],
-        prior_image=prior_image,
-        controller_environments={"prior": f"SHIMPZ_SPACE_ID={space_id}"},
-    )
-    check(service_mismatch.returncode != 0, "a prior container whose Compose service does not match fails closed")
-
-    duplicate_transition = _run_project_validator(
-        [f"current|{current_record}", f"prior|{prior_record}"],
-        prior_image=prior_image,
-        controller_environments={
-            "current": f"SHIMPZ_SPACE_ID={space_id}",
-            "prior": f"SHIMPZ_SPACE_ID={space_id}",
-        },
-    )
-    check(duplicate_transition.returncode != 0, "current and prior controllers cannot coexist")
-
-    duplicate_prior = _run_project_validator(
-        [f"prior|{prior_record}", f"prior_two|{prior_record}"],
-        prior_image=prior_image,
-        controller_environments={
-            "prior": f"SHIMPZ_SPACE_ID={space_id}",
-            "prior_two": f"SHIMPZ_SPACE_ID={space_id}",
-        },
-    )
-    check(duplicate_prior.returncode != 0, "multiple prior controllers cannot be authenticated as one runtime")
-
-    foreign = _run_project_validator(
-        [f"foreign|/shimpz-space-foreign-1|foreign|{other_image}"],
-        prior_image=prior_image,
-    )
-    check(foreign.returncode != 0, "a foreign Compose container remains rejected")
-    check("/shimpz-space-foreign-1" in foreign.stderr, "an unknown Compose container is named for recovery")
-
-    same_digest_foreign = _run_project_validator(
-        [f"foreign|/shimpz-space-evil-1|evil|{prior_image}"],
-        prior_image=prior_image,
-    )
-    check(same_digest_foreign.returncode != 0, "the prior digest cannot authenticate a different service")
-
-
-def test_project_validator_enforces_stable_and_migration_container_names():
+def test_project_validator_enforces_current_container_names():
     image = f"{IMAGE_REPOSITORY_FOR_TESTS}@sha256:{'d' * 64}"
     space_id = f"space-{'1' * 24}"
-    exact_pairs = (
-        ("/shimpz-admin", "/shimpz-space-admin-1", "admin"),
-        ("/shimpz-team", "/shimpz-space-team-driver-local-1", "team-driver-local"),
-        ("/shimpz-brain", "/shimpz-space-brain-runtime-1", "brain-runtime"),
-        ("/shimpz-egress", "/shimpz-space-app-egress-proxy-1", "app-egress-proxy"),
-        ("/shimpz-account", "/shimpz-space-oauth-broker-proxy-1", "oauth-broker-proxy"),
+    exact_names = (
+        ("/shimpz-admin", "admin"),
+        ("/shimpz-team", "team-driver-local"),
+        ("/shimpz-brain", "brain-runtime"),
+        ("/shimpz-egress", "app-egress-proxy"),
+        ("/shimpz-account", "oauth-broker-proxy"),
     )
-    for stable_name, migration_name, service in exact_pairs:
+    for container_name, service in exact_names:
         environments = {"current": f"SHIMPZ_SPACE_ID={space_id}"} if service == "team-driver-local" else None
-        for accepted_name in (stable_name, migration_name):
-            accepted = _run_project_validator(
-                [f"current|{accepted_name}|{service}|{image}"],
-                prior_image=image,
-                controller_environments=environments,
-            )
-            check(accepted.returncode == 0, f"the exact {accepted_name} project container is accepted")
-            expected_state = f"current|{space_id}|1|0" if service == "team-driver-local" else "||0|0"
-            check(
-                accepted.stdout.strip() == expected_state,
-                f"the exact {accepted_name} project container records only its intended role",
-            )
+        accepted = _run_project_validator(
+            [f"current|{container_name}|{service}|{image}"],
+            controller_environments=environments,
+        )
+        check(accepted.returncode == 0, f"the exact {container_name} project container is accepted")
+        expected_state = f"current|{space_id}|1" if service == "team-driver-local" else "||0"
+        check(
+            accepted.stdout.strip() == expected_state,
+            f"the exact {container_name} project container records only its intended role",
+        )
 
     healthy_project = _run_project_validator(
         [
             f"current|/shimpz-team|team-driver-local|{image}",
-            f"prior|/shimpz-admin|admin|{image}",
-            f"prior_two|/shimpz-brain|brain-runtime|{image}",
+            f"second|/shimpz-admin|admin|{image}",
+            f"third|/shimpz-brain|brain-runtime|{image}",
             f"foreign|/shimpz-egress|app-egress-proxy|{image}",
             f"oauth|/shimpz-account|oauth-broker-proxy|{image}",
         ],
-        prior_image=image,
         controller_environments={"current": f"SHIMPZ_SPACE_ID={space_id}"},
     )
     check(
-        healthy_project.returncode == 0
-        and healthy_project.stdout.strip() == f"current|{space_id}|1|0",
-        "a complete stable-named project validates in one pass",
+        healthy_project.returncode == 0 and healthy_project.stdout.strip() == f"current|{space_id}|1",
+        "a complete current project validates in one pass",
     )
 
     for record in (
         f"/shimpz-account|app-egress-proxy|{image}",
         f"/shimpz-admin|brain-runtime|{image}",
+        f"/shimpz-unknown|admin|{image}",
     ):
-        rejected = _run_project_validator([f"current|{record}"], prior_image=image)
-        check(rejected.returncode != 0, "a stable container name paired with the wrong service fails closed")
+        rejected = _run_project_validator([f"current|{record}"])
+        check(rejected.returncode != 0, "an unknown container name or mismatched service fails closed")
 
     duplicate_admin = _run_project_validator(
         [
             f"current|/shimpz-admin|admin|{image}",
-            f"prior|/shimpz-space-admin-1|admin|{image}",
+            f"second|/shimpz-admin|admin|{image}",
         ],
-        prior_image=image,
     )
-    check(duplicate_admin.returncode != 0, "stable and migration Admin names cannot coexist")
+    check(duplicate_admin.returncode != 0, "duplicate Admin containers fail closed")
 
     duplicate_controller = _run_project_validator(
         [
             f"current|/shimpz-team|team-driver-local|{image}",
-            f"prior|/shimpz-space-team-driver-local-1|team-driver-local|{image}",
+            f"second|/shimpz-team|team-driver-local|{image}",
         ],
-        prior_image=image,
         controller_environments={
             "current": f"SHIMPZ_SPACE_ID={space_id}",
-            "prior": f"SHIMPZ_SPACE_ID={space_id}",
+            "second": f"SHIMPZ_SPACE_ID={space_id}",
         },
     )
-    check(duplicate_controller.returncode != 0, "stable and migration Team service names cannot coexist")
-
-
-def test_static_owned_prior_controller_reset_preserves_admin_volumes():
-    for marker in (
-        "controller_image_from_env_file",
-        "prior_controller_image_ref",
-        "prior_controller_seen",
-        "record_controller_identity",
-        "accept_prior_controller",
-        "prior_runtime_transition",
-    ):
-        check(marker in SCRIPT, f"the prior-controller migration retains {marker!r}")
-
-    reader = _shell_functions("controller_image_from_env_file", "record_controller_identity")
-    check("sed -n 's/^SHIMPZ_CONTROLLER_IMAGE=//p' \"$ENV_FILE\"" in reader, "the owned env supplies the prior digest")
-    check("wc -l" in reader, "ambiguous prior controller image entries fail closed")
-    check(
-        'official_image_digest "$controller_image_lines"' in reader,
-        "the owned prior reference must pass the shared exact official SHA-256 allowlist",
-    )
-
-    validator = _shell_functions("accept_prior_controller", "dynamic_container_ids")
-    check(
-        '"$container_service" = "$PRIOR_CONTROLLER_SERVICE"' in validator
-        and '"$container_name" = "/${PROJECT_NAME}-${PRIOR_CONTROLLER_SERVICE}-1"' in validator,
-        "a prior controller must have the one exact retired service and Compose name",
-    )
-    check(
-        '"$container_image" = "$prior_controller_image_ref"' in validator,
-        "a prior service must use the exact digest from owned state",
-    )
-
-    reset_start = SCRIPT.index('if [ "$action" = "reset" ]; then')
-    reset_branch = SCRIPT[reset_start:].split('\nhost_os="$(uname -s)"', 1)[0]
-    loader_start = SCRIPT.index('prior_controller_image_ref=""')
-    loader = SCRIPT[loader_start:reset_start]
-    check(
-        'prior_controller_image_value="$(controller_image_from_env_file)"' in loader
-        and '"$prior_controller_image_status" -eq 1' in loader,
-        "missing prior controller state is allowed while malformed or ambiguous state is rejected",
-    )
-    check(
-        loader_start
-        < reset_start + reset_branch.index("validate_project_resources")
-        < reset_start + reset_branch.index("prior_controller_seen")
-        < reset_start + reset_branch.index("reset_dynamic_space")
-        < reset_start + reset_branch.index("compose down --volumes --remove-orphans"),
-        "reset authenticates and drains a prior controller before persistent data removal",
-    )
-
-    update_validation = SCRIPT.split(
-        'if project_resources_exist; then\n\tstep "Validating the existing managed runtime"', 1
-    )[1].split("\numask 077", 1)[0]
-    check(
-        "prior_controller_seen" in update_validation and "validate_dynamic_resources" in update_validation,
-        "update distinguishes prior and current controller validation",
-    )
-    check(
-        update_validation.index("prior_controller_seen") < update_validation.index("validate_dynamic_resources"),
-        "the prior-controller decision is made before current dynamic-label validation",
-    )
-
-    update_branch = SCRIPT.split("had_previous=0", 1)[1]
-    startup = "compose up -d --wait --wait-timeout 120 --no-build --pull never --remove-orphans"
-    check(
-        update_branch.index("hydrate_previous_release")
-        < update_branch.index("prior_runtime_transition")
-        < update_branch.index("reset_dynamic_space")
-        < update_branch.index(startup),
-        "owned prior images are hydrated and dynamically reset before candidate startup",
-    )
-    check("compose down --volumes" not in update_branch, "an update never removes persistent Compose volumes")
-    check("docker volume rm" not in update_branch, "an update preserves Admin configuration and data volumes")
+    check(duplicate_controller.returncode != 0, "duplicate Team controllers fail closed")
 
 
 def test_reserved_container_name_preflight_is_early_and_fail_closed():

@@ -2,18 +2,12 @@
 
 set -eu
 
-INSTALLER_VERSION="0.4.8"
+INSTALLER_VERSION="0.4.9"
 IMAGE_REPOSITORY="ghcr.io/theshimpz/shimpz-space"
-# Read-only migration allowlist for digest-pinned installations created before the
-# package moved to TheShimpz. New releases are always pulled and written from IMAGE_REPOSITORY.
-PRIOR_IMAGE_REPOSITORY="ghcr.io/roxygens/shimpz-space"
 ADMIN_CHANNEL="stable"
 CONTROLLER_CHANNEL="team-driver-local-stable"
 BRAIN_RUNTIME_CHANNEL="brain-runtime-stable"
 APP_EGRESS_RELEASE="${IMAGE_REPOSITORY}@sha256:2911302477bf0bf5025c91e0ab34096b32ffb509df13bd6c8d822519a48c47ed"
-# Exact controller service shipped by 0.3.1. The retired identifier is split so
-# terminology audits do not mistake this migration-only value for an active API.
-PRIOR_CONTROLLER_SERVICE="cap""sule-driver-local"
 LOCAL_PROFILE="single-owner-local-v1"
 SPACE_LABEL="com.shimpz.local.space-id"
 
@@ -295,32 +289,18 @@ space_id_from_env_file() {
 
 official_image_digest() {
 	image_value="$1"
-	for image_repository in "$IMAGE_REPOSITORY" "$PRIOR_IMAGE_REPOSITORY"; do
-		image_digest="${image_value#"${image_repository}@sha256:"}"
-		[ "$image_digest" != "$image_value" ] || continue
-		case "$image_digest" in
-			""|*[!0-9a-f]*) return 1 ;;
-		esac
-		[ "${#image_digest}" -eq 64 ] || return 1
-		printf '%s\n' "$image_digest"
-		return 0
-	done
-	return 1
+	image_digest="${image_value#"${IMAGE_REPOSITORY}@sha256:"}"
+	[ "$image_digest" != "$image_value" ] || return 1
+	case "$image_digest" in
+		""|*[!0-9a-f]*) return 1 ;;
+	esac
+	[ "${#image_digest}" -eq 64 ] || return 1
+	printf '%s\n' "$image_digest"
 }
 
 validate_official_digest_image() {
 	official_image_digest "$1" >/dev/null \
 		|| die "refusing reset: a managed container does not use an allowed official digest-pinned image"
-}
-
-controller_image_from_env_file() {
-	[ -f "$ENV_FILE" ] || return 1
-	controller_image_lines="$(sed -n 's/^SHIMPZ_CONTROLLER_IMAGE=//p' "$ENV_FILE")"
-	[ -n "$controller_image_lines" ] || return 1
-	[ "$(printf '%s\n' "$controller_image_lines" | wc -l | tr -d ' ')" -eq 1 ] \
-		|| return 2
-	official_image_digest "$controller_image_lines" >/dev/null || return 2
-	printf '%s\n' "$controller_image_lines"
 }
 
 record_controller_identity() {
@@ -334,28 +314,12 @@ record_controller_identity() {
 	controller_space_id="$controller_space_lines"
 }
 
-accept_prior_controller() {
-	container_name="$1"
-	container_service="$2"
-	container_image="$3"
-	resource_id="$4"
-	[ -n "$prior_controller_image_ref" ] && [ "$container_image" = "$prior_controller_image_ref" ] \
-		|| return 1
-	[ "$container_service" = "$PRIOR_CONTROLLER_SERVICE" ] || return 1
-	[ "$container_name" = "/${PROJECT_NAME}-${PRIOR_CONTROLLER_SERVICE}-1" ] || return 1
-	[ "$controller_seen" -eq 0 ] || die "refusing reset: duplicate managed controller container"
-	controller_seen=1
-	prior_controller_seen=1
-	record_controller_identity "$resource_id"
-}
-
 validate_project_resources() {
 	container_ids="$(project_container_ids)" || die "could not inspect existing Shimpz Space containers"
 	volume_ids="$(project_volume_ids)" || die "could not inspect existing Shimpz Space volumes"
 	network_ids="$(project_network_ids)" || die "could not inspect existing Shimpz Space networks"
 	admin_seen=0
 	controller_seen=0
-	prior_controller_seen=0
 	brain_runtime_seen=0
 	app_egress_proxy_seen=0
 	oauth_broker_proxy_seen=0
@@ -369,34 +333,31 @@ validate_project_resources() {
 		container_service="${container_rest%%|*}"
 		container_image="${container_rest#*|}"
 		validate_official_digest_image "$container_image"
-		# Migration-only: 0.4.7 let Compose generate project-scoped names. Keep those alternatives
-		# only while direct updates and resets from 0.4.7 remain supported.
 		case "${container_name}|${container_service}" in
-			"/shimpz-admin|admin"|"/${PROJECT_NAME}-admin-1|admin")
+			"/shimpz-admin|admin")
 				[ "$admin_seen" -eq 0 ] || die "refusing reset: duplicate managed Admin container"
 				admin_seen=1
 				;;
-			"/shimpz-team|team-driver-local"|"/${PROJECT_NAME}-team-driver-local-1|team-driver-local")
+			"/shimpz-team|team-driver-local")
 				[ "$controller_seen" -eq 0 ] || die "refusing reset: duplicate managed controller container"
 				controller_seen=1
 				record_controller_identity "$resource_id"
 				;;
-			"/shimpz-brain|brain-runtime"|"/${PROJECT_NAME}-brain-runtime-1|brain-runtime")
+			"/shimpz-brain|brain-runtime")
 				[ "$brain_runtime_seen" -eq 0 ] || die "refusing reset: duplicate managed Brain runtime container"
 				brain_runtime_seen=1
 				;;
-			"/shimpz-egress|app-egress-proxy"|"/${PROJECT_NAME}-app-egress-proxy-1|app-egress-proxy")
+			"/shimpz-egress|app-egress-proxy")
 				[ "$app_egress_proxy_seen" -eq 0 ] \
 					|| die "refusing reset: duplicate managed Assistant egress proxy container"
 				app_egress_proxy_seen=1
 				;;
-			"/shimpz-account|oauth-broker-proxy"|"/${PROJECT_NAME}-oauth-broker-proxy-1|oauth-broker-proxy")
+			"/shimpz-account|oauth-broker-proxy")
 				[ "$oauth_broker_proxy_seen" -eq 0 ] \
 					|| die "refusing reset: duplicate managed OAuth broker proxy container"
 				oauth_broker_proxy_seen=1
 				;;
-			*) accept_prior_controller "$container_name" "$container_service" "$container_image" "$resource_id" \
-				|| die "refusing to manage unknown Compose container ${container_name}; inspect or remove it before retrying" ;;
+			*) die "refusing to manage unknown Compose container ${container_name}; inspect or remove it before retrying" ;;
 		esac
 	done
 	for resource_id in $volume_ids; do
@@ -468,7 +429,6 @@ validate_dynamic_resources() {
 		[ "$managed_value" = "1" ] && [ "$profile_value" = "$LOCAL_PROFILE" ] \
 			&& [ "$space_value" = "$reset_space_id" ] \
 			|| die "refusing reset: a Space-labeled container has invalid ownership labels"
-		# The two Compose proxies carry Space labels and need the same 0.4.7 migration allowance.
 		case "$kind_value" in
 			assistant)
 				case "$dynamic_name" in "/shimpz-local-"*) ;; *) die "refusing reset: invalid managed Assistant name" ;; esac
@@ -481,7 +441,7 @@ validate_dynamic_resources() {
 				;;
 			app-egress-proxy)
 				case "$dynamic_name" in
-					"/shimpz-egress"|"/${PROJECT_NAME}-app-egress-proxy-1") ;;
+					"/shimpz-egress") ;;
 					*) die "refusing reset: invalid managed Assistant egress proxy name" ;;
 				esac
 				[ "$dynamic_app_egress_seen" -eq 0 ] \
@@ -490,7 +450,7 @@ validate_dynamic_resources() {
 				;;
 			oauth-broker-proxy)
 				case "$dynamic_name" in
-					"/shimpz-account"|"/${PROJECT_NAME}-oauth-broker-proxy-1") ;;
+					"/shimpz-account") ;;
 					*) die "refusing reset: invalid managed OAuth broker proxy name" ;;
 				esac
 				[ "$dynamic_oauth_broker_seen" -eq 0 ] \
@@ -561,15 +521,6 @@ remove_validated_project_resources() {
 	done
 }
 
-prior_controller_image_ref=""
-if prior_controller_image_value="$(controller_image_from_env_file)"; then
-	prior_controller_image_ref="$prior_controller_image_value"
-else
-	prior_controller_image_status=$?
-	[ "$prior_controller_image_status" -eq 1 ] \
-		|| die "the existing pinned controller image is invalid"
-fi
-
 if [ "$action" = "reset" ]; then
 	notice "This permanently removes local Admin, Team, and Assistant data"
 	step "Validating managed Docker resources"
@@ -597,9 +548,7 @@ if [ "$action" = "reset" ]; then
 	fi
 	if [ -n "$reset_space_id" ]; then
 		validate_space_id "$reset_space_id"
-		if [ "$prior_controller_seen" -eq 0 ]; then
-			validate_dynamic_resources
-		fi
+		validate_dynamic_resources
 		reset_dynamic_space
 	fi
 	if [ -f "$COMPOSE_FILE" ] && [ -f "$ENV_FILE" ]; then
@@ -674,7 +623,7 @@ if [ -f "$MARKER_FILE" ]; then
 	[ "$(sed -n '1p' "$MARKER_FILE")" = "$MARKER_VALUE" ] || die "invalid install marker in ${SHIMPZ_HOME}"
 fi
 if [ ! -f "$MARKER_FILE" ] && project_resources_exist; then
-	die "an earlier Shimpz installation still has Docker data. Nothing was changed. Reset it first with: ${reset_command}"
+	die "managed Shimpz Docker data exists without an install marker. Nothing was changed. Reset it first with: ${reset_command}"
 fi
 validate_reserved_container_names
 
@@ -692,7 +641,6 @@ validate_space_id "$space_id"
 oauth_broker_proxy_token="$(oauth_broker_proxy_token_from_env_file || true)"
 [ -n "$oauth_broker_proxy_token" ] || oauth_broker_proxy_token="$(generated_oauth_broker_proxy_token)"
 validate_oauth_broker_proxy_token "$oauth_broker_proxy_token"
-prior_runtime_transition=0
 if project_resources_exist; then
 	step "Validating the existing managed runtime"
 	validate_project_resources
@@ -701,11 +649,7 @@ if project_resources_exist; then
 			|| die "existing controller and local Space identities differ"
 	fi
 	reset_space_id="$space_id"
-	if [ "$prior_controller_seen" -eq 1 ]; then
-		prior_runtime_transition=1
-	else
-		validate_dynamic_resources
-	fi
+	validate_dynamic_resources
 fi
 
 umask 077
@@ -737,11 +681,11 @@ pull_verified_ref() {
 	printf '%s@%s\n' "$IMAGE_REPOSITORY" "$digest_ref"
 }
 
-optional_env_value() {
+previous_env_value() {
 	env_key="$1"
 	env_path="$2"
 	env_lines="$(sed -n "s/^${env_key}=//p" "$env_path")"
-	[ -n "$env_lines" ] || return 0
+	[ -n "$env_lines" ] || die "the previous release is missing ${env_key}"
 	[ "$(printf '%s\n' "$env_lines" | wc -l | tr -d ' ')" -eq 1 ] \
 		|| die "the previous release has duplicate ${env_key} values"
 	printf '%s\n' "$env_lines"
@@ -754,28 +698,17 @@ validate_pinned_release_ref() {
 }
 
 load_previous_release() {
-	previous_platform="$(optional_env_value SHIMPZ_SPACE_PLATFORM "${ENV_FILE}.previous")"
+	previous_platform="$(previous_env_value SHIMPZ_SPACE_PLATFORM "${ENV_FILE}.previous")"
 	[ "$previous_platform" = "$docker_platform" ] \
 		|| die "the previous release targets a different Docker platform"
-	previous_admin_ref="$(optional_env_value SHIMPZ_ADMIN_IMAGE "${ENV_FILE}.previous")"
-	previous_legacy_ref="$(optional_env_value SHIMPZ_SPACE_IMAGE "${ENV_FILE}.previous")"
-	[ -z "$previous_admin_ref" ] || [ -z "$previous_legacy_ref" ] \
-		|| die "the previous release has ambiguous Admin image values"
-	[ -n "$previous_admin_ref" ] || previous_admin_ref="$previous_legacy_ref"
-	[ -n "$previous_admin_ref" ] || die "the previous release is missing its Admin image"
-	previous_controller_ref="$(optional_env_value SHIMPZ_CONTROLLER_IMAGE "${ENV_FILE}.previous")"
-	previous_brain_runtime_ref="$(optional_env_value SHIMPZ_BRAIN_RUNTIME_IMAGE "${ENV_FILE}.previous")"
-	previous_app_egress_ref="$(optional_env_value SHIMPZ_APP_EGRESS_IMAGE "${ENV_FILE}.previous")"
+	previous_admin_ref="$(previous_env_value SHIMPZ_ADMIN_IMAGE "${ENV_FILE}.previous")"
+	previous_controller_ref="$(previous_env_value SHIMPZ_CONTROLLER_IMAGE "${ENV_FILE}.previous")"
+	previous_brain_runtime_ref="$(previous_env_value SHIMPZ_BRAIN_RUNTIME_IMAGE "${ENV_FILE}.previous")"
+	previous_app_egress_ref="$(previous_env_value SHIMPZ_APP_EGRESS_IMAGE "${ENV_FILE}.previous")"
 	validate_pinned_release_ref "$previous_admin_ref"
-	if [ -n "$previous_controller_ref" ]; then
-		validate_pinned_release_ref "$previous_controller_ref"
-	fi
-	if [ -n "$previous_brain_runtime_ref" ]; then
-		validate_pinned_release_ref "$previous_brain_runtime_ref"
-	fi
-	if [ -n "$previous_app_egress_ref" ]; then
-		validate_pinned_release_ref "$previous_app_egress_ref"
-	fi
+	validate_pinned_release_ref "$previous_controller_ref"
+	validate_pinned_release_ref "$previous_brain_runtime_ref"
+	validate_pinned_release_ref "$previous_app_egress_ref"
 }
 
 ensure_pinned_release_ref() {
@@ -797,15 +730,9 @@ ensure_pinned_release_ref() {
 
 hydrate_previous_release() {
 	ensure_pinned_release_ref "$previous_admin_ref" "$previous_platform" || return 1
-	if [ -n "$previous_controller_ref" ]; then
-		ensure_pinned_release_ref "$previous_controller_ref" "$previous_platform" || return 1
-	fi
-	if [ -n "$previous_brain_runtime_ref" ]; then
-		ensure_pinned_release_ref "$previous_brain_runtime_ref" "$previous_platform" || return 1
-	fi
-	if [ -n "$previous_app_egress_ref" ]; then
-		ensure_pinned_release_ref "$previous_app_egress_ref" "$previous_platform" || return 1
-	fi
+	ensure_pinned_release_ref "$previous_controller_ref" "$previous_platform" || return 1
+	ensure_pinned_release_ref "$previous_brain_runtime_ref" "$previous_platform" || return 1
+	ensure_pinned_release_ref "$previous_app_egress_ref" "$previous_platform" || return 1
 }
 
 controller_socket_gid() {
@@ -872,13 +799,6 @@ if [ -f "$COMPOSE_FILE" ] && [ -f "$ENV_FILE" ]; then
 	load_previous_release
 	step "Pinning the previous release for safe rollback"
 	hydrate_previous_release || die "the previous pinned release could not be prepared; the running version was not changed"
-fi
-
-if [ "$prior_runtime_transition" -eq 1 ]; then
-	notice "The previous runtime uses retired Team metadata"
-	notice "Your Admin password and settings stay intact; Teams and Assistants must be created again"
-	step "Safely retiring previous Team and Assistant resources"
-	reset_dynamic_space
 fi
 
 cat >"${ENV_FILE}.tmp" <<EOF
@@ -1251,9 +1171,6 @@ if [ "$install_mode" = "update" ]; then
 	success "Shimpz Space is up to date"
 	printf '  Admin    %shttp://127.0.0.1:%s%s\n' "$OUT_CYAN" "$install_port" "$OUT_RESET"
 	printf '  Data     Admin settings and password were preserved\n'
-	if [ "$prior_runtime_transition" -eq 1 ]; then
-		printf '  Teams    Recreate previous Teams and Assistants in the Admin\n'
-	fi
 else
 	success "Shimpz Space is ready"
 	printf '  Admin    %shttp://127.0.0.1:%s%s\n' "$OUT_CYAN" "$install_port" "$OUT_RESET"
