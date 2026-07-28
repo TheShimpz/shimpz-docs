@@ -314,7 +314,7 @@ def test_static_delivery_is_pull_only_and_content_addressed():
         and "SHIMPZ_OAUTH_CALLBACK_MODE=${OAUTH_CALLBACK_MODE}" in SCRIPT
         and "name: ${SHIMPZ_PROJECT_NAME:?installer must pin SHIMPZ_PROJECT_NAME}" in SCRIPT
         and "SHIMPZ_APP_EGRESS_PROXY_CONTAINER: shimpz-egress" in SCRIPT,
-        "the generated Compose project and controller proxy target stay inside the selected profile",
+        "the generated Compose project is pinned and the controller targets the named egress container",
     )
     compose = SCRIPT.split("cat >\"${COMPOSE_FILE}.tmp\" <<'COMPOSE'", 1)[1].split("\nCOMPOSE", 1)[0]
     container_names = re.findall(r"^    container_name: (\S+)$", compose, re.MULTILINE)
@@ -697,6 +697,13 @@ def test_reset_accepts_only_the_exact_space_owned_egress_proxy():
         accepted_legacy_oauth.returncode == 0,
         f"the previous Compose OAuth name remains accepted for migration: {accepted_legacy_oauth.stderr.strip()}",
     )
+    for confused in (
+        valid.replace("app-egress-proxy", "oauth-broker-proxy"),
+        oauth.replace("/shimpz-account", "/shimpz-egress"),
+        oauth.replace("/shimpz-account", "/shimpz-space-foreign-1"),
+    ):
+        rejected = _run_dynamic_validator(confused)
+        check(rejected.returncode != 0, "an OAuth or egress proxy with a mismatched exact name fails closed")
 
 
 def test_static_admin_chat_origin_allowlist_is_loopback_only():
@@ -1026,6 +1033,56 @@ def test_owned_prior_controller_transition_is_exact_and_fail_closed():
         prior_image=prior_image,
     )
     check(same_digest_foreign.returncode != 0, "the prior digest cannot authenticate a different service")
+
+
+def test_project_validator_enforces_stable_and_migration_container_names():
+    image = f"{IMAGE_REPOSITORY_FOR_TESTS}@sha256:{'d' * 64}"
+    space_id = f"space-{'1' * 24}"
+    exact_pairs = (
+        ("/shimpz-admin", "/shimpz-space-admin-1", "admin"),
+        ("/shimpz-team", "/shimpz-space-team-driver-local-1", "team-driver-local"),
+        ("/shimpz-brain", "/shimpz-space-brain-runtime-1", "brain-runtime"),
+        ("/shimpz-egress", "/shimpz-space-app-egress-proxy-1", "app-egress-proxy"),
+        ("/shimpz-account", "/shimpz-space-oauth-broker-proxy-1", "oauth-broker-proxy"),
+    )
+    for stable_name, migration_name, service in exact_pairs:
+        environments = {"current": f"SHIMPZ_SPACE_ID={space_id}"} if service == "team-driver-local" else None
+        for accepted_name in (stable_name, migration_name):
+            accepted = _run_project_validator(
+                [f"current|{accepted_name}|{service}|{image}"],
+                prior_image=image,
+                controller_environments=environments,
+            )
+            check(accepted.returncode == 0, f"the exact {accepted_name} project container is accepted")
+
+    for record in (
+        f"/shimpz-account|app-egress-proxy|{image}",
+        f"/shimpz-admin|brain-runtime|{image}",
+    ):
+        rejected = _run_project_validator([f"current|{record}"], prior_image=image)
+        check(rejected.returncode != 0, "a stable container name paired with the wrong service fails closed")
+
+    duplicate_admin = _run_project_validator(
+        [
+            f"current|/shimpz-admin|admin|{image}",
+            f"prior|/shimpz-space-admin-1|admin|{image}",
+        ],
+        prior_image=image,
+    )
+    check(duplicate_admin.returncode != 0, "stable and migration Admin names cannot coexist")
+
+    duplicate_controller = _run_project_validator(
+        [
+            f"current|/shimpz-team|team-driver-local|{image}",
+            f"prior|/shimpz-space-team-driver-local-1|team-driver-local|{image}",
+        ],
+        prior_image=image,
+        controller_environments={
+            "current": f"SHIMPZ_SPACE_ID={space_id}",
+            "prior": f"SHIMPZ_SPACE_ID={space_id}",
+        },
+    )
+    check(duplicate_controller.returncode != 0, "stable and migration Team service names cannot coexist")
 
 
 def test_static_owned_prior_controller_reset_preserves_admin_volumes():
