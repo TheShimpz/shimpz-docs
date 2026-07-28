@@ -26,17 +26,35 @@ function extractManifest(source) {
   return match[1];
 }
 
+/** @param {string} manifest */
+function scanTopLevel(manifest) {
+  const withoutMultilineStrings = manifest.replace(/("""|''')[\s\S]*?\1/g, '""');
+  const source = withoutMultilineStrings.split(/^\[/m, 1)[0];
+  const keys = new Set(
+    [
+      ...source.matchAll(
+        /^[ \t]*(?:"([^"]+)"|'([^']+)'|([A-Za-z0-9_-]+))(?:[ \t]*\.[ \t]*(?:"[^"]+"|'[^']+'|[A-Za-z0-9_-]+))*[ \t]*=/gm,
+      ),
+    ].map((match) => match[1] ?? match[2] ?? match[3]),
+  );
+  return { keys, source };
+}
+
+/** @param {Set<string>} keys */
+function assertKnownKeys(keys) {
+  for (const key of keys) {
+    assert.ok(Object.hasOwn(schema.properties, key), `manifest example does not declare unknown ${key}`);
+  }
+}
+
 /** @param {string} source */
 function assertManifestExample(source) {
   const manifest = extractManifest(source);
-  const topLevel = manifest.split(/^\[/m, 1)[0];
-  const keys = new Set([...topLevel.matchAll(/^([a-z][a-z0-9_]*)\s*=/gm)].map((match) => match[1]));
+  const { keys, source: topLevel } = scanTopLevel(manifest);
   for (const key of schema.required) {
     assert.ok(keys.has(key), `manifest example includes required ${key}`);
   }
-  for (const key of keys) {
-    assert.ok(key in schema.properties, `manifest example does not declare unknown ${key}`);
-  }
+  assertKnownKeys(keys);
 
   const id = topLevel.match(/^id = "([^"]+)"$/m)?.[1];
   assert.ok(id, "manifest example declares a string id");
@@ -48,6 +66,46 @@ function assertManifestExample(source) {
   );
   assert.ok(!schema.$defs.assistantIdentifier.not.enum.includes(id), "manifest example id is not reserved");
 }
+
+test("manifest key scan ignores multiline values without hiding later keys", () => {
+  for (const delimiter of ['"""', "'''"]) {
+    const oppositeDelimiter = delimiter === '"""' ? "'''" : '"""';
+    const manifest = `spec = 1
+genesis = ${delimiter}
+Reply with ${oppositeDelimiter}
+[accounts.fake]
+id = "postgres"
+body_key = "not top level"
+${delimiter}
+id = "example"
+unknown_key = true
+Extra-Key = true
+"quoted-extra" = true
+  indented = true
+toString = true
+telemetry.enabled = true
+
+[accounts.example]
+scopes = ["read"]`;
+    const scanned = scanTopLevel(manifest);
+    assert.deepEqual([...scanned.keys], [
+      "spec",
+      "genesis",
+      "id",
+      "unknown_key",
+      "Extra-Key",
+      "quoted-extra",
+      "indented",
+      "toString",
+      "telemetry",
+    ]);
+    assert.equal(scanned.source.match(/^id = "([^"]+)"$/m)?.[1], "example");
+    assert.throws(
+      () => assertKnownKeys(new Set(["toString"])),
+      /manifest example does not declare unknown toString/,
+    );
+  }
+});
 
 test("published shimpz.toml schema is the closed Spec v1 contract", () => {
   assert.equal(schema.$schema, "https://json-schema.org/draft/2020-12/schema");
