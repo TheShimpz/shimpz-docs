@@ -67,7 +67,7 @@ function assertManifestExample(source) {
   assert.ok(!schema.$defs.assistantIdentifier.not.enum.includes(id), "manifest example id is not reserved");
 }
 
-test("manifest key scan ignores multiline values without hiding later keys", () => {
+test("static manifest key scan ignores multiline values without hiding later keys", () => {
   for (const delimiter of ['"""', "'''"]) {
     const oppositeDelimiter = delimiter === '"""' ? "'''" : '"""';
     const manifest = `spec = 1
@@ -107,7 +107,7 @@ scopes = ["read"]`;
   }
 });
 
-test("published shimpz.toml schema is the closed Spec v1 contract", () => {
+test("static published shimpz.toml schema is the closed Spec v1 contract", () => {
   assert.equal(schema.$schema, "https://json-schema.org/draft/2020-12/schema");
   assert.equal(schema.$id, "https://schemas.shimpz.com/assistant/v1/manifest.schema.json");
   assert.equal(schema.title, "Shimpz Assistant manifest v1");
@@ -127,7 +127,7 @@ test("published shimpz.toml schema is the closed Spec v1 contract", () => {
   assert.equal(schema.properties.spec.const, 1);
 });
 
-test("published manifest examples contain every required top-level key and a valid id", () => {
+test("static published manifest examples contain every required top-level key and a valid id", () => {
   assertManifestExample(manifestPage);
   assertManifestExample(quickstartPage);
   const countWord = countWords[schema.required.length];
@@ -151,7 +151,7 @@ test("published manifest examples contain every required top-level key and a val
   }
 });
 
-test("published shimpz.toml schema exposes only authored Spec v1 fields", () => {
+test("static published shimpz.toml schema exposes only authored Spec v1 fields", () => {
   assert.deepEqual(Object.keys(schema.properties).sort(), [
     "accounts",
     "allowed_hosts",

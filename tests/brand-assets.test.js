@@ -14,7 +14,7 @@ const assets = [
   ['shimpz-cyberchimp-friendly-v2-288.png', 288],
 ];
 
-test('brand marks ship only their exact 1x and 2x raster sizes', async () => {
+test('static brand marks ship only their exact 1x and 2x raster sizes', async () => {
   let totalBytes = 0;
   for (const [name, size] of assets) {
     const image = await readFile(new URL(name, brand));
@@ -26,7 +26,7 @@ test('brand marks ship only their exact 1x and 2x raster sizes', async () => {
   assert.ok(totalBytes < 60 * 1024, `presized brand assets use ${totalBytes} bytes`);
 });
 
-test('navigation and hero select their matching density variants', () => {
+test('static navigation and hero select their matching density variants', () => {
   assert.match(layout, /friendly-v2-40\.png 1x/);
   assert.match(layout, /friendly-v2-80\.png 2x/);
   assert.match(layout, /width="40"\s+height="40"/);
