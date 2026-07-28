@@ -2,7 +2,7 @@
 
 set -eu
 
-INSTALLER_VERSION="0.4.7"
+INSTALLER_VERSION="0.4.8"
 IMAGE_REPOSITORY="ghcr.io/theshimpz/shimpz-space"
 # Read-only migration allowlist for digest-pinned installations created before the
 # package moved to TheShimpz. New releases are always pulled and written from IMAGE_REPOSITORY.

@@ -195,7 +195,7 @@ def test_static_local_installer_contains_no_oauth_client_credentials():
 
 def test_version_command_reports_the_stable_installer_release():
     version = subprocess.run(["sh", str(SCRIPT_PATH), "--version"], check=False, capture_output=True, text=True)
-    check(version.returncode == 0 and version.stdout.strip() == "0.4.7", "version is an explicit stable release")
+    check(version.returncode == 0 and version.stdout.strip() == "0.4.8", "version is an explicit stable release")
 
 
 def test_brand_is_canonical_and_action_specific_for_install_and_reset():
