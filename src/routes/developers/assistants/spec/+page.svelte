@@ -83,8 +83,8 @@
 <aside class="scope-note" aria-labelledby="closed-title">
   <span id="closed-title" class="kicker">Version 1 is the only version</span>
   <p>
-    There are no compatibility parsers, v1 Secrets, answer logs, suspension frames, dynamic approvals,
-    author-written HTTP servers, runtime commands, or health endpoints.
+    The parser accepts only Assistant Spec v1. Secrets, answer logs, author-declared suspension frames,
+    dynamic approvals, author-written HTTP servers, runtime commands, and health endpoints are rejected.
   </p>
 </aside>
 
