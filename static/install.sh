@@ -359,25 +359,25 @@ validate_project_resources() {
 		container_image="${container_rest#*|}"
 		validate_official_digest_image "$container_image"
 		case "${container_name}|${container_service}" in
-			"/${PROJECT_NAME}-admin-1|admin")
+			"/shimpz-admin|admin"|"/${PROJECT_NAME}-admin-1|admin")
 				[ "$admin_seen" -eq 0 ] || die "refusing reset: duplicate managed Admin container"
 				admin_seen=1
 				;;
-			"/${PROJECT_NAME}-team-driver-local-1|team-driver-local")
+			"/shimpz-team|team-driver-local"|"/${PROJECT_NAME}-team-driver-local-1|team-driver-local")
 				[ "$controller_seen" -eq 0 ] || die "refusing reset: duplicate managed controller container"
 				controller_seen=1
 				record_controller_identity "$resource_id"
 				;;
-			"/${PROJECT_NAME}-brain-runtime-1|brain-runtime")
+			"/shimpz-brain|brain-runtime"|"/${PROJECT_NAME}-brain-runtime-1|brain-runtime")
 				[ "$brain_runtime_seen" -eq 0 ] || die "refusing reset: duplicate managed Brain runtime container"
 				brain_runtime_seen=1
 				;;
-			"/${PROJECT_NAME}-app-egress-proxy-1|app-egress-proxy")
+			"/shimpz-egress|app-egress-proxy"|"/${PROJECT_NAME}-app-egress-proxy-1|app-egress-proxy")
 				[ "$app_egress_proxy_seen" -eq 0 ] \
 					|| die "refusing reset: duplicate managed Assistant egress proxy container"
 				app_egress_proxy_seen=1
 				;;
-			"/${PROJECT_NAME}-oauth-broker-proxy-1|oauth-broker-proxy")
+			"/shimpz-account|oauth-broker-proxy"|"/${PROJECT_NAME}-oauth-broker-proxy-1|oauth-broker-proxy")
 				[ "$oauth_broker_proxy_seen" -eq 0 ] \
 					|| die "refusing reset: duplicate managed OAuth broker proxy container"
 				oauth_broker_proxy_seen=1
@@ -466,15 +466,19 @@ validate_dynamic_resources() {
 				[ "${#assistant_value}" -le 48 ] || die "refusing reset: invalid managed Assistant id"
 				;;
 			app-egress-proxy)
-				[ "$dynamic_name" = "/${PROJECT_NAME}-app-egress-proxy-1" ] \
-					|| die "refusing reset: invalid managed Assistant egress proxy name"
+				case "$dynamic_name" in
+					"/shimpz-egress"|"/${PROJECT_NAME}-app-egress-proxy-1") ;;
+					*) die "refusing reset: invalid managed Assistant egress proxy name" ;;
+				esac
 				[ "$dynamic_app_egress_seen" -eq 0 ] \
 					|| die "refusing reset: duplicate managed Assistant egress proxy"
 				dynamic_app_egress_seen=1
 				;;
 			oauth-broker-proxy)
-				[ "$dynamic_name" = "/${PROJECT_NAME}-oauth-broker-proxy-1" ] \
-					|| die "refusing reset: invalid managed OAuth broker proxy name"
+				case "$dynamic_name" in
+					"/shimpz-account"|"/${PROJECT_NAME}-oauth-broker-proxy-1") ;;
+					*) die "refusing reset: invalid managed OAuth broker proxy name" ;;
+				esac
 				[ "$dynamic_oauth_broker_seen" -eq 0 ] \
 					|| die "refusing reset: duplicate managed OAuth broker proxy"
 				dynamic_oauth_broker_seen=1
@@ -886,6 +890,7 @@ name: ${SHIMPZ_PROJECT_NAME:?installer must pin SHIMPZ_PROJECT_NAME}
 
 services:
   team-driver-local:
+    container_name: shimpz-team
     image: ${SHIMPZ_CONTROLLER_IMAGE:?installer must pin SHIMPZ_CONTROLLER_IMAGE}
     platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}
     pull_policy: never
@@ -910,7 +915,7 @@ services:
       SHIMPZ_OAUTH_CALLBACK_MODE: ${SHIMPZ_OAUTH_CALLBACK_MODE:?installer must pin the OAuth callback mode}
       SHIMPZ_OAUTH_BROKER_PROXY_HOST: oauth-broker-proxy
       SHIMPZ_OAUTH_BROKER_PROXY_TOKEN: ${SHIMPZ_OAUTH_BROKER_PROXY_TOKEN:?installer must bind the OAuth broker proxy capability}
-      SHIMPZ_APP_EGRESS_PROXY_CONTAINER: ${SHIMPZ_PROJECT_NAME:?installer must pin SHIMPZ_PROJECT_NAME}-app-egress-proxy-1
+      SHIMPZ_APP_EGRESS_PROXY_CONTAINER: shimpz-egress
       SHIMPZ_APP_EGRESS_POLICY_DIR: /var/lib/shimpz-local/app-egress
     volumes:
       - ${SHIMPZ_DOCKER_SOCKET:?installer must bind the platform Docker socket}:/var/run/docker.sock:rw
@@ -947,6 +952,7 @@ services:
       - oauth_broker
 
   app-egress-proxy:
+    container_name: shimpz-egress
     image: ${SHIMPZ_APP_EGRESS_IMAGE:?installer must pin SHIMPZ_APP_EGRESS_IMAGE}
     platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}
     pull_policy: never
@@ -1001,6 +1007,7 @@ services:
       - app_egress_out
 
   oauth-broker-proxy:
+    container_name: shimpz-account
     image: ${SHIMPZ_APP_EGRESS_IMAGE:?installer must pin SHIMPZ_APP_EGRESS_IMAGE}
     platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}
     pull_policy: never
@@ -1056,6 +1063,7 @@ services:
       - oauth_broker_out
 
   brain-runtime:
+    container_name: shimpz-brain
     image: ${SHIMPZ_BRAIN_RUNTIME_IMAGE:?installer must pin SHIMPZ_BRAIN_RUNTIME_IMAGE}
     platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}
     pull_policy: never
@@ -1097,6 +1105,7 @@ services:
       - brain_egress
 
   admin:
+    container_name: shimpz-admin
     image: ${SHIMPZ_ADMIN_IMAGE:?installer must pin SHIMPZ_ADMIN_IMAGE}
     platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}
     pull_policy: never

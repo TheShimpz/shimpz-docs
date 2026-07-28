@@ -313,8 +313,15 @@ def test_static_delivery_is_pull_only_and_content_addressed():
         and "SHIMPZ_ADMIN_ALLOWED_ORIGINS=${ADMIN_ALLOWED_ORIGINS}" in SCRIPT
         and "SHIMPZ_OAUTH_CALLBACK_MODE=${OAUTH_CALLBACK_MODE}" in SCRIPT
         and "name: ${SHIMPZ_PROJECT_NAME:?installer must pin SHIMPZ_PROJECT_NAME}" in SCRIPT
-        and "${SHIMPZ_PROJECT_NAME:?installer must pin SHIMPZ_PROJECT_NAME}-app-egress-proxy-1" in SCRIPT,
+        and "SHIMPZ_APP_EGRESS_PROXY_CONTAINER: shimpz-egress" in SCRIPT,
         "the generated Compose project and controller proxy target stay inside the selected profile",
+    )
+    compose = SCRIPT.split("cat >\"${COMPOSE_FILE}.tmp\" <<'COMPOSE'", 1)[1].split("\nCOMPOSE", 1)[0]
+    container_names = re.findall(r"^    container_name: (\S+)$", compose, re.MULTILINE)
+    check(
+        container_names
+        == ["shimpz-team", "shimpz-egress", "shimpz-account", "shimpz-brain", "shimpz-admin"],
+        "Compose assigns the five stable, memorable container names exactly once",
     )
     check("image: ${SHIMPZ_ADMIN_IMAGE:?" in SCRIPT, "Compose fails closed without the pinned Admin reference")
     check(
@@ -458,8 +465,7 @@ def _check_controller_runtime(controller: str) -> None:
         "SHIMPZ_OAUTH_BROKER_PROXY_HOST: oauth-broker-proxy",
         "SHIMPZ_OAUTH_BROKER_PROXY_TOKEN: "
         "${SHIMPZ_OAUTH_BROKER_PROXY_TOKEN:?installer must bind the OAuth broker proxy capability}",
-        "SHIMPZ_APP_EGRESS_PROXY_CONTAINER: "
-        "${SHIMPZ_PROJECT_NAME:?installer must pin SHIMPZ_PROJECT_NAME}-app-egress-proxy-1",
+        "SHIMPZ_APP_EGRESS_PROXY_CONTAINER: shimpz-egress",
         "SHIMPZ_APP_EGRESS_POLICY_DIR: /var/lib/shimpz-local/app-egress",
         '- "10016"',
         '- "10017"',
@@ -649,7 +655,7 @@ def test_reset_accepts_only_the_exact_space_owned_egress_proxy():
     space_id = "space-111111111111111111111111"
     valid = "|".join(
         (
-            "/shimpz-space-app-egress-proxy-1",
+            "/shimpz-egress",
             "1",
             "single-owner-local-v1",
             space_id,
@@ -661,7 +667,7 @@ def test_reset_accepts_only_the_exact_space_owned_egress_proxy():
     accepted = _run_dynamic_validator(valid)
     check(accepted.returncode == 0, f"the exact Compose egress proxy is accepted: {accepted.stderr.strip()}")
     for label, invalid in (
-        ("name", valid.replace("/shimpz-space-app-egress-proxy-1", "/shimpz-space-foreign-1")),
+        ("name", valid.replace("/shimpz-egress", "/shimpz-space-foreign-1")),
         ("profile", valid.replace("single-owner-local-v1", "foreign-profile")),
         ("Space", valid.replace(space_id, "space-222222222222222222222222")),
         ("kind", valid.replace("app-egress-proxy", "assistant-proxy")),
@@ -669,11 +675,26 @@ def test_reset_accepts_only_the_exact_space_owned_egress_proxy():
         rejected = _run_dynamic_validator(invalid)
         check(rejected.returncode != 0, f"an egress proxy with a foreign {label} fails closed")
 
-    oauth = valid.replace("app-egress-proxy", "oauth-broker-proxy")
+    legacy = valid.replace("/shimpz-egress", "/shimpz-space-app-egress-proxy-1")
+    accepted_legacy = _run_dynamic_validator(legacy)
+    check(
+        accepted_legacy.returncode == 0,
+        f"the previous Compose egress name remains accepted for migration: {accepted_legacy.stderr.strip()}",
+    )
+
+    oauth = valid.replace("/shimpz-egress", "/shimpz-account").replace(
+        "app-egress-proxy", "oauth-broker-proxy"
+    )
     accepted_oauth = _run_dynamic_validator(oauth)
     check(
         accepted_oauth.returncode == 0,
         f"the exact Compose OAuth broker proxy is accepted: {accepted_oauth.stderr.strip()}",
+    )
+    legacy_oauth = oauth.replace("/shimpz-account", "/shimpz-space-oauth-broker-proxy-1")
+    accepted_legacy_oauth = _run_dynamic_validator(legacy_oauth)
+    check(
+        accepted_legacy_oauth.returncode == 0,
+        f"the previous Compose OAuth name remains accepted for migration: {accepted_legacy_oauth.stderr.strip()}",
     )
 
 
@@ -839,10 +860,11 @@ def test_static_update_rollback_and_reset_are_bounded():
     for marker in (
         "an earlier Shimpz installation still has Docker data",
         "validate_project_resources",
-        '"/${PROJECT_NAME}-admin-1|admin"',
-        '"/${PROJECT_NAME}-team-driver-local-1|team-driver-local"',
-        '"/${PROJECT_NAME}-brain-runtime-1|brain-runtime"',
-        '"/${PROJECT_NAME}-app-egress-proxy-1|app-egress-proxy"',
+        '"/shimpz-admin|admin"|"/${PROJECT_NAME}-admin-1|admin"',
+        '"/shimpz-team|team-driver-local"|"/${PROJECT_NAME}-team-driver-local-1|team-driver-local"',
+        '"/shimpz-brain|brain-runtime"|"/${PROJECT_NAME}-brain-runtime-1|brain-runtime"',
+        '"/shimpz-egress|app-egress-proxy"|"/${PROJECT_NAME}-app-egress-proxy-1|app-egress-proxy"',
+        '"/shimpz-account|oauth-broker-proxy"|"/${PROJECT_NAME}-oauth-broker-proxy-1|oauth-broker-proxy"',
         '"${PROJECT_NAME}_config|config"',
         '"${PROJECT_NAME}_data|data"',
         '"${PROJECT_NAME}_controller_token|controller_token"',
@@ -923,6 +945,18 @@ def test_owned_prior_controller_transition_is_exact_and_fail_closed():
     check(
         accepted_legacy_current.returncode == 0 and accepted_legacy_current.stdout.strip() == f"current|{space_id}|1|0",
         "a current controller pinned to the retired official registry remains updatable",
+    )
+
+    named_current_record = f"/shimpz-team|team-driver-local|{other_image}"
+    accepted_named_current = _run_project_validator(
+        [f"current|{named_current_record}"],
+        prior_image=prior_image,
+        controller_environments={"current": f"SHIMPZ_SPACE_ID={space_id}"},
+    )
+    check(
+        accepted_named_current.returncode == 0
+        and accepted_named_current.stdout.strip() == f"current|{space_id}|1|0",
+        "the stable controller container name is accepted",
     )
 
     lookalike_legacy = _run_project_validator(
