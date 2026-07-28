@@ -394,7 +394,7 @@ validate_project_resources() {
 				oauth_broker_proxy_seen=1
 				;;
 			*) accept_prior_controller "$container_name" "$container_service" "$container_image" "$resource_id" \
-				|| die "refusing reset: the Compose project contains an unknown container" ;;
+				|| die "refusing to manage unknown Compose container ${container_name}; inspect or remove it before retrying" ;;
 		esac
 	done
 	for resource_id in $volume_ids; do

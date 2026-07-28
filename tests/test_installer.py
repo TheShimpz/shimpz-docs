@@ -1073,6 +1073,7 @@ def test_owned_prior_controller_transition_is_exact_and_fail_closed():
         prior_image=prior_image,
     )
     check(foreign.returncode != 0, "a foreign Compose container remains rejected")
+    check("/shimpz-space-foreign-1" in foreign.stderr, "an unknown Compose container is named for recovery")
 
     same_digest_foreign = _run_project_validator(
         [f"foreign|/shimpz-space-evil-1|evil|{prior_image}"],
