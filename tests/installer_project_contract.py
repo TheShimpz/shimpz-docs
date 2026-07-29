@@ -14,19 +14,19 @@ def assert_project_validator_contract(run_project_validator) -> None:
     space_id = f"space-{'1' * 24}"
     exact_names = (
         ("/shimpz-admin", "admin"),
-        ("/shimpz-team", "team-driver-local"),
+        ("/shimpz-team", "team-local"),
         ("/shimpz-brain", "brain-runtime"),
         ("/shimpz-egress", "app-egress-proxy"),
         ("/shimpz-account", "oauth-broker-proxy"),
     )
     for container_name, service in exact_names:
-        environments = {"current": f"SHIMPZ_SPACE_ID={space_id}"} if service == "team-driver-local" else None
+        environments = {"current": f"SHIMPZ_SPACE_ID={space_id}"} if service == "team-local" else None
         accepted = run_project_validator(
             [f"current|{container_name}|{service}|{image}"],
             controller_environments=environments,
         )
         check(accepted.returncode == 0, f"the exact {container_name} project container is accepted")
-        expected_state = f"current|{space_id}|1" if service == "team-driver-local" else "||0"
+        expected_state = f"current|{space_id}|1" if service == "team-local" else "||0"
         check(
             accepted.stdout.strip() == expected_state,
             f"the exact {container_name} project container records only its intended role",
@@ -34,7 +34,7 @@ def assert_project_validator_contract(run_project_validator) -> None:
 
     healthy_project = run_project_validator(
         [
-            f"current|/shimpz-team|team-driver-local|{image}",
+            f"current|/shimpz-team|team-local|{image}",
             f"second|/shimpz-admin|admin|{image}",
             f"third|/shimpz-brain|brain-runtime|{image}",
             f"foreign|/shimpz-egress|app-egress-proxy|{image}",
@@ -65,8 +65,8 @@ def assert_project_validator_contract(run_project_validator) -> None:
 
     duplicate_controller = run_project_validator(
         [
-            f"current|/shimpz-team|team-driver-local|{image}",
-            f"second|/shimpz-team|team-driver-local|{image}",
+            f"current|/shimpz-team|team-local|{image}",
+            f"second|/shimpz-team|team-local|{image}",
         ],
         controller_environments={
             "current": f"SHIMPZ_SPACE_ID={space_id}",

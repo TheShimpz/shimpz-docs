@@ -301,7 +301,7 @@ def test_static_delivery_is_pull_only_and_content_addressed():
     )
     check('ADMIN_CHANNEL="stable"' in SCRIPT, "installer selects only the stable Admin channel")
     check(
-        'CONTROLLER_CHANNEL="team-driver-local-stable"' in SCRIPT,
+        'CONTROLLER_CHANNEL="team-local-stable"' in SCRIPT,
         "installer selects only the stable local-controller channel",
     )
     check(
@@ -562,8 +562,8 @@ def _check_brain_runtime(brain_runtime: str) -> None:
 def _check_compose_isolation(admin: str, compose: str, controller: str) -> None:
     for marker in (
         'group_add:\n      - "10010"',
-        "SHIMPZ_TEAMDRIVER_URL: http://team-driver-local:7077",
-        "SHIMPZ_TEAMDRIVER_TOKEN_FILE: /run/shimpz-local/token",
+        "SHIMPZ_TEAM_URL: http://team-local:7077",
+        "SHIMPZ_TEAM_TOKEN_FILE: /run/shimpz-local/token",
         'SHIMPZ_TEAM_CREDENTIALS_ENABLED: "0"',
         "controller_token:/run/shimpz-local:ro",
         "condition: service_healthy",
@@ -684,7 +684,7 @@ def _check_oauth_broker_runtime(oauth_broker: str, compose: str) -> None:
 
 def test_static_runtime_separates_socketless_admin_from_local_controller():
     compose = SCRIPT.split("cat >\"${COMPOSE_FILE}.tmp\" <<'COMPOSE'", 1)[1].split("\nCOMPOSE", 1)[0]
-    controller = compose.split("  team-driver-local:", 1)[1].split("\n  app-egress-proxy:", 1)[0]
+    controller = compose.split("  team-local:", 1)[1].split("\n  app-egress-proxy:", 1)[0]
     app_egress = compose.split("\n  app-egress-proxy:\n", 1)[1].split("\n  oauth-broker-proxy:\n", 1)[0]
     oauth_broker = compose.split("\n  oauth-broker-proxy:\n", 1)[1].split("\n  brain-runtime:\n", 1)[0]
     brain_runtime = compose.split("  brain-runtime:", 1)[1].split("\n  admin:", 1)[0]
@@ -882,7 +882,7 @@ def test_static_update_rollback_and_reset_are_bounded():
     )
     failed_candidate = candidate_branch[1].split("\nfi\n\nrm -f", 1)[0]
     check(
-        failed_candidate.index("compose logs --no-color --tail 20 team-driver-local")
+        failed_candidate.index("compose logs --no-color --tail 20 team-local")
         < failed_candidate.index("compose logs --no-color --tail 20 app-egress-proxy")
         < failed_candidate.index("compose logs --no-color --tail 20 brain-runtime")
         < failed_candidate.index("hydrate_previous_release")
@@ -902,7 +902,7 @@ def test_static_update_rollback_and_reset_are_bounded():
         "managed Shimpz Docker data exists without an install marker",
         "validate_project_resources",
         '"/shimpz-admin|admin"',
-        '"/shimpz-team|team-driver-local"',
+        '"/shimpz-team|team-local"',
         '"/shimpz-brain|brain-runtime"',
         '"/shimpz-egress|app-egress-proxy"',
         '"/shimpz-account|oauth-broker-proxy"',

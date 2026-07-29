@@ -5,7 +5,7 @@ set -eu
 INSTALLER_VERSION="0.4.9"
 IMAGE_REPOSITORY="ghcr.io/theshimpz/shimpz-space"
 ADMIN_CHANNEL="stable"
-CONTROLLER_CHANNEL="team-driver-local-stable"
+CONTROLLER_CHANNEL="team-local-stable"
 BRAIN_RUNTIME_CHANNEL="brain-runtime-stable"
 APP_EGRESS_RELEASE="${IMAGE_REPOSITORY}@sha256:2911302477bf0bf5025c91e0ab34096b32ffb509df13bd6c8d822519a48c47ed"
 LOCAL_PROFILE="single-owner-local-v1"
@@ -338,7 +338,7 @@ validate_project_resources() {
 				[ "$admin_seen" -eq 0 ] || die "refusing reset: duplicate managed Admin container"
 				admin_seen=1
 				;;
-			"/shimpz-team|team-driver-local")
+			"/shimpz-team|team-local")
 				[ "$controller_seen" -eq 0 ] || die "refusing reset: duplicate managed controller container"
 				controller_seen=1
 				record_controller_identity "$resource_id"
@@ -824,7 +824,7 @@ cat >"${COMPOSE_FILE}.tmp" <<'COMPOSE'
 name: ${SHIMPZ_PROJECT_NAME:?installer must pin SHIMPZ_PROJECT_NAME}
 
 services:
-  team-driver-local:
+  team-local:
     container_name: shimpz-team
     image: ${SHIMPZ_CONTROLLER_IMAGE:?installer must pin SHIMPZ_CONTROLLER_IMAGE}
     platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}
@@ -1030,7 +1030,7 @@ services:
     pids_limit: 128
     stop_grace_period: 15s
     depends_on:
-      team-driver-local:
+      team-local:
         condition: service_healthy
     logging:
       driver: json-file
@@ -1058,8 +1058,8 @@ services:
     ports:
       - "127.0.0.1:${SHIMPZ_PORT:-7777}:4600"
     environment:
-      SHIMPZ_TEAMDRIVER_URL: http://team-driver-local:7077
-      SHIMPZ_TEAMDRIVER_TOKEN_FILE: /run/shimpz-local/token
+      SHIMPZ_TEAM_URL: http://team-local:7077
+      SHIMPZ_TEAM_TOKEN_FILE: /run/shimpz-local/token
       SHIMPZ_TEAM_CREDENTIALS_ENABLED: "0"
       SHIMPZ_ADMIN_LOOPBACK_PORT: ${SHIMPZ_PORT:-7777}
       SHIMPZ_ADMIN_ALLOWED_ORIGINS: ${SHIMPZ_ADMIN_ALLOWED_ORIGINS:?installer must pin Admin origins}
@@ -1083,7 +1083,7 @@ services:
     pids_limit: 128
     stop_grace_period: 15s
     depends_on:
-      team-driver-local:
+      team-local:
         condition: service_healthy
       brain-runtime:
         condition: service_healthy
@@ -1140,7 +1140,7 @@ mv "${COMPOSE_FILE}.tmp" "$COMPOSE_FILE"
 step "Starting the Shimpz Admin, local Team controller, and isolated Brain runtime"
 if ! compose up -d --wait --wait-timeout 120 --no-build --pull never --remove-orphans; then
 	warn "The new release did not become healthy"
-	compose logs --no-color --tail 20 team-driver-local >&2 || true
+	compose logs --no-color --tail 20 team-local >&2 || true
 	compose logs --no-color --tail 20 app-egress-proxy >&2 || true
 	compose logs --no-color --tail 20 oauth-broker-proxy >&2 || true
 	compose logs --no-color --tail 20 brain-runtime >&2 || true
