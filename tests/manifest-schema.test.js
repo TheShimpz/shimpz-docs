@@ -17,6 +17,9 @@ const quickstartPage = await readFile(
 const schema = JSON.parse(
   await readFile(new URL("../static/specs/assistant/manifest.schema.json", import.meta.url), "utf8"),
 );
+const upstream = JSON.parse(
+  await readFile(new URL("../static/specs/assistant/upstream.json", import.meta.url), "utf8"),
+);
 const countWords = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
 
 /** @param {string} source */
@@ -125,6 +128,15 @@ test("static published shimpz.toml schema is the closed Spec v1 contract", () =>
     "genesis",
   ]);
   assert.equal(schema.properties.spec.const, 1);
+});
+
+test("manifest schema projection pins Developers authority", () => {
+  assert.deepEqual(upstream, {
+    repository: "https://github.com/TheShimpz/shimpz-developers",
+    commit: "15608b2b1ff1237af636568011c1ff1bc73cf5bc",
+    path: "protocol/assistant/v1/manifest.schema.json",
+    sha256: "c50c69d535b62f061b0df327269c96b2b04b41adebd006fb86c2d59c55643cba",
+  });
 });
 
 test("static published manifest examples contain every required top-level key and a valid id", () => {
