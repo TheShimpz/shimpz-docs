@@ -560,6 +560,7 @@ def _check_controller_runtime(controller: str) -> None:
         "controller_inference:/var/lib/shimpz-local/inference:rw",
         "controller_power_journal:/var/lib/shimpz-local/power-journal:rw",
         "controller_publications:/var/lib/shimpz-local/publications:rw",
+        "controller_cosign_trust:/var/lib/shimpz-local/cosign:rw",
         "controller_assistant_integration_state:/var/lib/shimpz-local/assistant-integrations/state:rw",
         "controller_assistant_integration_key:/var/lib/shimpz-local/assistant-integrations/key:rw",
         "controller_chat_continuation_state:/var/lib/shimpz-local/chat-continuations/state:rw",
@@ -680,6 +681,10 @@ def _check_compose_isolation(admin: str, compose: str, controller: str) -> None:
     check(
         SCRIPT.count("  controller_publications:") == 1,
         "Compose declares exactly one Assistant publication-binding volume",
+    )
+    check(
+        SCRIPT.count("  controller_cosign_trust:") == 1,
+        "Compose declares exactly one persistent private Cosign trust volume",
     )
     check(
         SCRIPT.count("  controller_assistant_integration_state:") == 1,
