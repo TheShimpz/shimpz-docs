@@ -42,7 +42,7 @@
     <dd>
       A stable identifier of 1 to 40 characters: lowercase letters and digits in hyphen-separated
       segments, starting with a letter. It is independent of repository and Python project names.
-      <code>postgres</code> and <code>app-egress-proxy</code> are reserved.
+      <code>postgres</code> and <code>assistant-egress</code> are reserved.
     </dd>
     <dt><code>version</code></dt>
     <dd>A stable semantic version such as <code>0.1.0</code>.</dd>
