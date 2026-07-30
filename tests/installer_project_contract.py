@@ -5,6 +5,7 @@ IMAGE_REPOSITORIES_FOR_TESTS = {
     "account-egress-init": "ghcr.io/theshimpz/shimpz-account-egress",
     "admin": "ghcr.io/theshimpz/shimpz-admin",
     "assistant-egress": "ghcr.io/theshimpz/shimpz-assistant-egress",
+    "assistant-release": "ghcr.io/theshimpz/shimpz-assistant-release",
     "brain": "ghcr.io/theshimpz/shimpz-brain",
     "brain-egress": "ghcr.io/theshimpz/shimpz-brain",
     "team": "ghcr.io/theshimpz/shimpz-team-local",
@@ -30,6 +31,7 @@ def assert_project_validator_contract(run_project_validator) -> None:
         ("/shimpz-brain", "brain"),
         ("/shimpz-brain-egress", "brain-egress"),
         ("/assistant-egress", "assistant-egress"),
+        ("/assistant-release", "assistant-release"),
         ("/account-egress", "account-egress"),
     )
     for container_name, service in exact_names:
@@ -54,6 +56,7 @@ def assert_project_validator_contract(run_project_validator) -> None:
             f"third|/shimpz-brain|brain|{images['brain']}",
             f"brain-egress|/shimpz-brain-egress|brain-egress|{images['brain-egress']}",
             f"foreign|/assistant-egress|assistant-egress|{images['assistant-egress']}",
+            f"release|/assistant-release|assistant-release|{images['assistant-release']}",
             f"oauth|/account-egress|account-egress|{images['account-egress']}",
         ],
         controller_environments={"current": f"SHIMPZ_SPACE_ID={space_id}"},

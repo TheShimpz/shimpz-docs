@@ -7,11 +7,13 @@ ADMIN_REPOSITORY="ghcr.io/theshimpz/shimpz-admin"
 TEAM_REPOSITORY="ghcr.io/theshimpz/shimpz-team-local"
 BRAIN_REPOSITORY="ghcr.io/theshimpz/shimpz-brain"
 ASSISTANT_EGRESS_REPOSITORY="ghcr.io/theshimpz/shimpz-assistant-egress"
+ASSISTANT_RELEASE_REPOSITORY="ghcr.io/theshimpz/shimpz-assistant-release"
 ACCOUNT_EGRESS_REPOSITORY="ghcr.io/theshimpz/shimpz-account-egress"
 ADMIN_CHANNEL="stable"
 TEAM_CHANNEL="stable"
 BRAIN_CHANNEL="stable"
 ASSISTANT_EGRESS_CHANNEL="stable"
+ASSISTANT_RELEASE_CHANNEL="stable"
 ACCOUNT_EGRESS_CHANNEL="stable"
 LOCAL_PROFILE="local-v1"
 SPACE_LABEL="com.shimpz.local.space-id"
@@ -160,7 +162,7 @@ esac
 setup_colors
 show_brand "$action"
 PROJECT_NAME="shimpz-space"
-RESERVED_CONTAINER_NAMES="shimpz-admin shimpz-team shimpz-brain shimpz-brain-egress assistant-egress account-egress account-egress-init"
+RESERVED_CONTAINER_NAMES="shimpz-admin shimpz-team shimpz-brain shimpz-brain-egress assistant-egress assistant-release account-egress account-egress-init"
 SHIMPZ_HOME_NAME=".shimpz"
 MARKER_VALUE="shimpz-space-managed-v1"
 OAUTH_CALLBACK_MODE="loopback"
@@ -197,6 +199,7 @@ ENV_FILE="${SHIMPZ_HOME}/.env"
 MARKER_FILE="${SHIMPZ_HOME}/.shimpz-space"
 install_port="${SHIMPZ_PORT:-7777}"
 unset SHIMPZ_ADMIN_IMAGE SHIMPZ_TEAM_IMAGE SHIMPZ_BRAIN_IMAGE SHIMPZ_ASSISTANT_EGRESS_IMAGE
+unset SHIMPZ_ASSISTANT_RELEASE_IMAGE
 unset SHIMPZ_ACCOUNT_EGRESS_IMAGE
 unset SHIMPZ_SPACE_PLATFORM SHIMPZ_PORT
 unset SHIMPZ_DOCKER_GID SHIMPZ_DOCKER_SOCKET SHIMPZ_SPACE_ID SHIMPZ_CPUSET
@@ -297,6 +300,7 @@ validate_project_resources() {
 	brain_runtime_seen=0
 	brain_egress_seen=0
 	assistant_egress_proxy_seen=0
+	assistant_release_proxy_seen=0
 	account_egress_proxy_seen=0
 	account_egress_init_seen=0
 	admin_id=""
@@ -338,6 +342,12 @@ validate_project_resources() {
 					|| die "refusing reset: duplicate managed Assistant egress proxy container"
 				assistant_egress_proxy_seen=1
 				;;
+			"/assistant-release|assistant-release")
+				validate_repository_digest_image "$container_image" "$ASSISTANT_RELEASE_REPOSITORY"
+				[ "$assistant_release_proxy_seen" -eq 0 ] \
+					|| die "refusing reset: duplicate managed Assistant release proxy container"
+				assistant_release_proxy_seen=1
+				;;
 			"/account-egress|account-egress")
 				validate_repository_digest_image "$container_image" "$ACCOUNT_EGRESS_REPOSITORY"
 				[ "$account_egress_proxy_seen" -eq 0 ] \
@@ -372,6 +382,7 @@ validate_project_resources() {
 			"${PROJECT_NAME}_account_egress_capability|account_egress_capability"|\
 			"${PROJECT_NAME}_account_egress_audit|account_egress_audit"|\
 			"${PROJECT_NAME}_brain_egress_audit|brain_egress_audit"|\
+			"${PROJECT_NAME}_assistant_release_audit|assistant_release_audit"|\
 			"${PROJECT_NAME}_brain_runtime_token|brain_runtime_token"|\
 			"${PROJECT_NAME}_brain_runtime_state|brain_runtime_state"|\
 			"${PROJECT_NAME}_assistant_egress_policy|assistant_egress_policy"|\
@@ -386,6 +397,8 @@ validate_project_resources() {
 			"${PROJECT_NAME}_egress|egress"|"${PROJECT_NAME}_control|control"|\
 			"${PROJECT_NAME}_brain_runtime|brain_runtime"|"${PROJECT_NAME}_brain_egress|brain_egress"|\
 			"${PROJECT_NAME}_brain_egress_out|brain_egress_out"|\
+			"${PROJECT_NAME}_assistant_release|assistant_release"|\
+			"${PROJECT_NAME}_assistant_release_out|assistant_release_out"|\
 			"${PROJECT_NAME}_assistant_egress_out|assistant_egress_out"|\
 			"${PROJECT_NAME}_account_egress|account_egress"|\
 			"${PROJECT_NAME}_account_egress_out|account_egress_out") ;;
@@ -412,6 +425,7 @@ validate_dynamic_resources() {
 	dynamic_container_ids_value="$(dynamic_container_ids)" || die "could not inspect managed Assistant containers"
 	dynamic_network_ids_value="$(dynamic_network_ids)" || die "could not inspect managed Team networks"
 	dynamic_assistant_egress_seen=0
+	dynamic_assistant_release_seen=0
 	dynamic_brain_egress_seen=0
 	dynamic_account_egress_seen=0
 	for resource_id in $dynamic_container_ids_value; do
@@ -446,6 +460,15 @@ validate_dynamic_resources() {
 				[ "$dynamic_assistant_egress_seen" -eq 0 ] \
 					|| die "refusing reset: duplicate managed Assistant egress proxy"
 				dynamic_assistant_egress_seen=1
+				;;
+			assistant-release)
+				case "$dynamic_name" in
+					"/assistant-release") ;;
+					*) die "refusing reset: invalid managed Assistant release proxy name" ;;
+				esac
+				[ "$dynamic_assistant_release_seen" -eq 0 ] \
+					|| die "refusing reset: duplicate managed Assistant release proxy"
+				dynamic_assistant_release_seen=1
 				;;
 			brain-egress)
 				case "$dynamic_name" in
@@ -727,11 +750,13 @@ load_previous_release() {
 	previous_team_ref="$(previous_env_value SHIMPZ_TEAM_IMAGE "${ENV_FILE}.previous")"
 	previous_brain_ref="$(previous_env_value SHIMPZ_BRAIN_IMAGE "${ENV_FILE}.previous")"
 	previous_assistant_egress_ref="$(previous_env_value SHIMPZ_ASSISTANT_EGRESS_IMAGE "${ENV_FILE}.previous")"
+	previous_assistant_release_ref="$(previous_env_value SHIMPZ_ASSISTANT_RELEASE_IMAGE "${ENV_FILE}.previous")"
 	previous_account_egress_ref="$(previous_env_value SHIMPZ_ACCOUNT_EGRESS_IMAGE "${ENV_FILE}.previous")"
 	validate_pinned_release_ref "$previous_admin_ref" "$ADMIN_REPOSITORY"
 	validate_pinned_release_ref "$previous_team_ref" "$TEAM_REPOSITORY"
 	validate_pinned_release_ref "$previous_brain_ref" "$BRAIN_REPOSITORY"
 	validate_pinned_release_ref "$previous_assistant_egress_ref" "$ASSISTANT_EGRESS_REPOSITORY"
+	validate_pinned_release_ref "$previous_assistant_release_ref" "$ASSISTANT_RELEASE_REPOSITORY"
 	validate_pinned_release_ref "$previous_account_egress_ref" "$ACCOUNT_EGRESS_REPOSITORY"
 }
 
@@ -757,6 +782,7 @@ hydrate_previous_release() {
 	ensure_pinned_release_ref "$previous_team_ref" "$previous_platform" || return 1
 	ensure_pinned_release_ref "$previous_brain_ref" "$previous_platform" || return 1
 	ensure_pinned_release_ref "$previous_assistant_egress_ref" "$previous_platform" || return 1
+	ensure_pinned_release_ref "$previous_assistant_release_ref" "$previous_platform" || return 1
 	ensure_pinned_release_ref "$previous_account_egress_ref" "$previous_platform" || return 1
 }
 
@@ -791,6 +817,7 @@ admin_tag_ref="${ADMIN_REPOSITORY}:${ADMIN_CHANNEL}"
 team_tag_ref="${TEAM_REPOSITORY}:${TEAM_CHANNEL}"
 brain_tag_ref="${BRAIN_REPOSITORY}:${BRAIN_CHANNEL}"
 assistant_egress_tag_ref="${ASSISTANT_EGRESS_REPOSITORY}:${ASSISTANT_EGRESS_CHANNEL}"
+assistant_release_tag_ref="${ASSISTANT_RELEASE_REPOSITORY}:${ASSISTANT_RELEASE_CHANNEL}"
 account_egress_tag_ref="${ACCOUNT_EGRESS_REPOSITORY}:${ACCOUNT_EGRESS_CHANNEL}"
 step "Pulling and verifying the stable Admin image"
 admin_image_ref="$(pull_verified_ref "$admin_tag_ref" "$ADMIN_REPOSITORY")"
@@ -800,6 +827,8 @@ step "Pulling and verifying the isolated Brain runtime image"
 brain_image_ref="$(pull_verified_ref "$brain_tag_ref" "$BRAIN_REPOSITORY")"
 step "Pulling and verifying the deny-by-default Assistant egress proxy"
 assistant_egress_image_ref="$(pull_verified_ref "$assistant_egress_tag_ref" "$ASSISTANT_EGRESS_REPOSITORY")"
+step "Pulling and verifying the Assistant release verification boundary"
+assistant_release_image_ref="$(pull_verified_ref "$assistant_release_tag_ref" "$ASSISTANT_RELEASE_REPOSITORY")"
 step "Pulling and verifying the isolated Account egress image"
 account_egress_image_ref="$(pull_verified_ref "$account_egress_tag_ref" "$ACCOUNT_EGRESS_REPOSITORY")"
 step "Verifying local Docker access for the Team controller"
@@ -833,6 +862,7 @@ SHIMPZ_ADMIN_IMAGE=${admin_image_ref}
 SHIMPZ_TEAM_IMAGE=${team_image_ref}
 SHIMPZ_BRAIN_IMAGE=${brain_image_ref}
 SHIMPZ_ASSISTANT_EGRESS_IMAGE=${assistant_egress_image_ref}
+SHIMPZ_ASSISTANT_RELEASE_IMAGE=${assistant_release_image_ref}
 SHIMPZ_ACCOUNT_EGRESS_IMAGE=${account_egress_image_ref}
 SHIMPZ_SPACE_PLATFORM=${docker_platform}
 SHIMPZ_PORT=${install_port}
@@ -946,12 +976,15 @@ services:
         condition: service_completed_successfully
       assistant-egress:
         condition: service_started
+      assistant-release:
+        condition: service_healthy
       account-egress:
         condition: service_healthy
     networks:
       - control
       - brain_runtime
       - account_egress
+      - assistant_release
 
   assistant-egress:
     container_name: assistant-egress
@@ -1007,6 +1040,58 @@ services:
         max-file: "2"
     networks:
       - assistant_egress_out
+
+  assistant-release:
+    container_name: assistant-release
+    image: ${SHIMPZ_ASSISTANT_RELEASE_IMAGE:?installer must pin SHIMPZ_ASSISTANT_RELEASE_IMAGE}
+    platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}
+    pull_policy: never
+    restart: unless-stopped
+    user: "10004:10004"
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    labels:
+      com.shimpz.local.managed: "1"
+      com.shimpz.local.profile: local-v1
+      com.shimpz.local.space-id: ${SHIMPZ_SPACE_ID:?installer must preserve SHIMPZ_SPACE_ID}
+      com.shimpz.local.kind: assistant-release
+    environment:
+      SHIMPZ_EGRESS_ALLOW: ghcr.io,tuf-repo-cdn.sigstore.dev,rekor.sigstore.dev,pkg-containers.githubusercontent.com
+      SHIMPZ_EGRESS_AUDIT_LOG: /var/log/assistant-release/audit.jsonl
+      SHIMPZ_EGRESS_MAX_CONCURRENCY: "16"
+      SHIMPZ_EGRESS_MAX_SOURCE_CONCURRENCY: "4"
+      SHIMPZ_EGRESS_LISTEN_BACKLOG: "8"
+    volumes:
+      - assistant_release_audit:/var/log/assistant-release:rw
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=8m
+    healthcheck:
+      test: ["CMD", "python3", "/app/healthcheck.py"]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+      start_period: 5s
+    cpuset: "${SHIMPZ_CPUSET:?installer must limit local CPUs}"
+    cpus: "0.5"
+    mem_limit: 128m
+    memswap_limit: 128m
+    pids_limit: 64
+    ulimits:
+      nofile:
+        soft: 256
+        hard: 256
+    stop_grace_period: 15s
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+        max-file: "2"
+    networks:
+      - assistant_release
+      - assistant_release_out
 
   account-egress:
     container_name: account-egress
@@ -1071,7 +1156,7 @@ services:
     security_opt:
       - no-new-privileges:true
     environment:
-      SHIMPZ_EGRESS_AUDIT_LOG: /var/log/egress-proxy/audit.jsonl
+      SHIMPZ_EGRESS_AUDIT_LOG: /var/log/brain-egress/audit.jsonl
       SHIMPZ_EGRESS_MAX_CONCURRENCY: "64"
       SHIMPZ_EGRESS_MAX_SOURCE_CONCURRENCY: "8"
       SHIMPZ_EGRESS_LISTEN_BACKLOG: "16"
@@ -1081,7 +1166,7 @@ services:
       com.shimpz.local.space-id: ${SHIMPZ_SPACE_ID:?installer must preserve SHIMPZ_SPACE_ID}
       com.shimpz.local.kind: brain-egress
     volumes:
-      - brain_egress_audit:/var/log/egress-proxy:rw
+      - brain_egress_audit:/var/log/brain-egress:rw
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,size=16m
     cpuset: "${SHIMPZ_CPUSET:?installer must limit local CPUs}"
@@ -1233,6 +1318,7 @@ volumes:
   supervisor_key:
   assistant_egress_policy:
   assistant_egress_audit:
+  assistant_release_audit:
   account_egress_capability:
   account_egress_audit:
   brain_egress_audit:
@@ -1253,6 +1339,11 @@ networks:
     driver: bridge
   assistant_egress_out:
     driver: bridge
+  assistant_release:
+    driver: bridge
+    internal: true
+  assistant_release_out:
+    driver: bridge
   account_egress:
     driver: bridge
     internal: true
@@ -1270,6 +1361,7 @@ if ! compose up -d --wait --wait-timeout 120 --no-build --pull never --remove-or
 	warn "The new release did not become healthy"
 	compose logs --no-color --tail 20 team >&2 || true
 	compose logs --no-color --tail 20 assistant-egress >&2 || true
+	compose logs --no-color --tail 20 assistant-release >&2 || true
 	compose logs --no-color --tail 20 account-egress >&2 || true
 	compose logs --no-color --tail 20 brain-egress >&2 || true
 	compose logs --no-color --tail 20 brain >&2 || true
@@ -1309,5 +1401,6 @@ printf '  AdminImg %s\n' "$admin_image_ref"
 printf '  Control  %s\n' "$team_image_ref"
 printf '  Brain    %s\n' "$brain_image_ref"
 printf '  Egress   %s\n' "$assistant_egress_image_ref"
+printf '  Release  %s\n' "$assistant_release_image_ref"
 printf '  Account  %s\n' "$account_egress_image_ref"
 printf '  Reset    %s\n' "$reset_command"

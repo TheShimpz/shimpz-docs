@@ -20,8 +20,8 @@ def assert_brain_egress_runtime(
         "cap_drop:\n      - ALL",
         "no-new-privileges:true",
         "com.shimpz.local.kind: brain-egress",
-        "brain_egress_audit:/var/log/egress-proxy:rw",
-        "SHIMPZ_EGRESS_AUDIT_LOG: /var/log/egress-proxy/audit.jsonl",
+        "brain_egress_audit:/var/log/brain-egress:rw",
+        "SHIMPZ_EGRESS_AUDIT_LOG: /var/log/brain-egress/audit.jsonl",
         'SHIMPZ_EGRESS_MAX_CONCURRENCY: "64"',
         'SHIMPZ_EGRESS_MAX_SOURCE_CONCURRENCY: "8"',
         'SHIMPZ_EGRESS_LISTEN_BACKLOG: "16"',
@@ -82,6 +82,51 @@ def assert_assistant_egress_runtime(
         "proxy starts only on its outbound plane",
     )
     check("assistant_egress_out:\n    driver: bridge" in compose, "Assistant egress uses a dedicated outbound network")
+
+
+def assert_assistant_release_runtime(
+    assistant_release: str,
+    compose: str,
+    check: Check,
+) -> None:
+    """Prove Cosign alone receives the narrow GHCR and Sigstore route."""
+    for marker in (
+        "${SHIMPZ_ASSISTANT_RELEASE_IMAGE:?installer must pin SHIMPZ_ASSISTANT_RELEASE_IMAGE}",
+        'user: "10004:10004"',
+        "read_only: true",
+        "cap_drop:\n      - ALL",
+        "no-new-privileges:true",
+        'com.shimpz.local.managed: "1"',
+        "com.shimpz.local.profile: local-v1",
+        "com.shimpz.local.space-id: ${SHIMPZ_SPACE_ID:?installer must preserve SHIMPZ_SPACE_ID}",
+        "com.shimpz.local.kind: assistant-release",
+        "SHIMPZ_EGRESS_ALLOW: "
+        "ghcr.io,tuf-repo-cdn.sigstore.dev,rekor.sigstore.dev,pkg-containers.githubusercontent.com",
+        "SHIMPZ_EGRESS_AUDIT_LOG: /var/log/assistant-release/audit.jsonl",
+        'SHIMPZ_EGRESS_MAX_CONCURRENCY: "16"',
+        'SHIMPZ_EGRESS_MAX_SOURCE_CONCURRENCY: "4"',
+        'SHIMPZ_EGRESS_LISTEN_BACKLOG: "8"',
+        "assistant_release_audit:/var/log/assistant-release:rw",
+        "noexec,nosuid,nodev,size=8m",
+        '["CMD", "python3", "/app/healthcheck.py"]',
+        'cpus: "0.5"',
+        "mem_limit: 128m",
+        "memswap_limit: 128m",
+        "pids_limit: 64",
+        "- assistant_release\n      - assistant_release_out",
+    ):
+        check(marker in assistant_release, f"Assistant release proxy enforces {marker!r}")
+    check("docker.sock" not in assistant_release, "Assistant release proxy never receives the Docker socket")
+    check("controller_token" not in assistant_release, "Assistant release proxy never receives a Team bearer")
+    check("brain_runtime" not in assistant_release, "Assistant release proxy cannot enter the Brain plane")
+    check(
+        "assistant_release:\n    driver: bridge\n    internal: true" in compose,
+        "Team-to-Assistant-release network is internal",
+    )
+    check(
+        "assistant_release_out:\n    driver: bridge" in compose,
+        "Assistant release alone receives its outbound plane",
+    )
 
 
 def assert_account_egress_runtime(
