@@ -731,8 +731,14 @@ previous_env_value() {
 
 validate_pinned_release_ref() {
 	release_ref="$1"
-	official_image_digest "$release_ref" >/dev/null \
-		|| die "the previous release is not pinned to an allowed official image"
+	repository="$2"
+	image_digest="${release_ref#"${repository}@sha256:"}"
+	[ "$image_digest" != "$release_ref" ] \
+		|| die "the previous release is not pinned to its responsibility-owned official image"
+	case "$image_digest" in
+		""|*[!0-9a-f]*) die "the previous release image digest is invalid" ;;
+	esac
+	[ "${#image_digest}" -eq 64 ] || die "the previous release image digest is invalid"
 }
 
 load_previous_release() {
@@ -744,11 +750,11 @@ load_previous_release() {
 	previous_brain_ref="$(previous_env_value SHIMPZ_BRAIN_IMAGE "${ENV_FILE}.previous")"
 	previous_assistant_egress_ref="$(previous_env_value SHIMPZ_ASSISTANT_EGRESS_IMAGE "${ENV_FILE}.previous")"
 	previous_account_egress_ref="$(previous_env_value SHIMPZ_ACCOUNT_EGRESS_IMAGE "${ENV_FILE}.previous")"
-	validate_pinned_release_ref "$previous_admin_ref"
-	validate_pinned_release_ref "$previous_team_ref"
-	validate_pinned_release_ref "$previous_brain_ref"
-	validate_pinned_release_ref "$previous_assistant_egress_ref"
-	validate_pinned_release_ref "$previous_account_egress_ref"
+	validate_pinned_release_ref "$previous_admin_ref" "$ADMIN_REPOSITORY"
+	validate_pinned_release_ref "$previous_team_ref" "$TEAM_REPOSITORY"
+	validate_pinned_release_ref "$previous_brain_ref" "$BRAIN_REPOSITORY"
+	validate_pinned_release_ref "$previous_assistant_egress_ref" "$ASSISTANT_EGRESS_REPOSITORY"
+	validate_pinned_release_ref "$previous_account_egress_ref" "$ACCOUNT_EGRESS_REPOSITORY"
 }
 
 ensure_pinned_release_ref() {

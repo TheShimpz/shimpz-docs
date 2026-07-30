@@ -33,6 +33,23 @@ def _shell_functions(start_name: str, end_name: str) -> str:
     return SCRIPT[start:end]
 
 
+def _run_previous_ref_validator(image: str, repository: str) -> subprocess.CompletedProcess[str]:
+    function = _shell_functions("validate_pinned_release_ref", "load_previous_release")
+    command = (
+        "set -eu\n"
+        "die() { printf '%s\\n' \"$*\" >&2; exit 1; }\n"
+        f"{function}\n"
+        'validate_pinned_release_ref "$TEST_IMAGE" "$TEST_REPOSITORY"\n'
+    )
+    return subprocess.run(
+        ["/bin/sh", "-c", command],
+        check=False,
+        capture_output=True,
+        text=True,
+        env={"TEST_IMAGE": image, "TEST_REPOSITORY": repository},
+    )
+
+
 def _run_project_validator(
     records: list[str],
     *,
@@ -903,6 +920,25 @@ def test_static_update_rollback_and_reset_are_bounded():
     check("umask 077" in SCRIPT and "chmod 700" in SCRIPT, "local installer state is private")
     check(SCRIPT.count("chmod 600") >= 3, "generated config, environment, and marker are owner-only")
     assert_reset_contract(SCRIPT, check)
+
+
+def test_previous_release_refs_are_bound_to_their_responsibility():
+    digest = "a" * 64
+    admin = "ghcr.io/theshimpz/shimpz-admin"
+    team = "ghcr.io/theshimpz/shimpz-team-local"
+    check(
+        _run_previous_ref_validator(f"{admin}@sha256:{digest}", admin).returncode == 0,
+        "rollback accepts an exact responsibility-owned digest",
+    )
+    swapped = _run_previous_ref_validator(f"{team}@sha256:{digest}", admin)
+    check(
+        swapped.returncode != 0 and "responsibility-owned" in swapped.stderr,
+        "rollback rejects an official image owned by another responsibility",
+    )
+    check(
+        _run_previous_ref_validator(f"{admin}:stable", admin).returncode != 0,
+        "rollback rejects mutable responsibility-owned tags",
+    )
 
 
 def test_project_validator_enforces_current_container_names():
