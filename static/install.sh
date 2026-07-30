@@ -156,7 +156,7 @@ esac
 setup_colors
 show_brand "$action"
 PROJECT_NAME="shimpz-space"
-RESERVED_CONTAINER_NAMES="shimpz-admin shimpz-team shimpz-brain shimpz-egress shimpz-account shimpz-account-init"
+RESERVED_CONTAINER_NAMES="shimpz-admin shimpz-team shimpz-brain shimpz-brain-egress shimpz-egress shimpz-account shimpz-account-init"
 SHIMPZ_HOME_NAME=".shimpz"
 MARKER_VALUE="shimpz-space-managed-v1"
 OAUTH_CALLBACK_MODE="loopback"
@@ -294,6 +294,7 @@ validate_project_resources() {
 	admin_seen=0
 	controller_seen=0
 	brain_runtime_seen=0
+	brain_egress_seen=0
 	app_egress_proxy_seen=0
 	oauth_broker_proxy_seen=0
 	account_egress_init_seen=0
@@ -322,6 +323,10 @@ validate_project_resources() {
 			"/shimpz-brain|brain-runtime")
 				[ "$brain_runtime_seen" -eq 0 ] || die "refusing reset: duplicate managed Brain runtime container"
 				brain_runtime_seen=1
+				;;
+			"/shimpz-brain-egress|brain-egress")
+				[ "$brain_egress_seen" -eq 0 ] || die "refusing reset: duplicate managed Brain egress container"
+				brain_egress_seen=1
 				;;
 			"/shimpz-egress|app-egress-proxy")
 				[ "$app_egress_proxy_seen" -eq 0 ] \
@@ -359,6 +364,7 @@ validate_project_resources() {
 			"${PROJECT_NAME}_supervisor_key|supervisor_key"|\
 			"${PROJECT_NAME}_account_egress_capability|account_egress_capability"|\
 			"${PROJECT_NAME}_account_egress_audit|account_egress_audit"|\
+			"${PROJECT_NAME}_brain_egress_audit|brain_egress_audit"|\
 			"${PROJECT_NAME}_brain_runtime_token|brain_runtime_token"|\
 			"${PROJECT_NAME}_brain_runtime_state|brain_runtime_state"|\
 			"${PROJECT_NAME}_app_egress_policy|app_egress_policy"|\
@@ -372,6 +378,7 @@ validate_project_resources() {
 		case "$network_record" in
 			"${PROJECT_NAME}_egress|egress"|"${PROJECT_NAME}_control|control"|\
 			"${PROJECT_NAME}_brain_runtime|brain_runtime"|"${PROJECT_NAME}_brain_egress|brain_egress"|\
+			"${PROJECT_NAME}_brain_egress_out|brain_egress_out"|\
 			"${PROJECT_NAME}_app_egress_out|app_egress_out"|\
 			"${PROJECT_NAME}_oauth_broker|oauth_broker"|\
 			"${PROJECT_NAME}_oauth_broker_out|oauth_broker_out") ;;
@@ -398,6 +405,7 @@ validate_dynamic_resources() {
 	dynamic_container_ids_value="$(dynamic_container_ids)" || die "could not inspect managed Assistant containers"
 	dynamic_network_ids_value="$(dynamic_network_ids)" || die "could not inspect managed Team networks"
 	dynamic_app_egress_seen=0
+	dynamic_brain_egress_seen=0
 	dynamic_oauth_broker_seen=0
 	for resource_id in $dynamic_container_ids_value; do
 		dynamic_record="$(docker inspect --type=container --format '{{.Name}}|{{index .Config.Labels "com.shimpz.local.managed"}}|{{index .Config.Labels "com.shimpz.local.profile"}}|{{index .Config.Labels "com.shimpz.local.space-id"}}|{{index .Config.Labels "com.shimpz.local.kind"}}|{{index .Config.Labels "com.shimpz.local.team-id"}}|{{index .Config.Labels "com.shimpz.local.assistant-id"}}' "$resource_id")" \
@@ -431,6 +439,15 @@ validate_dynamic_resources() {
 				[ "$dynamic_app_egress_seen" -eq 0 ] \
 					|| die "refusing reset: duplicate managed Assistant egress proxy"
 				dynamic_app_egress_seen=1
+				;;
+			brain-egress)
+				case "$dynamic_name" in
+					"/shimpz-brain-egress") ;;
+					*) die "refusing reset: invalid managed Brain egress name" ;;
+				esac
+				[ "$dynamic_brain_egress_seen" -eq 0 ] \
+					|| die "refusing reset: duplicate managed Brain egress"
+				dynamic_brain_egress_seen=1
 				;;
 			oauth-broker-proxy)
 				case "$dynamic_name" in
@@ -1025,6 +1042,61 @@ services:
       - oauth_broker
       - oauth_broker_out
 
+  brain-egress:
+    container_name: shimpz-brain-egress
+    image: ${SHIMPZ_BRAIN_RUNTIME_IMAGE:?installer must pin SHIMPZ_BRAIN_RUNTIME_IMAGE}
+    platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}
+    pull_policy: never
+    restart: unless-stopped
+    user: "10001:10001"
+    entrypoint:
+      - /opt/venv/bin/python
+    command:
+      - /app/egress/app.py
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      SHIMPZ_EGRESS_AUDIT_LOG: /var/log/egress-proxy/audit.jsonl
+      SHIMPZ_EGRESS_MAX_CONCURRENCY: "64"
+      SHIMPZ_EGRESS_MAX_SOURCE_CONCURRENCY: "8"
+      SHIMPZ_EGRESS_LISTEN_BACKLOG: "16"
+    labels:
+      com.shimpz.local.managed: "1"
+      com.shimpz.local.profile: single-owner-local-v1
+      com.shimpz.local.space-id: ${SHIMPZ_SPACE_ID:?installer must preserve SHIMPZ_SPACE_ID}
+      com.shimpz.local.kind: brain-egress
+    volumes:
+      - brain_egress_audit:/var/log/egress-proxy:rw
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=16m
+    cpuset: "${SHIMPZ_CPUSET:?installer must limit local CPUs}"
+    cpus: "1.0"
+    mem_limit: 256m
+    memswap_limit: 256m
+    pids_limit: 128
+    ulimits:
+      nofile:
+        soft: 512
+        hard: 512
+    stop_grace_period: 15s
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+        max-file: "2"
+    networks:
+      - brain_egress
+      - brain_egress_out
+    healthcheck:
+      test: ["CMD", "/opt/venv/bin/python", "/app/egress/healthcheck.py"]
+      interval: 10s
+      timeout: 4s
+      retries: 5
+      start_period: 5s
+
   brain-runtime:
     container_name: shimpz-brain
     image: ${SHIMPZ_BRAIN_RUNTIME_IMAGE:?installer must pin SHIMPZ_BRAIN_RUNTIME_IMAGE}
@@ -1042,6 +1114,12 @@ services:
     environment:
       LANGCHAIN_TRACING_V2: "false"
       LANGSMITH_TRACING: "false"
+      HTTPS_PROXY: http://brain-egress:8888
+      HTTP_PROXY: http://brain-egress:8888
+      https_proxy: http://brain-egress:8888
+      http_proxy: http://brain-egress:8888
+      NO_PROXY: localhost,127.0.0.1,::1
+      no_proxy: localhost,127.0.0.1,::1
       SHIMPZ_BRAIN_RUNTIME_TOKEN_FILE: /run/shimpz-brain-runtime/token
       SHIMPZ_BRAIN_RUNTIME_STATE: /var/lib/shimpz-brain-runtime/checkpoints.sqlite3
     volumes:
@@ -1057,6 +1135,8 @@ services:
     stop_grace_period: 15s
     depends_on:
       team-local:
+        condition: service_healthy
+      brain-egress:
         condition: service_healthy
     logging:
       driver: json-file
@@ -1143,6 +1223,7 @@ volumes:
   app_egress_audit:
   account_egress_capability:
   account_egress_audit:
+  brain_egress_audit:
   brain_runtime_token:
   brain_runtime_state:
 
@@ -1154,6 +1235,9 @@ networks:
     driver: bridge
     internal: true
   brain_egress:
+    driver: bridge
+    internal: true
+  brain_egress_out:
     driver: bridge
   app_egress_out:
     driver: bridge
@@ -1175,6 +1259,7 @@ if ! compose up -d --wait --wait-timeout 120 --no-build --pull never --remove-or
 	compose logs --no-color --tail 20 team-local >&2 || true
 	compose logs --no-color --tail 20 app-egress-proxy >&2 || true
 	compose logs --no-color --tail 20 oauth-broker-proxy >&2 || true
+	compose logs --no-color --tail 20 brain-egress >&2 || true
 	compose logs --no-color --tail 20 brain-runtime >&2 || true
 	if [ "$had_previous" -eq 1 ]; then
 		step "Verifying the previous pinned release"

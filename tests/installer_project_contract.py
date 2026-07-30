@@ -17,6 +17,7 @@ def assert_project_validator_contract(run_project_validator) -> None:
         ("/shimpz-admin", "admin"),
         ("/shimpz-team", "team-local"),
         ("/shimpz-brain", "brain-runtime"),
+        ("/shimpz-brain-egress", "brain-egress"),
         ("/shimpz-egress", "app-egress-proxy"),
         ("/shimpz-account", "oauth-broker-proxy"),
     )
@@ -39,6 +40,7 @@ def assert_project_validator_contract(run_project_validator) -> None:
             f"current|/shimpz-team|team-local|{image}",
             f"second|/shimpz-admin|admin|{image}",
             f"third|/shimpz-brain|brain-runtime|{image}",
+            f"brain-egress|/shimpz-brain-egress|brain-egress|{image}",
             f"foreign|/shimpz-egress|app-egress-proxy|{image}",
             f"oauth|/shimpz-account|oauth-broker-proxy|{image}",
         ],

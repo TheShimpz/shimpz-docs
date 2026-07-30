@@ -11,6 +11,7 @@ from installer_egress_contract import (
     assert_account_egress_initializer,
     assert_account_egress_runtime,
     assert_assistant_egress_runtime,
+    assert_brain_egress_runtime,
 )
 from installer_project_contract import assert_project_validator_contract
 from installer_reset_contract import assert_reset_contract
@@ -70,6 +71,7 @@ case "$*" in
             third) printf '%s\n' "$FAKE_THIRD_RECORD" ;;
             foreign) printf '%s\n' "$FAKE_FOREIGN_RECORD" ;;
             oauth) printf '%s\n' "$FAKE_OAUTH_RECORD" ;;
+            brain-egress) printf '%s\n' "$FAKE_BRAIN_EGRESS_RECORD" ;;
             init) printf '%s\n' "$FAKE_INIT_RECORD" ;;
             *) exit 72 ;;
         esac
@@ -109,6 +111,7 @@ printf '%s|%s|%s\n' "$controller_id" "$controller_space_id" "$controller_seen"
             "FAKE_THIRD_RECORD": fake_records.get("third", ""),
             "FAKE_FOREIGN_RECORD": fake_records.get("foreign", ""),
             "FAKE_OAUTH_RECORD": fake_records.get("oauth", ""),
+            "FAKE_BRAIN_EGRESS_RECORD": fake_records.get("brain-egress", ""),
             "FAKE_INIT_RECORD": fake_records.get("init", ""),
             "FAKE_CURRENT_ENV": controller_environments.get("current", ""),
             "FAKE_SECOND_ENV": controller_environments.get("second", ""),
@@ -385,10 +388,11 @@ def test_static_delivery_is_pull_only_and_content_addressed():
             "shimpz-team",
             "shimpz-egress",
             "shimpz-account",
+            "shimpz-brain-egress",
             "shimpz-brain",
             "shimpz-admin",
         ],
-        "Compose assigns the six stable, memorable container and job names exactly once",
+        "Compose assigns the seven stable, memorable container and job names exactly once",
     )
     reserved_line = next(line for line in SCRIPT.splitlines() if line.startswith("RESERVED_CONTAINER_NAMES="))
     check(
@@ -570,6 +574,10 @@ def _check_brain_runtime(brain_runtime: str) -> None:
         "no-new-privileges:true",
         'LANGCHAIN_TRACING_V2: "false"',
         'LANGSMITH_TRACING: "false"',
+        "HTTPS_PROXY: http://brain-egress:8888",
+        "HTTP_PROXY: http://brain-egress:8888",
+        "https_proxy: http://brain-egress:8888",
+        "http_proxy: http://brain-egress:8888",
         "brain_runtime_token:/run/shimpz-brain-runtime:ro",
         "brain_runtime_state:/var/lib/shimpz-brain-runtime:rw",
         "SHIMPZ_BRAIN_RUNTIME_STATE: /var/lib/shimpz-brain-runtime/checkpoints.sqlite3",
@@ -579,6 +587,7 @@ def _check_brain_runtime(brain_runtime: str) -> None:
         "memswap_limit: 1g",
         "pids_limit: 128",
         "condition: service_healthy",
+        "brain-egress:\n        condition: service_healthy",
         "- brain_runtime\n      - brain_egress",
     ):
         check(marker in brain_runtime, f"isolated Brain runtime enforces {marker!r}")
@@ -614,7 +623,11 @@ def _check_compose_isolation(admin: str, compose: str, controller: str) -> None:
         "brain_runtime:\n    driver: bridge\n    internal: true" in compose,
         "the Controller-to-Brain network is internal",
     )
-    check("brain_egress:\n    driver: bridge" in compose, "Brain egress uses a dedicated outbound network")
+    check(
+        "brain_egress:\n    driver: bridge\n    internal: true" in compose,
+        "Brain-to-proxy network is internal",
+    )
+    check("brain_egress_out:\n    driver: bridge" in compose, "Brain proxy has one dedicated outbound network")
     check("- control\n      - egress" in admin, "Admin alone bridges control to egress")
     check("- egress" not in controller, "controller has no egress network")
     check("brain_runtime" not in admin and "brain_egress" not in admin, "Admin cannot join either Brain network")
@@ -667,12 +680,14 @@ def test_static_runtime_separates_socketless_admin_from_local_controller():
     initializer = compose.split("  account-egress-init:", 1)[1].split("\n  team-local:", 1)[0]
     controller = compose.split("  team-local:", 1)[1].split("\n  app-egress-proxy:", 1)[0]
     app_egress = compose.split("\n  app-egress-proxy:\n", 1)[1].split("\n  oauth-broker-proxy:\n", 1)[0]
-    oauth_broker = compose.split("\n  oauth-broker-proxy:\n", 1)[1].split("\n  brain-runtime:\n", 1)[0]
+    oauth_broker = compose.split("\n  oauth-broker-proxy:\n", 1)[1].split("\n  brain-egress:\n", 1)[0]
+    brain_egress = compose.split("\n  brain-egress:\n", 1)[1].split("\n  brain-runtime:\n", 1)[0]
     brain_runtime = compose.split("  brain-runtime:", 1)[1].split("\n  admin:", 1)[0]
     admin = compose.split("  admin:", 1)[1].split("\nvolumes:", 1)[0]
     _check_admin_runtime(admin, compose)
     assert_account_egress_initializer(initializer, check)
     _check_controller_runtime(controller)
+    assert_brain_egress_runtime(brain_egress, compose, check)
     _check_brain_runtime(brain_runtime)
     _check_compose_isolation(admin, compose, controller)
     assert_assistant_egress_runtime(app_egress, compose, check)
@@ -716,6 +731,23 @@ def test_reset_accepts_only_the_exact_space_owned_egress_proxy():
     ):
         rejected = _run_dynamic_validator(confused)
         check(rejected.returncode != 0, "an OAuth or egress proxy with a mismatched exact name fails closed")
+
+    brain = valid.replace("/shimpz-egress", "/shimpz-brain-egress").replace(
+        "app-egress-proxy",
+        "brain-egress",
+    )
+    accepted_brain = _run_dynamic_validator(brain)
+    check(
+        accepted_brain.returncode == 0,
+        f"the exact Compose Brain egress proxy is accepted: {accepted_brain.stderr.strip()}",
+    )
+    for confused in (
+        valid.replace("app-egress-proxy", "brain-egress"),
+        valid.replace("/shimpz-egress", "/shimpz-brain-egress"),
+        brain.replace("/shimpz-brain-egress", "/shimpz-space-foreign-1"),
+    ):
+        rejected = _run_dynamic_validator(confused)
+        check(rejected.returncode != 0, "a Brain egress proxy with a mismatched exact name fails closed")
 
 
 def test_static_admin_chat_origin_allowlist_is_loopback_only():
@@ -860,6 +892,7 @@ def test_static_update_rollback_and_reset_are_bounded():
     check(
         failed_candidate.index("compose logs --no-color --tail 20 team-local")
         < failed_candidate.index("compose logs --no-color --tail 20 app-egress-proxy")
+        < failed_candidate.index("compose logs --no-color --tail 20 brain-egress")
         < failed_candidate.index("compose logs --no-color --tail 20 brain-runtime")
         < failed_candidate.index("hydrate_previous_release")
         < failed_candidate.index("compose down --remove-orphans")

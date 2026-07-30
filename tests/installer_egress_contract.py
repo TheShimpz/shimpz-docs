@@ -5,6 +5,45 @@ from collections.abc import Callable
 Check = Callable[[object, str], None]
 
 
+def assert_brain_egress_runtime(
+    brain_egress: str,
+    compose: str,
+    check: Check,
+) -> None:
+    """Prove provider traffic crosses only the catalog-bound Brain proxy."""
+    for marker in (
+        "${SHIMPZ_BRAIN_RUNTIME_IMAGE:?installer must pin SHIMPZ_BRAIN_RUNTIME_IMAGE}",
+        'user: "10001:10001"',
+        "- /opt/venv/bin/python",
+        "- /app/egress/app.py",
+        "read_only: true",
+        "cap_drop:\n      - ALL",
+        "no-new-privileges:true",
+        "com.shimpz.local.kind: brain-egress",
+        "brain_egress_audit:/var/log/egress-proxy:rw",
+        "SHIMPZ_EGRESS_AUDIT_LOG: /var/log/egress-proxy/audit.jsonl",
+        'SHIMPZ_EGRESS_MAX_CONCURRENCY: "64"',
+        'SHIMPZ_EGRESS_MAX_SOURCE_CONCURRENCY: "8"',
+        'SHIMPZ_EGRESS_LISTEN_BACKLOG: "16"',
+        'cpus: "1.0"',
+        "mem_limit: 256m",
+        "memswap_limit: 256m",
+        "pids_limit: 128",
+        "- brain_egress\n      - brain_egress_out",
+        'test: ["CMD", "/opt/venv/bin/python", "/app/egress/healthcheck.py"]',
+    ):
+        check(marker in brain_egress, f"Brain egress proxy enforces {marker!r}")
+    check("SHIMPZ_EGRESS_ALLOW" not in brain_egress, "Brain egress has no environment policy override")
+    check("docker.sock" not in brain_egress, "Brain egress never receives the Docker socket")
+    check("brain_runtime_token" not in brain_egress, "Brain egress never receives the runtime bearer")
+    check("brain_runtime_state" not in brain_egress, "Brain egress never receives checkpoint state")
+    check(
+        "brain_egress:\n    driver: bridge\n    internal: true" in compose,
+        "Brain-to-proxy network is internal",
+    )
+    check("brain_egress_out:\n    driver: bridge" in compose, "Brain egress alone receives its outbound plane")
+
+
 def assert_assistant_egress_runtime(
     app_egress: str,
     compose: str,
