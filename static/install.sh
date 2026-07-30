@@ -323,6 +323,7 @@ validate_project_resources() {
 	brain_runtime_seen=0
 	app_egress_proxy_seen=0
 	oauth_broker_proxy_seen=0
+	admin_id=""
 	controller_id=""
 	controller_space_id=""
 	for resource_id in $container_ids; do
@@ -337,6 +338,7 @@ validate_project_resources() {
 			"/shimpz-admin|admin")
 				[ "$admin_seen" -eq 0 ] || die "refusing reset: duplicate managed Admin container"
 				admin_seen=1
+				admin_id="$resource_id"
 				;;
 			"/shimpz-team|team-local")
 				[ "$controller_seen" -eq 0 ] || die "refusing reset: duplicate managed controller container"
@@ -374,6 +376,7 @@ validate_project_resources() {
 			"${PROJECT_NAME}_controller_assistant_integration_key|controller_assistant_integration_key"|\
 			"${PROJECT_NAME}_controller_chat_continuation_state|controller_chat_continuation_state"|\
 			"${PROJECT_NAME}_controller_chat_continuation_key|controller_chat_continuation_key"|\
+			"${PROJECT_NAME}_supervisor_key|supervisor_key"|\
 			"${PROJECT_NAME}_brain_runtime_token|brain_runtime_token"|\
 			"${PROJECT_NAME}_brain_runtime_state|brain_runtime_state"|\
 			"${PROJECT_NAME}_app_egress_policy|app_egress_policy"|\
@@ -492,16 +495,32 @@ reset_dynamic_space() {
 	if [ "$controller_running" != "true" ]; then
 		docker start "$controller_id" >/dev/null || die "could not start the managed controller for reset"
 	fi
+	[ -n "$admin_id" ] || die "the Local Supervisor is unavailable for authenticated reset"
+	admin_running="$(docker inspect --type=container --format '{{.State.Running}}' "$admin_id")" \
+		|| die "could not inspect the managed Admin state"
+	if [ "$admin_running" != "true" ]; then
+		docker start "$admin_id" >/dev/null || die "could not start the managed Admin for reset"
+	fi
+	[ -r /dev/tty ] && [ -w /dev/tty ] \
+		|| die "authenticated reset requires an interactive terminal"
+	printf '  Supervisor password: ' >/dev/tty
+	terminal_state="$(stty -g </dev/tty)" || die "could not secure the password prompt"
+	trap 'stty "$terminal_state" </dev/tty 2>/dev/null || true' EXIT HUP INT TERM
+	stty -echo </dev/tty || die "could not secure the password prompt"
+	IFS= read -r supervisor_password </dev/tty || {
+		stty "$terminal_state" </dev/tty 2>/dev/null || true
+		die "could not read the Supervisor password"
+	}
+	stty "$terminal_state" </dev/tty || die "could not restore the terminal"
+	trap - EXIT HUP INT TERM
+	printf '\n' >/dev/tty
+	[ -n "$supervisor_password" ] || die "the Supervisor password is required"
 	step "Resetting Teams and Assistants through the authenticated controller"
-	reset_attempt=0
-	while [ "$reset_attempt" -lt 30 ]; do
-		if docker exec "$controller_id" /opt/venv/bin/python -c 'import http.client,json,pathlib; token=pathlib.Path("/run/shimpz-local/token").read_text(encoding="ascii"); connection=http.client.HTTPConnection("127.0.0.1",7077,timeout=5); connection.request("DELETE","/v1/space",headers={"Authorization":"Bearer "+token,"Content-Length":"0"}); response=connection.getresponse(); body=response.read(32769); document=json.loads(body); valid=response.status==200 and len(body)<=32768 and isinstance(document,dict) and document.get("reset") is True; connection.close(); raise SystemExit(0 if valid else 1)' >/dev/null 2>&1; then
-			break
-		fi
-		reset_attempt=$((reset_attempt + 1))
-		sleep 1
-	done
-	[ "$reset_attempt" -lt 30 ] || die "the authenticated Team reset did not complete"
+	if ! printf '%s\n' "$supervisor_password" | docker exec -i "$admin_id" python -c 'import auth,json,state,sys,supervisor; from team import bridge,transport; password=sys.stdin.readline(4098).removesuffix("\n"); record=state.get(); valid=bool(password) and auth.verify_password(password,record.get("salt",""),record.get("password_hash","")); identity=state.local_supervisor() if valid else None; supervisor.materialize_public_key(identity) if identity is not None else None; session=auth.issue_session(record["session_secret"],ttl=60) if valid else ""; scope=transport.supervisor_session(session,account=False,local_identity=identity) if valid else None; scope.__enter__() if scope is not None else None; response=bridge.reset_space() if scope is not None else None; scope.__exit__(None,None,None) if scope is not None else None; document=response.body if response is not None else {}; raise SystemExit(0 if response is not None and response.status==200 and isinstance(document,dict) and document.get("reset") is True else 1)' >/dev/null 2>&1; then
+		unset supervisor_password
+		die "the authenticated Team reset did not complete"
+	fi
+	unset supervisor_password
 	dynamic_assistant_container_ids_value="$(dynamic_assistant_container_ids)" \
 		|| die "could not verify Assistant reset"
 	dynamic_network_ids_value="$(dynamic_network_ids)" || die "could not verify Team reset"
@@ -840,6 +859,7 @@ services:
       - "${SHIMPZ_DOCKER_GID:?installer must bind the Docker socket group}"
       - "10016"
       - "10017"
+      - "10021"
     environment:
       SHIMPZ_SPACE_ID: ${SHIMPZ_SPACE_ID:?installer must preserve SHIMPZ_SPACE_ID}
       SHIMPZ_BRAIN_RUNTIME_URL: http://brain-runtime:8080
@@ -865,6 +885,7 @@ services:
       - controller_chat_continuation_key:/var/lib/shimpz-local/chat-continuations/key:rw
       - app_egress_policy:/var/lib/shimpz-local/app-egress:rw
       - brain_runtime_token:/run/shimpz-brain-runtime:rw
+      - supervisor_key:/run/shimpz-local-supervisor:ro
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,size=32m
     cpuset: "${SHIMPZ_CPUSET:?installer must limit local CPUs}"
@@ -1050,6 +1071,7 @@ services:
     user: "1000:1000"
     group_add:
       - "10010"
+      - "10021"
     read_only: true
     cap_drop:
       - ALL
@@ -1069,6 +1091,7 @@ services:
       - config:/repo
       - data:/data
       - controller_token:/run/shimpz-local:ro
+      - supervisor_key:/run/shimpz-local-supervisor:rw
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,size=32m
     healthcheck:
@@ -1109,6 +1132,7 @@ volumes:
   controller_assistant_integration_key:
   controller_chat_continuation_state:
   controller_chat_continuation_key:
+  supervisor_key:
   app_egress_policy:
   app_egress_audit:
   oauth_broker_egress_audit:

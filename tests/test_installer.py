@@ -501,6 +501,7 @@ def _check_controller_runtime(controller: str) -> None:
         "controller_chat_continuation_key:/var/lib/shimpz-local/chat-continuations/key:rw",
         "app_egress_policy:/var/lib/shimpz-local/app-egress:rw",
         "brain_runtime_token:/run/shimpz-brain-runtime:rw",
+        "supervisor_key:/run/shimpz-local-supervisor:ro",
         "SHIMPZ_LOCAL_POWER_JOURNAL_PATH: /var/lib/shimpz-local/power-journal/journal.sqlite3",
         "SHIMPZ_LOCAL_CHAT_CONTINUATIONS_STATE_PATH: /var/lib/shimpz-local/chat-continuations/state/continuations.json",
         "SHIMPZ_LOCAL_CHAT_CONTINUATIONS_KEY_PATH: /var/lib/shimpz-local/chat-continuations/key/aes256.key",
@@ -515,6 +516,7 @@ def _check_controller_runtime(controller: str) -> None:
         "app-egress-proxy:\n        condition: service_started",
         '- "10016"',
         '- "10017"',
+        '- "10021"',
         'cpus: "1.0"',
         "mem_limit: 256m",
         "memswap_limit: 256m",
@@ -567,6 +569,8 @@ def _check_compose_isolation(admin: str, compose: str, controller: str) -> None:
         "SHIMPZ_TEAM_TOKEN_FILE: /run/shimpz-local/token",
         'SHIMPZ_TEAM_CREDENTIALS_ENABLED: "0"',
         "controller_token:/run/shimpz-local:ro",
+        "supervisor_key:/run/shimpz-local-supervisor:rw",
+        '- "10021"',
         "condition: service_healthy",
     ):
         check(marker in admin, f"Admin consumes the controller boundary via {marker!r}")
@@ -608,6 +612,10 @@ def _check_compose_isolation(admin: str, compose: str, controller: str) -> None:
     check(
         SCRIPT.count("  controller_chat_continuation_key:") == 1,
         "Compose declares exactly one independent chat-continuation key volume",
+    )
+    check(
+        SCRIPT.count("  supervisor_key:") == 1,
+        "Compose declares exactly one Local Supervisor public-key volume",
     )
     check("SHIMPZ_CLOUDFLARE_OAUTH_CLIENT" not in SCRIPT, "installer contains no OAuth client credentials")
     check("SHIMPZ_X_OAUTH_CLIENT_ID" not in SCRIPT, "installer contains no unsupported X OAuth configuration")
@@ -918,6 +926,7 @@ def test_static_update_rollback_and_reset_are_bounded():
         '"${PROJECT_NAME}_controller_assistant_integration_key|controller_assistant_integration_key"',
         '"${PROJECT_NAME}_controller_chat_continuation_state|controller_chat_continuation_state"',
         '"${PROJECT_NAME}_controller_chat_continuation_key|controller_chat_continuation_key"',
+        '"${PROJECT_NAME}_supervisor_key|supervisor_key"',
         '"${PROJECT_NAME}_brain_runtime_token|brain_runtime_token"',
         '"${PROJECT_NAME}_brain_runtime_state|brain_runtime_state"',
         '"${PROJECT_NAME}_app_egress_policy|app_egress_policy"',
@@ -929,9 +938,11 @@ def test_static_update_rollback_and_reset_are_bounded():
         '"${PROJECT_NAME}_app_egress_out|app_egress_out"',
         "official_image_digest",
         "validate_dynamic_resources",
-        'docker exec "$controller_id" /opt/venv/bin/python',
-        'connection.request("DELETE","/v1/space"',
-        'document.get("reset") is True',
+        'docker exec -i "$admin_id" python',
+        "auth.verify_password",
+        "transport.supervisor_session",
+        "bridge.reset_space",
+        "document.get(\"reset\") is True",
         "the authenticated Team reset did not complete",
         "a Space-labeled container has invalid ownership labels",
         "invalid managed Assistant egress proxy name",
