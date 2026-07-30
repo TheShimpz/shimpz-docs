@@ -562,6 +562,7 @@ def _check_brain_runtime(brain_runtime: str) -> None:
 def _check_compose_isolation(admin: str, compose: str, controller: str) -> None:
     for marker in (
         'group_add:\n      - "10010"',
+        "SHIMPZ_ADMIN_PROFILE: local",
         "SHIMPZ_TEAM_URL: http://team-local:7077",
         "SHIMPZ_TEAM_TOKEN_FILE: /run/shimpz-local/token",
         'SHIMPZ_TEAM_CREDENTIALS_ENABLED: "0"',
