@@ -334,11 +334,6 @@ def test_static_delivery_is_pull_only_and_content_addressed():
     for variable, repository in repositories.items():
         check(f'{variable}="{repository}"' in SCRIPT, f"installer owns the exact package {repository}")
     check("shimpz-space@" not in SCRIPT, "no platform artifact uses the Compose project as an OCI package")
-    digest_validator = _shell_functions("official_image_digest", "record_controller_identity")
-    check(
-        all(f'"${variable}"' in digest_validator for variable in repositories),
-        "only the five current packages can authenticate a managed digest-pinned image",
-    )
     check('ADMIN_CHANNEL="stable"' in SCRIPT, "installer selects only the stable Admin channel")
     for channel in ("TEAM_CHANNEL", "BRAIN_CHANNEL", "ASSISTANT_EGRESS_CHANNEL", "ACCOUNT_EGRESS_CHANNEL"):
         check(f'{channel}="stable"' in SCRIPT, f"installer selects only the stable {channel} channel")

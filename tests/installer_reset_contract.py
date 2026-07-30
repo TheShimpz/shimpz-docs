@@ -51,7 +51,6 @@ def assert_reset_contract(
         '"${PROJECT_NAME}_brain_egress|brain_egress"',
         '"${PROJECT_NAME}_brain_egress_out|brain_egress_out"',
         '"${PROJECT_NAME}_assistant_egress_out|assistant_egress_out"',
-        "official_image_digest",
         "validate_dynamic_resources",
         'docker exec -i "$admin_id" python',
         "auth.verify_password",

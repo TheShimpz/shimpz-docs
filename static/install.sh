@@ -264,28 +264,6 @@ space_id_from_env_file() {
 	printf '%s\n' "$space_lines"
 }
 
-official_image_digest() {
-	image_value="$1"
-	image_digest=""
-	for repository in \
-		"$ADMIN_REPOSITORY" \
-		"$TEAM_REPOSITORY" \
-		"$BRAIN_REPOSITORY" \
-		"$ASSISTANT_EGRESS_REPOSITORY" \
-		"$ACCOUNT_EGRESS_REPOSITORY"
-	do
-		case "$image_value" in
-			"${repository}@sha256:"*) image_digest="${image_value#"${repository}@sha256:"}"; break ;;
-		esac
-	done
-	[ -n "$image_digest" ] || return 1
-	case "$image_digest" in
-		""|*[!0-9a-f]*) return 1 ;;
-	esac
-	[ "${#image_digest}" -eq 64 ] || return 1
-	printf '%s\n' "$image_digest"
-}
-
 validate_repository_digest_image() {
 	image_value="$1"
 	repository="$2"
