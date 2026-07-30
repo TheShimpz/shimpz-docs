@@ -2,11 +2,12 @@
 
 set -eu
 
-INSTALLER_VERSION="0.4.9"
+INSTALLER_VERSION="0.5.0"
 IMAGE_REPOSITORY="ghcr.io/theshimpz/shimpz-space"
 ADMIN_CHANNEL="stable"
 CONTROLLER_CHANNEL="team-local-stable"
 BRAIN_RUNTIME_CHANNEL="brain-runtime-stable"
+ACCOUNT_EGRESS_CHANNEL="account-egress-stable"
 APP_EGRESS_RELEASE="${IMAGE_REPOSITORY}@sha256:2911302477bf0bf5025c91e0ab34096b32ffb509df13bd6c8d822519a48c47ed"
 LOCAL_PROFILE="single-owner-local-v1"
 SPACE_LABEL="com.shimpz.local.space-id"
@@ -155,7 +156,7 @@ esac
 setup_colors
 show_brand "$action"
 PROJECT_NAME="shimpz-space"
-RESERVED_CONTAINER_NAMES="shimpz-admin shimpz-team shimpz-brain shimpz-egress shimpz-account"
+RESERVED_CONTAINER_NAMES="shimpz-admin shimpz-team shimpz-brain shimpz-egress shimpz-account shimpz-account-init"
 SHIMPZ_HOME_NAME=".shimpz"
 MARKER_VALUE="shimpz-space-managed-v1"
 OAUTH_CALLBACK_MODE="loopback"
@@ -190,11 +191,9 @@ SHIMPZ_HOME="${HOME}/${SHIMPZ_HOME_NAME}"
 COMPOSE_FILE="${SHIMPZ_HOME}/compose.yaml"
 ENV_FILE="${SHIMPZ_HOME}/.env"
 MARKER_FILE="${SHIMPZ_HOME}/.shimpz-space"
-OAUTH_BROKER_POLICY_DIR="${SHIMPZ_HOME}/oauth-broker-policy"
-
 install_port="${SHIMPZ_PORT:-7777}"
 unset SHIMPZ_ADMIN_IMAGE SHIMPZ_CONTROLLER_IMAGE SHIMPZ_BRAIN_RUNTIME_IMAGE SHIMPZ_APP_EGRESS_IMAGE
-unset SHIMPZ_OAUTH_BROKER_PROXY_TOKEN SHIMPZ_OAUTH_BROKER_POLICY_DIR
+unset SHIMPZ_ACCOUNT_EGRESS_IMAGE
 unset SHIMPZ_SPACE_PLATFORM SHIMPZ_PORT
 unset SHIMPZ_DOCKER_GID SHIMPZ_DOCKER_SOCKET SHIMPZ_SPACE_ID SHIMPZ_CPUSET
 
@@ -252,32 +251,6 @@ generated_space_id() {
 	printf 'space-%s\n' "$space_hex"
 }
 
-validate_oauth_broker_proxy_token() {
-	proxy_token="$1"
-	case "$proxy_token" in
-		""|*[!0-9a-f]*) die "invalid OAuth broker proxy capability" ;;
-	esac
-	[ "${#proxy_token}" -eq 64 ] || die "invalid OAuth broker proxy capability"
-}
-
-generated_oauth_broker_proxy_token() {
-	[ -r /dev/urandom ] || die "could not access the system random source"
-	proxy_token="$(od -An -N32 -tx1 /dev/urandom 2>/dev/null | tr -d ' \n')" \
-		|| die "could not generate the OAuth broker proxy capability"
-	validate_oauth_broker_proxy_token "$proxy_token"
-	printf '%s\n' "$proxy_token"
-}
-
-oauth_broker_proxy_token_from_env_file() {
-	[ -f "$ENV_FILE" ] || return 1
-	proxy_token_lines="$(sed -n 's/^SHIMPZ_OAUTH_BROKER_PROXY_TOKEN=//p' "$ENV_FILE")"
-	[ -n "$proxy_token_lines" ] || return 1
-	[ "$(printf '%s\n' "$proxy_token_lines" | wc -l | tr -d ' ')" -eq 1 ] \
-		|| die "invalid OAuth broker proxy capability"
-	validate_oauth_broker_proxy_token "$proxy_token_lines"
-	printf '%s\n' "$proxy_token_lines"
-}
-
 space_id_from_env_file() {
 	[ -f "$ENV_FILE" ] || return 1
 	space_lines="$(sed -n 's/^SHIMPZ_SPACE_ID=//p' "$ENV_FILE")"
@@ -323,6 +296,7 @@ validate_project_resources() {
 	brain_runtime_seen=0
 	app_egress_proxy_seen=0
 	oauth_broker_proxy_seen=0
+	account_egress_init_seen=0
 	admin_id=""
 	controller_id=""
 	controller_space_id=""
@@ -359,6 +333,11 @@ validate_project_resources() {
 					|| die "refusing reset: duplicate managed OAuth broker proxy container"
 				oauth_broker_proxy_seen=1
 				;;
+			"/shimpz-account-init|account-egress-init")
+				[ "$account_egress_init_seen" -eq 0 ] \
+					|| die "refusing reset: duplicate managed Account egress initializer"
+				account_egress_init_seen=1
+				;;
 			*) die "refusing to manage unknown Compose container ${container_name}; inspect or remove it before retrying" ;;
 		esac
 	done
@@ -378,11 +357,12 @@ validate_project_resources() {
 			"${PROJECT_NAME}_controller_chat_continuation_state|controller_chat_continuation_state"|\
 			"${PROJECT_NAME}_controller_chat_continuation_key|controller_chat_continuation_key"|\
 			"${PROJECT_NAME}_supervisor_key|supervisor_key"|\
+			"${PROJECT_NAME}_account_egress_capability|account_egress_capability"|\
+			"${PROJECT_NAME}_account_egress_audit|account_egress_audit"|\
 			"${PROJECT_NAME}_brain_runtime_token|brain_runtime_token"|\
 			"${PROJECT_NAME}_brain_runtime_state|brain_runtime_state"|\
 			"${PROJECT_NAME}_app_egress_policy|app_egress_policy"|\
-			"${PROJECT_NAME}_app_egress_audit|app_egress_audit"|\
-			"${PROJECT_NAME}_oauth_broker_egress_audit|oauth_broker_egress_audit") ;;
+			"${PROJECT_NAME}_app_egress_audit|app_egress_audit") ;;
 			*) die "refusing reset: the Compose project contains an unknown volume" ;;
 		esac
 	done
@@ -658,9 +638,6 @@ else
 	space_id="$(generated_space_id)"
 fi
 validate_space_id "$space_id"
-oauth_broker_proxy_token="$(oauth_broker_proxy_token_from_env_file || true)"
-[ -n "$oauth_broker_proxy_token" ] || oauth_broker_proxy_token="$(generated_oauth_broker_proxy_token)"
-validate_oauth_broker_proxy_token "$oauth_broker_proxy_token"
 if project_resources_exist; then
 	step "Validating the existing managed runtime"
 	validate_project_resources
@@ -675,30 +652,25 @@ fi
 umask 077
 mkdir -p "$SHIMPZ_HOME"
 chmod 700 "$SHIMPZ_HOME"
-mkdir -p "$OAUTH_BROKER_POLICY_DIR"
-chmod 755 "$OAUTH_BROKER_POLICY_DIR"
-printf '["shimpz.com"]\n' >"${OAUTH_BROKER_POLICY_DIR}/${oauth_broker_proxy_token}.json.tmp"
-chmod 644 "${OAUTH_BROKER_POLICY_DIR}/${oauth_broker_proxy_token}.json.tmp"
-mv "${OAUTH_BROKER_POLICY_DIR}/${oauth_broker_proxy_token}.json.tmp" \
-	"${OAUTH_BROKER_POLICY_DIR}/${oauth_broker_proxy_token}.json"
 printf '%s\n' "$MARKER_VALUE" >"$MARKER_FILE"
 chmod 600 "$MARKER_FILE"
 
 pull_verified_ref() {
 	tag_ref="$1"
+	repository="$2"
 	docker pull --quiet --platform "$docker_platform" "$tag_ref" >/dev/null
 	pulled_platform="$(docker image inspect --format '{{.Os}}/{{.Architecture}}' "$tag_ref")"
 	[ "$pulled_platform" = "$docker_platform" ] \
 		|| die "Docker loaded ${pulled_platform} instead of required platform ${docker_platform}"
 	digest_ref="$({ docker image inspect --format '{{range .RepoDigests}}{{println .}}{{end}}' "$tag_ref" || true; } \
-		| sed -n "s|^${IMAGE_REPOSITORY}@\(sha256:[0-9a-f][0-9a-f]*\)$|\1|p" \
+		| sed -n "s|^${repository}@\(sha256:[0-9a-f][0-9a-f]*\)$|\1|p" \
 		| head -n 1)"
 	digest_hex="${digest_ref#sha256:}"
 	case "$digest_hex" in
 		""|*[!0-9a-f]*) die "Docker did not return a valid registry digest for ${tag_ref}" ;;
 	esac
 	[ "${#digest_hex}" -eq 64 ] || die "Docker returned a malformed registry digest for ${tag_ref}"
-	printf '%s@%s\n' "$IMAGE_REPOSITORY" "$digest_ref"
+	printf '%s@%s\n' "$repository" "$digest_ref"
 }
 
 previous_env_value() {
@@ -725,10 +697,12 @@ load_previous_release() {
 	previous_controller_ref="$(previous_env_value SHIMPZ_CONTROLLER_IMAGE "${ENV_FILE}.previous")"
 	previous_brain_runtime_ref="$(previous_env_value SHIMPZ_BRAIN_RUNTIME_IMAGE "${ENV_FILE}.previous")"
 	previous_app_egress_ref="$(previous_env_value SHIMPZ_APP_EGRESS_IMAGE "${ENV_FILE}.previous")"
+	previous_account_egress_ref="$(previous_env_value SHIMPZ_ACCOUNT_EGRESS_IMAGE "${ENV_FILE}.previous")"
 	validate_pinned_release_ref "$previous_admin_ref"
 	validate_pinned_release_ref "$previous_controller_ref"
 	validate_pinned_release_ref "$previous_brain_runtime_ref"
 	validate_pinned_release_ref "$previous_app_egress_ref"
+	validate_pinned_release_ref "$previous_account_egress_ref"
 }
 
 ensure_pinned_release_ref() {
@@ -753,6 +727,7 @@ hydrate_previous_release() {
 	ensure_pinned_release_ref "$previous_controller_ref" "$previous_platform" || return 1
 	ensure_pinned_release_ref "$previous_brain_runtime_ref" "$previous_platform" || return 1
 	ensure_pinned_release_ref "$previous_app_egress_ref" "$previous_platform" || return 1
+	ensure_pinned_release_ref "$previous_account_egress_ref" "$previous_platform" || return 1
 }
 
 controller_socket_gid() {
@@ -785,12 +760,15 @@ controller_can_reach_docker() {
 admin_tag_ref="${IMAGE_REPOSITORY}:${ADMIN_CHANNEL}"
 controller_tag_ref="${IMAGE_REPOSITORY}:${CONTROLLER_CHANNEL}"
 brain_runtime_tag_ref="${IMAGE_REPOSITORY}:${BRAIN_RUNTIME_CHANNEL}"
+account_egress_tag_ref="${IMAGE_REPOSITORY}:${ACCOUNT_EGRESS_CHANNEL}"
 step "Pulling and verifying the stable Admin image"
-admin_image_ref="$(pull_verified_ref "$admin_tag_ref")"
+admin_image_ref="$(pull_verified_ref "$admin_tag_ref" "$IMAGE_REPOSITORY")"
 step "Pulling and verifying the local Team controller image"
-controller_image_ref="$(pull_verified_ref "$controller_tag_ref")"
+controller_image_ref="$(pull_verified_ref "$controller_tag_ref" "$IMAGE_REPOSITORY")"
 step "Pulling and verifying the isolated Brain runtime image"
-brain_runtime_image_ref="$(pull_verified_ref "$brain_runtime_tag_ref")"
+brain_runtime_image_ref="$(pull_verified_ref "$brain_runtime_tag_ref" "$IMAGE_REPOSITORY")"
+step "Pulling and verifying the isolated Account egress image"
+account_egress_image_ref="$(pull_verified_ref "$account_egress_tag_ref" "$IMAGE_REPOSITORY")"
 step "Pulling and verifying the deny-by-default Assistant egress proxy"
 ensure_pinned_release_ref "$APP_EGRESS_RELEASE" "$docker_platform" \
 	|| die "the immutable Assistant egress proxy could not be verified"
@@ -826,6 +804,7 @@ SHIMPZ_ADMIN_IMAGE=${admin_image_ref}
 SHIMPZ_CONTROLLER_IMAGE=${controller_image_ref}
 SHIMPZ_BRAIN_RUNTIME_IMAGE=${brain_runtime_image_ref}
 SHIMPZ_APP_EGRESS_IMAGE=${app_egress_image_ref}
+SHIMPZ_ACCOUNT_EGRESS_IMAGE=${account_egress_image_ref}
 SHIMPZ_SPACE_PLATFORM=${docker_platform}
 SHIMPZ_PORT=${install_port}
 SHIMPZ_DOCKER_GID=${docker_socket_gid}
@@ -835,8 +814,6 @@ SHIMPZ_CPUSET=${docker_cpuset}
 SHIMPZ_PROJECT_NAME=${PROJECT_NAME}
 SHIMPZ_ADMIN_ALLOWED_ORIGINS=${ADMIN_ALLOWED_ORIGINS}
 SHIMPZ_OAUTH_CALLBACK_MODE=${OAUTH_CALLBACK_MODE}
-SHIMPZ_OAUTH_BROKER_PROXY_TOKEN=${oauth_broker_proxy_token}
-SHIMPZ_OAUTH_BROKER_POLICY_DIR=${OAUTH_BROKER_POLICY_DIR}
 EOF
 chmod 600 "${ENV_FILE}.tmp"
 
@@ -844,6 +821,38 @@ cat >"${COMPOSE_FILE}.tmp" <<'COMPOSE'
 name: ${SHIMPZ_PROJECT_NAME:?installer must pin SHIMPZ_PROJECT_NAME}
 
 services:
+  account-egress-init:
+    container_name: shimpz-account-init
+    image: ${SHIMPZ_ACCOUNT_EGRESS_IMAGE:?installer must pin SHIMPZ_ACCOUNT_EGRESS_IMAGE}
+    platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}
+    pull_policy: never
+    restart: "no"
+    user: "0:0"
+    network_mode: none
+    read_only: true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+    security_opt:
+      - no-new-privileges:true
+    entrypoint: ["python3"]
+    command: ["/app/capability.py", "init"]
+    volumes:
+      - account_egress_capability:/run/shimpz-account-egress:rw
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=8m
+    cpuset: "${SHIMPZ_CPUSET:?installer must limit local CPUs}"
+    cpus: "0.25"
+    mem_limit: 64m
+    memswap_limit: 64m
+    pids_limit: 32
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+        max-file: "1"
+
   team-local:
     container_name: shimpz-team
     image: ${SHIMPZ_CONTROLLER_IMAGE:?installer must pin SHIMPZ_CONTROLLER_IMAGE}
@@ -861,6 +870,7 @@ services:
       - "10016"
       - "10017"
       - "10021"
+      - "10022"
     environment:
       SHIMPZ_SPACE_ID: ${SHIMPZ_SPACE_ID:?installer must preserve SHIMPZ_SPACE_ID}
       SHIMPZ_BRAIN_RUNTIME_URL: http://brain-runtime:8080
@@ -870,7 +880,7 @@ services:
       SHIMPZ_LOCAL_CHAT_CONTINUATIONS_KEY_PATH: /var/lib/shimpz-local/chat-continuations/key/aes256.key
       SHIMPZ_OAUTH_CALLBACK_MODE: ${SHIMPZ_OAUTH_CALLBACK_MODE:?installer must pin the OAuth callback mode}
       SHIMPZ_OAUTH_BROKER_PROXY_HOST: oauth-broker-proxy
-      SHIMPZ_OAUTH_BROKER_PROXY_TOKEN: ${SHIMPZ_OAUTH_BROKER_PROXY_TOKEN:?installer must bind the OAuth broker proxy capability}
+      SHIMPZ_OAUTH_BROKER_PROXY_CAPABILITY_FILE: /run/shimpz-account-egress/token
       SHIMPZ_APP_EGRESS_PROXY_CONTAINER: shimpz-egress
       SHIMPZ_APP_EGRESS_POLICY_DIR: /var/lib/shimpz-local/app-egress
     volumes:
@@ -888,6 +898,7 @@ services:
       - app_egress_policy:/var/lib/shimpz-local/app-egress:rw
       - brain_runtime_token:/run/shimpz-brain-runtime:rw
       - supervisor_key:/run/shimpz-local-supervisor:ro
+      - account_egress_capability:/run/shimpz-account-egress:ro
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,size=32m
     cpuset: "${SHIMPZ_CPUSET:?installer must limit local CPUs}"
@@ -902,6 +913,8 @@ services:
         max-size: "1m"
         max-file: "2"
     depends_on:
+      account-egress-init:
+        condition: service_completed_successfully
       app-egress-proxy:
         condition: service_started
       oauth-broker-proxy:
@@ -968,13 +981,13 @@ services:
 
   oauth-broker-proxy:
     container_name: shimpz-account
-    image: ${SHIMPZ_APP_EGRESS_IMAGE:?installer must pin SHIMPZ_APP_EGRESS_IMAGE}
+    image: ${SHIMPZ_ACCOUNT_EGRESS_IMAGE:?installer must pin SHIMPZ_ACCOUNT_EGRESS_IMAGE}
     platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}
     pull_policy: never
     restart: unless-stopped
-    user: "10005:10005"
+    user: "10006:10006"
     group_add:
-      - "10017"
+      - "10022"
     read_only: true
     cap_drop:
       - ALL
@@ -985,24 +998,11 @@ services:
       com.shimpz.local.profile: single-owner-local-v1
       com.shimpz.local.space-id: ${SHIMPZ_SPACE_ID:?installer must preserve SHIMPZ_SPACE_ID}
       com.shimpz.local.kind: oauth-broker-proxy
-    environment:
-      SHIMPZ_APP_EGRESS_PORT: "8889"
-      SHIMPZ_APP_EGRESS_POLICY_DIR: /policy
-      SHIMPZ_APP_EGRESS_AUDIT_LOG: /var/log/app-egress-proxy/audit.jsonl
-      SHIMPZ_APP_EGRESS_MAX_CONCURRENCY: "8"
-      SHIMPZ_APP_EGRESS_MAX_SOURCE_CONCURRENCY: "2"
-      SHIMPZ_APP_EGRESS_LISTEN_BACKLOG: "4"
     volumes:
-      - ${SHIMPZ_OAUTH_BROKER_POLICY_DIR:?installer must bind the OAuth broker policy}:/policy:ro
-      - oauth_broker_egress_audit:/var/log/app-egress-proxy:rw
+      - account_egress_capability:/run/shimpz-account-egress:ro
+      - account_egress_audit:/var/log/account-egress:rw
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,size=8m
-    healthcheck:
-      test: ["CMD", "python3", "/app/healthcheck.py"]
-      interval: 5s
-      timeout: 3s
-      retries: 24
-      start_period: 5s
     cpuset: "${SHIMPZ_CPUSET:?installer must limit local CPUs}"
     cpus: "0.5"
     mem_limit: 128m
@@ -1013,6 +1013,9 @@ services:
         soft: 256
         hard: 256
     stop_grace_period: 15s
+    depends_on:
+      account-egress-init:
+        condition: service_completed_successfully
     logging:
       driver: json-file
       options:
@@ -1138,7 +1141,8 @@ volumes:
   supervisor_key:
   app_egress_policy:
   app_egress_audit:
-  oauth_broker_egress_audit:
+  account_egress_capability:
+  account_egress_audit:
   brain_runtime_token:
   brain_runtime_state:
 
@@ -1208,4 +1212,5 @@ printf '  AdminImg %s\n' "$admin_image_ref"
 printf '  Control  %s\n' "$controller_image_ref"
 printf '  Brain    %s\n' "$brain_runtime_image_ref"
 printf '  Egress   %s\n' "$app_egress_image_ref"
+printf '  Account  %s\n' "$account_egress_image_ref"
 printf '  Reset    %s\n' "$reset_command"

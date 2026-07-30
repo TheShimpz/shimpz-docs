@@ -13,6 +13,7 @@ def assert_project_validator_contract(run_project_validator) -> None:
     image = f"{IMAGE_REPOSITORY_FOR_TESTS}@sha256:{'d' * 64}"
     space_id = f"space-{'1' * 24}"
     exact_names = (
+        ("/shimpz-account-init", "account-egress-init"),
         ("/shimpz-admin", "admin"),
         ("/shimpz-team", "team-local"),
         ("/shimpz-brain", "brain-runtime"),
@@ -34,6 +35,7 @@ def assert_project_validator_contract(run_project_validator) -> None:
 
     healthy_project = run_project_validator(
         [
+            f"init|/shimpz-account-init|account-egress-init|{image}",
             f"current|/shimpz-team|team-local|{image}",
             f"second|/shimpz-admin|admin|{image}",
             f"third|/shimpz-brain|brain-runtime|{image}",
