@@ -130,7 +130,7 @@ test("static published shimpz.toml schema is the closed Spec v1 contract", () =>
   assert.equal(schema.properties.spec.const, 1);
 });
 
-test("manifest schema projection pins Developers authority", () => {
+test("static manifest schema projection pins Developers authority", () => {
   assert.deepEqual(upstream, {
     repository: "https://github.com/TheShimpz/shimpz-developers",
     commit: "85f0e4b1083c7f8c226b127e32fe4a95515d7b39",
