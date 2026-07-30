@@ -77,7 +77,10 @@ def assert_assistant_egress_runtime(
     check("docker.sock" not in assistant_egress, "Assistant egress proxy never receives the Docker socket")
     check("controller_token" not in assistant_egress, "Assistant egress proxy never receives the controller bearer")
     check("brain_runtime" not in assistant_egress, "Assistant egress proxy cannot enter the Brain plane")
-    check("- control" not in assistant_egress and "- egress" not in assistant_egress, "proxy starts only on its outbound plane")
+    check(
+        "- control" not in assistant_egress and "- egress" not in assistant_egress,
+        "proxy starts only on its outbound plane",
+    )
     check("assistant_egress_out:\n    driver: bridge" in compose, "Assistant egress uses a dedicated outbound network")
 
 
