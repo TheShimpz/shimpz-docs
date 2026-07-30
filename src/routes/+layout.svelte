@@ -85,8 +85,8 @@
           description: "Define one async run per file",
         },
         {
-          href: "/developers/assistants/spec/accounts/",
-          label: "Accounts",
+          href: "/developers/assistants/spec/integrations/",
+          label: "Integrations",
           description: "Request reviewed OAuth scopes",
         },
         {

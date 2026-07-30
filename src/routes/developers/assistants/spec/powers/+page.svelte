@@ -22,7 +22,7 @@
   <h1>Define one Power per file</h1>
   <p class="docs-lede">
     A direct <code>powers/*.py</code> file contains exactly one decorated <code>async def run</code>.
-    Its filename, parameters, Account ids, and return annotation become the reviewed contract.
+    Its filename, parameters, Integration ids, and return annotation become the reviewed contract.
   </p>
 </header>
 
@@ -33,7 +33,7 @@
   <ul>
     <li><code>inspect_zone.py</code> becomes the Power id <code>inspect-zone</code>.</li>
     <li>The only decorated function is named <code>run</code> and is asynchronous.</li>
-    <li><code>accounts=[...]</code> lists only Account ids declared in <code>shimpz.toml</code>.</li>
+    <li><code>integrations=[...]</code> lists only Integration ids declared in <code>shimpz.toml</code>.</li>
     <li>Typed parameters become required Brain input; <code>ctx</code> is invocation context.</li>
     <li>The typed return value defines the output the Brain may receive.</li>
   </ul>
@@ -64,5 +64,5 @@
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec">
   <a href="/developers/assistants/"><span>Back</span><strong>Project layout</strong></a>
-  <a href="/developers/assistants/spec/accounts/"><span>Next</span><strong>Accounts</strong></a>
+  <a href="/developers/assistants/spec/integrations/"><span>Next</span><strong>Integrations</strong></a>
 </nav>

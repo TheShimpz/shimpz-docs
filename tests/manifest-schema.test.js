@@ -76,7 +76,7 @@ test("static manifest key scan ignores multiline values without hiding later key
     const manifest = `spec = 1
 genesis = ${delimiter}
 Reply with ${oppositeDelimiter}
-[accounts.fake]
+[integrations.fake]
 id = "postgres"
 body_key = "not top level"
 ${delimiter}
@@ -88,7 +88,7 @@ Extra-Key = true
 toString = true
 telemetry.enabled = true
 
-[accounts.example]
+[integrations.example]
 scopes = ["read"]`;
     const scanned = scanTopLevel(manifest);
     assert.deepEqual([...scanned.keys], [
@@ -133,9 +133,9 @@ test("static published shimpz.toml schema is the closed Spec v1 contract", () =>
 test("manifest schema projection pins Developers authority", () => {
   assert.deepEqual(upstream, {
     repository: "https://github.com/TheShimpz/shimpz-developers",
-    commit: "15608b2b1ff1237af636568011c1ff1bc73cf5bc",
+    commit: "85f0e4b1083c7f8c226b127e32fe4a95515d7b39",
     path: "protocol/assistant/v1/manifest.schema.json",
-    sha256: "c50c69d535b62f061b0df327269c96b2b04b41adebd006fb86c2d59c55643cba",
+    sha256: "21feb88e229b9fe3024ed14bc95ee368d390a534ef4f628ad5983a3bed1a5e35",
   });
 });
 
@@ -165,12 +165,12 @@ test("static published manifest examples contain every required top-level key an
 
 test("static published shimpz.toml schema exposes only authored Spec v1 fields", () => {
   assert.deepEqual(Object.keys(schema.properties).sort(), [
-    "accounts",
     "allowed_hosts",
     "creators",
     "genesis",
     "github",
     "id",
+    "integrations",
     "name",
     "spec",
     "summary",
@@ -179,8 +179,8 @@ test("static published shimpz.toml schema exposes only authored Spec v1 fields",
   assert.deepEqual(schema.properties.id, { $ref: "#/$defs/assistantIdentifier" });
   assert.equal(schema.$defs.assistantIdentifier.maxLength, 40);
   assert.deepEqual(schema.$defs.assistantIdentifier.not.enum, ["postgres", "app-egress-proxy"]);
-  assert.equal(schema.properties.accounts.propertyNames.$ref, "#/$defs/identifier");
-  assert.deepEqual(schema.$defs.account.required, ["scopes"]);
-  assert.equal(schema.$defs.account.additionalProperties, false);
-  assert.equal("provider" in schema.$defs.account.properties, false);
+  assert.equal(schema.properties.integrations.propertyNames.$ref, "#/$defs/identifier");
+  assert.deepEqual(schema.$defs.integration.required, ["scopes"]);
+  assert.equal(schema.$defs.integration.additionalProperties, false);
+  assert.equal("provider" in schema.$defs.integration.properties, false);
 });

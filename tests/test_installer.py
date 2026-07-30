@@ -495,8 +495,8 @@ def _check_controller_runtime(controller: str) -> None:
         "controller_storage:/var/lib/shimpz-local/storage:rw",
         "controller_inference:/var/lib/shimpz-local/inference:rw",
         "controller_power_journal:/var/lib/shimpz-local/power-journal:rw",
-        "controller_assistant_account_state:/var/lib/shimpz-local/assistant-accounts/state:rw",
-        "controller_assistant_account_key:/var/lib/shimpz-local/assistant-accounts/key:rw",
+        "controller_assistant_integration_state:/var/lib/shimpz-local/assistant-integrations/state:rw",
+        "controller_assistant_integration_key:/var/lib/shimpz-local/assistant-integrations/key:rw",
         "controller_chat_continuation_state:/var/lib/shimpz-local/chat-continuations/state:rw",
         "controller_chat_continuation_key:/var/lib/shimpz-local/chat-continuations/key:rw",
         "app_egress_policy:/var/lib/shimpz-local/app-egress:rw",
@@ -550,7 +550,7 @@ def _check_brain_runtime(brain_runtime: str) -> None:
     check("controller_inference" not in brain_runtime, "Brain runtime never mounts Team metadata")
     check("controller_power_journal" not in brain_runtime, "Brain runtime never mounts Power execution state")
     check(
-        "controller_assistant_account_" not in brain_runtime,
+        "controller_assistant_integration_" not in brain_runtime,
         "Brain runtime never mounts encrypted Assistant OAuth state or its key",
     )
     check(
@@ -584,7 +584,7 @@ def _check_compose_isolation(admin: str, compose: str, controller: str) -> None:
     check("controller_storage" not in admin, "Admin never mounts opaque Team storage")
     check("controller_power_journal" not in admin, "Admin never mounts Power execution state")
     check(
-        "controller_assistant_account_" not in admin,
+        "controller_assistant_integration_" not in admin,
         "Admin never mounts encrypted Assistant OAuth state or its key",
     )
     check(
@@ -593,11 +593,11 @@ def _check_compose_isolation(admin: str, compose: str, controller: str) -> None:
     )
     check(SCRIPT.count("  controller_power_journal:") == 1, "Compose declares exactly one Power journal volume")
     check(
-        SCRIPT.count("  controller_assistant_account_state:") == 1,
+        SCRIPT.count("  controller_assistant_integration_state:") == 1,
         "Compose declares exactly one encrypted Assistant OAuth-state volume",
     )
     check(
-        SCRIPT.count("  controller_assistant_account_key:") == 1,
+        SCRIPT.count("  controller_assistant_integration_key:") == 1,
         "Compose declares exactly one independent Assistant OAuth-key volume",
     )
     check(
@@ -913,8 +913,8 @@ def test_static_update_rollback_and_reset_are_bounded():
         '"${PROJECT_NAME}_controller_storage|controller_storage"',
         '"${PROJECT_NAME}_controller_inference|controller_inference"',
         '"${PROJECT_NAME}_controller_power_journal|controller_power_journal"',
-        '"${PROJECT_NAME}_controller_assistant_account_state|controller_assistant_account_state"',
-        '"${PROJECT_NAME}_controller_assistant_account_key|controller_assistant_account_key"',
+        '"${PROJECT_NAME}_controller_assistant_integration_state|controller_assistant_integration_state"',
+        '"${PROJECT_NAME}_controller_assistant_integration_key|controller_assistant_integration_key"',
         '"${PROJECT_NAME}_controller_chat_continuation_state|controller_chat_continuation_state"',
         '"${PROJECT_NAME}_controller_chat_continuation_key|controller_chat_continuation_key"',
         '"${PROJECT_NAME}_brain_runtime_token|brain_runtime_token"',

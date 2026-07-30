@@ -69,7 +69,7 @@
   <ul>
     <li><strong>No Assistant in chat:</strong> return to Assistants and confirm it is installed in this Team.</li>
     <li><strong>No authorization window:</strong> allow pop-ups for the local Admin and send the message again.</li>
-    <li><strong>Wrong provider account:</strong> disconnect the Account, then authorize the correct one.</li>
+    <li><strong>Wrong Integration:</strong> disconnect it, then authorize the correct provider identity.</li>
     <li><strong>Model keeps thinking:</strong> verify the Team's model API key, then retry the message once.</li>
   </ul>
 </section>

@@ -65,7 +65,7 @@
     <li>No IP addresses, single-label names, wildcards, URLs, or localhost.</li>
     <li>No reserved internal or test suffixes such as <code>.local</code>, <code>.internal</code>, or <code>.test</code>.</li>
     <li>Redirects do not silently expand the list; the final host must also be declared and admitted.</li>
-    <li>An Account-backed API host, such as <code>api.cloudflare.com</code>, must still appear in this list.</li>
+    <li>An Integration-backed API host, such as <code>api.cloudflare.com</code>, must still appear in this list.</li>
   </ul>
 </section>
 
@@ -79,6 +79,6 @@
 </aside>
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec">
-  <a href="/developers/assistants/spec/accounts/"><span>Back</span><strong>Accounts</strong></a>
+  <a href="/developers/assistants/spec/integrations/"><span>Back</span><strong>Integrations</strong></a>
   <a href="/developers/assistants/spec/execution/"><span>Next</span><strong>Execution model</strong></a>
 </nav>

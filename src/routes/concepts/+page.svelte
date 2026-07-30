@@ -1,6 +1,6 @@
 <svelte:head>
   <title>Shimpz glossary — Shimpz docs</title>
-  <meta name="description" content="Understand Space, Team, Brain, Assistant, Power, and Account in plain language." />
+  <meta name="description" content="Understand Space, Team, Brain, Assistant, Power, and Integration in plain language." />
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
@@ -18,7 +18,7 @@
   <dd>Your complete Shimpz installation on one machine.</dd>
 
   <dt><strong>Team</strong></dt>
-  <dd>An isolated workspace with its own chat, Brain settings, Assistants, Accounts, and files.</dd>
+  <dd>An isolated workspace with its own chat, Brain settings, Assistants, Integrations, and files.</dd>
 
   <dt><strong>Brain</strong></dt>
   <dd>The language model that answers as the Team and chooses which available Power can help.</dd>
@@ -29,14 +29,14 @@
   <dt><strong>Power</strong></dt>
   <dd>One named, bounded action an Assistant can perform, such as looking up one record.</dd>
 
-  <dt><strong>Account</strong></dt>
+  <dt><strong>Integration</strong></dt>
   <dd>An OAuth connection you authorize directly with its provider.</dd>
 </dl>
 
 <aside class="scope-note" aria-labelledby="infrastructure-title">
   <span id="infrastructure-title" class="kicker">What about PostgreSQL?</span>
   <p>
-    PostgreSQL and the internal controllers are platform infrastructure. They are not Accounts, Assistants,
+    PostgreSQL and the internal controllers are platform infrastructure. They are not Integrations, Assistants,
     or Store items, and you do not connect them through OAuth. Shimpz operates them as part of the Space.
   </p>
 </aside>
@@ -47,7 +47,7 @@
   <ol>
     <li>You send a message to a Team.</li>
     <li>Its Brain decides whether an installed Assistant Power is useful.</li>
-    <li>The controller checks the Power, Team, Account, scopes, and input.</li>
+    <li>The controller checks the Power, Team, Integration, scopes, and input.</li>
     <li>The Assistant runs only that Power and returns a validated result.</li>
     <li>The Brain turns the result into the Team's answer.</li>
   </ol>

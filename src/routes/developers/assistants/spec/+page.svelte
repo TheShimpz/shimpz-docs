@@ -25,7 +25,7 @@
   <h2 id="source-title">Every decision has one home</h2>
   <dl>
     <dt><code>shimpz.toml</code></dt>
-    <dd>Version, identity, Genesis, exact outbound hosts, and optional OAuth Account scopes.</dd>
+    <dd>Version, identity, Genesis, exact outbound hosts, and optional OAuth Integration scopes.</dd>
     <dt><code>powers/*.py</code></dt>
     <dd>Exactly one decorated <code>async def run</code> per direct file.</dd>
     <dt><code>pyproject.toml</code></dt>
@@ -46,7 +46,7 @@
 
 <section class="guide-section" aria-labelledby="runtime-title">
   <span class="section-label">Runtime</span>
-  <h2 id="runtime-title">Invocation contains only input and Accounts</h2>
+  <h2 id="runtime-title">Invocation contains only input and Integrations</h2>
   <p>
     The Controller validates Power input, resolves only declared OAuth bearer tokens, and invokes
     <code>/usr/local/bin/shimpz-power &lt;power-id&gt;</code> over bounded stdin. A Power returns one

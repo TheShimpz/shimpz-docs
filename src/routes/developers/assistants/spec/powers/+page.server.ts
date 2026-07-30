@@ -12,9 +12,9 @@ class ZoneResult(TypedDict):
     status: str
 
 
-@power(accounts=["cloudflare"])
+@power(integrations=["cloudflare"])
 async def run(domain: str, *, ctx: Context = None) -> ZoneResult:
-    token = ctx.accounts.cloudflare.access_token
+    token = ctx.integrations.cloudflare.access_token
     result = await fetch_zone(domain, token)
     return {"zone_id": result["id"], "status": result["status"]}`;
 
@@ -22,7 +22,7 @@ const contract = `{
   "id": "inspect-zone",
   "method": "POST",
   "path": "/v1/powers/inspect-zone",
-  "accounts": ["cloudflare"],
+  "integrations": ["cloudflare"],
   "input_schema": {
     "type": "object",
     "properties": {"domain": {"type": "string"}},

@@ -370,8 +370,8 @@ validate_project_resources() {
 			"${PROJECT_NAME}_controller_storage|controller_storage"|\
 			"${PROJECT_NAME}_controller_inference|controller_inference"|\
 			"${PROJECT_NAME}_controller_power_journal|controller_power_journal"|\
-			"${PROJECT_NAME}_controller_assistant_account_state|controller_assistant_account_state"|\
-			"${PROJECT_NAME}_controller_assistant_account_key|controller_assistant_account_key"|\
+			"${PROJECT_NAME}_controller_assistant_integration_state|controller_assistant_integration_state"|\
+			"${PROJECT_NAME}_controller_assistant_integration_key|controller_assistant_integration_key"|\
 			"${PROJECT_NAME}_controller_chat_continuation_state|controller_chat_continuation_state"|\
 			"${PROJECT_NAME}_controller_chat_continuation_key|controller_chat_continuation_key"|\
 			"${PROJECT_NAME}_brain_runtime_token|brain_runtime_token"|\
@@ -859,8 +859,8 @@ services:
       - controller_storage:/var/lib/shimpz-local/storage:rw
       - controller_inference:/var/lib/shimpz-local/inference:rw
       - controller_power_journal:/var/lib/shimpz-local/power-journal:rw
-      - controller_assistant_account_state:/var/lib/shimpz-local/assistant-accounts/state:rw
-      - controller_assistant_account_key:/var/lib/shimpz-local/assistant-accounts/key:rw
+      - controller_assistant_integration_state:/var/lib/shimpz-local/assistant-integrations/state:rw
+      - controller_assistant_integration_key:/var/lib/shimpz-local/assistant-integrations/key:rw
       - controller_chat_continuation_state:/var/lib/shimpz-local/chat-continuations/state:rw
       - controller_chat_continuation_key:/var/lib/shimpz-local/chat-continuations/key:rw
       - app_egress_policy:/var/lib/shimpz-local/app-egress:rw
@@ -1104,8 +1104,8 @@ volumes:
   controller_storage:
   controller_inference:
   controller_power_journal:
-  controller_assistant_account_state:
-  controller_assistant_account_key:
+  controller_assistant_integration_state:
+  controller_assistant_integration_key:
   controller_chat_continuation_state:
   controller_chat_continuation_key:
   app_egress_policy:

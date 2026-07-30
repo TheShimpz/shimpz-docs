@@ -38,7 +38,7 @@
   <ol>
     <li>The Brain selects a reviewed Power and supplies JSON arguments.</li>
     <li>The Controller validates those arguments against the generated input schema.</li>
-    <li>It resolves only declared Accounts and writes <code>{`{input, accounts}`}</code> to bounded stdin.</li>
+    <li>It resolves only declared Integrations and writes <code>{`{input, integrations}`}</code> to bounded stdin.</li>
     <li>It executes <code>/usr/local/bin/shimpz-power &lt;power-id&gt;</code> in the Assistant runtime.</li>
     <li>The SDK imports only that Power file and runs its async body once.</li>
     <li>The Controller bounds and validates the direct JSON result before the Brain can use it.</li>
@@ -51,7 +51,7 @@
   <ul>
     <li>The artifact is pinned by digest and its manifest and generated contract must match review.</li>
     <li>Team identity, OAuth custody, validation, and execution journals remain Controller-owned.</li>
-    <li>Account tokens never travel through the Brain, environment, command arguments, or logs.</li>
+    <li>Integration tokens never travel through the Brain, environment, command arguments, or logs.</li>
     <li>Outbound traffic is limited to reviewed <code>allowed_hosts</code> through authenticated egress.</li>
     <li>Malformed, oversized, unexpected, or private-value-bearing results fail closed.</li>
   </ul>

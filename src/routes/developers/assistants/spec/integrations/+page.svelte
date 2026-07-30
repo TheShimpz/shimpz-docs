@@ -7,29 +7,29 @@
 </script>
 
 <svelte:head>
-  <title>Accounts and ctx.accounts — Shimpz docs</title>
-  <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/spec/accounts/" />
-  <meta name="description" content="Request reviewed OAuth scopes and consume a bounded Account token." />
+  <title>Integrations and ctx.integrations — Shimpz docs</title>
+  <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/spec/integrations/" />
+  <meta name="description" content="Request reviewed OAuth scopes and consume a bounded Integration token." />
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
   <a href="/developers/assistants/spec/">Assistant Spec v1</a><span aria-hidden="true">/</span>
-  <strong>Accounts</strong>
+  <strong>Integrations</strong>
 </nav>
 
 <header class="docs-page-header">
   <span class="section-label">OAuth access</span>
   <h1>Declare scopes; let the Controller own credentials</h1>
   <p class="docs-lede">
-    An Account connects one registered OAuth provider to the Powers that need it. The provider id is
-    the Account id, so the declaration cannot redirect authorization or token exchange.
+    An Integration connects one registered OAuth provider to the Powers that need it. The provider id is
+    the Integration id, so the declaration cannot redirect authorization or token exchange.
   </p>
 </header>
 
 <section class="guide-section" aria-labelledby="declare-title">
   <span class="section-label">Security intent</span>
   <h2 id="declare-title">Request a reviewed scope set in shimpz.toml</h2>
-  <CodeBlock label="Cloudflare Account intent" title="shimpz.toml" variant="code" {...data.manifest} />
+  <CodeBlock label="Cloudflare Integration intent" title="shimpz.toml" variant="code" {...data.manifest} />
   <p>
     The current catalog registers <code>cloudflare</code> with <code>zone.read</code>,
     <code>dns.read</code>, and <code>offline_access</code>. Unknown providers, unsupported scopes,
@@ -39,11 +39,11 @@
 
 <section class="guide-section" aria-labelledby="consume-title">
   <span class="section-label">Power boundary</span>
-  <h2 id="consume-title">Attach and read the Account in one Power file</h2>
-  <CodeBlock label="Power-scoped Account access" title="powers/inspect_zone.py" variant="code" {...data.power} />
+  <h2 id="consume-title">Attach and read the Integration in one Power file</h2>
+  <CodeBlock label="Power-scoped Integration access" title="powers/inspect_zone.py" variant="code" {...data.power} />
   <p>
-    A Power receives only Accounts listed in its <code>@power(accounts=[...])</code> declaration.
-    Read the bearer token from <code>ctx.accounts.&lt;provider&gt;.access_token</code>.
+    A Power receives only Integrations listed in its <code>@power(integrations=[...])</code> declaration.
+    Read the bearer token from <code>ctx.integrations.&lt;provider&gt;.access_token</code>.
   </p>
 </section>
 
@@ -54,7 +54,7 @@
     <li>The Controller resolves provider metadata from its reviewed catalog.</li>
     <li>The person authorizes the exact scopes; Shimpz stores tokens encrypted and refreshes them.</li>
     <li>Immediately before execution, the Controller injects a bearer token only for the selected Power.</li>
-    <li>The SDK exposes that token through <code>ctx.accounts</code> in the isolated process.</li>
+    <li>The SDK exposes that token through <code>ctx.integrations</code> in the isolated process.</li>
     <li>Outputs containing injected tokens are rejected before the Brain receives them.</li>
   </ol>
 </section>
@@ -62,7 +62,7 @@
 <aside class="scope-note" aria-labelledby="secrets-title">
   <span id="secrets-title" class="kicker">No static Secrets surface</span>
   <p>
-    OAuth credentials use Accounts. Assistant Spec v1 has no ad-hoc secret or human-input channel.
+    OAuth credentials use Integrations. Assistant Spec v1 has no ad-hoc secret or human-input channel.
     Never put client secrets, access tokens, refresh tokens, or private values in
     <code>shimpz.toml</code>, source, logs, arguments, or returned data.
   </p>

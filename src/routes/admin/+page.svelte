@@ -15,7 +15,7 @@
   <span class="section-label">After installation</span>
   <h1>Create your first Team</h1>
   <p class="docs-lede">
-    A Team is your private workspace. It keeps its own conversation, Assistants, Accounts, model settings,
+    A Team is your private workspace. It keeps its own conversation, Assistants, Integrations, model settings,
     and files separate from every other Team.
   </p>
 </header>

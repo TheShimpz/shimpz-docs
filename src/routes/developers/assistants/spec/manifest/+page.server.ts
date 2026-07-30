@@ -15,7 +15,7 @@ Use this Assistant only to inspect Cloudflare zones and DNS records.
 Call list-zones before list-dns-records.
 """
 
-[accounts.cloudflare]
+[integrations.cloudflare]
 scopes = ["zone.read", "dns.read", "offline_access"]`;
 
 export const load: PageServerLoad = async () => ({

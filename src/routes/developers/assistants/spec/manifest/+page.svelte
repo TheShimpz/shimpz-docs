@@ -28,7 +28,7 @@
 
 <section class="guide-section" aria-labelledby="example-title">
   <span class="section-label">Complete example</span>
-  <h2 id="example-title">Nine required keys and optional Account tables</h2>
+  <h2 id="example-title">Nine required keys and optional Integration tables</h2>
   <CodeBlock label="Assistant security intent" title="shimpz.toml" variant="code" {...data.manifest} />
 </section>
 
@@ -68,7 +68,7 @@
       A unique list of exact public DNS hostnames. Use <code>[]</code> for no network access. Schemes,
       ports, paths, wildcards, IP literals, and private or reserved names are invalid.
     </dd>
-    <dt><code>[accounts.&lt;provider&gt;]</code></dt>
+    <dt><code>[integrations.&lt;provider&gt;]</code></dt>
     <dd>
       An optional table keyed by a registered provider id. Its only key is a unique, non-empty
       <code>scopes</code> list from that provider's supported catalog. The published provider and

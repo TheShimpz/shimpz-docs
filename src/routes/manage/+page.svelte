@@ -16,7 +16,7 @@
   <h1>Use the same installer</h1>
   <p class="docs-lede">
     Running the installation command again updates Shimpz to the current stable images. Existing Teams,
-    Accounts, settings, and conversations remain in place.
+    Integrations, settings, and conversations remain in place.
   </p>
 </header>
 
@@ -35,8 +35,8 @@
   <span class="section-label">Permanent removal</span>
   <h2 id="reset-title">Reset only when you want to delete everything</h2>
   <p>
-    Reset removes the managed Assistants, Teams, Accounts, Admin state, and local Shimpz data. It cannot be
-    undone. Disconnect provider Accounts first when possible.
+    Reset removes the managed Assistants, Teams, Integrations, Admin state, and local Shimpz data. It cannot be
+    undone. Disconnect provider Integrations first when possible.
   </p>
   <CodeBlock
     label="Permanently reset Shimpz"
