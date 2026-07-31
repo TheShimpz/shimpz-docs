@@ -20,8 +20,7 @@ def check(condition: object, message: str) -> None:
 def assert_project_validator_contract(run_project_validator) -> None:
     """Assert exact names, roles, and singleton controller identity."""
     images = {
-        service: f"{repository}@sha256:{'d' * 64}"
-        for service, repository in IMAGE_REPOSITORIES_FOR_TESTS.items()
+        service: f"{repository}@sha256:{'d' * 64}" for service, repository in IMAGE_REPOSITORIES_FOR_TESTS.items()
     }
     space_id = f"space-{'1' * 24}"
     exact_names = (

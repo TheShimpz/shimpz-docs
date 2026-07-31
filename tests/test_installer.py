@@ -23,6 +23,8 @@ SCRIPT_PATH = ROOT / "static" / "install.sh"
 SCRIPT = SCRIPT_PATH.read_text(encoding="utf-8")
 CADDY = (ROOT / "Caddyfile").read_text(encoding="utf-8")
 DOCKERIGNORE = (ROOT / ".dockerignore").read_text(encoding="utf-8")
+
+
 def check(condition: object, message: str) -> None:
     if not condition:
         raise AssertionError(message)
@@ -610,12 +612,10 @@ def test_static_runtime_separates_socketless_admin_from_local_controller():
     assistant_egress = compose.split("\n  shimpz-assistant-egress:\n", 1)[1].split(
         "\n  shimpz-assistant-release:\n", 1
     )[0]
-    assistant_release = compose.split("\n  shimpz-assistant-release:\n", 1)[1].split(
-        "\n  shimpz-account-egress:\n", 1
-    )[0]
-    account_egress = compose.split("\n  shimpz-account-egress:\n", 1)[1].split(
-        "\n  shimpz-brain-egress:\n", 1
-    )[0]
+    assistant_release = compose.split("\n  shimpz-assistant-release:\n", 1)[1].split("\n  shimpz-account-egress:\n", 1)[
+        0
+    ]
+    account_egress = compose.split("\n  shimpz-account-egress:\n", 1)[1].split("\n  shimpz-brain-egress:\n", 1)[0]
     brain_egress = compose.split("\n  shimpz-brain-egress:\n", 1)[1].split("\n  brain:\n", 1)[0]
     brain_runtime = compose.split("  brain:", 1)[1].split("\n  admin:", 1)[0]
     admin = compose.split("  admin:", 1)[1].split("\nvolumes:", 1)[0]
@@ -900,9 +900,7 @@ def test_reserved_container_name_preflight_is_early_and_fail_closed():
         check(foreign.returncode != 0, "an unlabeled or foreign container cannot claim a reserved Shimpz name")
         check("another Docker container is already named shimpz-admin" in foreign.stderr, "the collision is named")
 
-    final_name = _run_reserved_name_validator(
-        name="shimpz-account-egress-init", exists=True, project="another-project"
-    )
+    final_name = _run_reserved_name_validator(name="shimpz-account-egress-init", exists=True, project="another-project")
     check(final_name.returncode != 0, "the reserved-name preflight checks through its final name")
     check(
         "already named shimpz-account-egress-init" in final_name.stderr,
