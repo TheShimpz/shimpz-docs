@@ -6,15 +6,11 @@ INSTALLER_VERSION="0.6.0"
 ADMIN_REPOSITORY="ghcr.io/theshimpz/shimpz-admin"
 TEAM_REPOSITORY="ghcr.io/theshimpz/shimpz-team-local"
 BRAIN_REPOSITORY="ghcr.io/theshimpz/shimpz-brain"
-ASSISTANT_EGRESS_REPOSITORY="ghcr.io/theshimpz/shimpz-assistant-egress"
-ASSISTANT_RELEASE_REPOSITORY="ghcr.io/theshimpz/shimpz-assistant-release"
-ACCOUNT_EGRESS_REPOSITORY="ghcr.io/theshimpz/shimpz-account-egress"
+EGRESS_REPOSITORY="ghcr.io/theshimpz/shimpz-egress"
 ADMIN_CHANNEL="stable"
 TEAM_CHANNEL="stable"
 BRAIN_CHANNEL="stable"
-ASSISTANT_EGRESS_CHANNEL="stable"
-ASSISTANT_RELEASE_CHANNEL="stable"
-ACCOUNT_EGRESS_CHANNEL="stable"
+EGRESS_CHANNEL="stable"
 LOCAL_PROFILE="local-v1"
 SPACE_LABEL="com.shimpz.local.space-id"
 
@@ -162,7 +158,7 @@ esac
 setup_colors
 show_brand "$action"
 PROJECT_NAME="shimpz-space"
-RESERVED_CONTAINER_NAMES="shimpz-admin shimpz-team shimpz-brain shimpz-brain-egress assistant-egress assistant-release account-egress account-egress-init"
+RESERVED_CONTAINER_NAMES="shimpz-admin shimpz-team shimpz-brain shimpz-brain-egress shimpz-assistant-egress shimpz-assistant-release shimpz-account-egress shimpz-account-egress-init"
 SHIMPZ_HOME_NAME=".shimpz"
 MARKER_VALUE="shimpz-space-managed-v1"
 OAUTH_CALLBACK_MODE="loopback"
@@ -198,9 +194,7 @@ COMPOSE_FILE="${SHIMPZ_HOME}/compose.yaml"
 ENV_FILE="${SHIMPZ_HOME}/.env"
 MARKER_FILE="${SHIMPZ_HOME}/.shimpz-space"
 install_port="${SHIMPZ_PORT:-7777}"
-unset SHIMPZ_ADMIN_IMAGE SHIMPZ_TEAM_IMAGE SHIMPZ_BRAIN_IMAGE SHIMPZ_ASSISTANT_EGRESS_IMAGE
-unset SHIMPZ_ASSISTANT_RELEASE_IMAGE
-unset SHIMPZ_ACCOUNT_EGRESS_IMAGE
+unset SHIMPZ_ADMIN_IMAGE SHIMPZ_TEAM_IMAGE SHIMPZ_BRAIN_IMAGE SHIMPZ_EGRESS_IMAGE
 unset SHIMPZ_SPACE_PLATFORM SHIMPZ_PORT
 unset SHIMPZ_DOCKER_GID SHIMPZ_DOCKER_SOCKET SHIMPZ_SPACE_ID SHIMPZ_CPUSET
 
@@ -331,31 +325,31 @@ validate_project_resources() {
 				[ "$brain_runtime_seen" -eq 0 ] || die "refusing reset: duplicate managed Brain runtime container"
 				brain_runtime_seen=1
 				;;
-			"/shimpz-brain-egress|brain-egress")
-				validate_repository_digest_image "$container_image" "$BRAIN_REPOSITORY"
+			"/shimpz-brain-egress|shimpz-brain-egress")
+				validate_repository_digest_image "$container_image" "$EGRESS_REPOSITORY"
 				[ "$brain_egress_seen" -eq 0 ] || die "refusing reset: duplicate managed Brain egress container"
 				brain_egress_seen=1
 				;;
-			"/assistant-egress|assistant-egress")
-				validate_repository_digest_image "$container_image" "$ASSISTANT_EGRESS_REPOSITORY"
+			"/shimpz-assistant-egress|shimpz-assistant-egress")
+				validate_repository_digest_image "$container_image" "$EGRESS_REPOSITORY"
 				[ "$assistant_egress_proxy_seen" -eq 0 ] \
 					|| die "refusing reset: duplicate managed Assistant egress proxy container"
 				assistant_egress_proxy_seen=1
 				;;
-			"/assistant-release|assistant-release")
-				validate_repository_digest_image "$container_image" "$ASSISTANT_RELEASE_REPOSITORY"
+			"/shimpz-assistant-release|shimpz-assistant-release")
+				validate_repository_digest_image "$container_image" "$EGRESS_REPOSITORY"
 				[ "$assistant_release_proxy_seen" -eq 0 ] \
 					|| die "refusing reset: duplicate managed Assistant release proxy container"
 				assistant_release_proxy_seen=1
 				;;
-			"/account-egress|account-egress")
-				validate_repository_digest_image "$container_image" "$ACCOUNT_EGRESS_REPOSITORY"
+			"/shimpz-account-egress|shimpz-account-egress")
+				validate_repository_digest_image "$container_image" "$EGRESS_REPOSITORY"
 				[ "$account_egress_proxy_seen" -eq 0 ] \
 					|| die "refusing reset: duplicate managed OAuth broker proxy container"
 				account_egress_proxy_seen=1
 				;;
-			"/account-egress-init|account-egress-init")
-				validate_repository_digest_image "$container_image" "$ACCOUNT_EGRESS_REPOSITORY"
+			"/shimpz-account-egress-init|shimpz-account-egress-init")
+				validate_repository_digest_image "$container_image" "$EGRESS_REPOSITORY"
 				[ "$account_egress_init_seen" -eq 0 ] \
 					|| die "refusing reset: duplicate managed Account egress initializer"
 				account_egress_init_seen=1
@@ -455,7 +449,7 @@ validate_dynamic_resources() {
 				;;
 			assistant-egress)
 				case "$dynamic_name" in
-					"/assistant-egress") ;;
+					"/shimpz-assistant-egress") ;;
 					*) die "refusing reset: invalid managed Assistant egress proxy name" ;;
 				esac
 				[ "$dynamic_assistant_egress_seen" -eq 0 ] \
@@ -464,7 +458,7 @@ validate_dynamic_resources() {
 				;;
 			assistant-release)
 				case "$dynamic_name" in
-					"/assistant-release") ;;
+					"/shimpz-assistant-release") ;;
 					*) die "refusing reset: invalid managed Assistant release proxy name" ;;
 				esac
 				[ "$dynamic_assistant_release_seen" -eq 0 ] \
@@ -482,7 +476,7 @@ validate_dynamic_resources() {
 				;;
 			account-egress)
 				case "$dynamic_name" in
-					"/account-egress") ;;
+					"/shimpz-account-egress") ;;
 					*) die "refusing reset: invalid managed OAuth broker proxy name" ;;
 				esac
 				[ "$dynamic_account_egress_seen" -eq 0 ] \
@@ -750,15 +744,11 @@ load_previous_release() {
 	previous_admin_ref="$(previous_env_value SHIMPZ_ADMIN_IMAGE "${ENV_FILE}.previous")"
 	previous_team_ref="$(previous_env_value SHIMPZ_TEAM_IMAGE "${ENV_FILE}.previous")"
 	previous_brain_ref="$(previous_env_value SHIMPZ_BRAIN_IMAGE "${ENV_FILE}.previous")"
-	previous_assistant_egress_ref="$(previous_env_value SHIMPZ_ASSISTANT_EGRESS_IMAGE "${ENV_FILE}.previous")"
-	previous_assistant_release_ref="$(previous_env_value SHIMPZ_ASSISTANT_RELEASE_IMAGE "${ENV_FILE}.previous")"
-	previous_account_egress_ref="$(previous_env_value SHIMPZ_ACCOUNT_EGRESS_IMAGE "${ENV_FILE}.previous")"
+	previous_egress_ref="$(previous_env_value SHIMPZ_EGRESS_IMAGE "${ENV_FILE}.previous")"
 	validate_pinned_release_ref "$previous_admin_ref" "$ADMIN_REPOSITORY"
 	validate_pinned_release_ref "$previous_team_ref" "$TEAM_REPOSITORY"
 	validate_pinned_release_ref "$previous_brain_ref" "$BRAIN_REPOSITORY"
-	validate_pinned_release_ref "$previous_assistant_egress_ref" "$ASSISTANT_EGRESS_REPOSITORY"
-	validate_pinned_release_ref "$previous_assistant_release_ref" "$ASSISTANT_RELEASE_REPOSITORY"
-	validate_pinned_release_ref "$previous_account_egress_ref" "$ACCOUNT_EGRESS_REPOSITORY"
+	validate_pinned_release_ref "$previous_egress_ref" "$EGRESS_REPOSITORY"
 }
 
 ensure_pinned_release_ref() {
@@ -782,9 +772,7 @@ hydrate_previous_release() {
 	ensure_pinned_release_ref "$previous_admin_ref" "$previous_platform" || return 1
 	ensure_pinned_release_ref "$previous_team_ref" "$previous_platform" || return 1
 	ensure_pinned_release_ref "$previous_brain_ref" "$previous_platform" || return 1
-	ensure_pinned_release_ref "$previous_assistant_egress_ref" "$previous_platform" || return 1
-	ensure_pinned_release_ref "$previous_assistant_release_ref" "$previous_platform" || return 1
-	ensure_pinned_release_ref "$previous_account_egress_ref" "$previous_platform" || return 1
+	ensure_pinned_release_ref "$previous_egress_ref" "$previous_platform" || return 1
 }
 
 controller_socket_gid() {
@@ -817,21 +805,15 @@ controller_can_reach_docker() {
 admin_tag_ref="${ADMIN_REPOSITORY}:${ADMIN_CHANNEL}"
 team_tag_ref="${TEAM_REPOSITORY}:${TEAM_CHANNEL}"
 brain_tag_ref="${BRAIN_REPOSITORY}:${BRAIN_CHANNEL}"
-assistant_egress_tag_ref="${ASSISTANT_EGRESS_REPOSITORY}:${ASSISTANT_EGRESS_CHANNEL}"
-assistant_release_tag_ref="${ASSISTANT_RELEASE_REPOSITORY}:${ASSISTANT_RELEASE_CHANNEL}"
-account_egress_tag_ref="${ACCOUNT_EGRESS_REPOSITORY}:${ACCOUNT_EGRESS_CHANNEL}"
+egress_tag_ref="${EGRESS_REPOSITORY}:${EGRESS_CHANNEL}"
 step "Pulling and verifying the stable Admin image"
 admin_image_ref="$(pull_verified_ref "$admin_tag_ref" "$ADMIN_REPOSITORY")"
 step "Pulling and verifying the local Team controller image"
 team_image_ref="$(pull_verified_ref "$team_tag_ref" "$TEAM_REPOSITORY")"
 step "Pulling and verifying the isolated Brain runtime image"
 brain_image_ref="$(pull_verified_ref "$brain_tag_ref" "$BRAIN_REPOSITORY")"
-step "Pulling and verifying the deny-by-default Assistant egress proxy"
-assistant_egress_image_ref="$(pull_verified_ref "$assistant_egress_tag_ref" "$ASSISTANT_EGRESS_REPOSITORY")"
-step "Pulling and verifying the Assistant release verification boundary"
-assistant_release_image_ref="$(pull_verified_ref "$assistant_release_tag_ref" "$ASSISTANT_RELEASE_REPOSITORY")"
-step "Pulling and verifying the isolated Account egress image"
-account_egress_image_ref="$(pull_verified_ref "$account_egress_tag_ref" "$ACCOUNT_EGRESS_REPOSITORY")"
+step "Pulling and verifying the shared Shimpz egress image"
+egress_image_ref="$(pull_verified_ref "$egress_tag_ref" "$EGRESS_REPOSITORY")"
 step "Verifying local Docker access for the Team controller"
 docker_socket_source=""
 docker_socket_gid=""
@@ -862,9 +844,7 @@ cat >"${ENV_FILE}.tmp" <<EOF
 SHIMPZ_ADMIN_IMAGE=${admin_image_ref}
 SHIMPZ_TEAM_IMAGE=${team_image_ref}
 SHIMPZ_BRAIN_IMAGE=${brain_image_ref}
-SHIMPZ_ASSISTANT_EGRESS_IMAGE=${assistant_egress_image_ref}
-SHIMPZ_ASSISTANT_RELEASE_IMAGE=${assistant_release_image_ref}
-SHIMPZ_ACCOUNT_EGRESS_IMAGE=${account_egress_image_ref}
+SHIMPZ_EGRESS_IMAGE=${egress_image_ref}
 SHIMPZ_SPACE_PLATFORM=${docker_platform}
 SHIMPZ_PORT=${install_port}
 SHIMPZ_DOCKER_GID=${docker_socket_gid}
@@ -881,9 +861,9 @@ cat >"${COMPOSE_FILE}.tmp" <<'COMPOSE'
 name: ${SHIMPZ_PROJECT_NAME:?installer must pin SHIMPZ_PROJECT_NAME}
 
 services:
-  account-egress-init:
-    container_name: account-egress-init
-    image: ${SHIMPZ_ACCOUNT_EGRESS_IMAGE:?installer must pin SHIMPZ_ACCOUNT_EGRESS_IMAGE}
+  shimpz-account-egress-init:
+    container_name: shimpz-account-egress-init
+    image: ${SHIMPZ_EGRESS_IMAGE:?installer must pin SHIMPZ_EGRESS_IMAGE}
     platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}
     pull_policy: never
     restart: "no"
@@ -896,8 +876,7 @@ services:
       - CHOWN
     security_opt:
       - no-new-privileges:true
-    entrypoint: ["python3"]
-    command: ["/app/capability.py", "init"]
+    command: ["account-init"]
     volumes:
       - account_egress_capability:/run/shimpz-account-egress:rw
     tmpfs:
@@ -939,9 +918,9 @@ services:
       SHIMPZ_LOCAL_CHAT_CONTINUATIONS_STATE_PATH: /var/lib/shimpz-local/chat-continuations/state/continuations.json
       SHIMPZ_LOCAL_CHAT_CONTINUATIONS_KEY_PATH: /var/lib/shimpz-local/chat-continuations/key/aes256.key
       SHIMPZ_OAUTH_CALLBACK_MODE: ${SHIMPZ_OAUTH_CALLBACK_MODE:?installer must pin the OAuth callback mode}
-      SHIMPZ_OAUTH_BROKER_PROXY_HOST: account-egress
+      SHIMPZ_OAUTH_BROKER_PROXY_HOST: shimpz-account-egress
       SHIMPZ_OAUTH_BROKER_PROXY_CAPABILITY_FILE: /run/shimpz-account-egress/token
-      SHIMPZ_ASSISTANT_EGRESS_CONTAINER: assistant-egress
+      SHIMPZ_ASSISTANT_EGRESS_CONTAINER: shimpz-assistant-egress
       SHIMPZ_ASSISTANT_EGRESS_POLICY_DIR: /var/lib/shimpz-local/assistant-egress
     volumes:
       - ${SHIMPZ_DOCKER_SOCKET:?installer must bind the platform Docker socket}:/var/run/docker.sock:rw
@@ -974,13 +953,13 @@ services:
         max-size: "1m"
         max-file: "2"
     depends_on:
-      account-egress-init:
+      shimpz-account-egress-init:
         condition: service_completed_successfully
-      assistant-egress:
+      shimpz-assistant-egress:
         condition: service_started
-      assistant-release:
+      shimpz-assistant-release:
         condition: service_healthy
-      account-egress:
+      shimpz-account-egress:
         condition: service_healthy
     networks:
       - control
@@ -988,13 +967,14 @@ services:
       - account_egress
       - assistant_release
 
-  assistant-egress:
-    container_name: assistant-egress
-    image: ${SHIMPZ_ASSISTANT_EGRESS_IMAGE:?installer must pin SHIMPZ_ASSISTANT_EGRESS_IMAGE}
+  shimpz-assistant-egress:
+    container_name: shimpz-assistant-egress
+    image: ${SHIMPZ_EGRESS_IMAGE:?installer must pin SHIMPZ_EGRESS_IMAGE}
     platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}
     pull_policy: never
     restart: unless-stopped
     user: "10005:10005"
+    command: ["assistant"]
     group_add:
       - "10017"
     read_only: true
@@ -1020,7 +1000,7 @@ services:
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,size=16m
     healthcheck:
-      test: ["CMD", "python3", "/app/healthcheck.py"]
+      test: ["CMD", "python3", "/app/entrypoint.py", "healthcheck", "assistant"]
       interval: 5s
       timeout: 3s
       retries: 24
@@ -1043,13 +1023,14 @@ services:
     networks:
       - assistant_egress_out
 
-  assistant-release:
-    container_name: assistant-release
-    image: ${SHIMPZ_ASSISTANT_RELEASE_IMAGE:?installer must pin SHIMPZ_ASSISTANT_RELEASE_IMAGE}
+  shimpz-assistant-release:
+    container_name: shimpz-assistant-release
+    image: ${SHIMPZ_EGRESS_IMAGE:?installer must pin SHIMPZ_EGRESS_IMAGE}
     platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}
     pull_policy: never
     restart: unless-stopped
     user: "10004:10004"
+    command: ["release"]
     read_only: true
     cap_drop:
       - ALL
@@ -1071,7 +1052,7 @@ services:
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,size=8m
     healthcheck:
-      test: ["CMD", "python3", "/app/healthcheck.py"]
+      test: ["CMD", "python3", "/app/entrypoint.py", "healthcheck", "release"]
       interval: 5s
       timeout: 3s
       retries: 24
@@ -1095,13 +1076,14 @@ services:
       - assistant_release
       - assistant_release_out
 
-  account-egress:
-    container_name: account-egress
-    image: ${SHIMPZ_ACCOUNT_EGRESS_IMAGE:?installer must pin SHIMPZ_ACCOUNT_EGRESS_IMAGE}
+  shimpz-account-egress:
+    container_name: shimpz-account-egress
+    image: ${SHIMPZ_EGRESS_IMAGE:?installer must pin SHIMPZ_EGRESS_IMAGE}
     platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}
     pull_policy: never
     restart: unless-stopped
     user: "10006:10006"
+    command: ["account"]
     group_add:
       - "10022"
     read_only: true
@@ -1130,7 +1112,7 @@ services:
         hard: 256
     stop_grace_period: 15s
     depends_on:
-      account-egress-init:
+      shimpz-account-egress-init:
         condition: service_completed_successfully
     logging:
       driver: json-file
@@ -1140,18 +1122,21 @@ services:
     networks:
       - account_egress
       - account_egress_out
+    healthcheck:
+      test: ["CMD", "python3", "/app/entrypoint.py", "healthcheck", "account"]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+      start_period: 5s
 
-  brain-egress:
+  shimpz-brain-egress:
     container_name: shimpz-brain-egress
-    image: ${SHIMPZ_BRAIN_IMAGE:?installer must pin SHIMPZ_BRAIN_IMAGE}
+    image: ${SHIMPZ_EGRESS_IMAGE:?installer must pin SHIMPZ_EGRESS_IMAGE}
     platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}
     pull_policy: never
     restart: unless-stopped
     user: "10001:10001"
-    entrypoint:
-      - /opt/venv/bin/python
-    command:
-      - /app/egress/app.py
+    command: ["brain"]
     read_only: true
     cap_drop:
       - ALL
@@ -1190,7 +1175,7 @@ services:
       - brain_egress
       - brain_egress_out
     healthcheck:
-      test: ["CMD", "/opt/venv/bin/python", "/app/egress/healthcheck.py"]
+      test: ["CMD", "python3", "/app/entrypoint.py", "healthcheck", "brain"]
       interval: 10s
       timeout: 4s
       retries: 5
@@ -1213,10 +1198,10 @@ services:
     environment:
       LANGCHAIN_TRACING_V2: "false"
       LANGSMITH_TRACING: "false"
-      HTTPS_PROXY: http://brain-egress:8888
-      HTTP_PROXY: http://brain-egress:8888
-      https_proxy: http://brain-egress:8888
-      http_proxy: http://brain-egress:8888
+      HTTPS_PROXY: http://shimpz-brain-egress:8888
+      HTTP_PROXY: http://shimpz-brain-egress:8888
+      https_proxy: http://shimpz-brain-egress:8888
+      http_proxy: http://shimpz-brain-egress:8888
       NO_PROXY: localhost,127.0.0.1,::1
       no_proxy: localhost,127.0.0.1,::1
       SHIMPZ_BRAIN_RUNTIME_TOKEN_FILE: /run/shimpz-brain-runtime/token
@@ -1235,7 +1220,7 @@ services:
     depends_on:
       team:
         condition: service_healthy
-      brain-egress:
+      shimpz-brain-egress:
         condition: service_healthy
     logging:
       driver: json-file
@@ -1363,10 +1348,10 @@ step "Starting the Shimpz Admin, local Team controller, and isolated Brain runti
 if ! compose up -d --wait --wait-timeout 120 --no-build --pull never --remove-orphans; then
 	warn "The new release did not become healthy"
 	compose logs --no-color --tail 20 team >&2 || true
-	compose logs --no-color --tail 20 assistant-egress >&2 || true
-	compose logs --no-color --tail 20 assistant-release >&2 || true
-	compose logs --no-color --tail 20 account-egress >&2 || true
-	compose logs --no-color --tail 20 brain-egress >&2 || true
+	compose logs --no-color --tail 20 shimpz-assistant-egress >&2 || true
+	compose logs --no-color --tail 20 shimpz-assistant-release >&2 || true
+	compose logs --no-color --tail 20 shimpz-account-egress >&2 || true
+	compose logs --no-color --tail 20 shimpz-brain-egress >&2 || true
 	compose logs --no-color --tail 20 brain >&2 || true
 	if [ "$had_previous" -eq 1 ]; then
 		step "Verifying the previous pinned release"
@@ -1401,9 +1386,7 @@ else
 	printf '  Next     Create an Admin password with at least 12 characters\n'
 fi
 printf '  AdminImg %s\n' "$admin_image_ref"
-printf '  Control  %s\n' "$team_image_ref"
+printf '  Team     %s\n' "$team_image_ref"
 printf '  Brain    %s\n' "$brain_image_ref"
-printf '  Egress   %s\n' "$assistant_egress_image_ref"
-printf '  Release  %s\n' "$assistant_release_image_ref"
-printf '  Account  %s\n' "$account_egress_image_ref"
+printf '  Egress   %s\n' "$egress_image_ref"
 printf '  Reset    %s\n' "$reset_command"

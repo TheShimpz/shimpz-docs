@@ -62,9 +62,7 @@ PROJECT_NAME="shimpz-space"
 ADMIN_REPOSITORY="ghcr.io/theshimpz/shimpz-admin"
 TEAM_REPOSITORY="ghcr.io/theshimpz/shimpz-team-local"
 BRAIN_REPOSITORY="ghcr.io/theshimpz/shimpz-brain"
-ASSISTANT_EGRESS_REPOSITORY="ghcr.io/theshimpz/shimpz-assistant-egress"
-ASSISTANT_RELEASE_REPOSITORY="ghcr.io/theshimpz/shimpz-assistant-release"
-ACCOUNT_EGRESS_REPOSITORY="ghcr.io/theshimpz/shimpz-account-egress"
+EGRESS_REPOSITORY="ghcr.io/theshimpz/shimpz-egress"
 CONTAINER_IDS="$TEST_CONTAINER_IDS"
 die() { printf '%s\n' "$*" >&2; exit 1; }
 project_container_ids() { printf '%s\n' "$CONTAINER_IDS"; }

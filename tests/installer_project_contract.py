@@ -1,13 +1,13 @@
 """Compose project-identity assertions for the Shimpz Space installer."""
 
 IMAGE_REPOSITORIES_FOR_TESTS = {
-    "account-egress": "ghcr.io/theshimpz/shimpz-account-egress",
-    "account-egress-init": "ghcr.io/theshimpz/shimpz-account-egress",
+    "shimpz-account-egress": "ghcr.io/theshimpz/shimpz-egress",
+    "shimpz-account-egress-init": "ghcr.io/theshimpz/shimpz-egress",
     "admin": "ghcr.io/theshimpz/shimpz-admin",
-    "assistant-egress": "ghcr.io/theshimpz/shimpz-assistant-egress",
-    "assistant-release": "ghcr.io/theshimpz/shimpz-assistant-release",
+    "shimpz-assistant-egress": "ghcr.io/theshimpz/shimpz-egress",
+    "shimpz-assistant-release": "ghcr.io/theshimpz/shimpz-egress",
     "brain": "ghcr.io/theshimpz/shimpz-brain",
-    "brain-egress": "ghcr.io/theshimpz/shimpz-brain",
+    "shimpz-brain-egress": "ghcr.io/theshimpz/shimpz-egress",
     "team": "ghcr.io/theshimpz/shimpz-team-local",
 }
 
@@ -25,14 +25,14 @@ def assert_project_validator_contract(run_project_validator) -> None:
     }
     space_id = f"space-{'1' * 24}"
     exact_names = (
-        ("/account-egress-init", "account-egress-init"),
+        ("/shimpz-account-egress-init", "shimpz-account-egress-init"),
         ("/shimpz-admin", "admin"),
         ("/shimpz-team", "team"),
         ("/shimpz-brain", "brain"),
-        ("/shimpz-brain-egress", "brain-egress"),
-        ("/assistant-egress", "assistant-egress"),
-        ("/assistant-release", "assistant-release"),
-        ("/account-egress", "account-egress"),
+        ("/shimpz-brain-egress", "shimpz-brain-egress"),
+        ("/shimpz-assistant-egress", "shimpz-assistant-egress"),
+        ("/shimpz-assistant-release", "shimpz-assistant-release"),
+        ("/shimpz-account-egress", "shimpz-account-egress"),
     )
     for container_name, service in exact_names:
         image = images[service]
@@ -50,14 +50,14 @@ def assert_project_validator_contract(run_project_validator) -> None:
 
     healthy_project = run_project_validator(
         [
-            f"init|/account-egress-init|account-egress-init|{images['account-egress-init']}",
+            f"init|/shimpz-account-egress-init|shimpz-account-egress-init|{images['shimpz-account-egress-init']}",
             f"current|/shimpz-team|team|{images['team']}",
             f"second|/shimpz-admin|admin|{images['admin']}",
             f"third|/shimpz-brain|brain|{images['brain']}",
-            f"brain-egress|/shimpz-brain-egress|brain-egress|{images['brain-egress']}",
-            f"foreign|/assistant-egress|assistant-egress|{images['assistant-egress']}",
-            f"release|/assistant-release|assistant-release|{images['assistant-release']}",
-            f"oauth|/account-egress|account-egress|{images['account-egress']}",
+            f"brain-egress|/shimpz-brain-egress|shimpz-brain-egress|{images['shimpz-brain-egress']}",
+            f"foreign|/shimpz-assistant-egress|shimpz-assistant-egress|{images['shimpz-assistant-egress']}",
+            f"release|/shimpz-assistant-release|shimpz-assistant-release|{images['shimpz-assistant-release']}",
+            f"oauth|/shimpz-account-egress|shimpz-account-egress|{images['shimpz-account-egress']}",
         ],
         controller_environments={"current": f"SHIMPZ_SPACE_ID={space_id}"},
     )
@@ -67,7 +67,7 @@ def assert_project_validator_contract(run_project_validator) -> None:
     )
 
     for record in (
-        f"/account-egress|assistant-egress|{images['assistant-egress']}",
+        f"/shimpz-account-egress|shimpz-assistant-egress|{images['shimpz-assistant-egress']}",
         f"/shimpz-admin|brain|{images['brain']}",
         f"/shimpz-unknown|admin|{images['admin']}",
     ):

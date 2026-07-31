@@ -248,9 +248,7 @@ def test_static_delivery_is_pull_only_and_content_addressed():
         "ADMIN_REPOSITORY": "ghcr.io/theshimpz/shimpz-admin",
         "TEAM_REPOSITORY": "ghcr.io/theshimpz/shimpz-team-local",
         "BRAIN_REPOSITORY": "ghcr.io/theshimpz/shimpz-brain",
-        "ASSISTANT_EGRESS_REPOSITORY": "ghcr.io/theshimpz/shimpz-assistant-egress",
-        "ASSISTANT_RELEASE_REPOSITORY": "ghcr.io/theshimpz/shimpz-assistant-release",
-        "ACCOUNT_EGRESS_REPOSITORY": "ghcr.io/theshimpz/shimpz-account-egress",
+        "EGRESS_REPOSITORY": "ghcr.io/theshimpz/shimpz-egress",
     }
     for variable, repository in repositories.items():
         check(f'{variable}="{repository}"' in SCRIPT, f"installer owns the exact package {repository}")
@@ -259,9 +257,7 @@ def test_static_delivery_is_pull_only_and_content_addressed():
     for channel in (
         "TEAM_CHANNEL",
         "BRAIN_CHANNEL",
-        "ASSISTANT_EGRESS_CHANNEL",
-        "ASSISTANT_RELEASE_CHANNEL",
-        "ACCOUNT_EGRESS_CHANNEL",
+        "EGRESS_CHANNEL",
     ):
         check(f'{channel}="stable"' in SCRIPT, f"installer selects only the stable {channel} channel")
     check(
@@ -278,14 +274,12 @@ def test_static_delivery_is_pull_only_and_content_addressed():
         'admin_image_ref="$(pull_verified_ref "$admin_tag_ref" "$ADMIN_REPOSITORY")"',
         'team_image_ref="$(pull_verified_ref "$team_tag_ref" "$TEAM_REPOSITORY")"',
         'brain_image_ref="$(pull_verified_ref "$brain_tag_ref" "$BRAIN_REPOSITORY")"',
-        'assistant_egress_image_ref="$(pull_verified_ref "$assistant_egress_tag_ref" "$ASSISTANT_EGRESS_REPOSITORY")"',
-        'assistant_release_image_ref="$(pull_verified_ref "$assistant_release_tag_ref" "$ASSISTANT_RELEASE_REPOSITORY")"',
-        'account_egress_image_ref="$(pull_verified_ref "$account_egress_tag_ref" "$ACCOUNT_EGRESS_REPOSITORY")"',
+        'egress_image_ref="$(pull_verified_ref "$egress_tag_ref" "$EGRESS_REPOSITORY")"',
     ):
         check(marker in SCRIPT, f"installer derives an immutable image via {marker!r}")
     check(
-        SCRIPT.count('pull_verified_ref "$') == 6,
-        "all six platform artifact channels resolve independently to digests",
+        SCRIPT.count('pull_verified_ref "$') == 4,
+        "all four platform artifact channels resolve independently to digests",
     )
     check("SHIMPZ_ADMIN_IMAGE=${admin_image_ref}" in SCRIPT, "the environment pins the Admin digest")
     check("SHIMPZ_TEAM_IMAGE=${team_image_ref}" in SCRIPT, "the environment pins the controller digest")
@@ -294,16 +288,8 @@ def test_static_delivery_is_pull_only_and_content_addressed():
         "the environment pins the Brain runtime digest",
     )
     check(
-        "SHIMPZ_ASSISTANT_EGRESS_IMAGE=${assistant_egress_image_ref}" in SCRIPT,
-        "the environment pins the Assistant egress proxy digest",
-    )
-    check(
-        "SHIMPZ_ASSISTANT_RELEASE_IMAGE=${assistant_release_image_ref}" in SCRIPT,
-        "the environment pins the Assistant release proxy digest",
-    )
-    check(
-        "SHIMPZ_ACCOUNT_EGRESS_IMAGE=${account_egress_image_ref}" in SCRIPT,
-        "the environment pins the independent Account egress digest",
+        "SHIMPZ_EGRESS_IMAGE=${egress_image_ref}" in SCRIPT,
+        "the environment pins the shared egress digest once",
     )
     check(
         "SHIMPZ_SPACE_PLATFORM=${docker_platform}" in SCRIPT,
@@ -314,7 +300,7 @@ def test_static_delivery_is_pull_only_and_content_addressed():
         and "SHIMPZ_ADMIN_ALLOWED_ORIGINS=${ADMIN_ALLOWED_ORIGINS}" in SCRIPT
         and "SHIMPZ_OAUTH_CALLBACK_MODE=${OAUTH_CALLBACK_MODE}" in SCRIPT
         and "name: ${SHIMPZ_PROJECT_NAME:?installer must pin SHIMPZ_PROJECT_NAME}" in SCRIPT
-        and "SHIMPZ_ASSISTANT_EGRESS_CONTAINER: assistant-egress" in SCRIPT,
+        and "SHIMPZ_ASSISTANT_EGRESS_CONTAINER: shimpz-assistant-egress" in SCRIPT,
         "the generated Compose project is pinned and the controller targets the named egress container",
     )
     compose = SCRIPT.split("cat >\"${COMPOSE_FILE}.tmp\" <<'COMPOSE'", 1)[1].split("\nCOMPOSE", 1)[0]
@@ -322,11 +308,11 @@ def test_static_delivery_is_pull_only_and_content_addressed():
     check(
         container_names
         == [
-            "account-egress-init",
+            "shimpz-account-egress-init",
             "shimpz-team",
-            "assistant-egress",
-            "assistant-release",
-            "account-egress",
+            "shimpz-assistant-egress",
+            "shimpz-assistant-release",
+            "shimpz-account-egress",
             "shimpz-brain-egress",
             "shimpz-brain",
             "shimpz-admin",
@@ -348,16 +334,8 @@ def test_static_delivery_is_pull_only_and_content_addressed():
         "Compose fails closed without the pinned Brain runtime reference",
     )
     check(
-        "image: ${SHIMPZ_ASSISTANT_EGRESS_IMAGE:?" in SCRIPT,
-        "Compose fails closed without the pinned Assistant egress reference",
-    )
-    check(
-        "image: ${SHIMPZ_ASSISTANT_RELEASE_IMAGE:?" in SCRIPT,
-        "Compose fails closed without the pinned Assistant release reference",
-    )
-    check(
-        "image: ${SHIMPZ_ACCOUNT_EGRESS_IMAGE:?" in SCRIPT,
-        "Compose fails closed without the pinned Account egress reference",
+        SCRIPT.count("image: ${SHIMPZ_EGRESS_IMAGE:?") == 5,
+        "all five egress services fail closed on the one pinned egress reference",
     )
     check(
         "platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}" in SCRIPT,
@@ -366,10 +344,7 @@ def test_static_delivery_is_pull_only_and_content_addressed():
     check("pull_policy: never" in SCRIPT and "--pull never" in SCRIPT, "Compose cannot silently replace the digest")
     check(
         'install_port="${SHIMPZ_PORT:-7777}"' in SCRIPT
-        and "unset SHIMPZ_ADMIN_IMAGE SHIMPZ_TEAM_IMAGE SHIMPZ_BRAIN_IMAGE SHIMPZ_ASSISTANT_EGRESS_IMAGE"
-        in SCRIPT
-        and "unset SHIMPZ_ASSISTANT_RELEASE_IMAGE" in SCRIPT
-        and "unset SHIMPZ_ACCOUNT_EGRESS_IMAGE" in SCRIPT
+        and "unset SHIMPZ_ADMIN_IMAGE SHIMPZ_TEAM_IMAGE SHIMPZ_BRAIN_IMAGE SHIMPZ_EGRESS_IMAGE" in SCRIPT
         and "unset SHIMPZ_SPACE_PLATFORM SHIMPZ_PORT" in SCRIPT
         and "unset SHIMPZ_DOCKER_GID SHIMPZ_DOCKER_SOCKET SHIMPZ_SPACE_ID SHIMPZ_CPUSET" in SCRIPT
         and "SHIMPZ_PORT=${install_port}" in SCRIPT,
@@ -490,19 +465,19 @@ def _check_controller_runtime(controller: str) -> None:
         "SHIMPZ_BRAIN_RUNTIME_URL: http://brain:8080",
         "SHIMPZ_BRAIN_RUNTIME_TOKEN_FILE: /run/shimpz-brain-runtime/token",
         "SHIMPZ_OAUTH_CALLBACK_MODE: ${SHIMPZ_OAUTH_CALLBACK_MODE:?installer must pin the OAuth callback mode}",
-        "SHIMPZ_OAUTH_BROKER_PROXY_HOST: account-egress",
+        "SHIMPZ_OAUTH_BROKER_PROXY_HOST: shimpz-account-egress",
         "SHIMPZ_OAUTH_BROKER_PROXY_CAPABILITY_FILE: /run/shimpz-account-egress/token",
         "account_egress_capability:/run/shimpz-account-egress:ro",
-        "SHIMPZ_ASSISTANT_EGRESS_CONTAINER: assistant-egress",
+        "SHIMPZ_ASSISTANT_EGRESS_CONTAINER: shimpz-assistant-egress",
         "SHIMPZ_ASSISTANT_EGRESS_POLICY_DIR: /var/lib/shimpz-local/assistant-egress",
-        "assistant-egress:\n        condition: service_started",
-        "assistant-release:\n        condition: service_healthy",
+        "shimpz-assistant-egress:\n        condition: service_started",
+        "shimpz-assistant-release:\n        condition: service_healthy",
         "- assistant_release",
         '- "10016"',
         '- "10017"',
         '- "10021"',
         '- "10022"',
-        "account-egress-init:\n        condition: service_completed_successfully",
+        "shimpz-account-egress-init:\n        condition: service_completed_successfully",
         'cpus: "1.0"',
         "mem_limit: 256m",
         "memswap_limit: 256m",
@@ -523,10 +498,10 @@ def _check_brain_runtime(brain_runtime: str) -> None:
         "no-new-privileges:true",
         'LANGCHAIN_TRACING_V2: "false"',
         'LANGSMITH_TRACING: "false"',
-        "HTTPS_PROXY: http://brain-egress:8888",
-        "HTTP_PROXY: http://brain-egress:8888",
-        "https_proxy: http://brain-egress:8888",
-        "http_proxy: http://brain-egress:8888",
+        "HTTPS_PROXY: http://shimpz-brain-egress:8888",
+        "HTTP_PROXY: http://shimpz-brain-egress:8888",
+        "https_proxy: http://shimpz-brain-egress:8888",
+        "http_proxy: http://shimpz-brain-egress:8888",
         "brain_runtime_token:/run/shimpz-brain-runtime:ro",
         "brain_runtime_state:/var/lib/shimpz-brain-runtime:rw",
         "SHIMPZ_BRAIN_RUNTIME_STATE: /var/lib/shimpz-brain-runtime/checkpoints.sqlite3",
@@ -536,7 +511,7 @@ def _check_brain_runtime(brain_runtime: str) -> None:
         "memswap_limit: 1g",
         "pids_limit: 128",
         "condition: service_healthy",
-        "brain-egress:\n        condition: service_healthy",
+        "shimpz-brain-egress:\n        condition: service_healthy",
         "- brain_runtime\n      - brain_egress",
     ):
         check(marker in brain_runtime, f"isolated Brain runtime enforces {marker!r}")
@@ -630,12 +605,18 @@ def _check_compose_isolation(admin: str, compose: str, controller: str) -> None:
 
 def test_static_runtime_separates_socketless_admin_from_local_controller():
     compose = SCRIPT.split("cat >\"${COMPOSE_FILE}.tmp\" <<'COMPOSE'", 1)[1].split("\nCOMPOSE", 1)[0]
-    initializer = compose.split("  account-egress-init:", 1)[1].split("\n  team:", 1)[0]
-    controller = compose.split("  team:", 1)[1].split("\n  assistant-egress:", 1)[0]
-    assistant_egress = compose.split("\n  assistant-egress:\n", 1)[1].split("\n  assistant-release:\n", 1)[0]
-    assistant_release = compose.split("\n  assistant-release:\n", 1)[1].split("\n  account-egress:\n", 1)[0]
-    account_egress = compose.split("\n  account-egress:\n", 1)[1].split("\n  brain-egress:\n", 1)[0]
-    brain_egress = compose.split("\n  brain-egress:\n", 1)[1].split("\n  brain:\n", 1)[0]
+    initializer = compose.split("  shimpz-account-egress-init:", 1)[1].split("\n  team:", 1)[0]
+    controller = compose.split("  team:", 1)[1].split("\n  shimpz-assistant-egress:", 1)[0]
+    assistant_egress = compose.split("\n  shimpz-assistant-egress:\n", 1)[1].split(
+        "\n  shimpz-assistant-release:\n", 1
+    )[0]
+    assistant_release = compose.split("\n  shimpz-assistant-release:\n", 1)[1].split(
+        "\n  shimpz-account-egress:\n", 1
+    )[0]
+    account_egress = compose.split("\n  shimpz-account-egress:\n", 1)[1].split(
+        "\n  shimpz-brain-egress:\n", 1
+    )[0]
+    brain_egress = compose.split("\n  shimpz-brain-egress:\n", 1)[1].split("\n  brain:\n", 1)[0]
     brain_runtime = compose.split("  brain:", 1)[1].split("\n  admin:", 1)[0]
     admin = compose.split("  admin:", 1)[1].split("\nvolumes:", 1)[0]
     _check_admin_runtime(admin, compose)
@@ -653,7 +634,7 @@ def test_reset_accepts_only_the_exact_space_owned_egress_proxy():
     space_id = "space-111111111111111111111111"
     valid = "|".join(
         (
-            "/assistant-egress",
+            "/shimpz-assistant-egress",
             "1",
             "local-v1",
             space_id,
@@ -665,7 +646,7 @@ def test_reset_accepts_only_the_exact_space_owned_egress_proxy():
     accepted = _run_dynamic_validator(valid)
     check(accepted.returncode == 0, f"the exact Compose egress proxy is accepted: {accepted.stderr.strip()}")
     for label, invalid in (
-        ("name", valid.replace("/assistant-egress", "/shimpz-space-foreign-1")),
+        ("name", valid.replace("/shimpz-assistant-egress", "/shimpz-space-foreign-1")),
         ("profile", valid.replace("local-v1", "foreign-profile")),
         ("Space", valid.replace(space_id, "space-222222222222222222222222")),
         ("kind", valid.replace("assistant-egress", "assistant-proxy")),
@@ -673,7 +654,9 @@ def test_reset_accepts_only_the_exact_space_owned_egress_proxy():
         rejected = _run_dynamic_validator(invalid)
         check(rejected.returncode != 0, f"an egress proxy with a foreign {label} fails closed")
 
-    oauth = valid.replace("/assistant-egress", "/account-egress").replace("assistant-egress", "account-egress")
+    oauth = valid.replace("/shimpz-assistant-egress", "/shimpz-account-egress").replace(
+        "|assistant-egress|", "|account-egress|"
+    )
     accepted_oauth = _run_dynamic_validator(oauth)
     check(
         accepted_oauth.returncode == 0,
@@ -681,15 +664,15 @@ def test_reset_accepts_only_the_exact_space_owned_egress_proxy():
     )
     for confused in (
         valid.replace("|assistant-egress|", "|account-egress|"),
-        valid.replace("/assistant-egress", "/account-egress"),
-        oauth.replace("/account-egress", "/shimpz-space-foreign-1"),
+        valid.replace("/shimpz-assistant-egress", "/shimpz-account-egress"),
+        oauth.replace("/shimpz-account-egress", "/shimpz-space-foreign-1"),
     ):
         rejected = _run_dynamic_validator(confused)
         check(rejected.returncode != 0, "an OAuth or egress proxy with a mismatched exact name fails closed")
 
-    release = valid.replace("/assistant-egress", "/assistant-release").replace(
-        "assistant-egress",
-        "assistant-release",
+    release = valid.replace("/shimpz-assistant-egress", "/shimpz-assistant-release").replace(
+        "|assistant-egress|",
+        "|assistant-release|",
     )
     accepted_release = _run_dynamic_validator(release)
     check(
@@ -698,15 +681,15 @@ def test_reset_accepts_only_the_exact_space_owned_egress_proxy():
     )
     for confused in (
         valid.replace("|assistant-egress|", "|assistant-release|"),
-        valid.replace("/assistant-egress", "/assistant-release"),
-        release.replace("/assistant-release", "/shimpz-space-foreign-1"),
+        valid.replace("/shimpz-assistant-egress", "/shimpz-assistant-release"),
+        release.replace("/shimpz-assistant-release", "/shimpz-space-foreign-1"),
     ):
         rejected = _run_dynamic_validator(confused)
         check(rejected.returncode != 0, "an Assistant release proxy with a mismatched exact name fails closed")
 
-    brain = valid.replace("/assistant-egress", "/shimpz-brain-egress").replace(
-        "assistant-egress",
-        "brain-egress",
+    brain = valid.replace("/shimpz-assistant-egress", "/shimpz-brain-egress").replace(
+        "|assistant-egress|",
+        "|brain-egress|",
     )
     accepted_brain = _run_dynamic_validator(brain)
     check(
@@ -714,8 +697,8 @@ def test_reset_accepts_only_the_exact_space_owned_egress_proxy():
         f"the exact Compose Brain egress proxy is accepted: {accepted_brain.stderr.strip()}",
     )
     for confused in (
-        valid.replace("assistant-egress", "brain-egress"),
-        valid.replace("/assistant-egress", "/shimpz-brain-egress"),
+        valid.replace("|assistant-egress|", "|brain-egress|"),
+        valid.replace("/shimpz-assistant-egress", "/shimpz-brain-egress"),
         brain.replace("/shimpz-brain-egress", "/shimpz-space-foreign-1"),
     ):
         rejected = _run_dynamic_validator(confused)
@@ -841,12 +824,8 @@ def test_static_update_rollback_and_reset_are_bounded():
         "previous_team_ref",
         "SHIMPZ_BRAIN_IMAGE",
         "previous_brain_ref",
-        "SHIMPZ_ASSISTANT_EGRESS_IMAGE",
-        "previous_assistant_egress_ref",
-        "SHIMPZ_ASSISTANT_RELEASE_IMAGE",
-        "previous_assistant_release_ref",
-        "SHIMPZ_ACCOUNT_EGRESS_IMAGE",
-        "previous_account_egress_ref",
+        "SHIMPZ_EGRESS_IMAGE",
+        "previous_egress_ref",
         "validate_pinned_release_ref",
         "ensure_pinned_release_ref",
         "hydrate_previous_release",
@@ -865,10 +844,10 @@ def test_static_update_rollback_and_reset_are_bounded():
     failed_candidate = candidate_branch[1].split("\nfi\n\nrm -f", 1)[0]
     check(
         failed_candidate.index("compose logs --no-color --tail 20 team")
-        < failed_candidate.index("compose logs --no-color --tail 20 assistant-egress")
-        < failed_candidate.index("compose logs --no-color --tail 20 assistant-release")
-        < failed_candidate.index("compose logs --no-color --tail 20 account-egress")
-        < failed_candidate.index("compose logs --no-color --tail 20 brain-egress")
+        < failed_candidate.index("compose logs --no-color --tail 20 shimpz-assistant-egress")
+        < failed_candidate.index("compose logs --no-color --tail 20 shimpz-assistant-release")
+        < failed_candidate.index("compose logs --no-color --tail 20 shimpz-account-egress")
+        < failed_candidate.index("compose logs --no-color --tail 20 shimpz-brain-egress")
         < failed_candidate.index("compose logs --no-color --tail 20 brain >&2")
         < failed_candidate.index("hydrate_previous_release")
         < failed_candidate.index("compose down --remove-orphans")
@@ -921,9 +900,14 @@ def test_reserved_container_name_preflight_is_early_and_fail_closed():
         check(foreign.returncode != 0, "an unlabeled or foreign container cannot claim a reserved Shimpz name")
         check("another Docker container is already named shimpz-admin" in foreign.stderr, "the collision is named")
 
-    final_name = _run_reserved_name_validator(name="account-egress-init", exists=True, project="another-project")
+    final_name = _run_reserved_name_validator(
+        name="shimpz-account-egress-init", exists=True, project="another-project"
+    )
     check(final_name.returncode != 0, "the reserved-name preflight checks through its final name")
-    check("already named account-egress-init" in final_name.stderr, "a collision on the final reserved name is identified")
+    check(
+        "already named shimpz-account-egress-init" in final_name.stderr,
+        "a collision on the final reserved name is identified",
+    )
 
     docker_ready = SCRIPT.index("docker info >/dev/null 2>&1 || die")
     preflight = SCRIPT.index("\nvalidate_reserved_container_names\n")

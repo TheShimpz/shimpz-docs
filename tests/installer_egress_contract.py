@@ -12,10 +12,9 @@ def assert_brain_egress_runtime(
 ) -> None:
     """Prove provider traffic crosses only the catalog-bound Brain proxy."""
     for marker in (
-        "${SHIMPZ_BRAIN_IMAGE:?installer must pin SHIMPZ_BRAIN_IMAGE}",
+        "${SHIMPZ_EGRESS_IMAGE:?installer must pin SHIMPZ_EGRESS_IMAGE}",
         'user: "10001:10001"',
-        "- /opt/venv/bin/python",
-        "- /app/egress/app.py",
+        'command: ["brain"]',
         "read_only: true",
         "cap_drop:\n      - ALL",
         "no-new-privileges:true",
@@ -30,7 +29,7 @@ def assert_brain_egress_runtime(
         "memswap_limit: 256m",
         "pids_limit: 128",
         "- brain_egress\n      - brain_egress_out",
-        'test: ["CMD", "/opt/venv/bin/python", "/app/egress/healthcheck.py"]',
+        'test: ["CMD", "python3", "/app/entrypoint.py", "healthcheck", "brain"]',
     ):
         check(marker in brain_egress, f"Brain egress proxy enforces {marker!r}")
     check("SHIMPZ_EGRESS_ALLOW" not in brain_egress, "Brain egress has no environment policy override")
@@ -51,8 +50,9 @@ def assert_assistant_egress_runtime(
 ) -> None:
     """Prove the Assistant-owned proxy remains independently constrained."""
     for marker in (
-        "${SHIMPZ_ASSISTANT_EGRESS_IMAGE:?installer must pin SHIMPZ_ASSISTANT_EGRESS_IMAGE}",
+        "${SHIMPZ_EGRESS_IMAGE:?installer must pin SHIMPZ_EGRESS_IMAGE}",
         'user: "10005:10005"',
+        'command: ["assistant"]',
         '- "10017"',
         "read_only: true",
         "cap_drop:\n      - ALL",
@@ -66,7 +66,7 @@ def assert_assistant_egress_runtime(
         "assistant_egress_policy:/policy:ro",
         "assistant_egress_audit:/var/log/assistant-egress:rw",
         "noexec,nosuid,nodev,size=16m",
-        '["CMD", "python3", "/app/healthcheck.py"]',
+        '["CMD", "python3", "/app/entrypoint.py", "healthcheck", "assistant"]',
         'cpus: "1.0"',
         "mem_limit: 256m",
         "memswap_limit: 256m",
@@ -91,8 +91,9 @@ def assert_assistant_release_runtime(
 ) -> None:
     """Prove Cosign alone receives the narrow GHCR and Sigstore route."""
     for marker in (
-        "${SHIMPZ_ASSISTANT_RELEASE_IMAGE:?installer must pin SHIMPZ_ASSISTANT_RELEASE_IMAGE}",
+        "${SHIMPZ_EGRESS_IMAGE:?installer must pin SHIMPZ_EGRESS_IMAGE}",
         'user: "10004:10004"',
+        'command: ["release"]',
         "read_only: true",
         "cap_drop:\n      - ALL",
         "no-new-privileges:true",
@@ -108,7 +109,7 @@ def assert_assistant_release_runtime(
         'SHIMPZ_EGRESS_LISTEN_BACKLOG: "8"',
         "assistant_release_audit:/var/log/assistant-release:rw",
         "noexec,nosuid,nodev,size=8m",
-        '["CMD", "python3", "/app/healthcheck.py"]',
+        '["CMD", "python3", "/app/entrypoint.py", "healthcheck", "release"]',
         'cpus: "0.5"',
         "mem_limit: 128m",
         "memswap_limit: 128m",
@@ -136,8 +137,9 @@ def assert_account_egress_runtime(
 ) -> None:
     """Prove the Account-owned proxy has no Assistant policy coupling."""
     for marker in (
-        "${SHIMPZ_ACCOUNT_EGRESS_IMAGE:?installer must pin SHIMPZ_ACCOUNT_EGRESS_IMAGE}",
+        "${SHIMPZ_EGRESS_IMAGE:?installer must pin SHIMPZ_EGRESS_IMAGE}",
         'user: "10006:10006"',
+        'command: ["account"]',
         '- "10022"',
         "com.shimpz.local.kind: account-egress",
         "account_egress_capability:/run/shimpz-account-egress:ro",
@@ -175,7 +177,7 @@ def assert_account_egress_initializer(
 ) -> None:
     """Prove the one-shot capability initializer has no network authority."""
     for marker in (
-        "${SHIMPZ_ACCOUNT_EGRESS_IMAGE:?installer must pin SHIMPZ_ACCOUNT_EGRESS_IMAGE}",
+        "${SHIMPZ_EGRESS_IMAGE:?installer must pin SHIMPZ_EGRESS_IMAGE}",
         'restart: "no"',
         'user: "0:0"',
         "network_mode: none",
@@ -183,8 +185,7 @@ def assert_account_egress_initializer(
         "cap_drop:\n      - ALL",
         "cap_add:\n      - CHOWN",
         "no-new-privileges:true",
-        'entrypoint: ["python3"]',
-        'command: ["/app/capability.py", "init"]',
+        'command: ["account-init"]',
         "account_egress_capability:/run/shimpz-account-egress:rw",
         'cpus: "0.25"',
         "mem_limit: 64m",
