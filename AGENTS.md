@@ -6,7 +6,7 @@
 - It projects published protocols and current product behavior; it does not own engineering architecture,
   producer protocols, image publication, Team authority, or runtime secrets.
 - Preserve `docs.shimpz.com` and `install.shimpz.com`. Read the canonical
-  [Shimpz architecture](https://github.com/TheShimpz/shimpz/blob/main/docs/ARCHITECTURE.md) before changing product
+  [Shimpz architecture](https://github.com/TheShimpz/shimpz/blob/main/.context/ARCHITECTURE.md) before changing product
   vocabulary, installation topology, protocol mirrors, or public flows.
 
 ## Delivery and engineering
@@ -30,4 +30,4 @@
   `corepack pnpm@11.9.0 exec svelte-check --tsconfig ./tsconfig.json`, and
   `corepack pnpm@11.9.0 build` as applicable.
 - A `static/install.sh` change cannot be committed without the umbrella checks
-  `python shimpz-docs/tests/test_installer.py` and `python tests/test-team-local-delivery.py`.
+  `python docs/tests/test_installer.py` and `python tests/test-team-local-delivery.py`.
