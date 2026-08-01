@@ -61,6 +61,12 @@
     <code>shimpz publish</code> creates an uncompressed canonical POSIX ustar archive. Its exact
     allowlist, limits, normalized metadata, golden vectors, and verifier are published together:
   </p>
+  <p>
+    Choose visibility explicitly with <code>shimpz publish --visibility public</code> or
+    <code>shimpz publish --visibility private</code>. The CLI shows the Assistant, version, source
+    digest, and attributed Creator handles before recording your consent. Every Creator listed in
+    <code>shimpz.toml</code> must authenticate and consent to that same immutable publication tuple.
+  </p>
   <ul>
     <li><a href="/specs/source-package/v1/README.md">Source package v1 overview</a></li>
     <li><a href="/specs/source-package/v1/contract.json">Machine-readable contract</a></li>
