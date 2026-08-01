@@ -3,7 +3,7 @@
 # Multi-arch by construction (node + caddy are both multi-arch), so it runs native on any host.
 
 # ── stage 1: prerender the static site ──────────────────────────────────────────────────────────
-FROM node:24-slim@sha256:b31e7a42fdf8b8aa5f5ed477c72d694301273f1069c5a2f71d53c6482e99a2fc AS web
+FROM node:24-slim@sha256:235600a8101ab264e117b1768e925532262668dc9b581ef1dd7d96ced463b8e7 AS web
 ARG SOURCE_DATE_EPOCH=0
 WORKDIR /w
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
