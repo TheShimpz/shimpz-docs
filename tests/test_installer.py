@@ -432,6 +432,7 @@ def _check_admin_runtime(admin: str, compose: str) -> None:
         "mem_limit: 512m",
         "pids_limit: 128",
         "/api/session",
+        "method='POST'",
     ):
         check(marker in SCRIPT, f"generated Admin runtime enforces {marker!r}")
     check("docker.sock" not in admin, "Admin never receives the Docker socket")

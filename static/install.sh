@@ -1264,7 +1264,7 @@ services:
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,size=32m
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:4600/api/session', timeout=2).read()"]
+      test: ["CMD", "python", "-c", "import urllib.request; request=urllib.request.Request('http://127.0.0.1:4600/api/session', method='POST'); urllib.request.urlopen(request, timeout=2).read()"]
       interval: 5s
       timeout: 3s
       retries: 24
