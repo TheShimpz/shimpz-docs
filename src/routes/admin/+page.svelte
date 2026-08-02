@@ -62,6 +62,7 @@
     Assistant Integration authorization supports exactly <code>http://127.0.0.1:7777</code> or
     <code>https://local.shimpz.com</code>. If you publish the Admin on another port or HTTPS domain, Admin and chat
     continue to work there, but sign in through <code>https://local.shimpz.com</code> before connecting an Integration.
+    The reverse proxy or tunnel must preserve the exact <code>Host: local.shimpz.com</code> header without adding a port.
   </p>
 </aside>
 
