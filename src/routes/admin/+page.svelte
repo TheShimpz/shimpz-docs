@@ -59,21 +59,44 @@
     system account or Docker daemon is inside the same trust boundary. Do not expose this port directly to the internet.
   </p>
   <p>
-    Assistant Integration authorization supports exactly <code>http://127.0.0.1:7777</code> or
-    <code>https://local.shimpz.com</code>. If you publish the Admin on another port or HTTPS domain, Admin and chat
-    continue to work there, but sign in through <code>https://local.shimpz.com</code> before connecting an Integration.
-    The reverse proxy or tunnel must preserve the exact <code>Host: local.shimpz.com</code> header without adding a port.
+    Shimpz returns Integration authorization automatically when this page is exactly
+    <code>http://127.0.0.1:7777</code> or <code>https://local.shimpz.com</code>. No OAuth wildcard or callback
+    registration is required for another domain.
+  </p>
+  <p>
+    At any other external HTTPS address admitted with your Admin password, Shimpz opens the provider in a new tab.
+    After approval, the fixed <code>shimpz.com</code> callback shows a short-lived, one-use completion code. Copy it,
+    return to the original authenticated Admin tab, and paste it into the completion field. The code is not a
+    provider token or OAuth authorization code, and you should never paste it into chat or another site.
+  </p>
+  <p>
+    A reverse proxy or tunnel that terminates HTTPS can relay your Admin password and session, so it is inside the
+    Supervisor trust boundary. Use only a TLS endpoint you control and trust. Integration tokens remain encrypted
+    in Team, but a compromised Admin endpoint can still exercise everything visible to your Supervisor session.
   </p>
 </aside>
 
 <section class="guide-section" aria-labelledby="remote-access-title">
   <span class="section-label">Optional</span>
   <h2 id="remote-access-title">Open a remote Linux installation safely</h2>
-  <p>Forward its private port through SSH, leave the terminal open, and use the same local address in your browser.</p>
+  <p>
+    For the smallest remote trust boundary, forward the private Admin through SSH, leave the terminal open, and use
+    <code>http://127.0.0.1:7777</code> in your browser. This retains the automatic loopback OAuth return and does not
+    place a TLS terminator in front of your Supervisor session.
+  </p>
   <CodeBlock
     label="Forward a remote Admin through SSH"
     title="Terminal · your computer"
     lines={[{ value: "ssh -L 7777:127.0.0.1:7777 user@your-server" }]}
+  />
+  <p>
+    If the installer used another <code>SHIMPZ_PORT</code>, keep the local side at <code>7777</code> and change only
+    the remote destination. For example, an installed port of <code>49123</code> uses:
+  </p>
+  <CodeBlock
+    label="Forward a custom installed Admin port"
+    title="Terminal · your computer"
+    lines={[{ value: "ssh -L 7777:127.0.0.1:49123 user@your-server" }]}
   />
 </section>
 

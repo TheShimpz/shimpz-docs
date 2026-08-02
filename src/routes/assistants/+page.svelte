@@ -2,7 +2,7 @@
   <title>Install an Assistant — Shimpz docs</title>
   <meta
     name="description"
-    content="Install an Assistant and provide an Account or Secret only when a Power requires it."
+    content="Install an Assistant and provide an Integration or Secret only when a Power requires it."
   />
 </svelte:head>
 
@@ -23,7 +23,9 @@
   <span id="safe-account-title" class="kicker">No token copy and paste</span>
   <p>
     OAuth authorization happens on the provider's own website. Shimpz never asks you to paste an OAuth client
-    secret, authorization code, access token, or refresh token into chat.
+    secret, authorization code, access token, or refresh token into chat. A custom HTTPS Admin may ask for the
+    short-lived Shimpz completion code in its dedicated authorization dialog; that code belongs only in the original
+    authenticated Admin tab.
   </p>
 </aside>
 
@@ -46,7 +48,7 @@
   <li>
     <h2>Provide only what the Power requests</h2>
     <p>
-      If an Account is required, choose <strong>Continue</strong>, review the provider and scopes, and approve on
+      If an Integration is required, choose <strong>Continue</strong>, review the provider and scopes, and approve on
       the provider's website. If a Secret is required, Shimpz shows its name and purpose in a private form.
       The same conversation continues after the requirement is satisfied.
     </p>
@@ -78,7 +80,7 @@
   <span class="section-label">Remove access</span>
   <h2 id="disconnect-title">Disconnect before uninstalling</h2>
   <p>
-    Disconnect any Account to revoke its grant, remove configured Secrets, then uninstall the Assistant.
+    Disconnect any Integration to revoke its grant, remove configured Secrets, then uninstall the Assistant.
     Uninstalling the Assistant does not delete the Team or its conversation history.
   </p>
 </section>
