@@ -161,7 +161,6 @@ PROJECT_NAME="shimpz-space"
 RESERVED_CONTAINER_NAMES="shimpz-admin shimpz-team shimpz-brain shimpz-brain-egress shimpz-assistant-egress shimpz-assistant-release shimpz-account-egress shimpz-account-egress-init"
 SHIMPZ_HOME_NAME=".shimpz"
 MARKER_VALUE="shimpz-space-managed-v1"
-OAUTH_CALLBACK_MODE="loopback"
 ADMIN_ALLOWED_ORIGINS="http://localhost:${SHIMPZ_PORT:-7777},http://127.0.0.1:${SHIMPZ_PORT:-7777}"
 reset_command="curl -fsSL https://install.shimpz.com | sh -s -- --reset"
 step "Checking Docker and Compose"
@@ -853,7 +852,6 @@ SHIMPZ_SPACE_ID=${space_id}
 SHIMPZ_CPUSET=${docker_cpuset}
 SHIMPZ_PROJECT_NAME=${PROJECT_NAME}
 SHIMPZ_ADMIN_ALLOWED_ORIGINS=${ADMIN_ALLOWED_ORIGINS}
-SHIMPZ_OAUTH_CALLBACK_MODE=${OAUTH_CALLBACK_MODE}
 EOF
 chmod 600 "${ENV_FILE}.tmp"
 
@@ -917,7 +915,6 @@ services:
       SHIMPZ_LOCAL_POWER_JOURNAL_PATH: /var/lib/shimpz-local/power-journal/journal.sqlite3
       SHIMPZ_LOCAL_CHAT_CONTINUATIONS_STATE_PATH: /var/lib/shimpz-local/chat-continuations/state/continuations.json
       SHIMPZ_LOCAL_CHAT_CONTINUATIONS_KEY_PATH: /var/lib/shimpz-local/chat-continuations/key/aes256.key
-      SHIMPZ_OAUTH_CALLBACK_MODE: ${SHIMPZ_OAUTH_CALLBACK_MODE:?installer must pin the OAuth callback mode}
       SHIMPZ_OAUTH_BROKER_PROXY_HOST: shimpz-account-egress
       SHIMPZ_OAUTH_BROKER_PROXY_CAPABILITY_FILE: /run/shimpz-account-egress/token
       SHIMPZ_ASSISTANT_EGRESS_CONTAINER: shimpz-assistant-egress
@@ -1255,7 +1252,6 @@ services:
       SHIMPZ_TEAM_CREDENTIALS_ENABLED: "0"
       SHIMPZ_ADMIN_LOOPBACK_PORT: ${SHIMPZ_PORT:-7777}
       SHIMPZ_ADMIN_ALLOWED_ORIGINS: ${SHIMPZ_ADMIN_ALLOWED_ORIGINS:?installer must pin Admin origins}
-      SHIMPZ_OAUTH_CALLBACK_MODE: ${SHIMPZ_OAUTH_CALLBACK_MODE:?installer must pin the Admin OAuth callback mode}
     volumes:
       - config:/repo
       - data:/data

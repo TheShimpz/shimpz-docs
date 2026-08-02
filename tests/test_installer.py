@@ -300,7 +300,6 @@ def test_static_delivery_is_pull_only_and_content_addressed():
     check(
         "SHIMPZ_PROJECT_NAME=${PROJECT_NAME}" in SCRIPT
         and "SHIMPZ_ADMIN_ALLOWED_ORIGINS=${ADMIN_ALLOWED_ORIGINS}" in SCRIPT
-        and "SHIMPZ_OAUTH_CALLBACK_MODE=${OAUTH_CALLBACK_MODE}" in SCRIPT
         and "name: ${SHIMPZ_PROJECT_NAME:?installer must pin SHIMPZ_PROJECT_NAME}" in SCRIPT
         and "SHIMPZ_ASSISTANT_EGRESS_CONTAINER: shimpz-assistant-egress" in SCRIPT,
         "the generated Compose project is pinned and the controller targets the named egress container",
@@ -467,7 +466,6 @@ def _check_controller_runtime(controller: str) -> None:
         "SHIMPZ_LOCAL_CHAT_CONTINUATIONS_KEY_PATH: /var/lib/shimpz-local/chat-continuations/key/aes256.key",
         "SHIMPZ_BRAIN_RUNTIME_URL: http://brain:8080",
         "SHIMPZ_BRAIN_RUNTIME_TOKEN_FILE: /run/shimpz-brain-runtime/token",
-        "SHIMPZ_OAUTH_CALLBACK_MODE: ${SHIMPZ_OAUTH_CALLBACK_MODE:?installer must pin the OAuth callback mode}",
         "SHIMPZ_OAUTH_BROKER_PROXY_HOST: shimpz-account-egress",
         "SHIMPZ_OAUTH_BROKER_PROXY_CAPABILITY_FILE: /run/shimpz-account-egress/token",
         "account_egress_capability:/run/shimpz-account-egress:ro",
@@ -711,7 +709,6 @@ def test_static_admin_chat_origin_allowlist_is_loopback_only():
     admin = compose.split("  admin:", 1)[1].split("\nvolumes:", 1)[0]
     loopback_port_lines = [line.strip() for line in admin.splitlines() if "SHIMPZ_ADMIN_LOOPBACK_PORT:" in line]
     origin_lines = [line.strip() for line in admin.splitlines() if "SHIMPZ_ADMIN_ALLOWED_ORIGINS:" in line]
-    oauth_lines = [line.strip() for line in admin.splitlines() if "SHIMPZ_OAUTH_CALLBACK_MODE:" in line]
     check(
         loopback_port_lines == ["SHIMPZ_ADMIN_LOOPBACK_PORT: ${SHIMPZ_PORT:-7777}"],
         "local Admin derives its OAuth loopback port from the published installer port",
@@ -727,17 +724,10 @@ def test_static_admin_chat_origin_allowlist_is_loopback_only():
         "local Admin receives only the stable loopback origins",
     )
     check(
-        oauth_lines
-        == [
-            "SHIMPZ_OAUTH_CALLBACK_MODE: "
-            "${SHIMPZ_OAUTH_CALLBACK_MODE:?installer must pin the Admin OAuth callback mode}"
-        ],
-        "local Admin receives the same closed OAuth callback mode as its controller",
-    )
-    check(
         'ADMIN_ALLOWED_ORIGINS="http://localhost:${SHIMPZ_PORT:-7777},http://127.0.0.1:${SHIMPZ_PORT:-7777}"' in SCRIPT
-        and "local.shimpz.com" not in SCRIPT,
-        "the stable installer remains loopback-only",
+        and "local.shimpz.com" not in SCRIPT
+        and "SHIMPZ_OAUTH_CALLBACK_MODE" not in SCRIPT,
+        "the installer keeps static browser origins loopback-only and selects OAuth per request",
     )
 
 
