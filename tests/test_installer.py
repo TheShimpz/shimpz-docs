@@ -469,7 +469,7 @@ def _check_controller_runtime(controller: str) -> None:
         "account_egress_capability:/run/shimpz-account-egress:ro",
         "SHIMPZ_ASSISTANT_EGRESS_CONTAINER: shimpz-assistant-egress",
         "SHIMPZ_ASSISTANT_EGRESS_POLICY_DIR: /var/lib/shimpz-local/assistant-egress",
-        "shimpz-assistant-egress:\n        condition: service_started\n        restart: true",
+        "shimpz-assistant-egress:\n        condition: service_started",
         "shimpz-assistant-release:\n        condition: service_healthy",
         "- assistant_release",
         '- "10016"',
@@ -483,6 +483,11 @@ def _check_controller_runtime(controller: str) -> None:
         "pids_limit: 128",
     ):
         check(marker in controller, f"local controller enforces {marker!r}")
+    dependencies = controller.split("    depends_on:\n", 1)[1].split("    networks:\n", 1)[0]
+    check(
+        "restart:" not in dependencies,
+        "Local dependencies never clear Team in-memory safety state through update-coupled restarts",
+    )
     for proxy_variable in ("HTTPS_PROXY", "HTTP_PROXY", "https_proxy", "http_proxy", "NO_PROXY", "no_proxy"):
         check(proxy_variable not in controller, f"Team controller excludes global {proxy_variable}")
 
