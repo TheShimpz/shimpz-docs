@@ -1250,7 +1250,6 @@ services:
       SHIMPZ_TEAM_URL: http://team:7077
       SHIMPZ_TEAM_TOKEN_FILE: /run/shimpz-local/token
       SHIMPZ_TEAM_CREDENTIALS_ENABLED: "0"
-      SHIMPZ_ADMIN_LOOPBACK_PORT: ${SHIMPZ_PORT:-7777}
       SHIMPZ_ADMIN_ALLOWED_ORIGINS: ${SHIMPZ_ADMIN_ALLOWED_ORIGINS:?installer must pin Admin origins}
     volumes:
       - config:/repo
@@ -1385,4 +1384,7 @@ printf '  AdminImg %s\n' "$admin_image_ref"
 printf '  Team     %s\n' "$team_image_ref"
 printf '  Brain    %s\n' "$brain_image_ref"
 printf '  Egress   %s\n' "$egress_image_ref"
+if [ "$install_port" != "7777" ]; then
+	printf '  OAuth    Sign in through https://local.shimpz.com to authorize Assistant Integrations\n'
+fi
 printf '  Reset    %s\n' "$reset_command"

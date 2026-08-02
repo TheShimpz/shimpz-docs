@@ -58,6 +58,11 @@
     Port <code>7777</code> is intentionally available only on this computer. Anyone who controls your operating
     system account or Docker daemon is inside the same trust boundary. Do not expose this port directly to the internet.
   </p>
+  <p>
+    Assistant Integration authorization supports exactly <code>http://127.0.0.1:7777</code> or
+    <code>https://local.shimpz.com</code>. If you publish the Admin on another port or HTTPS domain, Admin and chat
+    continue to work there, but sign in through <code>https://local.shimpz.com</code> before connecting an Integration.
+  </p>
 </aside>
 
 <section class="guide-section" aria-labelledby="remote-access-title">

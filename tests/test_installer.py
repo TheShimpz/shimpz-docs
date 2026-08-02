@@ -264,8 +264,7 @@ def test_static_delivery_is_pull_only_and_content_addressed():
         check(f'{channel}="stable"' in SCRIPT, f"installer selects only the stable {channel} channel")
     check(
         "SHIMPZ_TEAM_CHANNEL" not in SCRIPT
-        and "SHIMPZ_INSTALL_PROFILE" not in SCRIPT
-        and "local.shimpz.com" not in SCRIPT,
+        and "SHIMPZ_INSTALL_PROFILE" not in SCRIPT,
         "installer exposes no alternate release profile or channel",
     )
     for marker in (
@@ -707,16 +706,15 @@ def test_reset_accepts_only_the_exact_space_owned_egress_proxy():
 def test_static_admin_chat_origin_allowlist_is_loopback_only():
     compose = SCRIPT.split("cat >\"${COMPOSE_FILE}.tmp\" <<'COMPOSE'", 1)[1].split("\nCOMPOSE", 1)[0]
     admin = compose.split("  admin:", 1)[1].split("\nvolumes:", 1)[0]
-    loopback_port_lines = [line.strip() for line in admin.splitlines() if "SHIMPZ_ADMIN_LOOPBACK_PORT:" in line]
     origin_lines = [line.strip() for line in admin.splitlines() if "SHIMPZ_ADMIN_ALLOWED_ORIGINS:" in line]
     check(
-        loopback_port_lines == ["SHIMPZ_ADMIN_LOOPBACK_PORT: ${SHIMPZ_PORT:-7777}"],
-        "local Admin derives its OAuth loopback port from the published installer port",
+        "SHIMPZ_ADMIN_LOOPBACK_PORT" not in admin,
+        "local Compose does not imply that a custom published Admin port is an OAuth callback",
     )
     custom_port_admin = admin.replace("${SHIMPZ_PORT:-7777}", "8123")
     check(
-        '"127.0.0.1:8123:4600"' in custom_port_admin and "SHIMPZ_ADMIN_LOOPBACK_PORT: 8123" in custom_port_admin,
-        "a custom installer port drives both the published port and OAuth callback origin",
+        '"127.0.0.1:8123:4600"' in custom_port_admin and "SHIMPZ_ADMIN_LOOPBACK_PORT" not in custom_port_admin,
+        "a custom installer port changes only the published Admin address",
     )
     check(
         origin_lines
@@ -725,9 +723,13 @@ def test_static_admin_chat_origin_allowlist_is_loopback_only():
     )
     check(
         'ADMIN_ALLOWED_ORIGINS="http://localhost:${SHIMPZ_PORT:-7777},http://127.0.0.1:${SHIMPZ_PORT:-7777}"' in SCRIPT
-        and "local.shimpz.com" not in SCRIPT
         and "SHIMPZ_OAUTH_CALLBACK_MODE" not in SCRIPT,
         "the installer keeps static browser origins loopback-only and selects OAuth per request",
+    )
+    check(
+        'if [ "$install_port" != "7777" ]; then' in SCRIPT
+        and "Sign in through https://local.shimpz.com to authorize Assistant Integrations" in SCRIPT,
+        "custom-port installs explain the exact HTTPS address required for Integration authorization",
     )
 
 
