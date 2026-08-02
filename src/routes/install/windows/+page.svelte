@@ -51,6 +51,7 @@
       >. Enable <strong>Use the WSL 2 based engine</strong>, then enable Ubuntu under
       <strong>Settings → Resources → WSL Integration</strong>.
     </p>
+    <p>Use a Docker Desktop release that provides Docker Engine 25.0 or newer and Docker Compose 2.20.2 or newer.</p>
     <p>Do not install a second Docker Engine inside Ubuntu.</p>
   </li>
 

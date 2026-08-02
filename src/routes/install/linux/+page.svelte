@@ -47,7 +47,7 @@
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Docker Engine installation documentation (opens in a new tab)">Docker Engine</a
-      > with Docker Compose v2, then confirm both commands work:
+      > 25.0 or newer with Docker Compose 2.20.2 or newer, then confirm both commands work:
     </p>
     <CodeBlock
       label="Check Docker on Linux"

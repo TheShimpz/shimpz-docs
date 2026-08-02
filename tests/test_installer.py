@@ -37,6 +37,65 @@ def _shell_functions(start_name: str, end_name: str) -> str:
     return SCRIPT[start:end]
 
 
+def _run_version_comparison(current: str, minimum: str) -> subprocess.CompletedProcess[str]:
+    start = SCRIPT.index("version_at_least() (")
+    end = SCRIPT.index("\n)\n\nstep()", start) + len("\n)")
+    function = SCRIPT[start:end]
+    return subprocess.run(
+        ["/bin/sh", "-c", f"{function}\nversion_at_least \"$CURRENT\" \"$MINIMUM\""],
+        check=False,
+        capture_output=True,
+        text=True,
+        env={"CURRENT": current, "MINIMUM": minimum},
+    )
+
+
+def _run_installer_version_preflight(
+    *,
+    engine_version: str,
+    api_version: str,
+    compose_version: str,
+) -> tuple[subprocess.CompletedProcess[str], bool]:
+    temporary = tempfile.TemporaryDirectory()
+    home = Path(temporary.name)
+    binary_dir = home / "bin"
+    binary_dir.mkdir()
+    docker = binary_dir / "docker"
+    docker.write_text(
+        """#!/bin/sh
+case "$*" in
+  "compose version") exit 0 ;;
+  "compose version --short") printf '%s\n' "$FAKE_COMPOSE_VERSION" ;;
+  "context show") printf '%s\n' local ;;
+  "context inspect --format {{.Endpoints.docker.Host}} local") printf '%s\n' unix:///var/run/docker.sock ;;
+  "info") exit 0 ;;
+  "version --format {{.Server.Version}}") printf '%s\n' "$FAKE_ENGINE_VERSION" ;;
+  "version --format {{.Server.APIVersion}}") printf '%s\n' "$FAKE_API_VERSION" ;;
+  *) exit 92 ;;
+esac
+""",
+        encoding="utf-8",
+    )
+    docker.chmod(0o700)
+    result = subprocess.run(
+        ["/bin/sh", str(SCRIPT_PATH)],
+        check=False,
+        capture_output=True,
+        text=True,
+        env={
+            "HOME": str(home),
+            "PATH": f"{binary_dir}:/usr/bin:/bin",
+            "TERM": "dumb",
+            "FAKE_ENGINE_VERSION": engine_version,
+            "FAKE_API_VERSION": api_version,
+            "FAKE_COMPOSE_VERSION": compose_version,
+        },
+    )
+    state_exists = (home / ".shimpz").exists()
+    temporary.cleanup()
+    return result, state_exists
+
+
 def _run_previous_ref_validator(image: str, repository: str) -> subprocess.CompletedProcess[str]:
     function = _shell_functions("validate_pinned_release_ref", "load_previous_release")
     command = (
@@ -174,8 +233,10 @@ def test_script_is_posix_executable_and_self_describing():
     check(
         "Linux amd64" in help_run.stdout
         and "Apple Silicon macOS arm64" in help_run.stdout
+        and "Docker Engine 25.0+" in help_run.stdout
+        and "Docker Compose 2.20.2+" in help_run.stdout
         and "--reset" in help_run.stdout,
-        "help states both supported hosts and the lifecycle",
+        "help states both supported hosts, minimum Docker versions, and the lifecycle",
     )
 
 
@@ -188,7 +249,68 @@ def test_static_local_installer_contains_no_oauth_client_credentials():
 
 def test_version_command_reports_the_stable_installer_release():
     version = subprocess.run(["sh", str(SCRIPT_PATH), "--version"], check=False, capture_output=True, text=True)
-    check(version.returncode == 0 and version.stdout.strip() == "0.6.0", "version is an explicit stable release")
+    check(version.returncode == 0 and version.stdout.strip() == "0.7.0", "version is an explicit stable release")
+
+
+def test_runtime_version_floor_is_numeric_and_fail_closed():
+    for current, minimum in (
+        ("25.0.0", "25.0.0"),
+        ("29.6.2", "25.0.0"),
+        ("1.44", "1.44"),
+        ("v2.20.2", "2.20.2"),
+        ("2.20.3-desktop.1", "2.20.2"),
+    ):
+        accepted = _run_version_comparison(current, minimum)
+        check(accepted.returncode == 0, f"{current} satisfies {minimum}")
+    for current, minimum in (
+        ("24.0.9", "25.0.0"),
+        ("1.43", "1.44"),
+        ("2.20.1", "2.20.2"),
+        ("unknown", "2.20.2"),
+        ("2..21", "2.20.2"),
+    ):
+        rejected = _run_version_comparison(current, minimum)
+        check(rejected.returncode != 0, f"{current} does not satisfy {minimum}")
+
+    old_engine, old_engine_state_exists = _run_installer_version_preflight(
+        engine_version="24.0.9",
+        api_version="1.43",
+        compose_version="2.40.0",
+    )
+    check(old_engine.returncode != 0 and "Docker Engine 25.0 or newer" in old_engine.stderr, "old Engine fails early")
+    check(not old_engine_state_exists, "an old Engine creates no installer state")
+
+    old_compose, old_compose_state_exists = _run_installer_version_preflight(
+        engine_version="25.0.0",
+        api_version="1.44",
+        compose_version="2.20.1",
+    )
+    check(
+        old_compose.returncode != 0 and "Docker Compose 2.20.2 or newer" in old_compose.stderr,
+        "old Compose fails early",
+    )
+    check(not old_compose_state_exists, "an old Compose creates no installer state")
+    docker_ready = SCRIPT.index('docker info >/dev/null 2>&1 || die')
+    engine_floor = SCRIPT.index('version_at_least "$docker_server_version" "25.0.0"')
+    api_floor = SCRIPT.index('version_at_least "$docker_api_version" "1.44"')
+    compose_floor = SCRIPT.index('version_at_least "$compose_version" "2.20.2"')
+    first_state_write = SCRIPT.index('umask 077\nmkdir -p "$SHIMPZ_HOME"')
+    check(
+        docker_ready < engine_floor < api_floor < compose_floor < first_state_write,
+        "all runtime version floors run after daemon access and before installer state is written",
+    )
+
+
+def test_local_healthchecks_are_fast_at_start_and_cheap_when_idle():
+    compose = SCRIPT.split("cat >\"${COMPOSE_FILE}.tmp\" <<'COMPOSE'", 1)[1].split("\nCOMPOSE", 1)[0]
+    healthchecks = re.findall(r"^    healthcheck:\n((?:      .+\n)+)", compose, re.MULTILINE)
+    check(len(healthchecks) == 5, "Local Compose owns exactly five explicit healthchecks")
+    for healthcheck in healthchecks:
+        check("      interval: 30s\n" in healthcheck, "steady-state healthchecks run every 30 seconds")
+        check("      retries: 3\n" in healthcheck, "healthchecks tolerate three steady-state failures")
+        check("      start_period: 30s\n" in healthcheck, "services receive a 30-second startup window")
+        check("      start_interval: 1s\n" in healthcheck, "startup readiness remains responsive")
+    check("      interval: 5s\n" not in compose and "      interval: 10s\n" not in compose, "no busy cadence remains")
 
 
 def test_brand_is_canonical_and_action_specific_for_install_and_reset():

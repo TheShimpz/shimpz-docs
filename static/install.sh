@@ -2,7 +2,7 @@
 
 set -eu
 
-INSTALLER_VERSION="0.6.0"
+INSTALLER_VERSION="0.7.0"
 ADMIN_REPOSITORY="ghcr.io/theshimpz/shimpz-admin"
 TEAM_REPOSITORY="ghcr.io/theshimpz/shimpz-team-local"
 BRAIN_REPOSITORY="ghcr.io/theshimpz/shimpz-brain"
@@ -93,6 +93,37 @@ show_brand() {
 	printf '\n'
 }
 
+version_at_least() (
+	current_version="${1#v}"
+	minimum_version="${2#v}"
+	current_version="${current_version%%[-+]*}"
+	minimum_version="${minimum_version%%[-+]*}"
+	case "$current_version:$minimum_version" in
+		*[!0-9.:]*) return 1 ;;
+	esac
+	IFS=.
+	set -- $current_version
+	[ "$#" -ge 2 ] && [ "$#" -le 3 ] || return 1
+	current_major="$1"
+	current_minor="$2"
+	current_patch="${3:-0}"
+	set -- $minimum_version
+	[ "$#" -ge 2 ] && [ "$#" -le 3 ] || return 1
+	minimum_major="$1"
+	minimum_minor="$2"
+	minimum_patch="${3:-0}"
+	for component in \
+		"$current_major" "$current_minor" "$current_patch" \
+		"$minimum_major" "$minimum_minor" "$minimum_patch"; do
+		[ -n "$component" ] || return 1
+	done
+	[ "$current_major" -gt "$minimum_major" ] && return 0
+	[ "$current_major" -lt "$minimum_major" ] && return 1
+	[ "$current_minor" -gt "$minimum_minor" ] && return 0
+	[ "$current_minor" -lt "$minimum_minor" ] && return 1
+	[ "$current_patch" -ge "$minimum_patch" ]
+)
+
 step() {
 	printf '  %s[..]%s %s\n' "$OUT_DIM" "$OUT_RESET" "$*"
 }
@@ -127,8 +158,9 @@ Environment:
   SHIMPZ_PORT            Loopback port for the Admin (default: 7777)
 
 Supported hosts:
-  Linux amd64 with Docker Engine and Docker Compose v2.
-  Apple Silicon macOS arm64 with Docker Desktop and Docker Compose v2.
+  Linux amd64 with Docker Engine 25.0+ and Docker Compose 2.20.2+.
+  Apple Silicon macOS arm64 with Docker Desktop providing Engine 25.0+
+  and Docker Compose 2.20.2+.
 EOF
 }
 
@@ -181,6 +213,18 @@ case "$docker_endpoint" in
 	*) die "a local Docker Unix socket is required; remote Docker contexts are not supported" ;;
 esac
 docker info >/dev/null 2>&1 || die "the Docker daemon is not available to this user"
+docker_server_version="$(docker version --format '{{.Server.Version}}' 2>/dev/null)" \
+	|| die "could not determine the Docker Engine version"
+docker_api_version="$(docker version --format '{{.Server.APIVersion}}' 2>/dev/null)" \
+	|| die "could not determine the Docker Engine API version"
+if ! version_at_least "$docker_server_version" "25.0.0" \
+	|| ! version_at_least "$docker_api_version" "1.44"; then
+	die "Docker Engine 25.0 or newer with API 1.44 or newer is required (found Engine ${docker_server_version}, API ${docker_api_version})"
+fi
+compose_version="$(docker compose version --short 2>/dev/null)" \
+	|| die "could not determine the Docker Compose version"
+version_at_least "$compose_version" "2.20.2" \
+	|| die "Docker Compose 2.20.2 or newer is required (found ${compose_version})"
 
 [ -n "${HOME:-}" ] || die "HOME must be set"
 case "$HOME" in
@@ -998,10 +1042,11 @@ services:
       - /tmp:rw,noexec,nosuid,nodev,size=16m
     healthcheck:
       test: ["CMD", "python3", "/app/entrypoint.py", "healthcheck", "assistant"]
-      interval: 5s
+      interval: 30s
       timeout: 3s
-      retries: 24
-      start_period: 5s
+      retries: 3
+      start_period: 30s
+      start_interval: 1s
     cpuset: "${SHIMPZ_CPUSET:?installer must limit local CPUs}"
     cpus: "1.0"
     mem_limit: 256m
@@ -1050,10 +1095,11 @@ services:
       - /tmp:rw,noexec,nosuid,nodev,size=8m
     healthcheck:
       test: ["CMD", "python3", "/app/entrypoint.py", "healthcheck", "release"]
-      interval: 5s
+      interval: 30s
       timeout: 3s
-      retries: 24
-      start_period: 5s
+      retries: 3
+      start_period: 30s
+      start_interval: 1s
     cpuset: "${SHIMPZ_CPUSET:?installer must limit local CPUs}"
     cpus: "0.5"
     mem_limit: 128m
@@ -1121,10 +1167,11 @@ services:
       - account_egress_out
     healthcheck:
       test: ["CMD", "python3", "/app/entrypoint.py", "healthcheck", "account"]
-      interval: 5s
+      interval: 30s
       timeout: 3s
-      retries: 24
-      start_period: 5s
+      retries: 3
+      start_period: 30s
+      start_interval: 1s
 
   shimpz-brain-egress:
     container_name: shimpz-brain-egress
@@ -1173,10 +1220,11 @@ services:
       - brain_egress_out
     healthcheck:
       test: ["CMD", "python3", "/app/entrypoint.py", "healthcheck", "brain"]
-      interval: 10s
+      interval: 30s
       timeout: 4s
-      retries: 5
-      start_period: 5s
+      retries: 3
+      start_period: 30s
+      start_interval: 1s
 
   brain:
     container_name: shimpz-brain
@@ -1260,10 +1308,11 @@ services:
       - /tmp:rw,noexec,nosuid,nodev,size=32m
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; request=urllib.request.Request('http://127.0.0.1:4600/api/session', method='POST'); urllib.request.urlopen(request, timeout=2).read()"]
-      interval: 5s
+      interval: 30s
       timeout: 3s
-      retries: 24
-      start_period: 5s
+      retries: 3
+      start_period: 30s
+      start_interval: 1s
     cpus: "2.0"
     cpuset: "${SHIMPZ_CPUSET:?installer must limit local CPUs}"
     mem_limit: 512m

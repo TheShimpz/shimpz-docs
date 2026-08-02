@@ -30,7 +30,8 @@
         href="https://docs.docker.com/desktop/setup/install/mac-install/"
         target="_blank"
         rel="noopener noreferrer">Docker Desktop for Mac</a
-      >, open it, and wait until Docker reports that it is running.
+      > with Docker Engine 25.0 or newer and Docker Compose 2.20.2 or newer, open it, and wait until Docker reports
+      that it is running.
     </p>
     <p>
       Open <strong>Docker Desktop → Settings → Advanced</strong> and enable
