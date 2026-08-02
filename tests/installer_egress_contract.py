@@ -89,7 +89,7 @@ def assert_assistant_release_runtime(
     compose: str,
     check: Check,
 ) -> None:
-    """Prove Cosign alone receives the narrow GHCR and Sigstore route."""
+    """Prove publication resolution and Cosign share only the narrow release route."""
     for marker in (
         "${SHIMPZ_EGRESS_IMAGE:?installer must pin SHIMPZ_EGRESS_IMAGE}",
         'user: "10004:10004"',
@@ -102,7 +102,8 @@ def assert_assistant_release_runtime(
         "com.shimpz.local.space-id: ${SHIMPZ_SPACE_ID:?installer must preserve SHIMPZ_SPACE_ID}",
         "com.shimpz.local.kind: assistant-release",
         "SHIMPZ_EGRESS_ALLOW: "
-        "ghcr.io,tuf-repo-cdn.sigstore.dev,rekor.sigstore.dev,pkg-containers.githubusercontent.com",
+        "developers.shimpz.com,ghcr.io,tuf-repo-cdn.sigstore.dev,rekor.sigstore.dev,"
+        "pkg-containers.githubusercontent.com",
         "SHIMPZ_EGRESS_AUDIT_LOG: /var/log/assistant-release/audit.jsonl",
         'SHIMPZ_EGRESS_MAX_CONCURRENCY: "16"',
         'SHIMPZ_EGRESS_MAX_SOURCE_CONCURRENCY: "4"',
