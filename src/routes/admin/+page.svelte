@@ -70,6 +70,12 @@
     provider token or OAuth authorization code, and you should never paste it into chat or another site.
   </p>
   <p>
+    If the provider tab shows <strong>Bad Gateway</strong> before Cloudflare asks for consent, authorization did not
+    start and no provider grant was created. Shimpz fails closed when its hosted broker cannot reach the private
+    OAuth operation boundary. Close that tab and retry from the original Admin chat after service is restored; do
+    not add a wildcard callback or paste credentials to work around it.
+  </p>
+  <p>
     A reverse proxy or tunnel that terminates HTTPS can relay your Admin password and session, so it is inside the
     Supervisor trust boundary. Use only a TLS endpoint you control and trust. Integration tokens remain encrypted
     in Team, but a compromised Admin endpoint can still exercise everything visible to your Supervisor session.
