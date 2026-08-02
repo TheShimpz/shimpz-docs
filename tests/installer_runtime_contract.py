@@ -16,7 +16,7 @@ def _run_version_comparison(script: str, current: str, minimum: str) -> subproce
     end = script.index("\n)\n\nstep()", start) + len("\n)")
     function = script[start:end]
     return subprocess.run(
-        ["/bin/sh", "-c", f"{function}\nversion_at_least \"$CURRENT\" \"$MINIMUM\""],
+        ["/bin/sh", "-c", f'{function}\nversion_at_least "$CURRENT" "$MINIMUM"'],
         check=False,
         capture_output=True,
         text=True,
@@ -110,7 +110,7 @@ def assert_runtime_version_floor(script: str, script_path: Path, check: Check) -
     )
     check(not old_compose_state_exists, "an old Compose creates no installer state")
 
-    docker_ready = script.index('docker info >/dev/null 2>&1 || die')
+    docker_ready = script.index("docker info >/dev/null 2>&1 || die")
     engine_floor = script.index('version_at_least "$docker_server_version" "25.0.0"')
     api_floor = script.index('version_at_least "$docker_api_version" "1.44"')
     compose_floor = script.index('version_at_least "$compose_version" "2.20.2"')
