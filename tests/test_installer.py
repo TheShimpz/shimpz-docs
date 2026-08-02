@@ -469,7 +469,7 @@ def _check_controller_runtime(controller: str) -> None:
         "account_egress_capability:/run/shimpz-account-egress:ro",
         "SHIMPZ_ASSISTANT_EGRESS_CONTAINER: shimpz-assistant-egress",
         "SHIMPZ_ASSISTANT_EGRESS_POLICY_DIR: /var/lib/shimpz-local/assistant-egress",
-        "shimpz-assistant-egress:\n        condition: service_started",
+        "shimpz-assistant-egress:\n        condition: service_started\n        restart: true",
         "shimpz-assistant-release:\n        condition: service_healthy",
         "- assistant_release",
         '- "10016"',

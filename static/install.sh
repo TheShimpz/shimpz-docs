@@ -954,6 +954,7 @@ services:
         condition: service_completed_successfully
       shimpz-assistant-egress:
         condition: service_started
+        restart: true
       shimpz-assistant-release:
         condition: service_healthy
       shimpz-account-egress:
