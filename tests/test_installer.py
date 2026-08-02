@@ -263,8 +263,7 @@ def test_static_delivery_is_pull_only_and_content_addressed():
     ):
         check(f'{channel}="stable"' in SCRIPT, f"installer selects only the stable {channel} channel")
     check(
-        "SHIMPZ_TEAM_CHANNEL" not in SCRIPT
-        and "SHIMPZ_INSTALL_PROFILE" not in SCRIPT,
+        "SHIMPZ_TEAM_CHANNEL" not in SCRIPT and "SHIMPZ_INSTALL_PROFILE" not in SCRIPT,
         "installer exposes no alternate release profile or channel",
     )
     for marker in (
