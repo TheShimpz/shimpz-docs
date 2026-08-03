@@ -20,8 +20,6 @@ const schema = JSON.parse(
 const upstream = JSON.parse(
   await readFile(new URL("../static/specs/assistant/upstream.json", import.meta.url), "utf8"),
 );
-const countWords = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
-
 /** @param {string} source */
 function extractManifest(source) {
   const match = source.match(/const manifest = `([\s\S]*?)`;/);
@@ -30,36 +28,58 @@ function extractManifest(source) {
 }
 
 /** @param {string} manifest */
-function scanTopLevel(manifest) {
+function scanTables(manifest) {
   const withoutMultilineStrings = manifest.replace(/("""|''')[\s\S]*?\1/g, '""');
-  const source = withoutMultilineStrings.split(/^\[/m, 1)[0];
-  const keys = new Set(
-    [
-      ...source.matchAll(
-        /^[ \t]*(?:"([^"]+)"|'([^']+)'|([A-Za-z0-9_-]+))(?:[ \t]*\.[ \t]*(?:"[^"]+"|'[^']+'|[A-Za-z0-9_-]+))*[ \t]*=/gm,
-      ),
-    ].map((match) => match[1] ?? match[2] ?? match[3]),
-  );
-  return { keys, source };
+  const tables = new Map([["", { keys: new Set(), source: "" }]]);
+  let current = "";
+  for (const line of withoutMultilineStrings.split("\n")) {
+    const header = line.match(/^[ \t]*\[([A-Za-z0-9_.-]+)\][ \t]*$/);
+    if (header) {
+      current = header[1];
+      if (!tables.has(current)) tables.set(current, { keys: new Set(), source: "" });
+      continue;
+    }
+    const table = tables.get(current);
+    assert.ok(table);
+    table.source += `${line}\n`;
+    const assignment = line.match(
+      /^[ \t]*(?:"([^"]+)"|'([^']+)'|([A-Za-z0-9_-]+))(?:[ \t]*\.[ \t]*(?:"[^"]+"|'[^']+'|[A-Za-z0-9_-]+))*[ \t]*=/,
+    );
+    if (assignment) table.keys.add(assignment[1] ?? assignment[2] ?? assignment[3]);
+  }
+  return tables;
 }
 
-/** @param {Set<string>} keys */
-function assertKnownKeys(keys) {
+/** @param {Set<string>} keys @param {object} properties */
+function assertKnownKeys(keys, properties) {
   for (const key of keys) {
-    assert.ok(Object.hasOwn(schema.properties, key), `manifest example does not declare unknown ${key}`);
+    assert.ok(Object.hasOwn(properties, key), `manifest example does not declare unknown ${key}`);
   }
 }
 
 /** @param {string} source */
 function assertManifestExample(source) {
   const manifest = extractManifest(source);
-  const { keys, source: topLevel } = scanTopLevel(manifest);
-  for (const key of schema.required) {
-    assert.ok(keys.has(key), `manifest example includes required ${key}`);
+  const tables = scanTables(manifest);
+  const root = tables.get("");
+  assert.ok(root);
+  assert.deepEqual([...root.keys], [], "manifest example has no root-level fields");
+  for (const table of schema.required) {
+    assert.ok(tables.has(table), `manifest example includes required [${table}]`);
   }
-  assertKnownKeys(keys);
+  for (const table of tables.keys()) {
+    const root = table.split(".", 1)[0];
+    if (root) assert.ok(Object.hasOwn(schema.properties, root), `manifest example declares unknown [${table}]`);
+  }
+  const metadata = tables.get("shimpz");
+  const network = tables.get("network");
+  assert.ok(metadata && network);
+  for (const key of schema.$defs.shimpz.required) assert.ok(metadata.keys.has(key), `[shimpz] includes ${key}`);
+  for (const key of schema.$defs.network.required) assert.ok(network.keys.has(key), `[network] includes ${key}`);
+  assertKnownKeys(metadata.keys, schema.$defs.shimpz.properties);
+  assertKnownKeys(network.keys, schema.$defs.network.properties);
 
-  const id = topLevel.match(/^id = "([^"]+)"$/m)?.[1];
+  const id = metadata.source.match(/^id = "([^"]+)"$/m)?.[1];
   assert.ok(id, "manifest example declares a string id");
   assert.match(id, new RegExp(schema.$defs.assistantIdentifier.pattern));
   assert.ok(
@@ -70,10 +90,11 @@ function assertManifestExample(source) {
   assert.ok(!schema.$defs.assistantIdentifier.not.enum.includes(id), "manifest example id is not reserved");
 }
 
-test("static manifest key scan ignores multiline values without hiding later keys", () => {
+test("static manifest table scan ignores multiline values without losing section ownership", () => {
   for (const delimiter of ['"""', "'''"]) {
     const oppositeDelimiter = delimiter === '"""' ? "'''" : '"""';
-    const manifest = `spec = 1
+    const manifest = `[shimpz]
+spec = 1
 genesis = ${delimiter}
 Reply with ${oppositeDelimiter}
 [integrations.fake]
@@ -88,10 +109,16 @@ Extra-Key = true
 toString = true
 telemetry.enabled = true
 
+[network]
+allowed_hosts = []
+
 [integrations.example]
 scopes = ["read"]`;
-    const scanned = scanTopLevel(manifest);
-    assert.deepEqual([...scanned.keys], [
+    const tables = scanTables(manifest);
+    const metadata = tables.get("shimpz");
+    const network = tables.get("network");
+    assert.ok(metadata && network);
+    assert.deepEqual([...metadata.keys], [
       "spec",
       "genesis",
       "id",
@@ -102,9 +129,10 @@ scopes = ["read"]`;
       "toString",
       "telemetry",
     ]);
-    assert.equal(scanned.source.match(/^id = "([^"]+)"$/m)?.[1], "example");
+    assert.equal(metadata.source.match(/^id = "([^"]+)"$/m)?.[1], "example");
+    assert.deepEqual([...network.keys], ["allowed_hosts"]);
     assert.throws(
-      () => assertKnownKeys(new Set(["toString"])),
+      () => assertKnownKeys(new Set(["toString"]), schema.$defs.shimpz.properties),
       /manifest example does not declare unknown toString/,
     );
   }
@@ -116,36 +144,29 @@ test("static published shimpz.toml schema is the closed Spec v1 contract", () =>
   assert.equal(schema.title, "Shimpz Assistant manifest v1");
   assert.equal(schema.type, "object");
   assert.equal(schema.additionalProperties, false);
-  assert.deepEqual(schema.required, [
-    "spec",
-    "id",
-    "version",
-    "name",
-    "summary",
-    "creators",
-    "github",
-    "allowed_hosts",
-    "genesis",
-  ]);
-  assert.equal(schema.properties.spec.const, 1);
+  assert.deepEqual(schema.required, ["shimpz", "network"]);
+  assert.equal(schema.$defs.shimpz.properties.spec.const, 1);
 });
 
 test("static manifest schema projection pins Developers authority", () => {
   assert.deepEqual(upstream, {
     repository: "https://github.com/TheShimpz/shimpz-developers",
-    commit: "60be940c7cdea0b80e96b791aca36d8942f6ff61",
+    commit: "73a0ded62d2dd586bae35b1bf5ed1957b78fba1d",
     path: "protocol/assistant/v1/manifest.schema.json",
-    sha256: "e9df25d87951786a9bb88f6b470b66c6ccb0d2ffef4b9ef6cbe3e335cda41be2",
+    sha256: "7967723237d2074853ac6241613dad7a821a6b913304198dda738541628ffec7",
   });
 });
 
-test("static published manifest examples contain every required top-level key and a valid id", () => {
+test("static published manifest examples contain both required tables and a valid id", () => {
   assertManifestExample(manifestPage);
   assertManifestExample(quickstartPage);
-  const countWord = countWords[schema.required.length];
-  assert.ok(countWord, "the guide supports the schema required-key count");
-  assert.match(manifestGuide, new RegExp(`>${countWord} required keys`));
-  for (const key of schema.required) {
+  assert.match(manifestGuide, />Two required tables/);
+  assert.match(manifestGuide, /<dt><code>\[shimpz\]<\/code><\/dt>/);
+  assert.match(manifestGuide, /<dt><code>\[network\]<\/code><\/dt>/);
+  for (const key of schema.$defs.shimpz.required) {
+    assert.match(manifestGuide, new RegExp(`<dt><code>${key}</code></dt>`));
+  }
+  for (const key of schema.$defs.network.required) {
     assert.match(manifestGuide, new RegExp(`<dt><code>${key}</code></dt>`));
   }
   const idDescription = manifestGuide.match(
@@ -164,19 +185,12 @@ test("static published manifest examples contain every required top-level key an
 });
 
 test("static published shimpz.toml schema exposes only authored Spec v1 fields", () => {
-  assert.deepEqual(Object.keys(schema.properties).sort(), [
-    "allowed_hosts",
-    "creators",
-    "genesis",
-    "github",
-    "id",
-    "integrations",
-    "name",
-    "spec",
-    "summary",
-    "version",
-  ]);
-  assert.deepEqual(schema.properties.id, { $ref: "#/$defs/assistantIdentifier" });
+  assert.deepEqual(Object.keys(schema.properties).sort(), ["integrations", "network", "shimpz"]);
+  assert.deepEqual(schema.properties.shimpz, { $ref: "#/$defs/shimpz" });
+  assert.deepEqual(schema.properties.network, { $ref: "#/$defs/network" });
+  assert.deepEqual(schema.$defs.shimpz.properties.id, { $ref: "#/$defs/assistantIdentifier" });
+  assert.deepEqual(schema.$defs.network.required, ["allowed_hosts"]);
+  assert.equal(schema.$defs.network.additionalProperties, false);
   assert.equal(schema.$defs.assistantIdentifier.maxLength, 40);
   assert.deepEqual(schema.$defs.assistantIdentifier.not.enum, ["postgres", "assistant-egress"]);
   assert.equal(schema.properties.integrations.propertyNames.$ref, "#/$defs/identifier");

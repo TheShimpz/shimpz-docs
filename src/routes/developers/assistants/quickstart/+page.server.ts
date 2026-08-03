@@ -2,15 +2,18 @@ import { highlightCode } from "$lib/server/highlight";
 
 import type { PageServerLoad } from "./$types";
 
-const manifest = `spec = 1
+const manifest = `[shimpz]
+spec = 1
 id = "echo-demo"
 version = "0.1.0"
 name = "Echo Assistant"
 summary = "Returns a message unchanged."
 creators = ["@your-handle"]
 github = "https://github.com/your-handle/echo-assistant"
-allowed_hosts = []
-genesis = "Use echo when the user asks you to repeat a short message."`;
+genesis = "Use echo when the user asks you to repeat a short message."
+
+[network]
+allowed_hosts = []`;
 
 const project = `[project]
 name = "echo-assistant"

@@ -21,8 +21,9 @@
   <span class="section-label">Outbound access</span>
   <h1>Allow exact destinations, not “the internet”</h1>
   <p class="docs-lede">
-    <code>allowed_hosts</code> makes outbound network intent visible and reviewable. It is required even
-    when empty, denies everything not listed, and never grants access by itself.
+    <code>[network].allowed_hosts</code> makes outbound network intent visible and reviewable. The
+    <code>[network]</code> table is required even when the list is empty, denies everything not listed,
+    and never grants access by itself.
   </p>
 </header>
 

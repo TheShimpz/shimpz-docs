@@ -28,14 +28,16 @@
 
 <section class="guide-section" aria-labelledby="example-title">
   <span class="section-label">Complete example</span>
-  <h2 id="example-title">Nine required keys and optional Integration tables</h2>
+  <h2 id="example-title">Two required tables and optional Integration tables</h2>
   <CodeBlock label="Assistant security intent" title="shimpz.toml" variant="code" {...data.manifest} />
 </section>
 
 <section class="guide-section" aria-labelledby="identity-title">
   <span class="section-label">Identity</span>
-  <h2 id="identity-title">Describe one Assistant</h2>
+  <h2 id="identity-title">Describe one Assistant under [shimpz]</h2>
   <dl>
+    <dt><code>[shimpz]</code></dt>
+    <dd>The required parent table for identity, publication disclosure, and Genesis.</dd>
     <dt><code>spec</code></dt>
     <dd>The integer <code>1</code>. No other Assistant Spec version is supported.</dd>
     <dt><code>id</code></dt>
@@ -51,11 +53,14 @@
     <dt><code>summary</code></dt>
     <dd>A single-line outcome description from 1 to 160 characters.</dd>
     <dt><code>creators</code></dt>
-    <dd>One to 16 unique GitHub handles, each beginning with <code>@</code>.</dd>
+    <dd>One to 16 unique Account-owned Creator handles, each beginning with <code>@</code>.</dd>
     <dt><code>github</code></dt>
     <dd>The exact HTTPS URL of the public GitHub repository.</dd>
     <dt><code>genesis</code></dt>
-    <dd>Bounded behavior and Power-composition guidance for the Brain. Genesis never grants authority.</dd>
+    <dd>
+      Bounded behavior and Power-composition guidance loaded by the Brain. Genesis never grants
+      authority. <code>help.md</code> is not part of Assistant Spec v1 and is not loaded as Brain guidance.
+    </dd>
   </dl>
 </section>
 
@@ -63,6 +68,8 @@
   <span class="section-label">Access intent</span>
   <h2 id="access-title">Request only what the code needs</h2>
   <dl>
+    <dt><code>[network]</code></dt>
+    <dd>The required parent table for Assistant outbound network intent.</dd>
     <dt><code>allowed_hosts</code></dt>
     <dd>
       A unique list of exact public DNS hostnames. Use <code>[]</code> for no network access. Schemes,
@@ -80,7 +87,7 @@
 <aside class="scope-note" aria-labelledby="validation-title">
   <span id="validation-title" class="kicker">Closed and reviewed</span>
   <p>
-    Unknown keys fail validation. The
+    Root-level fields, misplaced fields, and unknown keys fail validation. The
     <a href="/specs/assistant/manifest.schema.json">published shimpz.toml schema</a> describes the
     document shape; Shimpz Genesis and Controller admission enforce additional semantic invariants.
   </p>
