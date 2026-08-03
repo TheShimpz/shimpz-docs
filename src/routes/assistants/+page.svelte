@@ -78,6 +78,11 @@
     or OAuth scope. Broader access requires your approval. After a successful replacement, Shimpz removes the old
     Assistant container and its unused image and policy state without pruning unrelated Docker data.
   </p>
+  <p>
+    Blocking a publication prevents new installations but does not remotely stop a copy that is already running in
+    your Local Space. If a security notice requires immediate removal, the Local Supervisor must uninstall that
+    Assistant instead of waiting for a newer safe version.
+  </p>
 </section>
 
 <section class="guide-section" aria-labelledby="problems-title">
