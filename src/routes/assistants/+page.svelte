@@ -65,6 +65,21 @@
   </li>
 </ol>
 
+<section class="guide-section" aria-labelledby="automatic-updates-title">
+  <span class="section-label">Automatic maintenance</span>
+  <h2 id="automatic-updates-title">Local keeps installed Assistants current</h2>
+  <p>
+    When a newer reviewed publication is available, Local verifies its exact immutable image and updates every Team
+    using the older version. The current Assistant stays available if Shimpz is offline, the Team is busy, or the
+    replacement cannot be proved safe; Shimpz retries later.
+  </p>
+  <p>
+    An update can remove permissions automatically, but it cannot silently add a network host, Integration, provider,
+    or OAuth scope. Broader access requires your approval. After a successful replacement, Shimpz removes the old
+    Assistant container and its unused image and policy state without pruning unrelated Docker data.
+  </p>
+</section>
+
 <section class="guide-section" aria-labelledby="problems-title">
   <span class="section-label">If something does not work</span>
   <h2 id="problems-title">Check the visible state first</h2>
