@@ -52,6 +52,26 @@
   </li>
 </ol>
 
+<section class="guide-section" aria-labelledby="chat-progress-title">
+  <span class="section-label">During a reply</span>
+  <h2 id="chat-progress-title">Follow the Team's execution</h2>
+  <p>
+    After you send a message, Chat shows the server operations the Team has actually entered, such as
+    <code>team-context</code>, <code>model</code>, <code>power</code>, and <code>reply-validation</code>.
+    A moving line means that exact operation is still active. A duration appears only after the server measures
+    its completion; the display does not invent a percentage or estimated finish time.
+  </p>
+  <p>
+    When the answer arrives, open <strong>Execution stages</strong> below it to inspect the completed receipt.
+    This receipt contains technical phase names and timing metadata only—not hidden reasoning, prompts, Power
+    arguments, results, API keys, or Integration credentials.
+  </p>
+  <p>
+    Every new message starts at the top of the conversation area with room below it for the answer. Shimpz does
+    not pull the page back down when the answer arrives, so you can scroll and read while a long response grows.
+  </p>
+</section>
+
 <aside class="scope-note" aria-labelledby="local-safety-title">
   <span id="local-safety-title" class="kicker">Keep it private</span>
   <p>
