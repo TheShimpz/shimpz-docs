@@ -151,9 +151,9 @@ test("static published shimpz.toml schema is the closed Spec v1 contract", () =>
 test("static manifest schema projection pins Developers authority", () => {
   assert.deepEqual(upstream, {
     repository: "https://github.com/TheShimpz/shimpz-developers",
-    commit: "73a0ded62d2dd586bae35b1bf5ed1957b78fba1d",
+    commit: "3930de56e9365d126252a0b37ac5a792fc10f559",
     path: "protocol/assistant/v1/manifest.schema.json",
-    sha256: "7967723237d2074853ac6241613dad7a821a6b913304198dda738541628ffec7",
+    sha256: "495ce3b34b7585b61598b8454cb72e3b9bf00250ccbeac6d7b6166ba2e97c889",
   });
 });
 
@@ -192,7 +192,11 @@ test("static published shimpz.toml schema exposes only authored Spec v1 fields",
   assert.deepEqual(schema.$defs.network.required, ["allowed_hosts"]);
   assert.equal(schema.$defs.network.additionalProperties, false);
   assert.equal(schema.$defs.assistantIdentifier.maxLength, 40);
-  assert.deepEqual(schema.$defs.assistantIdentifier.not.enum, ["postgres", "assistant-egress"]);
+  assert.deepEqual(schema.$defs.assistantIdentifier.not.enum, [
+    "postgres",
+    "assistant-egress",
+    "shimpz-assistant-egress",
+  ]);
   assert.equal(schema.properties.integrations.propertyNames.$ref, "#/$defs/identifier");
   assert.deepEqual(schema.$defs.integration.required, ["scopes"]);
   assert.equal(schema.$defs.integration.additionalProperties, false);
