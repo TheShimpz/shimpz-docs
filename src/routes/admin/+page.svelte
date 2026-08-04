@@ -57,7 +57,9 @@
   <h2 id="chat-progress-title">Follow the Team's execution</h2>
   <p>
     After you send a message, Chat shows the server operations the Team has actually entered, such as
-    <code>team-context</code>, <code>model</code>, <code>power</code>, and <code>reply-validation</code>.
+    <code>team-context</code>, <code>model</code>, <code>power</code>, <code>power-delivery</code>, and
+    <code>reply-validation</code>. The last phase is the Admin's exact public-response validation, while
+    <code>power-delivery</code> retires the durable result journal after the model accepted it.
     A moving line means that exact operation is still active. A duration appears only after the server measures
     its completion; the display does not invent a percentage or estimated finish time.
   </p>
