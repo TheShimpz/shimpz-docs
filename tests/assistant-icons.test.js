@@ -12,7 +12,7 @@ const project = readFileSync(
   "utf8",
 );
 
-test("public Creator docs project the canonical Assistant icon contract", () => {
+test("static public Creator docs project the canonical Assistant icon contract", () => {
   assert.match(page, /Exactly <code>icon\.png<\/code> at the Assistant project root/);
   assert.match(page, /Exactly 1024 × 1024 pixels, no larger than 1 MiB/);
   assert.match(page, /Animated PNG, remote URLs, SVG, JPEG, WebP/);
@@ -20,7 +20,7 @@ test("public Creator docs project the canonical Assistant icon contract", () => 
   assert.match(page, /copyright, trademark, and brand-guideline permission/);
 });
 
-test("the icon guide is discoverable beside the canonical project layout", () => {
+test("static icon guide is discoverable beside the canonical project layout", () => {
   assert.match(layout, /href: "\/developers\/assistants\/icons\/"/);
   assert.match(project, /├── icon\.png/);
 });
