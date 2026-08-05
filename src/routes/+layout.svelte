@@ -80,6 +80,11 @@
           description: "One Python file per Power",
         },
         {
+          href: "/developers/assistants/icons/",
+          label: "Assistant icon",
+          description: "One canonical identity image",
+        },
+        {
           href: "/developers/assistants/spec/powers/",
           label: "Powers",
           description: "Define one async run per file",

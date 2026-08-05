@@ -31,7 +31,7 @@
   <h2 id="shape-title">Keep authored source separate from build output</h2>
   <CodeBlock label="Minimal Assistant project" title="Project files" variant="code" {...data.projectFiles} />
   <p>
-    <code>shimpz.toml</code>, <code>pyproject.toml</code>, and <code>powers/</code> are required.
+    <code>icon.png</code>, <code>shimpz.toml</code>, <code>pyproject.toml</code>, and <code>powers/</code> are required.
     <code>lib/</code> and <code>tests/</code> are optional. Dockerfiles, locks, generated contracts,
     changelogs, and Docker ignore files are platform build output rather than Assistant source.
   </p>
@@ -57,5 +57,5 @@
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec">
   <a href="/developers/assistants/spec/manifest/"><span>Back</span><strong>shimpz.toml</strong></a>
-  <a href="/developers/assistants/spec/powers/"><span>Next</span><strong>Powers</strong></a>
+  <a href="/developers/assistants/icons/"><span>Next</span><strong>Assistant icon</strong></a>
 </nav>

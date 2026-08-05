@@ -24,6 +24,8 @@
   <span class="section-label">Authored source</span>
   <h2 id="source-title">Every decision has one home</h2>
   <dl>
+    <dt><code>icon.png</code></dt>
+    <dd>One static, high-resolution identity image covered by the immutable source digest.</dd>
     <dt><code>shimpz.toml</code></dt>
     <dd>Version, identity, Genesis, exact outbound hosts, and optional OAuth Integration scopes.</dd>
     <dt><code>powers/*.py</code></dt>
@@ -75,14 +77,14 @@
     <li><a href="/specs/source-package/v1/contract-files.sha256">File checksums</a></li>
   </ul>
   <dl>
-    <dt>Umbrella commit</dt>
+    <dt>Developers authority commit</dt>
     <dd>
-      <a href="https://github.com/TheShimpz/shimpz/commit/6ea4ef44cdc280567f767b186e5f75b3b3fdf1bd">
-        <code>6ea4ef44cdc280567f767b186e5f75b3b3fdf1bd</code>
+      <a href="https://github.com/TheShimpz/shimpz-developers/commit/38966a38c41712ecf68383541bc007a801a514cc">
+        <code>38966a38c41712ecf68383541bc007a801a514cc</code>
       </a>
     </dd>
     <dt>Contract tree</dt>
-    <dd><code>c6d8875d0e36513f4b1c4645c8df63dfb66ee00c</code></dd>
+    <dd><code>6f1937d5c1785f0c79892f1efa873761acb45d1a</code></dd>
   </dl>
 </section>
 

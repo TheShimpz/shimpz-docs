@@ -3,6 +3,7 @@ import { highlightCode } from "$lib/server/highlight";
 import type { PageServerLoad } from "./$types";
 
 const projectFiles = `my-assistant/
+├── icon.png
 ├── shimpz.toml
 ├── powers/
 │   ├── create_dns.py

@@ -63,6 +63,6 @@
 </aside>
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec">
-  <a href="/developers/assistants/"><span>Back</span><strong>Project layout</strong></a>
+  <a href="/developers/assistants/icons/"><span>Back</span><strong>Assistant icon</strong></a>
   <a href="/developers/assistants/spec/integrations/"><span>Next</span><strong>Integrations</strong></a>
 </nav>
