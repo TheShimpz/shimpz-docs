@@ -79,12 +79,12 @@
   <dl>
     <dt>Developers authority commit</dt>
     <dd>
-      <a href="https://github.com/TheShimpz/shimpz-developers/commit/38966a38c41712ecf68383541bc007a801a514cc">
-        <code>38966a38c41712ecf68383541bc007a801a514cc</code>
+      <a href="https://github.com/TheShimpz/shimpz-developers/commit/62baa183c053143bea47ce128cfcab8884b9555d">
+        <code>62baa183c053143bea47ce128cfcab8884b9555d</code>
       </a>
     </dd>
     <dt>Contract tree</dt>
-    <dd><code>6f1937d5c1785f0c79892f1efa873761acb45d1a</code></dd>
+    <dd><code>a9840a62a671be7fd7cff9cb24d89529e4404bd1</code></dd>
   </dl>
 </section>
 

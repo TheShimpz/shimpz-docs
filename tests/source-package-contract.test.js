@@ -48,11 +48,11 @@ test("published source-package projection contains only the pinned protocol file
 test("published source-package projection pins Developers authority", () => {
   assert.deepEqual(upstream, {
     repository: "https://github.com/TheShimpz/shimpz-developers",
-    commit: "38966a38c41712ecf68383541bc007a801a514cc",
+    commit: "62baa183c053143bea47ce128cfcab8884b9555d",
     path: "protocol/source-package/v1",
-    tree: "6f1937d5c1785f0c79892f1efa873761acb45d1a",
+    tree: "a9840a62a671be7fd7cff9cb24d89529e4404bd1",
     contract_files_sha256:
-      "5ee3ad0c7d53f56304528861585b702c87e0c83a2bd11c6c9b4feb3ab2ffb3cf",
+      "c1f83364fc9b1b07e7bc014d48637dffd0c1d61eb7cdfe46063e1497aa869a43",
   });
   assert.equal(
     createHash("sha256").update(checksumFile).digest("hex"),
