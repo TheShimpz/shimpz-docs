@@ -11,7 +11,7 @@ function text(path) {
   return readFileSync(new URL(path, ROOT), "utf8");
 }
 
-test("Developer navigation exposes the dedicated Power request submenu", () => {
+test("static Developer navigation exposes the dedicated Power request submenu", () => {
   const layout = text("src/routes/+layout.svelte");
   assert.match(layout, /label: "Power requests"/);
   for (const page of ["approval", "input", "auth", "lifecycle"]) {
@@ -19,7 +19,7 @@ test("Developer navigation exposes the dedicated Power request submenu", () => {
   }
 });
 
-test("Power request guides cover the public SDK and settled safety boundaries", () => {
+test("static Power request guides cover the public SDK and settled safety boundaries", () => {
   const pages = [
     readFileSync(new URL("+page.svelte", ROUTE), "utf8"),
     readFileSync(new URL("approval/+page.svelte", ROUTE), "utf8"),
@@ -54,7 +54,7 @@ test("Power request guides cover the public SDK and settled safety boundaries", 
   assert.match(pages, /entire Team turn/);
 });
 
-test("complete Power examples use SDK-supported TypedDict results", () => {
+test("static complete Power examples use SDK-supported TypedDict results", () => {
   const examples = [
     readFileSync(new URL("+page.server.ts", ROUTE), "utf8"),
     readFileSync(new URL("approval/+page.server.ts", ROUTE), "utf8"),
@@ -64,7 +64,7 @@ test("complete Power examples use SDK-supported TypedDict results", () => {
   assert.match(examples, /TypedDict/);
 });
 
-test("every specialized request guide uses a real PNG modal screenshot", () => {
+test("static every specialized request guide uses a real PNG modal screenshot", () => {
   const names = [
     "approval",
     "input-text",
