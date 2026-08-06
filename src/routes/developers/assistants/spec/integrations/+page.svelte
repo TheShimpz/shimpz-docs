@@ -62,8 +62,9 @@
 <aside class="scope-note" aria-labelledby="secrets-title">
   <span id="secrets-title" class="kicker">No static Secrets surface</span>
   <p>
-    OAuth credentials use Integrations. Assistant Spec v1 has no ad-hoc secret or human-input channel.
-    Never put client secrets, access tokens, refresh tokens, or private values in
+    OAuth credentials use Integrations. When OAuth is unavailable, a Power may explicitly declare a final
+    <a href="/developers/assistants/requests/input/#password-title"><code>input:password</code></a> request for a
+    third-party secret. Never put client secrets, access tokens, refresh tokens, or private values in
     <code>shimpz.toml</code>, source, logs, arguments, or returned data.
   </p>
 </aside>

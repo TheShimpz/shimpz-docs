@@ -111,6 +111,38 @@
         },
       ],
     },
+    {
+      label: "Power requests",
+      items: [
+        {
+          href: "/developers/assistants/requests/",
+          label: "Overview",
+          description: "Pause for one attributable human decision",
+          children: [
+            {
+              href: "/developers/assistants/requests/approval/",
+              label: "Approval",
+              description: "Confirm one described action",
+            },
+            {
+              href: "/developers/assistants/requests/input/",
+              label: "Inputs",
+              description: "Collect one closed field",
+            },
+            {
+              href: "/developers/assistants/requests/auth/",
+              label: "Authentication",
+              description: "Ask Shimpz for fresh assurance",
+            },
+            {
+              href: "/developers/assistants/requests/lifecycle/",
+              label: "Lifecycle & security",
+              description: "Replay, limits, denial, and secrets",
+            },
+          ],
+        },
+      ],
+    },
   ];
 
   const isDeveloperGuide = $derived(page.url.pathname.startsWith("/developers/"));
