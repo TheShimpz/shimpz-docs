@@ -2,11 +2,18 @@ import { highlightCode } from "$lib/server/highlight";
 
 import type { PageServerLoad } from "./$types";
 
-const approval = `from shimpz import Context, power
+const approval = `from typing import TypedDict
+
+from shimpz import Context, power
+
+
+class PublishedDns(TypedDict):
+    id: str
+    status: str
 
 
 @power(human_requests=["approval"])
-async def run(zone: str, *, ctx: Context) -> dict[str, str]:
+async def run(zone: str, *, ctx: Context) -> PublishedDns:
     ctx.request_approval(
         title="Publish the reviewed DNS change",
         description=f"Create the approved records in {zone}.",

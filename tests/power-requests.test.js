@@ -51,6 +51,17 @@ test("Power request guides cover the public SDK and settled safety boundaries", 
   assert.match(pages, /third-party secret/i);
   assert.match(pages, /request-before-action/i);
   assert.match(pages, /Hosted continuation is memory-only/);
+  assert.match(pages, /entire Team turn/);
+});
+
+test("complete Power examples use SDK-supported TypedDict results", () => {
+  const examples = [
+    readFileSync(new URL("+page.server.ts", ROUTE), "utf8"),
+    readFileSync(new URL("approval/+page.server.ts", ROUTE), "utf8"),
+    readFileSync(new URL("lifecycle/+page.server.ts", ROUTE), "utf8"),
+  ].join("\n");
+  assert.doesNotMatch(examples, /-> dict\[/);
+  assert.match(examples, /TypedDict/);
 });
 
 test("every specialized request guide uses a real PNG modal screenshot", () => {

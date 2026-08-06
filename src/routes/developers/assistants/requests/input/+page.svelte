@@ -87,9 +87,10 @@
   <aside class="scope-note" aria-labelledby="password-rules-title">
     <span id="password-rules-title" class="kicker">Secret-last rules</span>
     <p>
-      Password must be the final human request in the logical Power. Do not log it, include it in copy, return it,
-      place it in an exception, or retain it. Use an OAuth <a href="/developers/assistants/spec/integrations/">Integration</a>
-      when the provider supports one.
+      Password must be the final human request in the entire Team turn, not merely in this Power. After any Power
+      receives one, a later request from any Power in the same turn is blocked. Do not log it, include it in copy,
+      return it, place it in an exception, or retain it. Use an OAuth
+      <a href="/developers/assistants/spec/integrations/">Integration</a> when the provider supports one.
     </p>
   </aside>
 </section>

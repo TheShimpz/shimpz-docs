@@ -2,13 +2,34 @@ import { highlightCode } from "$lib/server/highlight";
 
 import type { PageServerLoad } from "./$types";
 
-const safeOrder = `@power(
+const safeOrder = `from typing import TypedDict
+
+from shimpz import Context, InputOption, InputRequest, power
+
+
+class PublishedRecord(TypedDict):
+    id: str
+    status: str
+
+
+@power(
     integrations=["cloudflare"],
     human_requests=["input:choice", "approval", "auth:reauth"],
 )
-async def run(zone: str, *, ctx: Context) -> dict[str, str]:
+async def run(zone: str, *, ctx: Context) -> PublishedRecord:
     # Replay-safe prefix: pure decisions only.
-    mode = ctx.request_input(mode_request)
+    mode = ctx.request_input(
+        InputRequest(
+            kind="choice",
+            title="Choose the DNS mode",
+            description="Select exactly one routing behavior.",
+            label="Mode",
+            options=(
+                InputOption("proxied", "Proxied"),
+                InputOption("dns-only", "DNS only"),
+            ),
+        )
+    )
     ctx.request_approval(
         title="Publish the DNS record",
         description=f"Publish {zone} in {mode} mode.",

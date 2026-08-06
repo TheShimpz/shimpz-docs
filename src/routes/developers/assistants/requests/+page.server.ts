@@ -2,13 +2,20 @@ import { highlightCode } from "$lib/server/highlight";
 
 import type { PageServerLoad } from "./$types";
 
-const power = `from shimpz import Context, InputOption, InputRequest, power
+const power = `from typing import TypedDict
+
+from shimpz import Context, InputOption, InputRequest, power
+
+
+class CreatedRecord(TypedDict):
+    id: str
+    status: str
 
 
 @power(
     human_requests=["input:choice", "approval", "auth:reauth"],
 )
-async def run(zone: str, *, ctx: Context) -> dict[str, str]:
+async def run(zone: str, *, ctx: Context) -> CreatedRecord:
     mode = ctx.request_input(
         InputRequest(
             kind="choice",

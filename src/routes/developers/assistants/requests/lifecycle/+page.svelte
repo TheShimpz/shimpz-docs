@@ -104,7 +104,7 @@
     <li>At most 8 human requests in one logical Power.</li>
     <li>At most 16 human requests across one Team turn.</li>
     <li>Each challenge expires 300 seconds after Team creates it.</li>
-    <li>Password input must be the last request and is never durably resumed.</li>
+    <li>Password input must be the last request across the entire Team turn and is never durably resumed.</li>
     <li>Local can restore only a non-secret paused request after a controller restart.</li>
     <li>Hosted continuation is memory-only; infrastructure loss stops the operation safely.</li>
   </ul>
@@ -114,8 +114,9 @@
   <span id="llm-title" class="kicker">Checklist for code generators</span>
   <p>
     Declare every exact kind. Use the narrowest presentation. Keep copy printable and secret-free. Put every request
-    before token access and side effects. Keep descriptors deterministic. Treat password as third-party, final, and
-    non-returnable. Use <code>request_auth</code> for Shimpz authentication. Never implement retry after denial.
+    before token access and side effects. Keep descriptors deterministic. Treat password as third-party,
+    non-returnable, and the final request across the whole Team turn. Use <code>request_auth</code> for Shimpz
+    authentication. Never implement retry after denial.
   </p>
 </aside>
 
