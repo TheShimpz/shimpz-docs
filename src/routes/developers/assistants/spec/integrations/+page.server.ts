@@ -3,7 +3,7 @@ import { highlightCode } from "$lib/server/highlight";
 import type { PageServerLoad } from "./$types";
 
 const manifest = `[integrations.cloudflare]
-scopes = ["zone.read", "dns.read", "offline_access"]`;
+scopes = ["zone.read", "dns.read", "dns.write", "offline_access"]`;
 
 const power = `from shimpz import Context, power
 

@@ -32,8 +32,10 @@
   <CodeBlock label="Cloudflare Integration intent" title="shimpz.toml" variant="code" {...data.manifest} />
   <p>
     The current catalog registers <code>cloudflare</code> with <code>zone.read</code>,
-    <code>dns.read</code>, and <code>offline_access</code>. Unknown providers, unsupported scopes,
-    duplicates, and empty lists fail admission.
+    <code>dns.read</code>, <code>dns.write</code>, and <code>offline_access</code>. Unknown providers,
+    unsupported scopes, duplicates, and empty lists fail admission. A DNS mutation Power must separately
+    declare and perform <code>approval</code> and <code>auth:reauth</code> before it reads the bearer token;
+    the scope declaration alone does not satisfy those human gates.
   </p>
 </section>
 

@@ -5,21 +5,21 @@ import type { PageServerLoad } from "./$types";
 const manifest = `[shimpz]
 spec = 1
 id = "shimpz-cloudflare"
-version = "0.1.0"
+version = "0.4.0"
 name = "Shimpz Cloudflare"
-summary = "List Cloudflare zones and inspect their DNS records through OAuth."
-creators = ["@roxygens"]
+summary = "Inspect Cloudflare zones and safely manage common DNS records through OAuth."
+creators = ["@shimpz"]
 github = "https://github.com/TheShimpz/shimpz-cloudflare"
 genesis = """
-Use this Assistant only to inspect Cloudflare zones and DNS records.
-Call list-zones before list-dns-records.
+Inspect Cloudflare zones and manage reviewed A, AAAA, CNAME, and TXT DNS records.
+Require approval and reauthentication before every mutation.
 """
 
 [network]
 allowed_hosts = ["api.cloudflare.com"]
 
 [integrations.cloudflare]
-scopes = ["zone.read", "dns.read", "offline_access"]`;
+scopes = ["zone.read", "dns.read", "dns.write", "offline_access"]`;
 
 export const load: PageServerLoad = async () => ({
   manifest: await highlightCode(manifest, "toml"),
