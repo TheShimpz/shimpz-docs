@@ -2,15 +2,13 @@
 
 set -eu
 
-INSTALLER_VERSION="0.7.0"
+INSTALLER_VERSION="0.8.0"
+RELEASE_REPOSITORY="ghcr.io/theshimpz/shimpz-local-release"
 ADMIN_REPOSITORY="ghcr.io/theshimpz/shimpz-admin"
 TEAM_REPOSITORY="ghcr.io/theshimpz/shimpz-team-local"
 BRAIN_REPOSITORY="ghcr.io/theshimpz/shimpz-brain"
 EGRESS_REPOSITORY="ghcr.io/theshimpz/shimpz-egress"
-ADMIN_CHANNEL="stable"
-TEAM_CHANNEL="stable"
-BRAIN_CHANNEL="stable"
-EGRESS_CHANNEL="stable"
+RELEASE_CHANNEL="stable"
 LOCAL_PROFILE="local-v1"
 SPACE_LABEL="com.shimpz.local.space-id"
 
@@ -238,7 +236,7 @@ ENV_FILE="${SHIMPZ_HOME}/.env"
 MARKER_FILE="${SHIMPZ_HOME}/.shimpz-space"
 install_port="${SHIMPZ_PORT:-7777}"
 unset SHIMPZ_ADMIN_IMAGE SHIMPZ_TEAM_IMAGE SHIMPZ_BRAIN_IMAGE SHIMPZ_EGRESS_IMAGE
-unset SHIMPZ_SPACE_PLATFORM SHIMPZ_PORT
+unset SHIMPZ_LOCAL_RELEASE_IMAGE SHIMPZ_LOCAL_RELEASE_ORDINAL SHIMPZ_SPACE_PLATFORM SHIMPZ_PORT
 unset SHIMPZ_DOCKER_GID SHIMPZ_DOCKER_SOCKET SHIMPZ_SPACE_ID SHIMPZ_CPUSET
 
 compose() {
@@ -758,6 +756,67 @@ pull_verified_ref() {
 	printf '%s@%s\n' "$repository" "$digest_ref"
 }
 
+release_value() {
+	release_key="$1"
+	release_path="$2"
+	release_lines="$(sed -n "s/^${release_key}=//p" "$release_path")"
+	[ -n "$release_lines" ] || die "the Local release is missing ${release_key}"
+	[ "$(printf '%s\n' "$release_lines" | wc -l | tr -d ' ')" -eq 1 ] \
+		|| die "the Local release has duplicate ${release_key} values"
+	printf '%s\n' "$release_lines"
+}
+
+validate_release_revision() {
+	revision="$1"
+	case "$revision" in
+		""|*[!0-9a-f]*) die "the Local release has an invalid umbrella revision" ;;
+	esac
+	[ "${#revision}" -eq 40 ] || die "the Local release has an invalid umbrella revision"
+}
+
+load_release_set() {
+	release_ref="$1"
+	release_metadata="${SHIMPZ_HOME}/release.env.tmp"
+	release_container="$(docker create --platform "$docker_platform" "$release_ref")" \
+		|| die "the Local release metadata could not be opened"
+	if ! docker cp "${release_container}:/release.env" "$release_metadata"; then
+		docker rm "$release_container" >/dev/null 2>&1 || true
+		rm -f "$release_metadata"
+		die "the Local release metadata could not be read"
+	fi
+	docker rm "$release_container" >/dev/null \
+		|| die "the Local release metadata container could not be removed"
+	chmod 600 "$release_metadata"
+	[ "$(wc -l <"$release_metadata" | tr -d ' ')" -eq 8 ] \
+		|| die "the Local release metadata must contain exactly eight fields"
+	if sed -n '/^\(schema\|ordinal\|umbrella_revision\|admin\|team\|brain\|egress\|reconciler_sha256\)=/!p' \
+		"$release_metadata" | grep . >/dev/null 2>&1; then
+		die "the Local release metadata contains an unknown field"
+	fi
+	[ "$(release_value schema "$release_metadata")" = "local-v1" ] \
+		|| die "the Local release schema is not supported"
+	release_ordinal="$(release_value ordinal "$release_metadata")"
+	case "$release_ordinal" in
+		""|0|*[!0-9]*) die "the Local release ordinal is invalid" ;;
+	esac
+	release_revision="$(release_value umbrella_revision "$release_metadata")"
+	validate_release_revision "$release_revision"
+	admin_image_ref="$(release_value admin "$release_metadata")"
+	team_image_ref="$(release_value team "$release_metadata")"
+	brain_image_ref="$(release_value brain "$release_metadata")"
+	egress_image_ref="$(release_value egress "$release_metadata")"
+	reconciler_sha256="$(release_value reconciler_sha256 "$release_metadata")"
+	validate_pinned_release_ref "$admin_image_ref" "$ADMIN_REPOSITORY"
+	validate_pinned_release_ref "$team_image_ref" "$TEAM_REPOSITORY"
+	validate_pinned_release_ref "$brain_image_ref" "$BRAIN_REPOSITORY"
+	validate_pinned_release_ref "$egress_image_ref" "$EGRESS_REPOSITORY"
+	case "$reconciler_sha256" in
+		""|*[!0-9a-f]*) die "the Local reconciler digest is invalid" ;;
+	esac
+	[ "${#reconciler_sha256}" -eq 64 ] || die "the Local reconciler digest is invalid"
+	rm -f "$release_metadata"
+}
+
 previous_env_value() {
 	env_key="$1"
 	env_path="$2"
@@ -788,10 +847,16 @@ load_previous_release() {
 	previous_team_ref="$(previous_env_value SHIMPZ_TEAM_IMAGE "${ENV_FILE}.previous")"
 	previous_brain_ref="$(previous_env_value SHIMPZ_BRAIN_IMAGE "${ENV_FILE}.previous")"
 	previous_egress_ref="$(previous_env_value SHIMPZ_EGRESS_IMAGE "${ENV_FILE}.previous")"
+	previous_release_ref="$(previous_env_value SHIMPZ_LOCAL_RELEASE_IMAGE "${ENV_FILE}.previous")"
+	previous_release_ordinal="$(previous_env_value SHIMPZ_LOCAL_RELEASE_ORDINAL "${ENV_FILE}.previous")"
 	validate_pinned_release_ref "$previous_admin_ref" "$ADMIN_REPOSITORY"
 	validate_pinned_release_ref "$previous_team_ref" "$TEAM_REPOSITORY"
 	validate_pinned_release_ref "$previous_brain_ref" "$BRAIN_REPOSITORY"
 	validate_pinned_release_ref "$previous_egress_ref" "$EGRESS_REPOSITORY"
+	validate_pinned_release_ref "$previous_release_ref" "$RELEASE_REPOSITORY"
+	case "$previous_release_ordinal" in
+		""|0|*[!0-9]*) die "the previous Local release ordinal is invalid" ;;
+	esac
 }
 
 ensure_pinned_release_ref() {
@@ -816,6 +881,7 @@ hydrate_previous_release() {
 	ensure_pinned_release_ref "$previous_team_ref" "$previous_platform" || return 1
 	ensure_pinned_release_ref "$previous_brain_ref" "$previous_platform" || return 1
 	ensure_pinned_release_ref "$previous_egress_ref" "$previous_platform" || return 1
+	ensure_pinned_release_ref "$previous_release_ref" "$previous_platform" || return 1
 }
 
 controller_socket_gid() {
@@ -845,18 +911,18 @@ controller_can_reach_docker() {
 		>/dev/null 2>&1
 }
 
-admin_tag_ref="${ADMIN_REPOSITORY}:${ADMIN_CHANNEL}"
-team_tag_ref="${TEAM_REPOSITORY}:${TEAM_CHANNEL}"
-brain_tag_ref="${BRAIN_REPOSITORY}:${BRAIN_CHANNEL}"
-egress_tag_ref="${EGRESS_REPOSITORY}:${EGRESS_CHANNEL}"
-step "Pulling and verifying the stable Admin image"
-admin_image_ref="$(pull_verified_ref "$admin_tag_ref" "$ADMIN_REPOSITORY")"
-step "Pulling and verifying the local Team controller image"
-team_image_ref="$(pull_verified_ref "$team_tag_ref" "$TEAM_REPOSITORY")"
-step "Pulling and verifying the isolated Brain runtime image"
-brain_image_ref="$(pull_verified_ref "$brain_tag_ref" "$BRAIN_REPOSITORY")"
-step "Pulling and verifying the shared Shimpz egress image"
-egress_image_ref="$(pull_verified_ref "$egress_tag_ref" "$EGRESS_REPOSITORY")"
+release_tag_ref="${RELEASE_REPOSITORY}:${RELEASE_CHANNEL}"
+step "Resolving the atomic Local platform release"
+release_image_ref="$(pull_verified_ref "$release_tag_ref" "$RELEASE_REPOSITORY")"
+load_release_set "$release_image_ref"
+step "Pulling the release-pinned Admin image"
+admin_image_ref="$(pull_verified_ref "$admin_image_ref" "$ADMIN_REPOSITORY")"
+step "Pulling the release-pinned local Team controller image"
+team_image_ref="$(pull_verified_ref "$team_image_ref" "$TEAM_REPOSITORY")"
+step "Pulling the release-pinned isolated Brain runtime image"
+brain_image_ref="$(pull_verified_ref "$brain_image_ref" "$BRAIN_REPOSITORY")"
+step "Pulling the release-pinned shared Shimpz egress image"
+egress_image_ref="$(pull_verified_ref "$egress_image_ref" "$EGRESS_REPOSITORY")"
 step "Verifying local Docker access for the Team controller"
 docker_socket_source=""
 docker_socket_gid=""
@@ -888,6 +954,8 @@ SHIMPZ_ADMIN_IMAGE=${admin_image_ref}
 SHIMPZ_TEAM_IMAGE=${team_image_ref}
 SHIMPZ_BRAIN_IMAGE=${brain_image_ref}
 SHIMPZ_EGRESS_IMAGE=${egress_image_ref}
+SHIMPZ_LOCAL_RELEASE_IMAGE=${release_image_ref}
+SHIMPZ_LOCAL_RELEASE_ORDINAL=${release_ordinal}
 SHIMPZ_SPACE_PLATFORM=${docker_platform}
 SHIMPZ_PORT=${install_port}
 SHIMPZ_DOCKER_GID=${docker_socket_gid}
@@ -1432,7 +1500,8 @@ fi
 printf '  AdminImg %s\n' "$admin_image_ref"
 printf '  Team     %s\n' "$team_image_ref"
 printf '  Brain    %s\n' "$brain_image_ref"
-printf '  Egress   %s\n' "$egress_image_ref"
+	printf '  Egress   %s\n' "$egress_image_ref"
+	printf '  Release  %s (ordinal %s)\n' "$release_image_ref" "$release_ordinal"
 if [ "$install_port" != "7777" ]; then
 	printf '  OAuth    Sign in through https://local.shimpz.com to authorize Assistant Integrations\n'
 fi

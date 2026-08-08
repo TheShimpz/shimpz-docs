@@ -55,6 +55,57 @@ def _run_previous_ref_validator(image: str, repository: str) -> subprocess.Compl
     )
 
 
+def _run_release_set_validator(metadata: str) -> subprocess.CompletedProcess[str]:
+    """Exercise the shipped closed release parser through a tiny Docker fake."""
+    with tempfile.TemporaryDirectory() as raw_home:
+        home = Path(raw_home)
+        binary_dir = home / "bin"
+        binary_dir.mkdir()
+        source = home / "source.env"
+        source.write_text(metadata, encoding="utf-8")
+        docker = binary_dir / "docker"
+        docker.write_text(
+            """#!/bin/sh
+case "$1" in
+  create) printf '%s\n' release-metadata ;;
+  cp) cp "$FAKE_RELEASE_METADATA" "$3" ;;
+  rm) : ;;
+  *) exit 71 ;;
+esac
+""",
+            encoding="utf-8",
+        )
+        docker.chmod(0o700)
+        shell = home / "validator.sh"
+        shell.write_text(
+            """#!/bin/sh
+set -eu
+SHIMPZ_HOME="$TEST_HOME"
+docker_platform="linux/amd64"
+ADMIN_REPOSITORY="ghcr.io/theshimpz/shimpz-admin"
+TEAM_REPOSITORY="ghcr.io/theshimpz/shimpz-team-local"
+BRAIN_REPOSITORY="ghcr.io/theshimpz/shimpz-brain"
+EGRESS_REPOSITORY="ghcr.io/theshimpz/shimpz-egress"
+die() { printf '%s\n' "$*" >&2; exit 1; }
+"""
+            + _shell_functions("release_value", "load_previous_release")
+            + '\nload_release_set "ghcr.io/theshimpz/shimpz-local-release@sha256:'
+            + "a" * 64
+            + '"\nprintf "%s\\n" "$release_ordinal:$admin_image_ref:$release_revision"\n',
+            encoding="utf-8",
+        )
+        shell.chmod(0o700)
+        return subprocess.run(
+            ["/bin/sh", str(shell)],
+            check=False,
+            capture_output=True,
+            text=True,
+            env={
+                "PATH": f"{binary_dir}:/usr/bin:/bin",
+                "TEST_HOME": str(home),
+                "FAKE_RELEASE_METADATA": str(source),
+            },
+        )
 def _run_project_validator(
     records: list[str],
     *,
@@ -191,7 +242,7 @@ def test_static_local_installer_contains_no_oauth_client_credentials():
 
 def test_version_command_reports_the_stable_installer_release():
     version = subprocess.run(["sh", str(SCRIPT_PATH), "--version"], check=False, capture_output=True, text=True)
-    check(version.returncode == 0 and version.stdout.strip() == "0.7.0", "version is an explicit stable release")
+    check(version.returncode == 0 and version.stdout.strip() == "0.8.0", "version is an explicit stable release")
 
 
 def test_runtime_version_floor_is_numeric_and_fail_closed():
@@ -258,6 +309,7 @@ def test_brand_is_canonical_and_action_specific_for_install_and_reset():
 
 def test_static_delivery_is_pull_only_and_content_addressed():
     repositories = {
+        "RELEASE_REPOSITORY": "ghcr.io/theshimpz/shimpz-local-release",
         "ADMIN_REPOSITORY": "ghcr.io/theshimpz/shimpz-admin",
         "TEAM_REPOSITORY": "ghcr.io/theshimpz/shimpz-team-local",
         "BRAIN_REPOSITORY": "ghcr.io/theshimpz/shimpz-brain",
@@ -266,13 +318,9 @@ def test_static_delivery_is_pull_only_and_content_addressed():
     for variable, repository in repositories.items():
         check(f'{variable}="{repository}"' in SCRIPT, f"installer owns the exact package {repository}")
     check("shimpz-space@" not in SCRIPT, "no platform artifact uses the Compose project as an OCI package")
-    check('ADMIN_CHANNEL="stable"' in SCRIPT, "installer selects only the stable Admin channel")
-    for channel in (
-        "TEAM_CHANNEL",
-        "BRAIN_CHANNEL",
-        "EGRESS_CHANNEL",
-    ):
-        check(f'{channel}="stable"' in SCRIPT, f"installer selects only the stable {channel} channel")
+    check('RELEASE_CHANNEL="stable"' in SCRIPT, "installer selects one atomic stable Local release")
+    for channel in ("ADMIN_CHANNEL", "TEAM_CHANNEL", "BRAIN_CHANNEL", "EGRESS_CHANNEL"):
+        check(channel not in SCRIPT, f"installer never resolves the retired independent {channel}")
     check(
         "SHIMPZ_TEAM_CHANNEL" not in SCRIPT and "SHIMPZ_INSTALL_PROFILE" not in SCRIPT,
         "installer exposes no alternate release profile or channel",
@@ -282,15 +330,22 @@ def test_static_delivery_is_pull_only_and_content_addressed():
         "RepoDigests",
         "sha256:",
         '"${#digest_hex}" -eq 64',
-        'admin_image_ref="$(pull_verified_ref "$admin_tag_ref" "$ADMIN_REPOSITORY")"',
-        'team_image_ref="$(pull_verified_ref "$team_tag_ref" "$TEAM_REPOSITORY")"',
-        'brain_image_ref="$(pull_verified_ref "$brain_tag_ref" "$BRAIN_REPOSITORY")"',
-        'egress_image_ref="$(pull_verified_ref "$egress_tag_ref" "$EGRESS_REPOSITORY")"',
+        'release_image_ref="$(pull_verified_ref "$release_tag_ref" "$RELEASE_REPOSITORY")"',
+        'load_release_set "$release_image_ref"',
+        'admin_image_ref="$(pull_verified_ref "$admin_image_ref" "$ADMIN_REPOSITORY")"',
+        'team_image_ref="$(pull_verified_ref "$team_image_ref" "$TEAM_REPOSITORY")"',
+        'brain_image_ref="$(pull_verified_ref "$brain_image_ref" "$BRAIN_REPOSITORY")"',
+        'egress_image_ref="$(pull_verified_ref "$egress_image_ref" "$EGRESS_REPOSITORY")"',
     ):
         check(marker in SCRIPT, f"installer derives an immutable image via {marker!r}")
     check(
-        SCRIPT.count('pull_verified_ref "$') == 4,
-        "all four platform artifact channels resolve independently to digests",
+        SCRIPT.count('pull_verified_ref "$') == 5,
+        "one release channel and its four exact members resolve to digests",
+    )
+    check(
+        'SHIMPZ_LOCAL_RELEASE_IMAGE=${release_image_ref}' in SCRIPT
+        and 'SHIMPZ_LOCAL_RELEASE_ORDINAL=${release_ordinal}' in SCRIPT,
+        "the applied release identity and monotonic ordinal are persisted",
     )
     check("SHIMPZ_ADMIN_IMAGE=${admin_image_ref}" in SCRIPT, "the environment pins the Admin digest")
     check("SHIMPZ_TEAM_IMAGE=${team_image_ref}" in SCRIPT, "the environment pins the controller digest")
@@ -355,13 +410,51 @@ def test_static_delivery_is_pull_only_and_content_addressed():
     check(
         'install_port="${SHIMPZ_PORT:-7777}"' in SCRIPT
         and "unset SHIMPZ_ADMIN_IMAGE SHIMPZ_TEAM_IMAGE SHIMPZ_BRAIN_IMAGE SHIMPZ_EGRESS_IMAGE" in SCRIPT
-        and "unset SHIMPZ_SPACE_PLATFORM SHIMPZ_PORT" in SCRIPT
+        and "unset SHIMPZ_LOCAL_RELEASE_IMAGE SHIMPZ_LOCAL_RELEASE_ORDINAL SHIMPZ_SPACE_PLATFORM SHIMPZ_PORT"
+        in SCRIPT
         and "unset SHIMPZ_DOCKER_GID SHIMPZ_DOCKER_SOCKET SHIMPZ_SPACE_ID SHIMPZ_CPUSET" in SCRIPT
         and "SHIMPZ_PORT=${install_port}" in SCRIPT,
         "exported shell variables cannot override install, rollback, or reset state",
     )
     for forbidden in ("git clone", "npm ", "pnpm ", "uv sync", "docker build", "build:"):
         check(forbidden not in SCRIPT, f"installer excludes source-build operation {forbidden!r}")
+
+
+def test_atomic_release_metadata_is_closed_and_repository_bound():
+    digest = "a" * 64
+    valid = "\n".join(
+        (
+            "schema=local-v1",
+            "ordinal=42",
+            f"umbrella_revision={'b' * 40}",
+            f"admin=ghcr.io/theshimpz/shimpz-admin@sha256:{digest}",
+            f"team=ghcr.io/theshimpz/shimpz-team-local@sha256:{digest}",
+            f"brain=ghcr.io/theshimpz/shimpz-brain@sha256:{digest}",
+            f"egress=ghcr.io/theshimpz/shimpz-egress@sha256:{digest}",
+            f"reconciler_sha256={'c' * 64}",
+        )
+    ) + "\n"
+    accepted = _run_release_set_validator(valid)
+    check(accepted.returncode == 0, f"exact release metadata is admitted: {accepted.stderr}")
+    check(
+        accepted.stdout.strip() == f"42:ghcr.io/theshimpz/shimpz-admin@sha256:{digest}:{'b' * 40}",
+        "the parser projects the exact ordinal, member, and source revision",
+    )
+
+    invalid = {
+        "unknown field": valid.replace("schema=local-v1", "schema=local-v1\nmount=/var/run/docker.sock"),
+        "duplicate field": valid.replace("ordinal=42", "ordinal=42\nordinal=43"),
+        "unknown schema": valid.replace("schema=local-v1", "schema=local-v2"),
+        "zero ordinal": valid.replace("ordinal=42", "ordinal=0"),
+        "wrong repository": valid.replace(
+            "admin=ghcr.io/theshimpz/shimpz-admin", "admin=ghcr.io/example/shimpz-admin"
+        ),
+        "tag member": valid.replace(f"@sha256:{digest}", ":stable", 1),
+        "malformed reconciler digest": valid.replace(f"reconciler_sha256={'c' * 64}", "reconciler_sha256=no"),
+    }
+    for label, metadata in invalid.items():
+        rejected = _run_release_set_validator(metadata)
+        check(rejected.returncode != 0, f"release metadata rejects {label}")
 
 
 def test_remote_docker_endpoints_are_rejected_before_daemon_access():
@@ -798,7 +891,7 @@ def test_static_space_identity_socket_access_and_cpu_set_are_runtime_derived():
         "socket ownership is measured inside Docker rather than from the macOS symlink",
     )
     check(
-        SCRIPT.index('team_image_ref="$(pull_verified_ref "$team_tag_ref" "$TEAM_REPOSITORY")"')
+        SCRIPT.index('team_image_ref="$(pull_verified_ref "$team_image_ref" "$TEAM_REPOSITORY")"')
         < SCRIPT.index(
             'candidate_gid="$(docker_socket_source="$socket_candidate" controller_socket_gid "$team_image_ref"'
         )
