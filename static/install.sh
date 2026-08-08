@@ -777,7 +777,7 @@ validate_release_revision() {
 load_release_set() {
 	release_ref="$1"
 	release_metadata="${SHIMPZ_HOME}/release.env.tmp"
-	release_container="$(docker create --platform "$docker_platform" "$release_ref")" \
+	release_container="$(docker create --platform "$docker_platform" "$release_ref" /release.env)" \
 		|| die "the Local release metadata could not be opened"
 	if ! docker cp "${release_container}:/release.env" "$release_metadata"; then
 		docker rm "$release_container" >/dev/null 2>&1 || true
@@ -787,9 +787,9 @@ load_release_set() {
 	docker rm "$release_container" >/dev/null \
 		|| die "the Local release metadata container could not be removed"
 	chmod 600 "$release_metadata"
-	[ "$(wc -l <"$release_metadata" | tr -d ' ')" -eq 8 ] \
-		|| die "the Local release metadata must contain exactly eight fields"
-	if sed -n '/^\(schema\|ordinal\|umbrella_revision\|admin\|team\|brain\|egress\|reconciler_sha256\)=/!p' \
+	[ "$(wc -l <"$release_metadata" | tr -d ' ')" -eq 7 ] \
+		|| die "the Local release metadata must contain exactly seven fields"
+	if sed -n '/^\(schema\|ordinal\|umbrella_revision\|admin\|team\|brain\|egress\)=/!p' \
 		"$release_metadata" | grep . >/dev/null 2>&1; then
 		die "the Local release metadata contains an unknown field"
 	fi
@@ -805,16 +805,21 @@ load_release_set() {
 	team_image_ref="$(release_value team "$release_metadata")"
 	brain_image_ref="$(release_value brain "$release_metadata")"
 	egress_image_ref="$(release_value egress "$release_metadata")"
-	reconciler_sha256="$(release_value reconciler_sha256 "$release_metadata")"
 	validate_pinned_release_ref "$admin_image_ref" "$ADMIN_REPOSITORY"
 	validate_pinned_release_ref "$team_image_ref" "$TEAM_REPOSITORY"
 	validate_pinned_release_ref "$brain_image_ref" "$BRAIN_REPOSITORY"
 	validate_pinned_release_ref "$egress_image_ref" "$EGRESS_REPOSITORY"
-	case "$reconciler_sha256" in
-		""|*[!0-9a-f]*) die "the Local reconciler digest is invalid" ;;
-	esac
-	[ "${#reconciler_sha256}" -eq 64 ] || die "the Local reconciler digest is invalid"
 	rm -f "$release_metadata"
+}
+
+validate_forward_release() {
+	[ -f "$ENV_FILE" ] || return 0
+	current_ordinal="$(previous_env_value SHIMPZ_LOCAL_RELEASE_ORDINAL "$ENV_FILE")"
+	case "$current_ordinal" in
+		""|0|*[!0-9]*) die "the current Local release ordinal is invalid" ;;
+	esac
+	[ "$release_ordinal" -ge "$current_ordinal" ] \
+		|| die "the Local release channel points to an older release"
 }
 
 previous_env_value() {
@@ -915,6 +920,7 @@ release_tag_ref="${RELEASE_REPOSITORY}:${RELEASE_CHANNEL}"
 step "Resolving the atomic Local platform release"
 release_image_ref="$(pull_verified_ref "$release_tag_ref" "$RELEASE_REPOSITORY")"
 load_release_set "$release_image_ref"
+validate_forward_release
 step "Pulling the release-pinned Admin image"
 admin_image_ref="$(pull_verified_ref "$admin_image_ref" "$ADMIN_REPOSITORY")"
 step "Pulling the release-pinned local Team controller image"

@@ -373,6 +373,10 @@ def test_static_delivery_is_pull_only_and_content_addressed():
 
 def test_atomic_release_metadata_is_closed_and_repository_bound():
     assert_atomic_release_contract(_shell_functions, check)
+    check('docker create --platform "$docker_platform" "$release_ref" /release.env' in SCRIPT,
+          "metadata extraction supplies a harmless argv for the commandless scratch image")
+    check('[ "$release_ordinal" -ge "$current_ordinal" ]' in SCRIPT,
+          "an installed Local release cannot follow a rewound channel ordinal")
 
 
 def test_remote_docker_endpoints_are_rejected_before_daemon_access():

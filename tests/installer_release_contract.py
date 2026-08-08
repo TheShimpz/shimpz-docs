@@ -74,7 +74,6 @@ def assert_atomic_release_contract(
             f"team=ghcr.io/theshimpz/shimpz-team-local@sha256:{digest}",
             f"brain=ghcr.io/theshimpz/shimpz-brain@sha256:{digest}",
             f"egress=ghcr.io/theshimpz/shimpz-egress@sha256:{digest}",
-            f"reconciler_sha256={'c' * 64}",
         )
     ) + "\n"
     accepted = _run_validator(valid, shell_functions)
@@ -93,7 +92,6 @@ def assert_atomic_release_contract(
             "admin=ghcr.io/theshimpz/shimpz-admin", "admin=ghcr.io/example/shimpz-admin"
         ),
         "tag member": valid.replace(f"@sha256:{digest}", ":stable", 1),
-        "malformed reconciler digest": valid.replace(f"reconciler_sha256={'c' * 64}", "reconciler_sha256=no"),
     }
     for label, metadata in invalid.items():
         rejected = _run_validator(metadata, shell_functions)
