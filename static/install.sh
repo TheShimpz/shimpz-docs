@@ -482,6 +482,7 @@ validate_project_resources() {
 			"${PROJECT_NAME}_controller_chat_continuation_state|controller_chat_continuation_state"|\
 			"${PROJECT_NAME}_controller_chat_continuation_key|controller_chat_continuation_key"|\
 			"${PROJECT_NAME}_supervisor_key|supervisor_key"|\
+			"${PROJECT_NAME}_release_status|release_status"|\
 			"${PROJECT_NAME}_account_egress_capability|account_egress_capability"|\
 			"${PROJECT_NAME}_account_egress_audit|account_egress_audit"|\
 			"${PROJECT_NAME}_brain_egress_audit|brain_egress_audit"|\
@@ -690,6 +691,28 @@ write_release_status() {
 EOF
 	chmod 600 "${STATUS_FILE}.tmp"
 	mv "${STATUS_FILE}.tmp" "$STATUS_FILE"
+	project_release_status
+}
+
+project_release_status() {
+	validate_pinned_release_ref "$admin_image_ref" "$ADMIN_REPOSITORY"
+	status_volume="${PROJECT_NAME}_release_status"
+	status_volume_record="$(docker volume inspect \
+		--format '{{.Name}}|{{index .Labels "com.docker.compose.project"}}|{{index .Labels "com.docker.compose.volume"}}' \
+		"$status_volume" 2>/dev/null)" \
+		|| die "the Local release status volume is unavailable"
+	[ "$status_volume_record" = "${status_volume}|${PROJECT_NAME}|release_status" ] \
+		|| die "the Local release status volume is not owned by this Space"
+	docker run --rm -i \
+		--platform "$docker_platform" --pull never \
+		--network none --read-only --cap-drop ALL --cap-add CHOWN --security-opt no-new-privileges:true \
+		--user 0:0 --cpuset-cpus "$docker_cpuset" --cpus 0.25 --memory 64m --memory-swap 64m --pids-limit 32 \
+		--tmpfs /tmp:rw,noexec,nosuid,nodev,size=8m \
+		--mount "type=volume,src=${status_volume},dst=/status" \
+		--entrypoint /opt/venv/bin/python \
+		"$admin_image_ref" -c 'import json,os,sys; raw=sys.stdin.buffer.read(1025); document=json.loads(raw); assert len(raw)<=1024 and set(document)=={"release","ordinal","checked_at","outcome"}; target="/status/status.json"; temporary=target+".tmp"; descriptor=os.open(temporary,os.O_WRONLY|os.O_CREAT|os.O_TRUNC,0o600); os.write(descriptor,raw); os.fchmod(descriptor,0o600); os.fchown(descriptor,1000,1000); os.close(descriptor); os.replace(temporary,target)' \
+		<"$STATUS_FILE" >/dev/null \
+		|| die "the Local release status could not be projected to Admin"
 }
 
 remember_failed_release() {
@@ -1235,7 +1258,6 @@ load_release_set "$release_image_ref"
 validate_forward_release
 if [ "$action" != "apply" ]; then
 	if failed_release_matches; then
-		write_release_status "rollback-needed" "$release_image_ref" "$release_ordinal"
 		if [ "$action" = "scheduled" ]; then
 			exit 0
 		fi
@@ -1707,6 +1729,7 @@ services:
       - data:/data
       - controller_token:/run/shimpz-local:ro
       - supervisor_key:/run/shimpz-local-supervisor:rw
+      - release_status:/run/shimpz-local-release:ro
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,size=32m
     healthcheck:
@@ -1751,6 +1774,7 @@ volumes:
   controller_chat_continuation_state:
   controller_chat_continuation_key:
   supervisor_key:
+  release_status:
   assistant_egress_policy:
   assistant_egress_audit:
   assistant_release_audit:

@@ -104,6 +104,9 @@ def assert_reconciler_contract(script: str, check: Callable[[object, str], None]
           "macOS schedules the same installed reconciler at low frequency")
     check("current|updated|rollback-needed" in script and 'chmod 600 "${STATUS_FILE}.tmp"' in script,
           "status is bounded to three outcomes and remains owner-readable only")
+    check("release_status:/run/shimpz-local-release:ro" in script and
+          '"${PROJECT_NAME}_release_status"' in script and "--cap-add CHOWN" in script,
+          "Admin receives only a read-only projection independent of the installing host UID")
     check("failed_release_matches" in script and "remember_failed_release" in script and
           'rm -f "$FAILED_RELEASE_FILE"' in script,
           "a failed release digest is not retried until a different release succeeds")

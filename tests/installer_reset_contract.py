@@ -40,6 +40,7 @@ def assert_reset_contract(
         '"${PROJECT_NAME}_controller_chat_continuation_state|controller_chat_continuation_state"',
         '"${PROJECT_NAME}_controller_chat_continuation_key|controller_chat_continuation_key"',
         '"${PROJECT_NAME}_supervisor_key|supervisor_key"',
+        '"${PROJECT_NAME}_release_status|release_status"',
         '"${PROJECT_NAME}_brain_runtime_token|brain_runtime_token"',
         '"${PROJECT_NAME}_brain_runtime_state|brain_runtime_state"',
         '"${PROJECT_NAME}_brain_egress_audit|brain_egress_audit"',

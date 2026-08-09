@@ -599,6 +599,7 @@ def _check_compose_isolation(admin: str, compose: str, controller: str) -> None:
         'SHIMPZ_TEAM_CREDENTIALS_ENABLED: "0"',
         "controller_token:/run/shimpz-local:ro",
         "supervisor_key:/run/shimpz-local-supervisor:rw",
+        "release_status:/run/shimpz-local-release:ro",
         '- "10021"',
         "condition: service_healthy",
     ):
@@ -658,6 +659,8 @@ def _check_compose_isolation(admin: str, compose: str, controller: str) -> None:
         SCRIPT.count("  supervisor_key:") == 1,
         "Compose declares exactly one Local Supervisor public-key volume",
     )
+    check(SCRIPT.count("  release_status:") == 1,
+          "Compose declares exactly one read-only Admin platform-status volume")
     check("SHIMPZ_CLOUDFLARE_OAUTH_CLIENT" not in SCRIPT, "installer contains no OAuth client credentials")
     check("SHIMPZ_X_OAUTH_CLIENT_ID" not in SCRIPT, "installer contains no unsupported X OAuth configuration")
     check("postgres" not in SCRIPT, "bootstrap does not claim an unshipped PostgreSQL dependency")
