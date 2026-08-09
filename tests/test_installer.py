@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Contracts for the pull-only, digest-pinned Shimpz Space installer."""
 
-import re
 import stat
 import subprocess
 import tempfile
@@ -17,7 +16,7 @@ from installer_egress_contract import (
 from installer_project_contract import assert_project_validator_contract
 from installer_project_harness import run_project_validator
 from installer_reconciler_contract import assert_reconciler_contract, install_systemd_units, run_lock_contract
-from installer_release_contract import assert_atomic_release_contract
+from installer_release_contract import assert_atomic_release_contract, assert_pull_only_delivery
 from installer_reset_contract import assert_reset_contract
 from installer_runtime_contract import assert_healthcheck_cadence, assert_runtime_version_floor
 
@@ -259,115 +258,7 @@ def test_brand_is_canonical_and_action_specific_for_install_and_reset():
 
 
 def test_static_delivery_is_pull_only_and_content_addressed():
-    repositories = {
-        "RELEASE_REPOSITORY": "ghcr.io/theshimpz/shimpz-local-release",
-        "ADMIN_REPOSITORY": "ghcr.io/theshimpz/shimpz-admin",
-        "TEAM_REPOSITORY": "ghcr.io/theshimpz/shimpz-team-local",
-        "BRAIN_REPOSITORY": "ghcr.io/theshimpz/shimpz-brain",
-        "EGRESS_REPOSITORY": "ghcr.io/theshimpz/shimpz-egress",
-    }
-    for variable, repository in repositories.items():
-        check(f'{variable}="{repository}"' in SCRIPT, f"installer owns the exact package {repository}")
-    check("shimpz-space@" not in SCRIPT, "no platform artifact uses the Compose project as an OCI package")
-    check('RELEASE_CHANNEL="stable"' in SCRIPT, "installer selects one atomic stable Local release")
-    for channel in ("ADMIN_CHANNEL", "TEAM_CHANNEL", "BRAIN_CHANNEL", "EGRESS_CHANNEL"):
-        check(channel not in SCRIPT, f"installer never resolves the retired independent {channel}")
-    check(
-        "SHIMPZ_TEAM_CHANNEL" not in SCRIPT and "SHIMPZ_INSTALL_PROFILE" not in SCRIPT,
-        "installer exposes no alternate release profile or channel",
-    )
-    for marker in (
-        'docker pull --quiet --platform "$docker_platform"',
-        "RepoDigests",
-        "sha256:",
-        '"${#digest_hex}" -eq 64',
-        'release_image_ref="$(pull_verified_ref "$release_selector_ref" "$RELEASE_REPOSITORY")"',
-        'load_release_set "$release_image_ref"',
-        'admin_image_ref="$(pull_verified_ref "$admin_image_ref" "$ADMIN_REPOSITORY")"',
-        'team_image_ref="$(pull_verified_ref "$team_image_ref" "$TEAM_REPOSITORY")"',
-        'brain_image_ref="$(pull_verified_ref "$brain_image_ref" "$BRAIN_REPOSITORY")"',
-        'egress_image_ref="$(pull_verified_ref "$egress_image_ref" "$EGRESS_REPOSITORY")"',
-    ):
-        check(marker in SCRIPT, f"installer derives an immutable image via {marker!r}")
-    check(
-        SCRIPT.count('pull_verified_ref "$') == 5,
-        "one release channel and its four exact members resolve to digests",
-    )
-    check(
-        "SHIMPZ_LOCAL_RELEASE_IMAGE=${release_image_ref}" in SCRIPT
-        and "SHIMPZ_LOCAL_RELEASE_ORDINAL=${release_ordinal}" in SCRIPT,
-        "the applied release identity and monotonic ordinal are persisted",
-    )
-    check("SHIMPZ_ADMIN_IMAGE=${admin_image_ref}" in SCRIPT, "the environment pins the Admin digest")
-    check("SHIMPZ_TEAM_IMAGE=${team_image_ref}" in SCRIPT, "the environment pins the controller digest")
-    check(
-        "SHIMPZ_BRAIN_IMAGE=${brain_image_ref}" in SCRIPT,
-        "the environment pins the Brain runtime digest",
-    )
-    check(
-        "SHIMPZ_EGRESS_IMAGE=${egress_image_ref}" in SCRIPT,
-        "the environment pins the shared egress digest once",
-    )
-    check(
-        "SHIMPZ_SPACE_PLATFORM=${docker_platform}" in SCRIPT,
-        "the generated environment stores the validated Docker platform",
-    )
-    check(
-        "SHIMPZ_PROJECT_NAME=${PROJECT_NAME}" in SCRIPT
-        and "SHIMPZ_ADMIN_ALLOWED_ORIGINS=${ADMIN_ALLOWED_ORIGINS}" in SCRIPT
-        and "name: ${SHIMPZ_PROJECT_NAME:?installer must pin SHIMPZ_PROJECT_NAME}" in SCRIPT
-        and "SHIMPZ_ASSISTANT_EGRESS_CONTAINER: shimpz-assistant-egress" in SCRIPT,
-        "the generated Compose project is pinned and the controller targets the named egress container",
-    )
-    compose = SCRIPT.split("cat >\"${COMPOSE_FILE}.tmp\" <<'COMPOSE'", 1)[1].split("\nCOMPOSE", 1)[0]
-    container_names = re.findall(r"^    container_name: (\S+)$", compose, re.MULTILINE)
-    check(
-        container_names
-        == [
-            "shimpz-account-egress-init",
-            "shimpz-team",
-            "shimpz-assistant-egress",
-            "shimpz-assistant-release",
-            "shimpz-account-egress",
-            "shimpz-brain-egress",
-            "shimpz-brain",
-            "shimpz-admin",
-        ],
-        "Compose assigns the eight stable, memorable container and job names exactly once",
-    )
-    reserved_line = next(line for line in SCRIPT.splitlines() if line.startswith("RESERVED_CONTAINER_NAMES="))
-    check(
-        sorted(reserved_line.split('"')[1].split()) == sorted(container_names),
-        "the reserved-name preflight covers exactly the Compose container names",
-    )
-    check("image: ${SHIMPZ_ADMIN_IMAGE:?" in SCRIPT, "Compose fails closed without the pinned Admin reference")
-    check(
-        "image: ${SHIMPZ_TEAM_IMAGE:?" in SCRIPT,
-        "Compose fails closed without the pinned controller reference",
-    )
-    check(
-        "image: ${SHIMPZ_BRAIN_IMAGE:?" in SCRIPT,
-        "Compose fails closed without the pinned Brain runtime reference",
-    )
-    check(
-        SCRIPT.count("image: ${SHIMPZ_EGRESS_IMAGE:?") == 5,
-        "all five egress services fail closed on the one pinned egress reference",
-    )
-    check(
-        "platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}" in SCRIPT,
-        "Compose fails closed without the pinned platform",
-    )
-    check("pull_policy: never" in SCRIPT and "--pull never" in SCRIPT, "Compose cannot silently replace the digest")
-    check(
-        'install_port="${SHIMPZ_PORT:-7777}"' in SCRIPT
-        and "unset SHIMPZ_ADMIN_IMAGE SHIMPZ_TEAM_IMAGE SHIMPZ_BRAIN_IMAGE SHIMPZ_EGRESS_IMAGE" in SCRIPT
-        and "unset SHIMPZ_LOCAL_RELEASE_IMAGE SHIMPZ_LOCAL_RELEASE_ORDINAL SHIMPZ_SPACE_PLATFORM SHIMPZ_PORT" in SCRIPT
-        and "unset SHIMPZ_DOCKER_GID SHIMPZ_DOCKER_SOCKET SHIMPZ_SPACE_ID SHIMPZ_CPUSET" in SCRIPT
-        and "SHIMPZ_PORT=${install_port}" in SCRIPT,
-        "exported shell variables cannot override install, rollback, or reset state",
-    )
-    for forbidden in ("git clone", "npm ", "pnpm ", "uv sync", "docker build", "build:"):
-        check(forbidden not in SCRIPT, f"installer excludes source-build operation {forbidden!r}")
+    assert_pull_only_delivery(SCRIPT, check)
 
 
 def test_atomic_release_metadata_is_closed_and_repository_bound():
