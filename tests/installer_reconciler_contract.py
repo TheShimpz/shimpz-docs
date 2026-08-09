@@ -120,11 +120,16 @@ def assert_reconciler_contract(script: str, check: Callable[[object, str], None]
         "current|updated|rollback-needed" in script and 'chmod 600 "${STATUS_FILE}.tmp"' in script,
         "status is bounded to three outcomes and remains owner-readable only",
     )
+    status_projection = script.split("project_release_status() {", 1)[1].split("remember_failed_release() {", 1)[0]
     check(
         "release_status:/run/shimpz-local-release:ro" in script
-        and '"${PROJECT_NAME}_release_status"' in script
-        and "--cap-add CHOWN" in script,
-        "Admin receives only a read-only projection independent of the installing host UID",
+        and '"${PROJECT_NAME}_release_status"' in status_projection
+        and "--user 1000:1000" in status_projection
+        and 'dst=/run/shimpz-local-release"' in status_projection
+        and 'target="/run/shimpz-local-release/status.json"' in status_projection
+        and "--cap-add" not in status_projection
+        and "os.fchown" not in status_projection,
+        "Admin and its unprivileged projector share the image-owned release-status path without capabilities",
     )
     check(
         "failed_release_matches" in script

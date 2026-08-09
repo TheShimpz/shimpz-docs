@@ -705,12 +705,12 @@ project_release_status() {
 		|| die "the Local release status volume is not owned by this Space"
 	docker run --rm -i \
 		--platform "$docker_platform" --pull never \
-		--network none --read-only --cap-drop ALL --cap-add CHOWN --security-opt no-new-privileges:true \
-		--user 0:0 --cpuset-cpus "$docker_cpuset" --cpus 0.25 --memory 64m --memory-swap 64m --pids-limit 32 \
+		--network none --read-only --cap-drop ALL --security-opt no-new-privileges:true \
+		--user 1000:1000 --cpuset-cpus "$docker_cpuset" --cpus 0.25 --memory 64m --memory-swap 64m --pids-limit 32 \
 		--tmpfs /tmp:rw,noexec,nosuid,nodev,size=8m \
-		--mount "type=volume,src=${status_volume},dst=/status" \
+		--mount "type=volume,src=${status_volume},dst=/run/shimpz-local-release" \
 		--entrypoint /opt/venv/bin/python \
-		"$admin_image_ref" -c 'import json,os,sys; raw=sys.stdin.buffer.read(1025); document=json.loads(raw); assert len(raw)<=1024 and set(document)=={"release","ordinal","checked_at","outcome"}; target="/status/status.json"; temporary=target+".tmp"; descriptor=os.open(temporary,os.O_WRONLY|os.O_CREAT|os.O_TRUNC,0o600); assert os.write(descriptor,raw)==len(raw); os.fchmod(descriptor,0o600); os.fchown(descriptor,1000,1000); os.close(descriptor); os.replace(temporary,target)' \
+		"$admin_image_ref" -c 'import json,os,sys; raw=sys.stdin.buffer.read(1025); document=json.loads(raw); assert len(raw)<=1024 and set(document)=={"release","ordinal","checked_at","outcome"}; target="/run/shimpz-local-release/status.json"; temporary=target+".tmp"; descriptor=os.open(temporary,os.O_WRONLY|os.O_CREAT|os.O_TRUNC,0o600); assert os.write(descriptor,raw)==len(raw); os.fchmod(descriptor,0o600); os.close(descriptor); os.replace(temporary,target)' \
 		<"$STATUS_FILE" >/dev/null \
 		|| die "the Local release status could not be projected to Admin"
 }
