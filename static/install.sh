@@ -710,7 +710,7 @@ project_release_status() {
 		--tmpfs /tmp:rw,noexec,nosuid,nodev,size=8m \
 		--mount "type=volume,src=${status_volume},dst=/status" \
 		--entrypoint /opt/venv/bin/python \
-		"$admin_image_ref" -c 'import json,os,sys; raw=sys.stdin.buffer.read(1025); document=json.loads(raw); assert len(raw)<=1024 and set(document)=={"release","ordinal","checked_at","outcome"}; target="/status/status.json"; temporary=target+".tmp"; descriptor=os.open(temporary,os.O_WRONLY|os.O_CREAT|os.O_TRUNC,0o600); os.write(descriptor,raw); os.fchmod(descriptor,0o600); os.fchown(descriptor,1000,1000); os.close(descriptor); os.replace(temporary,target)' \
+		"$admin_image_ref" -c 'import json,os,sys; raw=sys.stdin.buffer.read(1025); document=json.loads(raw); assert len(raw)<=1024 and set(document)=={"release","ordinal","checked_at","outcome"}; target="/status/status.json"; temporary=target+".tmp"; descriptor=os.open(temporary,os.O_WRONLY|os.O_CREAT|os.O_TRUNC,0o600); assert os.write(descriptor,raw)==len(raw); os.fchmod(descriptor,0o600); os.fchown(descriptor,1000,1000); os.close(descriptor); os.replace(temporary,target)' \
 		<"$STATUS_FILE" >/dev/null \
 		|| die "the Local release status could not be projected to Admin"
 }
