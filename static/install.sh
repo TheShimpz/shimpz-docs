@@ -169,6 +169,9 @@ die() {
 
 lock_handoff="${SHIMPZ_UPDATE_LOCK_HELD:-0}"
 unset SHIMPZ_UPDATE_LOCK_HELD
+docker_group_handoff="${SHIMPZ_DOCKER_GROUP_HANDOFF:-0}"
+unset SHIMPZ_DOCKER_GROUP_HANDOFF SHIMPZ_DOCKER_GROUP_SCRIPT
+unset SHIMPZ_DOCKER_GROUP_ACTION SHIMPZ_DOCKER_GROUP_RELEASE
 requested_release_ref=""
 case "${1:-}" in
 	"") action="install" ;;
@@ -225,7 +228,54 @@ case "$docker_endpoint" in
 	unix:///*) ;;
 	*) die "a local Docker Unix socket is required; remote Docker contexts are not supported" ;;
 esac
-docker info >/dev/null 2>&1 || die "the Docker daemon is not available to this user"
+
+refresh_stale_docker_group() {
+	[ "$docker_group_handoff" != "1" ] || return 1
+	[ "$(uname -s)" = "Linux" ] || return 1
+	[ -f "$0" ] || return 1
+	command -v sg >/dev/null 2>&1 || return 1
+	docker_socket_path="${docker_endpoint#unix://}"
+	[ -S "$docker_socket_path" ] || return 1
+	docker_socket_gid="$(stat -c '%g' "$docker_socket_path" 2>/dev/null)" || return 1
+	case "$docker_socket_gid" in
+		""|*[!0-9]*) return 1 ;;
+	esac
+	for current_gid in $(id -G); do
+		[ "$current_gid" != "$docker_socket_gid" ] || return 1
+	done
+	account_name="$(id -un)" || return 1
+	account_has_socket_group=0
+	for account_gid in $(id -G "$account_name"); do
+		if [ "$account_gid" = "$docker_socket_gid" ]; then
+			account_has_socket_group=1
+			break
+		fi
+	done
+	[ "$account_has_socket_group" -eq 1 ] || return 1
+	docker_socket_group="$(stat -c '%G' "$docker_socket_path" 2>/dev/null)" || return 1
+	case "$docker_socket_group" in
+		""|-*|*[!a-zA-Z0-9_.-]*) return 1 ;;
+	esac
+	SHIMPZ_DOCKER_GROUP_HANDOFF=1
+	SHIMPZ_DOCKER_GROUP_SCRIPT="$0"
+	SHIMPZ_DOCKER_GROUP_ACTION="$action"
+	SHIMPZ_DOCKER_GROUP_RELEASE="$requested_release_ref"
+	export SHIMPZ_DOCKER_GROUP_HANDOFF SHIMPZ_DOCKER_GROUP_SCRIPT
+	export SHIMPZ_DOCKER_GROUP_ACTION SHIMPZ_DOCKER_GROUP_RELEASE
+	exec sg "$docker_socket_group" -c '
+		case "$SHIMPZ_DOCKER_GROUP_ACTION" in
+			install) exec /bin/sh "$SHIMPZ_DOCKER_GROUP_SCRIPT" ;;
+			reset) exec /bin/sh "$SHIMPZ_DOCKER_GROUP_SCRIPT" --reset ;;
+			scheduled) exec /bin/sh "$SHIMPZ_DOCKER_GROUP_SCRIPT" --scheduled ;;
+			apply) exec /bin/sh "$SHIMPZ_DOCKER_GROUP_SCRIPT" --apply-release "$SHIMPZ_DOCKER_GROUP_RELEASE" ;;
+			*) exit 64 ;;
+		esac
+	'
+}
+
+if ! docker info >/dev/null 2>&1; then
+	refresh_stale_docker_group || die "the Docker daemon is not available to this user"
+fi
 docker_server_version="$(docker version --format '{{.Server.Version}}' 2>/dev/null)" \
 	|| die "could not determine the Docker Engine version"
 docker_api_version="$(docker version --format '{{.Server.APIVersion}}' 2>/dev/null)" \

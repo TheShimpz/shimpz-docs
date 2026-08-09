@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Contracts for the pull-only, digest-pinned Shimpz Space installer."""
 
+import grp
+import os
+import socket
 import stat
 import subprocess
 import tempfile
@@ -376,6 +379,84 @@ esac
             "remote context is rejected before docker info or a lifecycle mutation",
         )
         check(not (home / ".shimpz").exists(), "remote endpoint rejection creates no installer state")
+
+
+def test_stale_docker_group_reexecs_the_installed_reconciler_once():
+    with tempfile.TemporaryDirectory() as raw_home:
+        home = Path(raw_home)
+        binary_dir = home / "bin"
+        binary_dir.mkdir()
+        socket_path = home / "docker.sock"
+        handoff = home / "handoff"
+        docker = binary_dir / "docker"
+        docker.write_text(
+            """#!/bin/sh
+case "$*" in
+  "compose version") exit 0 ;;
+  "context show") printf '%s\n' local ;;
+  "context inspect --format {{.Endpoints.docker.Host}} local") printf 'unix://%s\n' "$FAKE_DOCKER_SOCKET" ;;
+  "info") exit 91 ;;
+  *) exit 92 ;;
+esac
+""",
+            encoding="utf-8",
+        )
+        docker.chmod(0o700)
+        identity = binary_dir / "id"
+        identity.write_text(
+            """#!/bin/sh
+case "$*" in
+  "-G") printf '%s\n' 999999 ;;
+  "-un") printf '%s\n' stale-user ;;
+  "-G stale-user") printf '%s\n' "$FAKE_SOCKET_GID" ;;
+  *) exit 93 ;;
+esac
+""",
+            encoding="utf-8",
+        )
+        identity.chmod(0o700)
+        switch_group = binary_dir / "sg"
+        switch_group.write_text(
+            """#!/bin/sh
+printf '%s|%s|%s|%s|%s|%s\n' \
+  "$1" "$2" "$SHIMPZ_DOCKER_GROUP_HANDOFF" "$SHIMPZ_DOCKER_GROUP_ACTION" \
+  "$SHIMPZ_DOCKER_GROUP_SCRIPT" "$SHIMPZ_DOCKER_GROUP_RELEASE" >"$FAKE_HANDOFF"
+exit 73
+""",
+            encoding="utf-8",
+        )
+        switch_group.chmod(0o700)
+        with socket.socket(socket.AF_UNIX) as docker_socket:
+            docker_socket.bind(str(socket_path))
+            result = subprocess.run(
+                ["/bin/sh", str(SCRIPT_PATH), "--scheduled"],
+                check=False,
+                capture_output=True,
+                text=True,
+                env={
+                    "HOME": str(home),
+                    "PATH": f"{binary_dir}:/usr/bin:/bin",
+                    "TERM": "dumb",
+                    "FAKE_DOCKER_SOCKET": str(socket_path),
+                    "FAKE_HANDOFF": str(handoff),
+                    "FAKE_SOCKET_GID": str(os.getgid()),
+                },
+            )
+        fields = handoff.read_text(encoding="utf-8").strip().split("|")
+        check(result.returncode == 73, "the stale process is replaced by the bounded group handoff")
+        check(
+            fields
+            == [
+                grp.getgrgid(os.getgid()).gr_name,
+                "-c",
+                "1",
+                "scheduled",
+                str(SCRIPT_PATH),
+                "",
+            ],
+            "the handoff binds the socket group, installed script, and exact scheduled action",
+        )
+        check(not (home / ".shimpz").exists(), "group recovery runs before lock or installer state mutation")
 
 
 def _check_admin_runtime(admin: str, compose: str) -> None:
@@ -868,7 +949,7 @@ def test_reserved_container_name_preflight_is_early_and_fail_closed():
         "a collision on the final reserved name is identified",
     )
 
-    docker_ready = SCRIPT.index("docker info >/dev/null 2>&1 || die")
+    docker_ready = SCRIPT.index("if ! docker info >/dev/null 2>&1; then")
     preflight = SCRIPT.index("\nvalidate_reserved_container_names\n")
     first_state_write = SCRIPT.index('umask 077\nmkdir -p "$SHIMPZ_HOME"')
     check(

@@ -110,7 +110,7 @@ def assert_runtime_version_floor(script: str, script_path: Path, check: Check) -
     )
     check(not old_compose_state_exists, "an old Compose creates no installer state")
 
-    docker_ready = script.index("docker info >/dev/null 2>&1 || die")
+    docker_ready = script.index("if ! docker info >/dev/null 2>&1; then")
     engine_floor = script.index('version_at_least "$docker_server_version" "25.0.0"')
     api_floor = script.index('version_at_least "$docker_api_version" "1.44"')
     compose_floor = script.index('version_at_least "$compose_version" "2.20.2"')
