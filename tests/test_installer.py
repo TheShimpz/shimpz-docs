@@ -294,6 +294,16 @@ def test_update_lock_serializes_cycles_and_preserves_exec_handoff():
         manual_overlap.returncode != 0 and "already running" in manual_overlap.stderr,
         "an overlapping manual apply reports the active cycle",
     )
+    stale_schedule = run_lock_contract(SCRIPT, "scheduled", prelocked=True, stale=True)
+    check(
+        stale_schedule.returncode == 0 and stale_schedule.stdout.strip() == "acquired:1",
+        "a scheduled cycle reclaims a dead updater lock",
+    )
+    malformed = run_lock_contract(SCRIPT, "reset", prelocked=True, malformed=True)
+    check(
+        malformed.returncode == 0 and malformed.stdout.strip() == "acquired:1",
+        "the recovery path reclaims a malformed updater lock",
+    )
     handoff = run_lock_contract(SCRIPT, "apply", prelocked=True, handoff=True)
     check(
         handoff.returncode == 0 and handoff.stdout.strip() == "acquired:1",
@@ -442,7 +452,21 @@ exit 73
                     "FAKE_SOCKET_GID": str(os.getgid()),
                 },
             )
-        fields = handoff.read_text(encoding="utf-8").strip().split("|")
+            fields = handoff.read_text(encoding="utf-8").strip().split("|")
+            manual = subprocess.run(
+                ["/bin/sh", str(SCRIPT_PATH)],
+                check=False,
+                capture_output=True,
+                text=True,
+                env={
+                    "HOME": str(home),
+                    "PATH": f"{binary_dir}:/usr/bin:/bin",
+                    "TERM": "dumb",
+                    "FAKE_DOCKER_SOCKET": str(socket_path),
+                    "FAKE_HANDOFF": str(handoff),
+                    "FAKE_SOCKET_GID": str(os.getgid()),
+                },
+            )
         check(result.returncode == 73, "the stale process is replaced by the bounded group handoff")
         check(
             fields
@@ -457,6 +481,11 @@ exit 73
             "the handoff binds the socket group, installed script, and exact scheduled action",
         )
         check(not (home / ".shimpz").exists(), "group recovery runs before lock or installer state mutation")
+        check(manual.returncode == 73, "the interactive stale-group handoff remains bounded")
+        check(
+            manual.stdout.count("space installer // stable") == 1,
+            "the stale-group handoff does not repeat the installer brand",
+        )
 
 
 def _check_admin_runtime(admin: str, compose: str) -> None:
@@ -917,7 +946,7 @@ def test_previous_release_refs_are_bound_to_their_responsibility():
     )
     swapped = _run_previous_ref_validator(f"{team}@sha256:{digest}", admin)
     check(
-        swapped.returncode != 0 and "responsibility-owned" in swapped.stderr,
+        swapped.returncode != 0 and f"Local release reference for {admin}" in swapped.stderr,
         "rollback rejects an official image owned by another responsibility",
     )
     check(

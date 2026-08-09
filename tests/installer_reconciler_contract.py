@@ -18,13 +18,20 @@ def run_lock_contract(
     *,
     prelocked: bool,
     handoff: bool = False,
+    stale: bool = False,
+    malformed: bool = False,
 ) -> subprocess.CompletedProcess[str]:
     with tempfile.TemporaryDirectory() as raw_home:
         lock = Path(raw_home) / ".shimpz-update.lock"
         setup = ""
         if prelocked:
             lock.mkdir()
-            setup = 'printf "%s\\n" "$$" >"$LOCK_DIR/pid"\n' if handoff else 'printf "999999\\n" >"$LOCK_DIR/pid"\n'
+            if malformed:
+                setup = 'printf "not-a-pid\\n" >"$LOCK_DIR/pid"\n'
+            elif stale:
+                setup = 'printf "99999999\\n" >"$LOCK_DIR/pid"\n'
+            else:
+                setup = 'printf "%s\\n" "$$" >"$LOCK_DIR/pid"\n'
         command = (
             "set -eu\n"
             f'action="{action}"\n'
@@ -119,6 +126,13 @@ def assert_reconciler_contract(script: str, check: Callable[[object, str], None]
     check(
         "current|updated|rollback-needed" in script and 'chmod 600 "${STATUS_FILE}.tmp"' in script,
         "status is bounded to three outcomes and remains owner-readable only",
+    )
+    rollback = script.split('warn "The new release did not become healthy"', 1)[1].split("persist_reconciler", 1)[0]
+    check(
+        rollback.count('"rollback-needed" "$release_image_ref" "$release_ordinal" "$previous_admin_ref"') == 2
+        and rollback.count('"rollback-needed" "$release_image_ref" "$release_ordinal" "$admin_image_ref"') == 2
+        and "write_optional_release_status" in rollback,
+        "rollback status uses the best available Admin image without hiding the original failure",
     )
     status_projection = script.split("project_release_status() {", 1)[1].split("remember_failed_release() {", 1)[0]
     check(

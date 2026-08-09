@@ -203,7 +203,7 @@ fi
 
 setup_colors
 case "$action" in
-	install|reset) show_brand "$action" ;;
+	install|reset) [ "$docker_group_handoff" = "1" ] || show_brand "$action" ;;
 esac
 PROJECT_NAME="shimpz-space"
 RESERVED_CONTAINER_NAMES="shimpz-admin shimpz-team shimpz-brain shimpz-brain-egress shimpz-assistant-egress shimpz-assistant-release shimpz-account-egress shimpz-account-egress-init"
@@ -329,6 +329,30 @@ release_lock() {
 	lock_owned=0
 }
 
+claim_lock() {
+	chmod 700 "$LOCK_DIR"
+	printf '%s\n' "$$" >"$LOCK_DIR/pid"
+	chmod 600 "$LOCK_DIR/pid"
+	lock_owned=1
+	trap 'release_lock' EXIT HUP INT TERM
+}
+
+reclaim_stale_lock() {
+	lock_record="$(cat "$LOCK_DIR/pid" 2>/dev/null || true)"
+	case "$lock_record" in
+		""|0|*[!0-9]*) ;;
+		*) kill -0 "$lock_record" 2>/dev/null && return 1 ;;
+	esac
+	lock_record_again="$(cat "$LOCK_DIR/pid" 2>/dev/null || true)"
+	[ "$lock_record_again" = "$lock_record" ] || return 1
+	case "$lock_record_again" in
+		""|0|*[!0-9]*) ;;
+		*) kill -0 "$lock_record_again" 2>/dev/null && return 1 ;;
+	esac
+	rm -f "$LOCK_DIR/pid"
+	rmdir "$LOCK_DIR" 2>/dev/null
+}
+
 acquire_lock() {
 	if [ "$action" = "apply" ] && [ "$lock_handoff" = "1" ] && [ -f "$LOCK_DIR/pid" ] \
 		&& [ "$(sed -n '1p' "$LOCK_DIR/pid")" = "$$" ]; then
@@ -337,11 +361,11 @@ acquire_lock() {
 		return 0
 	fi
 	if mkdir "$LOCK_DIR" 2>/dev/null; then
-		chmod 700 "$LOCK_DIR"
-		printf '%s\n' "$$" >"$LOCK_DIR/pid"
-		chmod 600 "$LOCK_DIR/pid"
-		lock_owned=1
-		trap 'release_lock' EXIT HUP INT TERM
+		claim_lock
+		return 0
+	fi
+	if reclaim_stale_lock && mkdir "$LOCK_DIR" 2>/dev/null; then
+		claim_lock
 		return 0
 	fi
 	if [ "$action" = "scheduled" ]; then
@@ -726,6 +750,7 @@ write_release_status() {
 	status_outcome="$1"
 	status_release="$2"
 	status_ordinal="$3"
+	status_admin_ref="${4:-$admin_image_ref}"
 	case "$status_outcome" in
 		current|updated|rollback-needed) ;;
 		*) die "the Local release status outcome is invalid" ;;
@@ -741,11 +766,18 @@ write_release_status() {
 EOF
 	chmod 600 "${STATUS_FILE}.tmp"
 	mv "${STATUS_FILE}.tmp" "$STATUS_FILE"
-	project_release_status
+	project_release_status "$status_admin_ref"
+}
+
+write_optional_release_status() {
+	if ! (write_release_status "$@"); then
+		warn "The Local release status was saved on the host but could not be projected to Admin"
+	fi
 }
 
 project_release_status() {
-	validate_pinned_release_ref "$admin_image_ref" "$ADMIN_REPOSITORY"
+	status_admin_ref="$1"
+	validate_pinned_release_ref "$status_admin_ref" "$ADMIN_REPOSITORY"
 	status_volume="${PROJECT_NAME}_release_status"
 	status_volume_record="$(docker volume inspect \
 		--format '{{.Name}}|{{index .Labels "com.docker.compose.project"}}|{{index .Labels "com.docker.compose.volume"}}' \
@@ -760,7 +792,7 @@ project_release_status() {
 		--tmpfs /tmp:rw,noexec,nosuid,nodev,size=8m \
 		--mount "type=volume,src=${status_volume},dst=/run/shimpz-local-release" \
 		--entrypoint /opt/venv/bin/python \
-		"$admin_image_ref" -c 'import json,os,sys; raw=sys.stdin.buffer.read(1025); document=json.loads(raw); assert len(raw)<=1024 and set(document)=={"release","ordinal","checked_at","outcome"}; target="/run/shimpz-local-release/status.json"; temporary=target+".tmp"; descriptor=os.open(temporary,os.O_WRONLY|os.O_CREAT|os.O_TRUNC,0o600); assert os.write(descriptor,raw)==len(raw); os.fchmod(descriptor,0o600); os.close(descriptor); os.replace(temporary,target)' \
+		"$status_admin_ref" -c 'import json,os,sys; raw=sys.stdin.buffer.read(1025); document=json.loads(raw); assert len(raw)<=1024 and set(document)=={"release","ordinal","checked_at","outcome"}; target="/run/shimpz-local-release/status.json"; temporary=target+".tmp"; descriptor=os.open(temporary,os.O_WRONLY|os.O_CREAT|os.O_TRUNC,0o600); assert os.write(descriptor,raw)==len(raw); os.fchmod(descriptor,0o600); os.close(descriptor); os.replace(temporary,target)' \
 		<"$STATUS_FILE" >/dev/null \
 		|| die "the Local release status could not be projected to Admin"
 }
@@ -1217,11 +1249,12 @@ validate_pinned_release_ref() {
 	repository="$2"
 	image_digest="${release_ref#"${repository}@sha256:"}"
 	[ "$image_digest" != "$release_ref" ] \
-		|| die "the previous release is not pinned to its responsibility-owned official image"
+		|| die "the Local release reference for ${repository} is not pinned to its official image"
 	case "$image_digest" in
-		""|*[!0-9a-f]*) die "the previous release image digest is invalid" ;;
+		""|*[!0-9a-f]*) die "the Local release reference for ${repository} has an invalid digest" ;;
 	esac
-	[ "${#image_digest}" -eq 64 ] || die "the previous release image digest is invalid"
+	[ "${#image_digest}" -eq 64 ] \
+		|| die "the Local release reference for ${repository} has an invalid digest"
 }
 
 load_previous_release() {
@@ -1880,7 +1913,8 @@ if ! compose up -d --wait --wait-timeout 120 --no-build --pull never --remove-or
 				mv "${ENV_FILE}.previous" "$ENV_FILE"
 				mv "${COMPOSE_FILE}.previous" "$COMPOSE_FILE"
 				remember_failed_release
-				write_release_status "rollback-needed" "$release_image_ref" "$release_ordinal"
+				write_optional_release_status \
+					"rollback-needed" "$release_image_ref" "$release_ordinal" "$admin_image_ref"
 				die "the candidate failed and rollback images could not be verified; previous files were restored without deleting Docker data"
 			fi
 	fi
@@ -1891,16 +1925,19 @@ if ! compose up -d --wait --wait-timeout 120 --no-build --pull never --remove-or
 			mv "${COMPOSE_FILE}.previous" "$COMPOSE_FILE"
 			if ! compose up -d --wait --wait-timeout 120 --no-build --pull never --remove-orphans; then
 				remember_failed_release
-				write_release_status "rollback-needed" "$release_image_ref" "$release_ordinal"
+				write_optional_release_status \
+					"rollback-needed" "$release_image_ref" "$release_ordinal" "$previous_admin_ref"
 				die "rollback also failed; inspect with: (cd \"${SHIMPZ_HOME}\" && docker compose -p ${PROJECT_NAME} logs)"
 			fi
 			remember_failed_release
-			write_release_status "rollback-needed" "$release_image_ref" "$release_ordinal"
+			write_optional_release_status \
+				"rollback-needed" "$release_image_ref" "$release_ordinal" "$previous_admin_ref"
 			warn "Previous version restored; your Admin data was preserved"
 			die "the update failed, so Shimpz is still running the previous version"
 		fi
 		remember_failed_release
-		write_release_status "rollback-needed" "$release_image_ref" "$release_ordinal"
+		write_optional_release_status \
+			"rollback-needed" "$release_image_ref" "$release_ordinal" "$admin_image_ref"
 		die "installation failed"
 	fi
 
