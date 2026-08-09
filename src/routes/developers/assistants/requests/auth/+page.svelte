@@ -36,8 +36,10 @@
   <p>
     Declare the exact capability — <code>auth:reauth</code>, <code>auth:second-factor</code>, or
     <code>auth:phishing-resistant</code> — in <code>@power(human_requests=[...])</code>. The SDK call returns
-    <code>None</code> only after fresh, request-bound assurance succeeds. Rejection, cancellation, expiry, an invalid
-    factor, or an unavailable ceremony terminates the Power automatically.
+    <code>None</code> only after fresh, request-bound assurance succeeds. Rejection, cancellation, expiry, or an
+    unavailable ceremony terminates the Power automatically. Local may let its Supervisor correct a rejected
+    reauthentication password inside the same pending ceremony; the Power remains paused and receives nothing until
+    assurance succeeds or the request terminates. Hosted invalid-factor behavior remains terminal.
   </p>
 </section>
 
