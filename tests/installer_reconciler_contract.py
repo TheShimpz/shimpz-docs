@@ -62,9 +62,7 @@ def install_systemd_units(
             f'SYSTEMD_USER_DIR="{units}"\n'
             f'SYSTEMD_SERVICE="{service}"\n'
             f'SYSTEMD_TIMER="{timer}"\n'
-            "die() { printf '%s\\n' \"$*\" >&2; exit 1; }\n"
-            + script[start:end]
-            + "\ninstall_scheduler\n"
+            "die() { printf '%s\\n' \"$*\" >&2; exit 1; }\n" + script[start:end] + "\ninstall_scheduler\n"
         )
         result = subprocess.run(
             ["/bin/sh", "-c", command],
@@ -80,36 +78,63 @@ def install_systemd_units(
 
 
 def assert_reconciler_contract(script: str, check: Callable[[object, str], None]) -> None:
-    check(script.count("cat >\"${COMPOSE_FILE}.tmp\" <<'COMPOSE'") == 1,
-          "first install and scheduled updates share one Compose renderer")
-    check('exec env SHIMPZ_UPDATE_LOCK_HELD=1 SHIMPZ_PORT="$install_port"' in script and
-          '/bin/sh "$RECONCILER_CANDIDATE" --apply-release "$release_image_ref"' in script,
-          "bootstrap and scheduled selection hand off exact release application to the verified candidate")
-    check('docker cp "${release_container}:/reconcile.sh"' in script and
-          '[ "$actual_reconciler_sha256" = "$reconciler_sha256" ]' in script,
-          "the OCI reconciler is extracted and hash-checked before execution")
-    check('mv "$RECONCILER_CANDIDATE" "$RECONCILER_FILE"' in script and
-          'compose up -d --wait --wait-timeout 120' in script and
-          script.index('compose up -d --wait --wait-timeout 120') < script.rindex("\tpersist_reconciler\n"),
-          "the candidate replaces the installed reconciler only after the health gate")
-    check('cp "$RECONCILER_FILE" "${RECONCILER_PREVIOUS}.tmp"' in script,
-          "the previously healthy reconciler remains available during candidate application")
-    check('mkdir "$LOCK_DIR"' in script and 'SHIMPZ_UPDATE_LOCK_HELD' in script and
-          '"$(sed -n \'1p\' "$LOCK_DIR/pid")" = "$$"' in script,
-          "one PID-bound atomic lock serializes manual and scheduled applies")
-    check("OnUnitActiveSec=6h" in script and "RandomizedDelaySec=30m" in script and "Persistent=true" in script,
-          "Linux schedules low-frequency persistent checks with jitter")
-    check("<key>StartInterval</key><integer>21600</integer>" in script and
-          '<string>--scheduled</string>' in script,
-          "macOS schedules the same installed reconciler at low frequency")
-    check("current|updated|rollback-needed" in script and 'chmod 600 "${STATUS_FILE}.tmp"' in script,
-          "status is bounded to three outcomes and remains owner-readable only")
-    check("release_status:/run/shimpz-local-release:ro" in script and
-          '"${PROJECT_NAME}_release_status"' in script and "--cap-add CHOWN" in script,
-          "Admin receives only a read-only projection independent of the installing host UID")
-    check("failed_release_matches" in script and "remember_failed_release" in script and
-          'rm -f "$FAILED_RELEASE_FILE"' in script,
-          "a failed release digest is not retried until a different release succeeds")
-    check('rm -f "$SYSTEMD_SERVICE" "$SYSTEMD_TIMER"' in script and 'rm -f "$LAUNCH_AGENT"' in script and
-          '"$RECONCILER_FILE" "$RECONCILER_CANDIDATE" "$RECONCILER_PREVIOUS"' in script,
-          "reset removes the exact owned schedulers and reconciliation files")
+    check(
+        script.count("cat >\"${COMPOSE_FILE}.tmp\" <<'COMPOSE'") == 1,
+        "first install and scheduled updates share one Compose renderer",
+    )
+    check(
+        'exec env SHIMPZ_UPDATE_LOCK_HELD=1 SHIMPZ_PORT="$install_port"' in script
+        and '/bin/sh "$RECONCILER_CANDIDATE" --apply-release "$release_image_ref"' in script,
+        "bootstrap and scheduled selection hand off exact release application to the verified candidate",
+    )
+    check(
+        'docker cp "${release_container}:/reconcile.sh"' in script
+        and '[ "$actual_reconciler_sha256" = "$reconciler_sha256" ]' in script,
+        "the OCI reconciler is extracted and hash-checked before execution",
+    )
+    check(
+        'mv "$RECONCILER_CANDIDATE" "$RECONCILER_FILE"' in script
+        and "compose up -d --wait --wait-timeout 120" in script
+        and script.index("compose up -d --wait --wait-timeout 120") < script.rindex("\tpersist_reconciler\n"),
+        "the candidate replaces the installed reconciler only after the health gate",
+    )
+    check(
+        'cp "$RECONCILER_FILE" "${RECONCILER_PREVIOUS}.tmp"' in script,
+        "the previously healthy reconciler remains available during candidate application",
+    )
+    check(
+        'mkdir "$LOCK_DIR"' in script
+        and "SHIMPZ_UPDATE_LOCK_HELD" in script
+        and '"$(sed -n \'1p\' "$LOCK_DIR/pid")" = "$$"' in script,
+        "one PID-bound atomic lock serializes manual and scheduled applies",
+    )
+    check(
+        "OnUnitActiveSec=6h" in script and "RandomizedDelaySec=30m" in script and "Persistent=true" in script,
+        "Linux schedules low-frequency persistent checks with jitter",
+    )
+    check(
+        "<key>StartInterval</key><integer>21600</integer>" in script and "<string>--scheduled</string>" in script,
+        "macOS schedules the same installed reconciler at low frequency",
+    )
+    check(
+        "current|updated|rollback-needed" in script and 'chmod 600 "${STATUS_FILE}.tmp"' in script,
+        "status is bounded to three outcomes and remains owner-readable only",
+    )
+    check(
+        "release_status:/run/shimpz-local-release:ro" in script
+        and '"${PROJECT_NAME}_release_status"' in script
+        and "--cap-add CHOWN" in script,
+        "Admin receives only a read-only projection independent of the installing host UID",
+    )
+    check(
+        "failed_release_matches" in script
+        and "remember_failed_release" in script
+        and 'rm -f "$FAILED_RELEASE_FILE"' in script,
+        "a failed release digest is not retried until a different release succeeds",
+    )
+    check(
+        'rm -f "$SYSTEMD_SERVICE" "$SYSTEMD_TIMER"' in script
+        and 'rm -f "$LAUNCH_AGENT"' in script
+        and '"$RECONCILER_FILE" "$RECONCILER_CANDIDATE" "$RECONCILER_PREVIOUS"' in script,
+        "reset removes the exact owned schedulers and reconciliation files",
+    )

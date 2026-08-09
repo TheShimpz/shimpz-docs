@@ -78,18 +78,21 @@ def assert_atomic_release_contract(
 ) -> None:
     digest = "a" * 64
     reconciler_sha256 = hashlib.sha256(b"#!/bin/sh\n").hexdigest()
-    valid = "\n".join(
-        (
-            "schema=local-v1",
-            "ordinal=42",
-            f"umbrella_revision={'b' * 40}",
-            f"reconciler_sha256={reconciler_sha256}",
-            f"admin=ghcr.io/theshimpz/shimpz-admin@sha256:{digest}",
-            f"team=ghcr.io/theshimpz/shimpz-team-local@sha256:{digest}",
-            f"brain=ghcr.io/theshimpz/shimpz-brain@sha256:{digest}",
-            f"egress=ghcr.io/theshimpz/shimpz-egress@sha256:{digest}",
+    valid = (
+        "\n".join(
+            (
+                "schema=local-v1",
+                "ordinal=42",
+                f"umbrella_revision={'b' * 40}",
+                f"reconciler_sha256={reconciler_sha256}",
+                f"admin=ghcr.io/theshimpz/shimpz-admin@sha256:{digest}",
+                f"team=ghcr.io/theshimpz/shimpz-team-local@sha256:{digest}",
+                f"brain=ghcr.io/theshimpz/shimpz-brain@sha256:{digest}",
+                f"egress=ghcr.io/theshimpz/shimpz-egress@sha256:{digest}",
+            )
         )
-    ) + "\n"
+        + "\n"
+    )
     accepted = _run_validator(valid, shell_functions)
     check(accepted.returncode == 0, f"exact release metadata is admitted: {accepted.stderr}")
     check(
@@ -102,9 +105,7 @@ def assert_atomic_release_contract(
         "duplicate field": valid.replace("ordinal=42", "ordinal=42\nordinal=43"),
         "unknown schema": valid.replace("schema=local-v1", "schema=local-v2"),
         "zero ordinal": valid.replace("ordinal=42", "ordinal=0"),
-        "wrong repository": valid.replace(
-            "admin=ghcr.io/theshimpz/shimpz-admin", "admin=ghcr.io/example/shimpz-admin"
-        ),
+        "wrong repository": valid.replace("admin=ghcr.io/theshimpz/shimpz-admin", "admin=ghcr.io/example/shimpz-admin"),
         "tag member": valid.replace(f"@sha256:{digest}", ":stable", 1),
         "invalid reconciler hash": valid.replace(reconciler_sha256, "z" * 64),
         "missing reconciler hash": valid.replace(f"reconciler_sha256={reconciler_sha256}\n", ""),

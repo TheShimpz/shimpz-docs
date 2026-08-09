@@ -57,7 +57,6 @@ def _run_previous_ref_validator(image: str, repository: str) -> subprocess.Compl
     )
 
 
-
 def _run_project_validator(
     records: list[str],
     *,
@@ -295,8 +294,8 @@ def test_static_delivery_is_pull_only_and_content_addressed():
         "one release channel and its four exact members resolve to digests",
     )
     check(
-        'SHIMPZ_LOCAL_RELEASE_IMAGE=${release_image_ref}' in SCRIPT
-        and 'SHIMPZ_LOCAL_RELEASE_ORDINAL=${release_ordinal}' in SCRIPT,
+        "SHIMPZ_LOCAL_RELEASE_IMAGE=${release_image_ref}" in SCRIPT
+        and "SHIMPZ_LOCAL_RELEASE_ORDINAL=${release_ordinal}" in SCRIPT,
         "the applied release identity and monotonic ordinal are persisted",
     )
     check("SHIMPZ_ADMIN_IMAGE=${admin_image_ref}" in SCRIPT, "the environment pins the Admin digest")
@@ -362,8 +361,7 @@ def test_static_delivery_is_pull_only_and_content_addressed():
     check(
         'install_port="${SHIMPZ_PORT:-7777}"' in SCRIPT
         and "unset SHIMPZ_ADMIN_IMAGE SHIMPZ_TEAM_IMAGE SHIMPZ_BRAIN_IMAGE SHIMPZ_EGRESS_IMAGE" in SCRIPT
-        and "unset SHIMPZ_LOCAL_RELEASE_IMAGE SHIMPZ_LOCAL_RELEASE_ORDINAL SHIMPZ_SPACE_PLATFORM SHIMPZ_PORT"
-        in SCRIPT
+        and "unset SHIMPZ_LOCAL_RELEASE_IMAGE SHIMPZ_LOCAL_RELEASE_ORDINAL SHIMPZ_SPACE_PLATFORM SHIMPZ_PORT" in SCRIPT
         and "unset SHIMPZ_DOCKER_GID SHIMPZ_DOCKER_SOCKET SHIMPZ_SPACE_ID SHIMPZ_CPUSET" in SCRIPT
         and "SHIMPZ_PORT=${install_port}" in SCRIPT,
         "exported shell variables cannot override install, rollback, or reset state",
@@ -374,12 +372,18 @@ def test_static_delivery_is_pull_only_and_content_addressed():
 
 def test_atomic_release_metadata_is_closed_and_repository_bound():
     assert_atomic_release_contract(_shell_functions, check)
-    check('docker create --platform "$docker_platform" "$release_ref" /release.env' in SCRIPT,
-          "metadata extraction supplies a harmless argv for the commandless scratch image")
-    check('[ "$release_ordinal" -ge "$current_release_ordinal" ]' in SCRIPT,
-          "an installed Local release cannot follow a rewound channel ordinal")
-    check('the Local release ordinal was reused for different content' in SCRIPT,
-          "an equal ordinal cannot be rebound to different release content")
+    check(
+        'docker create --platform "$docker_platform" "$release_ref" /release.env' in SCRIPT,
+        "metadata extraction supplies a harmless argv for the commandless scratch image",
+    )
+    check(
+        '[ "$release_ordinal" -ge "$current_release_ordinal" ]' in SCRIPT,
+        "an installed Local release cannot follow a rewound channel ordinal",
+    )
+    check(
+        "the Local release ordinal was reused for different content" in SCRIPT,
+        "an equal ordinal cannot be rebound to different release content",
+    )
 
 
 def test_installer_and_scheduler_share_one_verified_reconciliation_path():
@@ -392,22 +396,32 @@ def test_update_lock_serializes_cycles_and_preserves_exec_handoff():
     overlap = run_lock_contract(SCRIPT, "scheduled", prelocked=True)
     check(overlap.returncode == 0 and not overlap.stdout, "an overlapping scheduled cycle exits cleanly")
     manual_overlap = run_lock_contract(SCRIPT, "install", prelocked=True)
-    check(manual_overlap.returncode != 0 and "already running" in manual_overlap.stderr,
-          "an overlapping manual apply reports the active cycle")
+    check(
+        manual_overlap.returncode != 0 and "already running" in manual_overlap.stderr,
+        "an overlapping manual apply reports the active cycle",
+    )
     handoff = run_lock_contract(SCRIPT, "apply", prelocked=True, handoff=True)
-    check(handoff.returncode == 0 and handoff.stdout.strip() == "acquired:1",
-          "exec preserves the exact PID-bound lock across candidate handoff")
+    check(
+        handoff.returncode == 0 and handoff.stdout.strip() == "acquired:1",
+        "exec preserves the exact PID-bound lock across candidate handoff",
+    )
 
 
 def test_linux_scheduler_invokes_only_the_installed_reconciler():
     result, service, timer, calls = install_systemd_units(SCRIPT)
     check(result.returncode == 0, f"systemd user units are emitted: {result.stderr.strip()}")
-    check("ExecStart=/bin/sh %h/.shimpz/reconcile.sh --scheduled" in service,
-          "the timer executes only the fixed local reconciler")
-    check("OnUnitActiveSec=6h" in timer and "RandomizedDelaySec=30m" in timer and "Persistent=true" in timer,
-          "the emitted timer is persistent, bounded, and jittered")
-    check(calls == ["--user daemon-reload", "--user enable --now shimpz-update.timer"],
-          "scheduler activation touches only the exact owned timer")
+    check(
+        "ExecStart=/bin/sh %h/.shimpz/reconcile.sh --scheduled" in service,
+        "the timer executes only the fixed local reconciler",
+    )
+    check(
+        "OnUnitActiveSec=6h" in timer and "RandomizedDelaySec=30m" in timer and "Persistent=true" in timer,
+        "the emitted timer is persistent, bounded, and jittered",
+    )
+    check(
+        calls == ["--user daemon-reload", "--user enable --now shimpz-update.timer"],
+        "scheduler activation touches only the exact owned timer",
+    )
 
 
 def test_remote_docker_endpoints_are_rejected_before_daemon_access():
@@ -659,8 +673,7 @@ def _check_compose_isolation(admin: str, compose: str, controller: str) -> None:
         SCRIPT.count("  supervisor_key:") == 1,
         "Compose declares exactly one Local Supervisor public-key volume",
     )
-    check(SCRIPT.count("  release_status:") == 1,
-          "Compose declares exactly one read-only Admin platform-status volume")
+    check(SCRIPT.count("  release_status:") == 1, "Compose declares exactly one read-only Admin platform-status volume")
     check("SHIMPZ_CLOUDFLARE_OAUTH_CLIENT" not in SCRIPT, "installer contains no OAuth client credentials")
     check("SHIMPZ_X_OAUTH_CLIENT_ID" not in SCRIPT, "installer contains no unsupported X OAuth configuration")
     check("postgres" not in SCRIPT, "bootstrap does not claim an unshipped PostgreSQL dependency")
