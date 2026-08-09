@@ -16,6 +16,7 @@ from installer_egress_contract import (
 )
 from installer_project_contract import assert_project_validator_contract
 from installer_project_harness import run_project_validator
+from installer_reconciler_contract import assert_reconciler_contract, install_systemd_units, run_lock_contract
 from installer_release_contract import assert_atomic_release_contract
 from installer_reset_contract import assert_reset_contract
 from installer_runtime_contract import assert_healthcheck_cadence, assert_runtime_version_floor
@@ -193,7 +194,7 @@ def test_static_local_installer_contains_no_oauth_client_credentials():
 
 def test_version_command_reports_the_stable_installer_release():
     version = subprocess.run(["sh", str(SCRIPT_PATH), "--version"], check=False, capture_output=True, text=True)
-    check(version.returncode == 0 and version.stdout.strip() == "0.8.0", "version is an explicit stable release")
+    check(version.returncode == 0 and version.stdout.strip() == "0.9.0", "version is an explicit stable release")
 
 
 def test_runtime_version_floor_is_numeric_and_fail_closed():
@@ -281,7 +282,7 @@ def test_static_delivery_is_pull_only_and_content_addressed():
         "RepoDigests",
         "sha256:",
         '"${#digest_hex}" -eq 64',
-        'release_image_ref="$(pull_verified_ref "$release_tag_ref" "$RELEASE_REPOSITORY")"',
+        'release_image_ref="$(pull_verified_ref "$release_selector_ref" "$RELEASE_REPOSITORY")"',
         'load_release_set "$release_image_ref"',
         'admin_image_ref="$(pull_verified_ref "$admin_image_ref" "$ADMIN_REPOSITORY")"',
         'team_image_ref="$(pull_verified_ref "$team_image_ref" "$TEAM_REPOSITORY")"',
@@ -375,8 +376,38 @@ def test_atomic_release_metadata_is_closed_and_repository_bound():
     assert_atomic_release_contract(_shell_functions, check)
     check('docker create --platform "$docker_platform" "$release_ref" /release.env' in SCRIPT,
           "metadata extraction supplies a harmless argv for the commandless scratch image")
-    check('[ "$release_ordinal" -ge "$current_ordinal" ]' in SCRIPT,
+    check('[ "$release_ordinal" -ge "$current_release_ordinal" ]' in SCRIPT,
           "an installed Local release cannot follow a rewound channel ordinal")
+    check('the Local release ordinal was reused for different content' in SCRIPT,
+          "an equal ordinal cannot be rebound to different release content")
+
+
+def test_installer_and_scheduler_share_one_verified_reconciliation_path():
+    assert_reconciler_contract(SCRIPT, check)
+
+
+def test_update_lock_serializes_cycles_and_preserves_exec_handoff():
+    acquired = run_lock_contract(SCRIPT, "install", prelocked=False)
+    check(acquired.returncode == 0 and acquired.stdout.strip() == "acquired:1", "a free lock admits one apply")
+    overlap = run_lock_contract(SCRIPT, "scheduled", prelocked=True)
+    check(overlap.returncode == 0 and not overlap.stdout, "an overlapping scheduled cycle exits cleanly")
+    manual_overlap = run_lock_contract(SCRIPT, "install", prelocked=True)
+    check(manual_overlap.returncode != 0 and "already running" in manual_overlap.stderr,
+          "an overlapping manual apply reports the active cycle")
+    handoff = run_lock_contract(SCRIPT, "apply", prelocked=True, handoff=True)
+    check(handoff.returncode == 0 and handoff.stdout.strip() == "acquired:1",
+          "exec preserves the exact PID-bound lock across candidate handoff")
+
+
+def test_linux_scheduler_invokes_only_the_installed_reconciler():
+    result, service, timer, calls = install_systemd_units(SCRIPT)
+    check(result.returncode == 0, f"systemd user units are emitted: {result.stderr.strip()}")
+    check("ExecStart=/bin/sh %h/.shimpz/reconcile.sh --scheduled" in service,
+          "the timer executes only the fixed local reconciler")
+    check("OnUnitActiveSec=6h" in timer and "RandomizedDelaySec=30m" in timer and "Persistent=true" in timer,
+          "the emitted timer is persistent, bounded, and jittered")
+    check(calls == ["--user daemon-reload", "--user enable --now shimpz-update.timer"],
+          "scheduler activation touches only the exact owned timer")
 
 
 def test_remote_docker_endpoints_are_rejected_before_daemon_access():

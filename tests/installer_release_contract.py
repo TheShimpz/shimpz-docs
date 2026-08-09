@@ -1,5 +1,6 @@
 """Atomic Local release metadata contracts for the public installer."""
 
+import hashlib
 import subprocess
 import tempfile
 from collections.abc import Callable
@@ -13,12 +14,20 @@ def _run_validator(metadata: str, shell_functions: Callable[[str, str], str]) ->
         binary_dir.mkdir()
         source = home / "source.env"
         source.write_text(metadata, encoding="utf-8")
+        reconciler = home / "reconcile.sh"
+        reconciler.write_text("#!/bin/sh\n", encoding="utf-8")
         docker = binary_dir / "docker"
         docker.write_text(
             """#!/bin/sh
 case "$1" in
   create) printf '%s\n' release-metadata ;;
-  cp) cp "$FAKE_RELEASE_METADATA" "$3" ;;
+  cp)
+    case "$2" in
+      *:/release.env) cp "$FAKE_RELEASE_METADATA" "$3" ;;
+      *:/reconcile.sh) cp "$FAKE_RECONCILER" "$3" ;;
+      *) exit 72 ;;
+    esac
+    ;;
   rm) : ;;
   *) exit 71 ;;
 esac
@@ -31,6 +40,8 @@ esac
             """#!/bin/sh
 set -eu
 SHIMPZ_HOME="$TEST_HOME"
+RECONCILER_CANDIDATE="$TEST_HOME/reconcile.candidate"
+action="install"
 docker_platform="linux/amd64"
 ADMIN_REPOSITORY="ghcr.io/theshimpz/shimpz-admin"
 TEAM_REPOSITORY="ghcr.io/theshimpz/shimpz-team-local"
@@ -54,6 +65,7 @@ die() { printf '%s\n' "$*" >&2; exit 1; }
                 "PATH": f"{binary_dir}:/usr/bin:/bin",
                 "TEST_HOME": str(home),
                 "FAKE_RELEASE_METADATA": str(source),
+                "FAKE_RECONCILER": str(reconciler),
             },
         )
 
@@ -65,11 +77,13 @@ def assert_atomic_release_contract(
     shell_functions: Callable[[str, str], str], check: Callable[[object, str], None]
 ) -> None:
     digest = "a" * 64
+    reconciler_sha256 = hashlib.sha256(b"#!/bin/sh\n").hexdigest()
     valid = "\n".join(
         (
             "schema=local-v1",
             "ordinal=42",
             f"umbrella_revision={'b' * 40}",
+            f"reconciler_sha256={reconciler_sha256}",
             f"admin=ghcr.io/theshimpz/shimpz-admin@sha256:{digest}",
             f"team=ghcr.io/theshimpz/shimpz-team-local@sha256:{digest}",
             f"brain=ghcr.io/theshimpz/shimpz-brain@sha256:{digest}",
@@ -92,6 +106,8 @@ def assert_atomic_release_contract(
             "admin=ghcr.io/theshimpz/shimpz-admin", "admin=ghcr.io/example/shimpz-admin"
         ),
         "tag member": valid.replace(f"@sha256:{digest}", ":stable", 1),
+        "invalid reconciler hash": valid.replace(reconciler_sha256, "z" * 64),
+        "missing reconciler hash": valid.replace(f"reconciler_sha256={reconciler_sha256}\n", ""),
     }
     for label, metadata in invalid.items():
         rejected = _run_validator(metadata, shell_functions)

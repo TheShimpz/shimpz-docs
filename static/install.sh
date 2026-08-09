@@ -2,7 +2,7 @@
 
 set -eu
 
-INSTALLER_VERSION="0.8.0"
+INSTALLER_VERSION="0.9.0"
 RELEASE_REPOSITORY="ghcr.io/theshimpz/shimpz-local-release"
 ADMIN_REPOSITORY="ghcr.io/theshimpz/shimpz-admin"
 TEAM_REPOSITORY="ghcr.io/theshimpz/shimpz-team-local"
@@ -167,9 +167,18 @@ die() {
 	exit 1
 }
 
+lock_handoff="${SHIMPZ_UPDATE_LOCK_HELD:-0}"
+unset SHIMPZ_UPDATE_LOCK_HELD
+requested_release_ref=""
 case "${1:-}" in
 	"") action="install" ;;
 	--reset) action="reset" ;;
+	--scheduled) action="scheduled" ;;
+	--apply-release)
+		action="apply"
+		requested_release_ref="${2:-}"
+		[ -n "$requested_release_ref" ] || die "the exact Local release reference is required"
+		;;
 	--version)
 		printf '%s\n' "$INSTALLER_VERSION"
 		exit 0
@@ -183,10 +192,16 @@ case "${1:-}" in
 		die "unknown option: $1"
 		;;
 esac
-[ "$#" -le 1 ] || die "only one option may be supplied"
+if [ "$action" = "apply" ]; then
+	[ "$#" -eq 2 ] || die "the exact Local release reference is the only internal argument"
+else
+	[ "$#" -le 1 ] || die "only one option may be supplied"
+fi
 
 setup_colors
-show_brand "$action"
+case "$action" in
+	install|reset) show_brand "$action" ;;
+esac
 PROJECT_NAME="shimpz-space"
 RESERVED_CONTAINER_NAMES="shimpz-admin shimpz-team shimpz-brain shimpz-brain-egress shimpz-assistant-egress shimpz-assistant-release shimpz-account-egress shimpz-account-egress-init"
 SHIMPZ_HOME_NAME=".shimpz"
@@ -234,10 +249,62 @@ SHIMPZ_HOME="${HOME}/${SHIMPZ_HOME_NAME}"
 COMPOSE_FILE="${SHIMPZ_HOME}/compose.yaml"
 ENV_FILE="${SHIMPZ_HOME}/.env"
 MARKER_FILE="${SHIMPZ_HOME}/.shimpz-space"
-install_port="${SHIMPZ_PORT:-7777}"
+LOCK_DIR="${HOME}/.shimpz-update.lock"
+RECONCILER_FILE="${SHIMPZ_HOME}/reconcile.sh"
+RECONCILER_CANDIDATE="${SHIMPZ_HOME}/reconcile.candidate"
+RECONCILER_PREVIOUS="${SHIMPZ_HOME}/reconcile.previous"
+STATUS_FILE="${SHIMPZ_HOME}/release-status.json"
+FAILED_RELEASE_FILE="${SHIMPZ_HOME}/failed-release.env"
+SYSTEMD_USER_DIR="${XDG_CONFIG_HOME:-${HOME}/.config}/systemd/user"
+SYSTEMD_SERVICE="${SYSTEMD_USER_DIR}/shimpz-update.service"
+SYSTEMD_TIMER="${SYSTEMD_USER_DIR}/shimpz-update.timer"
+LAUNCH_AGENT="${HOME}/Library/LaunchAgents/com.shimpz.update.plist"
+SCHEDULER_MARKER="shimpz-local-update-v1"
+if { [ "$action" = "scheduled" ] || [ "$action" = "apply" ]; } && [ -f "$ENV_FILE" ]; then
+	install_port="$(sed -n 's/^SHIMPZ_PORT=//p' "$ENV_FILE")"
+	[ "$(printf '%s\n' "$install_port" | wc -l | tr -d ' ')" -eq 1 ] \
+		|| die "the installed Admin port is ambiguous"
+else
+	install_port="${SHIMPZ_PORT:-7777}"
+fi
 unset SHIMPZ_ADMIN_IMAGE SHIMPZ_TEAM_IMAGE SHIMPZ_BRAIN_IMAGE SHIMPZ_EGRESS_IMAGE
 unset SHIMPZ_LOCAL_RELEASE_IMAGE SHIMPZ_LOCAL_RELEASE_ORDINAL SHIMPZ_SPACE_PLATFORM SHIMPZ_PORT
 unset SHIMPZ_DOCKER_GID SHIMPZ_DOCKER_SOCKET SHIMPZ_SPACE_ID SHIMPZ_CPUSET
+
+lock_owned=0
+release_lock() {
+	[ "$lock_owned" -eq 1 ] || return 0
+	rm -f "$LOCK_DIR/pid"
+	rmdir "$LOCK_DIR" 2>/dev/null || true
+	lock_owned=0
+}
+
+acquire_lock() {
+	if [ "$action" = "apply" ] && [ "$lock_handoff" = "1" ] && [ -f "$LOCK_DIR/pid" ] \
+		&& [ "$(sed -n '1p' "$LOCK_DIR/pid")" = "$$" ]; then
+		lock_owned=1
+		trap 'release_lock' EXIT HUP INT TERM
+		return 0
+	fi
+	if mkdir "$LOCK_DIR" 2>/dev/null; then
+		chmod 700 "$LOCK_DIR"
+		printf '%s\n' "$$" >"$LOCK_DIR/pid"
+		chmod 600 "$LOCK_DIR/pid"
+		lock_owned=1
+		trap 'release_lock' EXIT HUP INT TERM
+		return 0
+	fi
+	if [ "$action" = "scheduled" ]; then
+		exit 0
+	fi
+	die "another Shimpz install or update is already running"
+}
+
+if [ "$action" = "scheduled" ] && [ "$(uname -s)" = "Darwin" ]; then
+	update_jitter="$(printf '%s' "$HOME" | cksum | awk '{print $1 % 1801}')"
+	sleep "$update_jitter"
+fi
+acquire_lock
 
 compose() {
 	docker compose --progress quiet --project-name "$PROJECT_NAME" --env-file "$ENV_FILE" -f "$COMPOSE_FILE" "$@"
@@ -604,7 +671,192 @@ remove_validated_project_resources() {
 	done
 }
 
+write_release_status() {
+	status_outcome="$1"
+	status_release="$2"
+	status_ordinal="$3"
+	case "$status_outcome" in
+		current|updated|rollback-needed) ;;
+		*) die "the Local release status outcome is invalid" ;;
+	esac
+	validate_pinned_release_ref "$status_release" "$RELEASE_REPOSITORY"
+	case "$status_ordinal" in
+		""|0|*[!0-9]*) die "the Local release status ordinal is invalid" ;;
+	esac
+	status_timestamp="$(date -u '+%Y-%m-%dT%H:%M:%SZ')" \
+		|| die "could not timestamp the Local release status"
+	cat >"${STATUS_FILE}.tmp" <<EOF
+{"release":"${status_release}","ordinal":${status_ordinal},"checked_at":"${status_timestamp}","outcome":"${status_outcome}"}
+EOF
+	chmod 600 "${STATUS_FILE}.tmp"
+	mv "${STATUS_FILE}.tmp" "$STATUS_FILE"
+}
+
+remember_failed_release() {
+	validate_pinned_release_ref "$release_image_ref" "$RELEASE_REPOSITORY"
+	cat >"${FAILED_RELEASE_FILE}.tmp" <<EOF
+release=${release_image_ref}
+ordinal=${release_ordinal}
+EOF
+	chmod 600 "${FAILED_RELEASE_FILE}.tmp"
+	mv "${FAILED_RELEASE_FILE}.tmp" "$FAILED_RELEASE_FILE"
+}
+
+failed_release_matches() {
+	[ -f "$FAILED_RELEASE_FILE" ] || return 1
+	[ "$(wc -l <"$FAILED_RELEASE_FILE" | tr -d ' ')" -eq 2 ] \
+		|| die "the failed Local release record is malformed"
+	failed_release_ref="$(sed -n 's/^release=//p' "$FAILED_RELEASE_FILE")"
+	failed_release_ordinal="$(sed -n 's/^ordinal=//p' "$FAILED_RELEASE_FILE")"
+	validate_pinned_release_ref "$failed_release_ref" "$RELEASE_REPOSITORY"
+	case "$failed_release_ordinal" in
+		""|0|*[!0-9]*) die "the failed Local release record is malformed" ;;
+	esac
+	[ "$failed_release_ref" = "$release_image_ref" ]
+}
+
+remove_scheduler() {
+	validate_scheduler_ownership
+	host_scheduler_os="$(uname -s)"
+	case "$host_scheduler_os" in
+		Linux)
+			if command -v systemctl >/dev/null 2>&1; then
+				systemctl --user disable --now shimpz-update.timer >/dev/null 2>&1 || true
+			fi
+			rm -f "$SYSTEMD_SERVICE" "$SYSTEMD_TIMER"
+			if command -v systemctl >/dev/null 2>&1; then
+				systemctl --user daemon-reload >/dev/null 2>&1 || true
+			fi
+			;;
+		Darwin)
+			if command -v launchctl >/dev/null 2>&1; then
+				launchctl bootout "gui/$(id -u)" "$LAUNCH_AGENT" >/dev/null 2>&1 || true
+			fi
+			rm -f "$LAUNCH_AGENT"
+			;;
+	esac
+}
+
+install_scheduler() {
+	validate_scheduler_ownership
+	case "$host_os" in
+		Linux)
+			command -v systemctl >/dev/null 2>&1 \
+				|| die "systemd user services are required for automatic updates"
+			mkdir -p "$SYSTEMD_USER_DIR"
+			cat >"${SYSTEMD_SERVICE}.tmp" <<'EOF'
+# shimpz-local-update-v1
+[Unit]
+Description=Reconcile the Shimpz Local platform release
+ConditionPathExists=%h/.shimpz/.shimpz-space
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh %h/.shimpz/reconcile.sh --scheduled
+EOF
+			cat >"${SYSTEMD_TIMER}.tmp" <<'EOF'
+# shimpz-local-update-v1
+[Unit]
+Description=Check for a Shimpz Local platform release
+
+[Timer]
+OnBootSec=5m
+OnUnitActiveSec=6h
+RandomizedDelaySec=30m
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+EOF
+			chmod 600 "${SYSTEMD_SERVICE}.tmp" "${SYSTEMD_TIMER}.tmp"
+			mv "${SYSTEMD_SERVICE}.tmp" "$SYSTEMD_SERVICE"
+			mv "${SYSTEMD_TIMER}.tmp" "$SYSTEMD_TIMER"
+			systemctl --user daemon-reload \
+				|| die "could not reload the automatic update scheduler"
+			systemctl --user enable --now shimpz-update.timer >/dev/null \
+				|| die "could not enable automatic Shimpz updates"
+			;;
+		Darwin)
+			command -v launchctl >/dev/null 2>&1 \
+				|| die "launchd is required for automatic updates"
+			mkdir -p "${HOME}/Library/LaunchAgents"
+			reconciler_xml="$(printf '%s' "$RECONCILER_FILE" | sed \
+				-e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' -e 's/"/\&quot;/g')"
+			cat >"${LAUNCH_AGENT}.tmp" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- shimpz-local-update-v1 -->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.shimpz.update</string>
+  <key>ProgramArguments</key>
+  <array><string>/bin/sh</string><string>${reconciler_xml}</string><string>--scheduled</string></array>
+  <key>RunAtLoad</key><true/>
+  <key>StartInterval</key><integer>21600</integer>
+  <key>ProcessType</key><string>Background</string>
+  <key>StandardOutPath</key><string>/dev/null</string>
+  <key>StandardErrorPath</key><string>/dev/null</string>
+</dict>
+</plist>
+EOF
+			chmod 600 "${LAUNCH_AGENT}.tmp"
+			mv "${LAUNCH_AGENT}.tmp" "$LAUNCH_AGENT"
+			launchctl bootout "gui/$(id -u)" "$LAUNCH_AGENT" >/dev/null 2>&1 || true
+			launchctl bootstrap "gui/$(id -u)" "$LAUNCH_AGENT" \
+				|| die "could not enable automatic Shimpz updates"
+			;;
+	esac
+}
+
+validate_scheduler_ownership() {
+	host_scheduler_os="$(uname -s)"
+	case "$host_scheduler_os" in
+		Linux)
+			for scheduler_path in "$SYSTEMD_SERVICE" "$SYSTEMD_TIMER"; do
+				[ ! -e "$scheduler_path" ] \
+					|| [ "$(sed -n '1p' "$scheduler_path")" = "# ${SCHEDULER_MARKER}" ] \
+					|| die "refusing to replace an unowned user scheduler: ${scheduler_path}"
+			done
+			;;
+		Darwin)
+			[ ! -e "$LAUNCH_AGENT" ] \
+				|| [ "$(sed -n '2p' "$LAUNCH_AGENT")" = "<!-- ${SCHEDULER_MARKER} -->" ] \
+				|| die "refusing to replace an unowned user scheduler: ${LAUNCH_AGENT}"
+			;;
+	esac
+}
+
+persist_reconciler() {
+	[ -f "$RECONCILER_CANDIDATE" ] || die "the verified Local reconciler candidate is missing"
+	[ "$(sha256_file "$RECONCILER_CANDIDATE")" = "$reconciler_sha256" ] \
+		|| die "the verified Local reconciler candidate changed during apply"
+	if [ -f "$RECONCILER_FILE" ]; then
+		cp "$RECONCILER_FILE" "${RECONCILER_PREVIOUS}.tmp"
+		chmod 700 "${RECONCILER_PREVIOUS}.tmp"
+		mv "${RECONCILER_PREVIOUS}.tmp" "$RECONCILER_PREVIOUS"
+	fi
+	chmod 700 "$RECONCILER_CANDIDATE"
+	mv "$RECONCILER_CANDIDATE" "$RECONCILER_FILE"
+	install_scheduler
+}
+
+validate_scheduler() {
+	case "$host_os" in
+		Linux)
+			command -v systemctl >/dev/null 2>&1 \
+				&& systemctl --user show-environment >/dev/null 2>&1 \
+				|| die "a running systemd user manager is required for automatic updates"
+			;;
+		Darwin)
+			command -v launchctl >/dev/null 2>&1 \
+				&& launchctl print "gui/$(id -u)" >/dev/null 2>&1 \
+				|| die "a running launchd user domain is required for automatic updates"
+			;;
+	esac
+}
+
 if [ "$action" = "reset" ]; then
+	validate_scheduler_ownership
 	notice "This permanently removes local Admin, Team, and Assistant data"
 	step "Validating managed Docker resources"
 	managed_state=0
@@ -649,10 +901,14 @@ if [ "$action" = "reset" ]; then
 	if project_resources_exist; then
 		die "reset left unexpected Shimpz Space Docker resources; inspect them before retrying"
 	fi
+	remove_scheduler
 	rm -f \
 		"$COMPOSE_FILE" "$ENV_FILE" "$MARKER_FILE" \
 		"${COMPOSE_FILE}.previous" "${ENV_FILE}.previous" \
-		"${COMPOSE_FILE}.tmp" "${ENV_FILE}.tmp"
+		"${COMPOSE_FILE}.tmp" "${ENV_FILE}.tmp" \
+		"$RECONCILER_FILE" "$RECONCILER_CANDIDATE" "$RECONCILER_PREVIOUS" \
+		"$STATUS_FILE" "${STATUS_FILE}.tmp" "$FAILED_RELEASE_FILE" "${FAILED_RELEASE_FILE}.tmp"
+	release_lock
 	rmdir "$SHIMPZ_HOME" 2>/dev/null || true
 	printf '\n'
 	success "Shimpz Space was reset"
@@ -678,6 +934,8 @@ case "${host_os}:${host_arch}" in
 	*) die "supported hosts are Linux amd64 and Apple Silicon macOS arm64" ;;
 esac
 
+validate_scheduler
+
 [ -S /var/run/docker.sock ] || die "Docker must expose /var/run/docker.sock"
 
 daemon_processors="$(docker info --format '{{.NCPU}}')" || die "could not read Docker CPU availability"
@@ -702,7 +960,10 @@ esac
 if [ -e "$SHIMPZ_HOME" ] && [ ! -f "$MARKER_FILE" ]; then
 	die "refusing to use existing unowned directory: ${SHIMPZ_HOME}"
 fi
-if [ -f "$MARKER_FILE" ]; then
+if [ "$action" = "scheduled" ] && { [ ! -f "$MARKER_FILE" ] || [ ! -f "$ENV_FILE" ]; }; then
+	die "the automatic update scheduler found no complete Shimpz installation"
+fi
+if [ -f "$MARKER_FILE" ] && [ -f "$ENV_FILE" ]; then
 	[ "$(sed -n '1p' "$MARKER_FILE")" = "$MARKER_VALUE" ] || die "invalid install marker in ${SHIMPZ_HOME}"
 fi
 if [ ! -f "$MARKER_FILE" ] && project_resources_exist; then
@@ -774,6 +1035,25 @@ validate_release_revision() {
 	[ "${#revision}" -eq 40 ] || die "the Local release has an invalid umbrella revision"
 }
 
+sha256_file() {
+	hash_path="$1"
+	if command -v sha256sum >/dev/null 2>&1; then
+		sha256sum "$hash_path" | awk '{print $1}'
+	elif command -v shasum >/dev/null 2>&1; then
+		shasum -a 256 "$hash_path" | awk '{print $1}'
+	else
+		die "a SHA-256 utility is required to verify the Local reconciler"
+	fi
+}
+
+validate_sha256_hex() {
+	hash_value="$1"
+	case "$hash_value" in
+		""|*[!0-9a-f]*) die "the Local release has an invalid reconciler hash" ;;
+	esac
+	[ "${#hash_value}" -eq 64 ] || die "the Local release has an invalid reconciler hash"
+}
+
 load_release_set() {
 	release_ref="$1"
 	release_metadata="${SHIMPZ_HOME}/release.env.tmp"
@@ -784,12 +1064,21 @@ load_release_set() {
 		rm -f "$release_metadata"
 		die "the Local release metadata could not be read"
 	fi
+	if [ "$action" != "apply" ]; then
+		if ! docker cp "${release_container}:/reconcile.sh" "${RECONCILER_CANDIDATE}.tmp"; then
+			docker rm "$release_container" >/dev/null 2>&1 || true
+			rm -f "$release_metadata" "${RECONCILER_CANDIDATE}.tmp"
+			die "the Local reconciler could not be read"
+		fi
+		chmod 700 "${RECONCILER_CANDIDATE}.tmp"
+		mv "${RECONCILER_CANDIDATE}.tmp" "$RECONCILER_CANDIDATE"
+	fi
 	docker rm "$release_container" >/dev/null \
 		|| die "the Local release metadata container could not be removed"
 	chmod 600 "$release_metadata"
-	[ "$(wc -l <"$release_metadata" | tr -d ' ')" -eq 7 ] \
-		|| die "the Local release metadata must contain exactly seven fields"
-	if sed -n '/^\(schema\|ordinal\|umbrella_revision\|admin\|team\|brain\|egress\)=/!p' \
+	[ "$(wc -l <"$release_metadata" | tr -d ' ')" -eq 8 ] \
+		|| die "the Local release metadata must contain exactly eight fields"
+	if sed -n '/^\(schema\|ordinal\|umbrella_revision\|reconciler_sha256\|admin\|team\|brain\|egress\)=/!p' \
 		"$release_metadata" | grep . >/dev/null 2>&1; then
 		die "the Local release metadata contains an unknown field"
 	fi
@@ -801,6 +1090,8 @@ load_release_set() {
 	esac
 	release_revision="$(release_value umbrella_revision "$release_metadata")"
 	validate_release_revision "$release_revision"
+	reconciler_sha256="$(release_value reconciler_sha256 "$release_metadata")"
+	validate_sha256_hex "$reconciler_sha256"
 	admin_image_ref="$(release_value admin "$release_metadata")"
 	team_image_ref="$(release_value team "$release_metadata")"
 	brain_image_ref="$(release_value brain "$release_metadata")"
@@ -809,17 +1100,33 @@ load_release_set() {
 	validate_pinned_release_ref "$team_image_ref" "$TEAM_REPOSITORY"
 	validate_pinned_release_ref "$brain_image_ref" "$BRAIN_REPOSITORY"
 	validate_pinned_release_ref "$egress_image_ref" "$EGRESS_REPOSITORY"
+	if [ "$action" = "apply" ]; then
+		actual_reconciler_sha256="$(sha256_file "$0")"
+	else
+		actual_reconciler_sha256="$(sha256_file "$RECONCILER_CANDIDATE")"
+	fi
+	[ "$actual_reconciler_sha256" = "$reconciler_sha256" ] \
+		|| die "the Local reconciler does not match its release metadata"
 	rm -f "$release_metadata"
 }
 
 validate_forward_release() {
+	current_release_ordinal=""
+	release_outcome="updated"
 	[ -f "$ENV_FILE" ] || return 0
-	current_ordinal="$(previous_env_value SHIMPZ_LOCAL_RELEASE_ORDINAL "$ENV_FILE")"
-	case "$current_ordinal" in
+	current_release_ordinal="$(previous_env_value SHIMPZ_LOCAL_RELEASE_ORDINAL "$ENV_FILE")"
+	case "$current_release_ordinal" in
 		""|0|*[!0-9]*) die "the current Local release ordinal is invalid" ;;
 	esac
-	[ "$release_ordinal" -ge "$current_ordinal" ] \
+	[ "$release_ordinal" -ge "$current_release_ordinal" ] \
 		|| die "the Local release channel points to an older release"
+	if [ "$release_ordinal" -eq "$current_release_ordinal" ]; then
+		current_release_ref="$(previous_env_value SHIMPZ_LOCAL_RELEASE_IMAGE "$ENV_FILE")"
+		validate_pinned_release_ref "$current_release_ref" "$RELEASE_REPOSITORY"
+		[ "$release_image_ref" = "$current_release_ref" ] \
+			|| die "the Local release ordinal was reused for different content"
+		release_outcome="current"
+	fi
 }
 
 previous_env_value() {
@@ -916,11 +1223,33 @@ controller_can_reach_docker() {
 		>/dev/null 2>&1
 }
 
-release_tag_ref="${RELEASE_REPOSITORY}:${RELEASE_CHANNEL}"
+if [ "$action" = "apply" ]; then
+	validate_pinned_release_ref "$requested_release_ref" "$RELEASE_REPOSITORY"
+	release_selector_ref="$requested_release_ref"
+else
+	release_selector_ref="${RELEASE_REPOSITORY}:${RELEASE_CHANNEL}"
+fi
 step "Resolving the atomic Local platform release"
-release_image_ref="$(pull_verified_ref "$release_tag_ref" "$RELEASE_REPOSITORY")"
+release_image_ref="$(pull_verified_ref "$release_selector_ref" "$RELEASE_REPOSITORY")"
 load_release_set "$release_image_ref"
 validate_forward_release
+if [ "$action" != "apply" ]; then
+	if failed_release_matches; then
+		write_release_status "rollback-needed" "$release_image_ref" "$release_ordinal"
+		if [ "$action" = "scheduled" ]; then
+			exit 0
+		fi
+		die "this Local release already failed its health gate; waiting for another promoted release"
+	fi
+	exec env SHIMPZ_UPDATE_LOCK_HELD=1 SHIMPZ_PORT="$install_port" \
+		/bin/sh "$RECONCILER_CANDIDATE" --apply-release "$release_image_ref"
+fi
+if [ "$release_outcome" = "current" ]; then
+	persist_reconciler
+	rm -f "$FAILED_RELEASE_FILE"
+	write_release_status "current" "$release_image_ref" "$release_ordinal"
+	exit 0
+fi
 step "Pulling the release-pinned Admin image"
 admin_image_ref="$(pull_verified_ref "$admin_image_ref" "$ADMIN_REPOSITORY")"
 step "Pulling the release-pinned local Team controller image"
@@ -1471,28 +1800,40 @@ if ! compose up -d --wait --wait-timeout 120 --no-build --pull never --remove-or
 	compose logs --no-color --tail 20 shimpz-account-egress >&2 || true
 	compose logs --no-color --tail 20 shimpz-brain-egress >&2 || true
 	compose logs --no-color --tail 20 brain >&2 || true
-	if [ "$had_previous" -eq 1 ]; then
-		step "Verifying the previous pinned release"
-		if ! hydrate_previous_release; then
-			mv "${ENV_FILE}.previous" "$ENV_FILE"
-			mv "${COMPOSE_FILE}.previous" "$COMPOSE_FILE"
-			die "the candidate failed and rollback images could not be verified; previous files were restored without deleting Docker data"
-		fi
+		if [ "$had_previous" -eq 1 ]; then
+			step "Verifying the previous pinned release"
+			if ! hydrate_previous_release; then
+				mv "${ENV_FILE}.previous" "$ENV_FILE"
+				mv "${COMPOSE_FILE}.previous" "$COMPOSE_FILE"
+				remember_failed_release
+				write_release_status "rollback-needed" "$release_image_ref" "$release_ordinal"
+				die "the candidate failed and rollback images could not be verified; previous files were restored without deleting Docker data"
+			fi
 	fi
 	compose down --remove-orphans >/dev/null || true
 	if [ "$had_previous" -eq 1 ]; then
-		step "Restoring the previous pinned release"
-		mv "${ENV_FILE}.previous" "$ENV_FILE"
-		mv "${COMPOSE_FILE}.previous" "$COMPOSE_FILE"
-		compose up -d --wait --wait-timeout 120 --no-build --pull never --remove-orphans \
-			|| die "rollback also failed; inspect with: (cd \"${SHIMPZ_HOME}\" && docker compose -p ${PROJECT_NAME} logs)"
-		warn "Previous version restored; your Admin data was preserved"
-		die "the update failed, so Shimpz is still running the previous version"
+			step "Restoring the previous pinned release"
+			mv "${ENV_FILE}.previous" "$ENV_FILE"
+			mv "${COMPOSE_FILE}.previous" "$COMPOSE_FILE"
+			if ! compose up -d --wait --wait-timeout 120 --no-build --pull never --remove-orphans; then
+				remember_failed_release
+				write_release_status "rollback-needed" "$release_image_ref" "$release_ordinal"
+				die "rollback also failed; inspect with: (cd \"${SHIMPZ_HOME}\" && docker compose -p ${PROJECT_NAME} logs)"
+			fi
+			remember_failed_release
+			write_release_status "rollback-needed" "$release_image_ref" "$release_ordinal"
+			warn "Previous version restored; your Admin data was preserved"
+			die "the update failed, so Shimpz is still running the previous version"
+		fi
+		remember_failed_release
+		write_release_status "rollback-needed" "$release_image_ref" "$release_ordinal"
+		die "installation failed"
 	fi
-	die "installation failed"
-fi
 
-rm -f "${ENV_FILE}.previous" "${COMPOSE_FILE}.previous"
+	rm -f "${ENV_FILE}.previous" "${COMPOSE_FILE}.previous"
+	persist_reconciler
+	rm -f "$FAILED_RELEASE_FILE"
+	write_release_status "$release_outcome" "$release_image_ref" "$release_ordinal"
 printf '\n'
 if [ "$install_mode" = "update" ]; then
 	success "Shimpz Space is up to date"
