@@ -37,7 +37,7 @@
     {...data.none}
   />
   <p>
-    If every Power works from its inputs and Controller-injected context, the Assistant does not need an
+    If every Action works from its inputs and Controller-injected context, the Assistant does not need an
     external host.
   </p>
 </section>

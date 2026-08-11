@@ -19,9 +19,9 @@
 
 <header class="docs-page-header">
   <span class="section-label">Minimal source</span>
-  <h1>Give every Power one obvious home</h1>
+  <h1>Give every Action one obvious home</h1>
   <p class="docs-lede">
-    The required <code>powers/</code> directory is the public behavior surface. Each direct Python file
+    The required <code>actions/</code> directory is the public behavior surface. Each direct Python file
     declares exactly one decorated <code>async def run</code>.
   </p>
 </header>
@@ -31,18 +31,18 @@
   <h2 id="shape-title">Keep authored source separate from build output</h2>
   <CodeBlock label="Minimal Assistant project" title="Project files" variant="code" {...data.projectFiles} />
   <p>
-    <code>icon.png</code>, <code>shimpz.toml</code>, <code>pyproject.toml</code>, and <code>powers/</code> are required.
+    <code>icon.png</code>, <code>shimpz.toml</code>, <code>pyproject.toml</code>, and <code>actions/</code> are required.
     <code>lib/</code> and <code>tests/</code> are optional. Dockerfiles, locks, generated contracts,
     changelogs, and Docker ignore files are platform build output rather than Assistant source.
   </p>
 </section>
 
-<section class="guide-section" aria-labelledby="power-title">
-  <span class="section-label">Smallest Power</span>
-  <h2 id="power-title">One file, one async run function</h2>
-  <CodeBlock label="Minimal Echo Power" title="powers/echo.py" variant="code" {...data.power} />
+<section class="guide-section" aria-labelledby="action-title">
+  <span class="section-label">Smallest Action</span>
+  <h2 id="action-title">One file, one async run function</h2>
+  <CodeBlock label="Minimal Echo Action" title="actions/echo.py" variant="code" {...data.action} />
   <p>
-    The filename becomes the Power id: underscores are replaced with hyphens. Type annotations become
+    The filename becomes the Action id: underscores are replaced with hyphens. Type annotations become
     closed input and output schemas; helper code stays in <code>lib/</code>.
   </p>
 </section>

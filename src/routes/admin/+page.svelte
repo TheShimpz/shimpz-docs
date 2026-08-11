@@ -46,7 +46,7 @@
       beside the chat composer to save the matching API key. The key is write-only: Shimpz never shows it again.
     </p>
     <p>
-      The Brain writes the Team's replies and decides when a Power can help. Do not paste API keys, passwords,
+      The Brain writes the Team's replies and decides when an Action can help. Do not paste API keys, passwords,
       or OAuth tokens into the message box.
     </p>
   </li>
@@ -57,15 +57,15 @@
   <h2 id="chat-progress-title">Follow the Team's execution</h2>
   <p>
     After you send a message, Chat shows the server operations the Team has actually entered, such as
-    <code>team-context</code>, <code>model</code>, <code>power</code>, <code>power-delivery</code>, and
+    <code>team-context</code>, <code>model</code>, <code>action</code>, <code>action-delivery</code>, and
     <code>reply-validation</code>. The last phase is the Admin's exact public-response validation, while
-    <code>power-delivery</code> retires the durable result journal after the model accepted it.
+    <code>action-delivery</code> retires the durable result journal after the model accepted it.
     A moving line means that exact operation is still active. A duration appears only after the server measures
     its completion; the display does not invent a percentage or estimated finish time.
   </p>
   <p>
     When the answer arrives, open <strong>Execution stages</strong> below it to inspect the completed receipt.
-    This receipt contains technical phase names and timing metadata only—not hidden reasoning, prompts, Power
+    This receipt contains technical phase names and timing metadata only—not hidden reasoning, prompts, Action
     arguments, results, API keys, or Integration credentials.
   </p>
   <p>

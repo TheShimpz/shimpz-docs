@@ -77,7 +77,7 @@
         {
           href: "/developers/assistants/",
           label: "Project layout",
-          description: "One Python file per Power",
+          description: "One Python file per Action",
         },
         {
           href: "/developers/assistants/icons/",
@@ -85,8 +85,8 @@
           description: "One canonical identity image",
         },
         {
-          href: "/developers/assistants/spec/powers/",
-          label: "Powers",
+          href: "/developers/assistants/spec/actions/",
+          label: "Actions",
           description: "Define one async run per file",
         },
         {
@@ -102,7 +102,7 @@
         {
           href: "/developers/assistants/spec/execution/",
           label: "Execution model",
-          description: "Pre-build and invoke Powers",
+          description: "Pre-build and invoke Actions",
         },
         {
           href: "/developers/assistants/quickstart/",
@@ -112,7 +112,7 @@
       ],
     },
     {
-      label: "Power requests",
+      label: "Action requests",
       items: [
         {
           href: "/developers/assistants/requests/",

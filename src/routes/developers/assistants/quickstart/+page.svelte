@@ -19,7 +19,7 @@
 
 <header class="docs-page-header">
   <span class="section-label">Docker-free development</span>
-  <h1>Test one Power with two CLI commands</h1>
+  <h1>Test one Action with two CLI commands</h1>
   <p class="docs-lede">
     Create three small source files, then let the native <code>shimpz</code> CLI manage Python 3.14,
     <code>uv</code>, and the released SDK.
@@ -47,10 +47,10 @@
   <CodeBlock label="Released Python SDK" title="pyproject.toml" variant="code" {...data.project} />
 </section>
 
-<section class="guide-section" aria-labelledby="power-title">
-  <span class="section-label">3 · Power</span>
-  <h2 id="power-title">Create powers/echo.py</h2>
-  <CodeBlock label="One closed Echo Power" title="powers/echo.py" variant="code" {...data.power} />
+<section class="guide-section" aria-labelledby="action-title">
+  <span class="section-label">3 · Action</span>
+  <h2 id="action-title">Create actions/echo.py</h2>
+  <CodeBlock label="One closed Echo Action" title="actions/echo.py" variant="code" {...data.action} />
 </section>
 
 <section class="guide-section" aria-labelledby="verify-title">
@@ -58,14 +58,14 @@
   <h2 id="verify-title">Check the project and invoke echo</h2>
   <CodeBlock label="Native local checks" title="Terminal" variant="code" {...data.verify} />
   <p>The test prints the direct validated result:</p>
-  <CodeBlock label="Power result" title="stdout" variant="code" {...data.result} />
+  <CodeBlock label="Action result" title="stdout" variant="code" {...data.result} />
 </section>
 
 <aside class="scope-note" aria-labelledby="artifact-title">
   <span id="artifact-title" class="kicker">Nothing else to commit</span>
   <p>
     The platform generates the machine contract, lock files, and container/runtime artifacts before
-    building the Assistant. Local Power tests do not require Docker.
+    building the Assistant. Local Action tests do not require Docker.
   </p>
 </aside>
 

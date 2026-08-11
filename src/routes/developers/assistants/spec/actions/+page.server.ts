@@ -2,9 +2,9 @@ import { highlightCode } from "$lib/server/highlight";
 
 import type { PageServerLoad } from "./$types";
 
-const power = `from typing import TypedDict
+const action = `from typing import TypedDict
 
-from shimpz import Context, power
+from shimpz import Context, action
 
 
 class ZoneResult(TypedDict):
@@ -12,7 +12,7 @@ class ZoneResult(TypedDict):
     status: str
 
 
-@power(integrations=["cloudflare"])
+@action(integrations=["cloudflare"])
 async def run(domain: str, *, ctx: Context = None) -> ZoneResult:
     token = ctx.integrations.cloudflare.access_token
     result = await fetch_zone(domain, token)
@@ -21,7 +21,7 @@ async def run(domain: str, *, ctx: Context = None) -> ZoneResult:
 const contract = `{
   "id": "inspect-zone",
   "method": "POST",
-  "path": "/v1/powers/inspect-zone",
+  "path": "/v1/actions/inspect-zone",
   "integrations": ["cloudflare"],
   "input_schema": {
     "type": "object",
@@ -41,6 +41,6 @@ const contract = `{
 }`;
 
 export const load: PageServerLoad = async () => ({
-  power: await highlightCode(power, "python"),
+  action: await highlightCode(action, "python"),
   contract: await highlightCode(contract, "json"),
 });

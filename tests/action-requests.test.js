@@ -4,22 +4,22 @@ import { test } from "node:test";
 
 const ROOT = new URL("../", import.meta.url);
 const ROUTE = new URL("src/routes/developers/assistants/requests/", ROOT);
-const SCREENSHOT = new URL("static/developers/power-requests/", ROOT);
+const SCREENSHOT = new URL("static/developers/action-requests/", ROOT);
 
 /** @param {string} path */
 function text(path) {
   return readFileSync(new URL(path, ROOT), "utf8");
 }
 
-test("static Developer navigation exposes the dedicated Power request submenu", () => {
+test("static Developer navigation exposes the dedicated Action request submenu", () => {
   const layout = text("src/routes/+layout.svelte");
-  assert.match(layout, /label: "Power requests"/);
+  assert.match(layout, /label: "Action requests"/);
   for (const page of ["approval", "input", "auth", "lifecycle"]) {
     assert.match(layout, new RegExp(`/developers/assistants/requests/${page}/`));
   }
 });
 
-test("static Power request guides cover the public SDK and settled safety boundaries", () => {
+test("static Action request guides cover the public SDK and settled safety boundaries", () => {
   const pages = [
     readFileSync(new URL("+page.svelte", ROUTE), "utf8"),
     readFileSync(new URL("approval/+page.svelte", ROUTE), "utf8"),
@@ -54,7 +54,7 @@ test("static Power request guides cover the public SDK and settled safety bounda
   assert.match(pages, /entire Team turn/);
 });
 
-test("static complete Power examples use SDK-supported TypedDict results", () => {
+test("static complete Action examples use SDK-supported TypedDict results", () => {
   const examples = [
     readFileSync(new URL("+page.server.ts", ROUTE), "utf8"),
     readFileSync(new URL("approval/+page.server.ts", ROUTE), "utf8"),

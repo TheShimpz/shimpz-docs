@@ -2,7 +2,7 @@
   <title>Install an Assistant — Shimpz docs</title>
   <meta
     name="description"
-    content="Install an Assistant and provide an Integration or Secret only when a Power requires it."
+    content="Install an Assistant and provide an Integration or Secret only when an Action requires it."
   />
 </svelte:head>
 
@@ -14,7 +14,7 @@
   <span class="section-label">First useful result</span>
   <h1>Add one capability to your Team</h1>
   <p class="docs-lede">
-    An Assistant gives the Team one or more focused Powers. Install only the Assistant you need, then ask for
+    An Assistant gives the Team one or more focused Actions. Install only the Assistant you need, then ask for
     the result in normal language.
   </p>
 </header>
@@ -46,7 +46,7 @@
   </li>
 
   <li>
-    <h2>Provide only what the Power requests</h2>
+    <h2>Provide only what the Action requests</h2>
     <p>
       If an Integration is required, choose <strong>Continue</strong>, review the provider and scopes, and approve on
       the provider's website. If a Secret is required, Shimpz shows its name and purpose in a private form.
@@ -59,7 +59,7 @@
     <p>Use a value returned in the first answer:</p>
     <blockquote>Show me more details about the first result.</blockquote>
     <p>
-      Tabular results should appear as a readable table. Private values reach only the selected Power; the Brain,
+      Tabular results should appear as a readable table. Private values reach only the selected Action; the Brain,
       browser, and chat response never receive them.
     </p>
   </li>

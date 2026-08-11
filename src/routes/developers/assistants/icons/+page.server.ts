@@ -6,7 +6,7 @@ const workflow = `my-assistant/
 ├── icon.png
 ├── shimpz.toml
 ├── pyproject.toml
-└── powers/
+└── actions/
 
 shimpz check
 shimpz publish --visibility public`;

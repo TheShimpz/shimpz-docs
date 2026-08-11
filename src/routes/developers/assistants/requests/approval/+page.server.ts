@@ -4,7 +4,7 @@ import type { PageServerLoad } from "./$types";
 
 const approval = `from typing import TypedDict
 
-from shimpz import Context, power
+from shimpz import Context, action
 
 
 class PublishedDns(TypedDict):
@@ -12,7 +12,7 @@ class PublishedDns(TypedDict):
     status: str
 
 
-@power(human_requests=["approval"])
+@action(human_requests=["approval"])
 async def run(zone: str, *, ctx: Context) -> PublishedDns:
     ctx.request_approval(
         title="Publish the reviewed DNS change",

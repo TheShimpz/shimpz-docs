@@ -1,6 +1,6 @@
 <svelte:head>
   <title>Shimpz glossary — Shimpz docs</title>
-  <meta name="description" content="Understand Space, Team, Brain, Assistant, Power, and Integration in plain language." />
+  <meta name="description" content="Understand Space, Team, Brain, Assistant, Action, and Integration in plain language." />
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
@@ -21,12 +21,12 @@
   <dd>An isolated workspace with its own chat, Brain settings, Assistants, Integrations, and files.</dd>
 
   <dt><strong>Brain</strong></dt>
-  <dd>The language model that answers as the Team and chooses which available Power can help.</dd>
+  <dd>The language model that answers as the Team and chooses which available Action can help.</dd>
 
   <dt><strong>Assistant</strong></dt>
   <dd>A focused capability installed in one Team.</dd>
 
-  <dt><strong>Power</strong></dt>
+  <dt><strong>Action</strong></dt>
   <dd>One named, bounded action an Assistant can perform, such as looking up one record.</dd>
 
   <dt><strong>Integration</strong></dt>
@@ -46,9 +46,9 @@
   <h2 id="flow-title">How the pieces work together</h2>
   <ol>
     <li>You send a message to a Team.</li>
-    <li>Its Brain decides whether an installed Assistant Power is useful.</li>
-    <li>The controller checks the Power, Team, Integration, scopes, and input.</li>
-    <li>The Assistant runs only that Power and returns a validated result.</li>
+    <li>Its Brain decides whether an installed Assistant Action is useful.</li>
+    <li>The controller checks the Action, Team, Integration, scopes, and input.</li>
+    <li>The Assistant runs only that Action and returns a validated result.</li>
     <li>The Brain turns the result into the Team's answer.</li>
   </ol>
 </section>

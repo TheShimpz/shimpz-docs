@@ -22,7 +22,7 @@
   <h1>Declare identity and the smallest security boundary</h1>
   <p class="docs-lede">
     <code>shimpz.toml</code> contains public identity, Brain guidance, and access intent. It never
-    contains Power schemas, runtime commands, OAuth endpoints, client credentials, or tokens.
+    contains Action schemas, runtime commands, OAuth endpoints, client credentials, or tokens.
   </p>
 </header>
 
@@ -59,7 +59,7 @@
     <dd>The exact HTTPS URL of the public GitHub repository.</dd>
     <dt><code>genesis</code></dt>
     <dd>
-      Bounded behavior and Power-composition guidance loaded by the Brain. Genesis never grants
+      Bounded behavior and Action-composition guidance loaded by the Brain. Genesis never grants
       authority. <code>help.md</code> is not part of Assistant Spec v1 and is not loaded as Brain guidance.
     </dd>
   </dl>

@@ -82,5 +82,5 @@
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec">
   <a href="/developers/assistants/"><span>Back</span><strong>Project layout</strong></a>
-  <a href="/developers/assistants/spec/powers/"><span>Next</span><strong>Powers</strong></a>
+  <a href="/developers/assistants/spec/actions/"><span>Next</span><strong>Actions</strong></a>
 </nav>

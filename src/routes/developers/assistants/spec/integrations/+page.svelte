@@ -21,7 +21,7 @@
   <span class="section-label">OAuth access</span>
   <h1>Declare scopes; let the Controller own credentials</h1>
   <p class="docs-lede">
-    An Integration connects one registered OAuth provider to the Powers that need it. The provider id is
+    An Integration connects one registered OAuth provider to the Actions that need it. The provider id is
     the Integration id, so the declaration cannot redirect authorization or token exchange.
   </p>
 </header>
@@ -33,18 +33,18 @@
   <p>
     The current catalog registers <code>cloudflare</code> with <code>zone.read</code>,
     <code>dns.read</code>, <code>dns.write</code>, and <code>offline_access</code>. Unknown providers,
-    unsupported scopes, duplicates, and empty lists fail admission. A DNS mutation Power must separately
+    unsupported scopes, duplicates, and empty lists fail admission. A DNS mutation Action must separately
     declare and perform <code>approval</code> and <code>auth:reauth</code> before it reads the bearer token;
     the scope declaration alone does not satisfy those human gates.
   </p>
 </section>
 
 <section class="guide-section" aria-labelledby="consume-title">
-  <span class="section-label">Power boundary</span>
-  <h2 id="consume-title">Attach and read the Integration in one Power file</h2>
-  <CodeBlock label="Power-scoped Integration access" title="powers/inspect_zone.py" variant="code" {...data.power} />
+  <span class="section-label">Action boundary</span>
+  <h2 id="consume-title">Attach and read the Integration in one Action file</h2>
+  <CodeBlock label="Action-scoped Integration access" title="actions/inspect_zone.py" variant="code" {...data.action} />
   <p>
-    A Power receives only Integrations listed in its <code>@power(integrations=[...])</code> declaration.
+    An Action receives only Integrations listed in its <code>@action(integrations=[...])</code> declaration.
     Read the bearer token from <code>ctx.integrations.&lt;provider&gt;.access_token</code>.
   </p>
 </section>
@@ -55,7 +55,7 @@
   <ol>
     <li>The Controller resolves provider metadata from its reviewed catalog.</li>
     <li>The person authorizes the exact scopes; Shimpz stores tokens encrypted and refreshes them.</li>
-    <li>Immediately before execution, the Controller injects a bearer token only for the selected Power.</li>
+    <li>Immediately before execution, the Controller injects a bearer token only for the selected Action.</li>
     <li>The SDK exposes that token through <code>ctx.integrations</code> in the isolated process.</li>
     <li>Outputs containing injected tokens are rejected before the Brain receives them.</li>
   </ol>
@@ -64,7 +64,7 @@
 <aside class="scope-note" aria-labelledby="secrets-title">
   <span id="secrets-title" class="kicker">No static Secrets surface</span>
   <p>
-    OAuth credentials use Integrations. When OAuth is unavailable, a Power may explicitly declare a final
+    OAuth credentials use Integrations. When OAuth is unavailable, an Action may explicitly declare a final
     <a href="/developers/assistants/requests/input/#password-title"><code>input:password</code></a> request for a
     third-party secret. Never put client secrets, access tokens, refresh tokens, or private values in
     <code>shimpz.toml</code>, source, logs, arguments, or returned data.
@@ -72,6 +72,6 @@
 </aside>
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec">
-  <a href="/developers/assistants/spec/powers/"><span>Back</span><strong>Powers</strong></a>
+  <a href="/developers/assistants/spec/actions/"><span>Back</span><strong>Actions</strong></a>
   <a href="/developers/assistants/spec/network/"><span>Next</span><strong>Network access</strong></a>
 </nav>

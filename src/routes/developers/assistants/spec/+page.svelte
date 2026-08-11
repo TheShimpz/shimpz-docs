@@ -15,7 +15,7 @@
   <span class="section-label">One reviewed contract</span>
   <h1>Author source; let Shimpz generate delivery</h1>
   <p class="docs-lede">
-    Assistant Spec v1 has one small manifest and one Python file per Power. Contracts, locks,
+    Assistant Spec v1 has one small manifest and one Python file per Action. Contracts, locks,
     Dockerfiles, health endpoints, and runtime adapters are generated during platform pre-build.
   </p>
 </header>
@@ -28,7 +28,7 @@
     <dd>One static, high-resolution identity image covered by the immutable source digest.</dd>
     <dt><code>shimpz.toml</code></dt>
     <dd>Version, identity, Genesis, exact outbound hosts, and optional OAuth Integration scopes.</dd>
-    <dt><code>powers/*.py</code></dt>
+    <dt><code>actions/*.py</code></dt>
     <dd>Exactly one decorated <code>async def run</code> per direct file.</dd>
     <dt><code>pyproject.toml</code></dt>
     <dd>Python version and direct dependencies, including the released <code>shimpz</code> SDK.</dd>
@@ -39,7 +39,7 @@
   <span class="section-label">Platform pre-build</span>
   <h2 id="build-title">Generated artifacts never pollute source</h2>
   <ol>
-    <li>Shimpz Genesis validates the project and imports each Power in isolation.</li>
+    <li>Shimpz Genesis validates the project and imports each Action in isolation.</li>
     <li>It derives the canonical <code>shimpz.contract.json</code>.</li>
     <li>The platform resolves and locks dependencies and creates the runtime/container files.</li>
     <li>The Controller admits only the reviewed immutable build.</li>
@@ -50,8 +50,8 @@
   <span class="section-label">Runtime</span>
   <h2 id="runtime-title">Invocation contains only input and Integrations</h2>
   <p>
-    The Controller validates Power input, resolves only declared OAuth bearer tokens, and invokes
-    <code>/usr/local/bin/shimpz-power &lt;power-id&gt;</code> over bounded stdin. A Power returns one
+    The Controller validates Action input, resolves only declared OAuth bearer tokens, and invokes
+    <code>/usr/local/bin/shimpz-action &lt;action-id&gt;</code> over bounded stdin. An Action returns one
     validated JSON object over stdout.
   </p>
 </section>

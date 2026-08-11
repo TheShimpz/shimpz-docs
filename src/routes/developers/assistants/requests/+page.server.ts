@@ -2,9 +2,9 @@ import { highlightCode } from "$lib/server/highlight";
 
 import type { PageServerLoad } from "./$types";
 
-const power = `from typing import TypedDict
+const action = `from typing import TypedDict
 
-from shimpz import Context, InputOption, InputRequest, power
+from shimpz import Context, InputOption, InputRequest, action
 
 
 class CreatedRecord(TypedDict):
@@ -12,7 +12,7 @@ class CreatedRecord(TypedDict):
     status: str
 
 
-@power(
+@action(
     human_requests=["input:choice", "approval", "auth:reauth"],
 )
 async def run(zone: str, *, ctx: Context) -> CreatedRecord:
@@ -41,5 +41,5 @@ async def run(zone: str, *, ctx: Context) -> CreatedRecord:
 `;
 
 export const load: PageServerLoad = async () => ({
-  power: await highlightCode(power, "python"),
+  action: await highlightCode(action, "python"),
 });

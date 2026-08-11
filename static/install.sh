@@ -548,7 +548,7 @@ validate_project_resources() {
 			"${PROJECT_NAME}_controller_audit|controller_audit"|\
 			"${PROJECT_NAME}_controller_storage|controller_storage"|\
 			"${PROJECT_NAME}_controller_inference|controller_inference"|\
-			"${PROJECT_NAME}_controller_power_journal|controller_power_journal"|\
+			"${PROJECT_NAME}_controller_action_journal|controller_action_journal"|\
 			"${PROJECT_NAME}_controller_publications|controller_publications"|\
 			"${PROJECT_NAME}_controller_cosign_trust|controller_cosign_trust"|\
 			"${PROJECT_NAME}_controller_assistant_integration_state|controller_assistant_integration_state"|\
@@ -1464,7 +1464,7 @@ services:
       SHIMPZ_SPACE_ID: ${SHIMPZ_SPACE_ID:?installer must preserve SHIMPZ_SPACE_ID}
       SHIMPZ_BRAIN_RUNTIME_URL: http://brain:8080
       SHIMPZ_BRAIN_RUNTIME_TOKEN_FILE: /run/shimpz-brain-runtime/token
-      SHIMPZ_LOCAL_POWER_JOURNAL_PATH: /var/lib/shimpz-local/power-journal/journal.sqlite3
+      SHIMPZ_LOCAL_ACTION_JOURNAL_PATH: /var/lib/shimpz-local/action-journal/journal.sqlite3
       SHIMPZ_LOCAL_CHAT_CONTINUATIONS_STATE_PATH: /var/lib/shimpz-local/chat-continuations/state/continuations.json
       SHIMPZ_LOCAL_CHAT_CONTINUATIONS_KEY_PATH: /var/lib/shimpz-local/chat-continuations/key/aes256.key
       SHIMPZ_OAUTH_BROKER_PROXY_HOST: shimpz-account-egress
@@ -1477,7 +1477,7 @@ services:
       - controller_audit:/var/log/shimpz-local:rw
       - controller_storage:/var/lib/shimpz-local/storage:rw
       - controller_inference:/var/lib/shimpz-local/inference:rw
-      - controller_power_journal:/var/lib/shimpz-local/power-journal:rw
+      - controller_action_journal:/var/lib/shimpz-local/action-journal:rw
       - controller_publications:/var/lib/shimpz-local/publications:rw
       - controller_cosign_trust:/var/lib/shimpz-local/cosign:rw
       - controller_assistant_integration_state:/var/lib/shimpz-local/assistant-integrations/state:rw
@@ -1849,7 +1849,7 @@ volumes:
   controller_audit:
   controller_storage:
   controller_inference:
-  controller_power_journal:
+  controller_action_journal:
   controller_publications:
   controller_cosign_trust:
   controller_assistant_integration_state:

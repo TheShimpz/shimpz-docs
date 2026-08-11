@@ -21,16 +21,16 @@ version = "0.1.0"
 requires-python = ">=3.14"
 dependencies = ["shimpz==0.1.0"]`;
 
-const power = `from typing import TypedDict
+const action = `from typing import TypedDict
 
-from shimpz import power
+from shimpz import action
 
 
 class EchoResult(TypedDict):
     message: str
 
 
-@power()
+@action()
 async def run(message: str) -> EchoResult:
     return {"message": message}`;
 
@@ -42,7 +42,7 @@ const result = `{"message":"hello"}`;
 export const load: PageServerLoad = async () => ({
   manifest: await highlightCode(manifest, "toml"),
   project: await highlightCode(project, "toml"),
-  power: await highlightCode(power, "python"),
+  action: await highlightCode(action, "python"),
   verify: await highlightCode(verify, "bash"),
   result: await highlightCode(result, "json"),
 });

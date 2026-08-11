@@ -429,7 +429,7 @@ def _check_controller_runtime(controller: str) -> None:
         "controller_audit:/var/log/shimpz-local:rw",
         "controller_storage:/var/lib/shimpz-local/storage:rw",
         "controller_inference:/var/lib/shimpz-local/inference:rw",
-        "controller_power_journal:/var/lib/shimpz-local/power-journal:rw",
+        "controller_action_journal:/var/lib/shimpz-local/action-journal:rw",
         "controller_publications:/var/lib/shimpz-local/publications:rw",
         "controller_cosign_trust:/var/lib/shimpz-local/cosign:rw",
         "controller_assistant_integration_state:/var/lib/shimpz-local/assistant-integrations/state:rw",
@@ -439,7 +439,7 @@ def _check_controller_runtime(controller: str) -> None:
         "assistant_egress_policy:/var/lib/shimpz-local/assistant-egress:rw",
         "brain_runtime_token:/run/shimpz-brain-runtime:rw",
         "supervisor_key:/run/shimpz-local-supervisor:ro",
-        "SHIMPZ_LOCAL_POWER_JOURNAL_PATH: /var/lib/shimpz-local/power-journal/journal.sqlite3",
+        "SHIMPZ_LOCAL_ACTION_JOURNAL_PATH: /var/lib/shimpz-local/action-journal/journal.sqlite3",
         "SHIMPZ_LOCAL_CHAT_CONTINUATIONS_STATE_PATH: /var/lib/shimpz-local/chat-continuations/state/continuations.json",
         "SHIMPZ_LOCAL_CHAT_CONTINUATIONS_KEY_PATH: /var/lib/shimpz-local/chat-continuations/key/aes256.key",
         "SHIMPZ_BRAIN_RUNTIME_URL: http://brain:8080",
@@ -502,7 +502,7 @@ def _check_brain_runtime(brain_runtime: str) -> None:
     check("docker.sock" not in brain_runtime, "Brain runtime never receives the Docker socket")
     check("controller_token" not in brain_runtime, "Brain runtime never receives the Admin/Controller bearer")
     check("controller_inference" not in brain_runtime, "Brain runtime never mounts Team metadata")
-    check("controller_power_journal" not in brain_runtime, "Brain runtime never mounts Power execution state")
+    check("controller_action_journal" not in brain_runtime, "Brain runtime never mounts Action execution state")
     check(
         "controller_assistant_integration_" not in brain_runtime,
         "Brain runtime never mounts encrypted Assistant OAuth state or its key",
@@ -544,7 +544,7 @@ def _check_compose_isolation(admin: str, compose: str, controller: str) -> None:
     check("- account_egress" in controller, "Controller reaches only the internal OAuth broker proxy plane")
     check("- account_egress_out" not in controller, "Controller cannot bypass the OAuth broker proxy")
     check("controller_storage" not in admin, "Admin never mounts opaque Team storage")
-    check("controller_power_journal" not in admin, "Admin never mounts Power execution state")
+    check("controller_action_journal" not in admin, "Admin never mounts Action execution state")
     check(
         "controller_assistant_integration_" not in admin,
         "Admin never mounts encrypted Assistant OAuth state or its key",
@@ -553,7 +553,7 @@ def _check_compose_isolation(admin: str, compose: str, controller: str) -> None:
         "controller_chat_continuation_" not in admin,
         "Admin never mounts encrypted chat continuations or their key",
     )
-    check(SCRIPT.count("  controller_power_journal:") == 1, "Compose declares exactly one Power journal volume")
+    check(SCRIPT.count("  controller_action_journal:") == 1, "Compose declares exactly one Action journal volume")
     check(
         SCRIPT.count("  controller_publications:") == 1,
         "Compose declares exactly one Assistant publication-binding volume",

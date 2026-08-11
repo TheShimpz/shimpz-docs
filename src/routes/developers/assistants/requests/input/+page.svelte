@@ -8,16 +8,16 @@
 </script>
 
 <svelte:head>
-  <title>Request input from a Power — Shimpz docs</title>
+  <title>Request input from an Action — Shimpz docs</title>
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/requests/input/" />
   <meta
     name="description"
-    content="Collect text, textarea, password, phone, select, checkbox, or radio input from a Shimpz Power."
+    content="Collect text, textarea, password, phone, select, checkbox, or radio input from a Shimpz Action."
   />
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/assistants/requests/">Power requests</a><span aria-hidden="true">/</span>
+  <a href="/developers/assistants/requests/">Action requests</a><span aria-hidden="true">/</span>
   <strong>Inputs</strong>
 </nav>
 
@@ -43,7 +43,7 @@
   </dl>
   <p>
     Import <code>InputRequest</code> and, for option controls, <code>InputOption</code> from <code>shimpz</code>. Declare
-    each exact kind, such as <code>input:text</code>, in the Power's <code>human_requests</code> list.
+    each exact kind, such as <code>input:text</code>, in the Action's <code>human_requests</code> list.
   </p>
 </section>
 
@@ -51,10 +51,10 @@
   <span class="section-label">Single line</span>
   <h2 id="text-title">text</h2>
   <p>Use for one short identifier, hostname, label, or other bounded value.</p>
-  <CodeBlock label="Short text input" title="Inside a declared Power" variant="code" {...data.text} />
+  <CodeBlock label="Short text input" title="Inside a declared Action" variant="code" {...data.text} />
   <RequestScreenshot
-    src="/developers/power-requests/input-text.png"
-    alt="Power input dialog with a single-line text field"
+    src="/developers/action-requests/input-text.png"
+    alt="Action input dialog with a single-line text field"
     caption="text renders one standard single-line field with its required or optional state."
   />
 </section>
@@ -63,10 +63,10 @@
   <span class="section-label">Long form</span>
   <h2 id="textarea-title">textarea</h2>
   <p>Use for a bounded explanation or note where line breaks help the human communicate clearly.</p>
-  <CodeBlock label="Multiline input" title="Inside a declared Power" variant="code" {...data.textarea} />
+  <CodeBlock label="Multiline input" title="Inside a declared Action" variant="code" {...data.textarea} />
   <RequestScreenshot
-    src="/developers/power-requests/input-textarea.png"
-    alt="Power input dialog with a multiline textarea"
+    src="/developers/action-requests/input-textarea.png"
+    alt="Action input dialog with a multiline textarea"
     caption="textarea provides a larger multiline editor while preserving the same bounded response contract."
   />
 </section>
@@ -75,20 +75,20 @@
   <span class="section-label">Third-party secret</span>
   <h2 id="password-title">password</h2>
   <p>
-    Use only for an arbitrary third-party secret intentionally delegated to this exact Assistant Power. The value is
+    Use only for an arbitrary third-party secret intentionally delegated to this exact Assistant Action. The value is
     masked and memory-only. It is never a Shimpz Account password or Local Supervisor password.
   </p>
-  <CodeBlock label="Third-party secret input" title="Inside a declared Power" variant="code" {...data.password} />
+  <CodeBlock label="Third-party secret input" title="Inside a declared Action" variant="code" {...data.password} />
   <RequestScreenshot
-    src="/developers/power-requests/input-password.png"
-    alt="Power password input dialog warning that the secret is delivered to the named Assistant"
+    src="/developers/action-requests/input-password.png"
+    alt="Action password input dialog warning that the secret is delivered to the named Assistant"
     caption="The warning names the receiving Assistant and distinguishes this value from Shimpz authentication."
   />
   <aside class="scope-note" aria-labelledby="password-rules-title">
     <span id="password-rules-title" class="kicker">Secret-last rules</span>
     <p>
-      Password must be the final human request in the entire Team turn, not merely in this Power. After any Power
-      receives one, a later request from any Power in the same turn is blocked. Do not log it, include it in copy,
+      Password must be the final human request in the entire Team turn, not merely in this Action. After any Action
+      receives one, a later request from any Action in the same turn is blocked. Do not log it, include it in copy,
       return it, place it in an exception, or retain it. Use an OAuth
       <a href="/developers/assistants/spec/integrations/">Integration</a> when the provider supports one.
     </p>
@@ -98,11 +98,11 @@
 <section class="guide-section" aria-labelledby="phone-title">
   <span class="section-label">Telephone value</span>
   <h2 id="phone-title">phone</h2>
-  <p>Use for one phone number. The specialized control helps entry; your Power still owns domain-specific parsing.</p>
-  <CodeBlock label="Phone input" title="Inside a declared Power" variant="code" {...data.phone} />
+  <p>Use for one phone number. The specialized control helps entry; your Action still owns domain-specific parsing.</p>
+  <CodeBlock label="Phone input" title="Inside a declared Action" variant="code" {...data.phone} />
   <RequestScreenshot
-    src="/developers/power-requests/input-phone.png"
-    alt="Power input dialog with a telephone field"
+    src="/developers/action-requests/input-phone.png"
+    alt="Action input dialog with a telephone field"
     caption="phone renders a telephone-aware field without expanding the wire value beyond one bounded string."
   />
 </section>
@@ -111,10 +111,10 @@
   <span class="section-label">One-of dropdown</span>
   <h2 id="select-title">select</h2>
   <p>Use when several compact options fit naturally in a dropdown.</p>
-  <CodeBlock label="Select input" title="Inside a declared Power" variant="code" {...data.select} />
+  <CodeBlock label="Select input" title="Inside a declared Action" variant="code" {...data.select} />
   <RequestScreenshot
-    src="/developers/power-requests/input-select.png"
-    alt="Power input dialog with a select dropdown"
+    src="/developers/action-requests/input-select.png"
+    alt="Action input dialog with a select dropdown"
     caption="select returns only the chosen option value, never its display label or description."
   />
 </section>
@@ -123,10 +123,10 @@
   <span class="section-label">One-of visible choices</span>
   <h2 id="choice-title">choice</h2>
   <p>Use when the human should compare all mutually exclusive options and their descriptions at once.</p>
-  <CodeBlock label="Radio choice input" title="Inside a declared Power" variant="code" {...data.choice} />
+  <CodeBlock label="Radio choice input" title="Inside a declared Action" variant="code" {...data.choice} />
   <RequestScreenshot
-    src="/developers/power-requests/input-choice.png"
-    alt="Power input dialog with a radio group"
+    src="/developers/action-requests/input-choice.png"
+    alt="Action input dialog with a radio group"
     caption="choice has the same one-value result as select, presented as an accessible radio group."
   />
 </section>
@@ -135,10 +135,10 @@
   <span class="section-label">Many-of choices</span>
   <h2 id="choices-title">choices</h2>
   <p>Use for a bounded set of independent selections. Declare both minimum and maximum intentionally.</p>
-  <CodeBlock label="Checkbox choices input" title="Inside a declared Power" variant="code" {...data.choices} />
+  <CodeBlock label="Checkbox choices input" title="Inside a declared Action" variant="code" {...data.choices} />
   <RequestScreenshot
-    src="/developers/power-requests/input-choices.png"
-    alt="Power input dialog with a checkbox group and selection bounds"
+    src="/developers/action-requests/input-choices.png"
+    alt="Action input dialog with a checkbox group and selection bounds"
     caption="choices shows the allowed selection count and returns the selected option values in display order."
   />
 </section>
@@ -155,7 +155,7 @@
   </ul>
 </section>
 
-<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue Power requests">
+<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue Action requests">
   <a href="/developers/assistants/requests/approval/"><span>Back</span><strong>Approval</strong></a>
   <a href="/developers/assistants/requests/auth/"><span>Next</span><strong>Authentication</strong></a>
 </nav>

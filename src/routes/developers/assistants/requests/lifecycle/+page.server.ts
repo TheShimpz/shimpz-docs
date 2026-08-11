@@ -4,7 +4,7 @@ import type { PageServerLoad } from "./$types";
 
 const safeOrder = `from typing import TypedDict
 
-from shimpz import Context, InputOption, InputRequest, power
+from shimpz import Context, InputOption, InputRequest, action
 
 
 class PublishedRecord(TypedDict):
@@ -12,7 +12,7 @@ class PublishedRecord(TypedDict):
     status: str
 
 
-@power(
+@action(
     integrations=["cloudflare"],
     human_requests=["input:choice", "approval", "auth:reauth"],
 )

@@ -8,13 +8,13 @@
 </script>
 
 <svelte:head>
-  <title>Request approval from a Power — Shimpz docs</title>
+  <title>Request approval from an Action — Shimpz docs</title>
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/requests/approval/" />
-  <meta name="description" content="Ask an authenticated human to approve one fully described Power action." />
+  <meta name="description" content="Ask an authenticated human to approve one fully described Action action." />
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/assistants/requests/">Power requests</a><span aria-hidden="true">/</span>
+  <a href="/developers/assistants/requests/">Action requests</a><span aria-hidden="true">/</span>
   <strong>Approval</strong>
 </nav>
 
@@ -22,23 +22,23 @@
   <span class="section-label">request_approval</span>
   <h1>Ask before one externally visible action</h1>
   <p class="docs-lede">
-    Use approval when the Power already has every value it needs, but the human must explicitly authorize the
-    described action. Approval is attributable, one-use, and bound to this exact Assistant, Power, and request.
+    Use approval when the Action already has every value it needs, but the human must explicitly authorize the
+    described action. Approval is attributable, one-use, and bound to this exact Assistant, Action, and request.
   </p>
 </header>
 
 <section class="guide-section" aria-labelledby="example-title">
   <span class="section-label">Practical example</span>
   <h2 id="example-title">Describe the action, then perform it</h2>
-  <CodeBlock label="Approval before a DNS write" title="powers/publish_dns.py" variant="code" {...data.approval} />
+  <CodeBlock label="Approval before a DNS write" title="actions/publish_dns.py" variant="code" {...data.approval} />
   <p>
     <code>request_approval</code> returns <code>None</code> only after approval. Do not branch on a Boolean result:
-    denial, dismissal, cancellation, or expiry terminates the Power and never reaches the next line.
+    denial, dismissal, cancellation, or expiry terminates the Action and never reaches the next line.
   </p>
   <RequestScreenshot
-    src="/developers/power-requests/approval.png"
-    alt="Approval dialog identifying Shimpz Cloudflare and its List reviewed Cloudflare zones Power"
-    caption="Rendered Admin experience. The human sees the exact Assistant, Power, action, and expiry before choosing."
+    src="/developers/action-requests/approval.png"
+    alt="Approval dialog identifying Shimpz Cloudflare and its List reviewed Cloudflare zones Action"
+    caption="Rendered Admin experience. The human sees the exact Assistant, Action, action, and expiry before choosing."
   />
 </section>
 
@@ -62,7 +62,7 @@
   </p>
 </aside>
 
-<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue Power requests">
+<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue Action requests">
   <a href="/developers/assistants/requests/"><span>Back</span><strong>Overview</strong></a>
   <a href="/developers/assistants/requests/input/"><span>Next</span><strong>Inputs</strong></a>
 </nav>

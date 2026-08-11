@@ -32,7 +32,7 @@ def assert_reset_contract(
         '"${PROJECT_NAME}_controller_audit|controller_audit"',
         '"${PROJECT_NAME}_controller_storage|controller_storage"',
         '"${PROJECT_NAME}_controller_inference|controller_inference"',
-        '"${PROJECT_NAME}_controller_power_journal|controller_power_journal"',
+        '"${PROJECT_NAME}_controller_action_journal|controller_action_journal"',
         '"${PROJECT_NAME}_controller_publications|controller_publications"',
         '"${PROJECT_NAME}_controller_cosign_trust|controller_cosign_trust"',
         '"${PROJECT_NAME}_controller_assistant_integration_state|controller_assistant_integration_state"',

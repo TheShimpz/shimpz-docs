@@ -9,16 +9,16 @@
 
 <header class="docs-page-header">
   <span class="section-label">Developer quick start</span>
-  <h1>Write Powers, not infrastructure</h1>
+  <h1>Write Actions, not infrastructure</h1>
   <p class="docs-lede">
-    Put identity and Genesis in <code>shimpz.toml</code>. Put each Power in its own Python file.
+    Put identity and Genesis in <code>shimpz.toml</code>. Put each Action in its own Python file.
     The Shimpz CLI validates and tests the project locally without Docker.
   </p>
 </header>
 
 <section class="guide-section" aria-labelledby="path-title">
   <span class="section-label">Learning path</span>
-  <h2 id="path-title">Start with the contract, then write one Power</h2>
+  <h2 id="path-title">Start with the contract, then write one Action</h2>
   <ul class="docs-entry-list">
     <li>
       <a class="docs-entry-link" href="/developers/assistants/spec/">
@@ -29,7 +29,7 @@
     <li>
       <a class="docs-entry-link" href="/developers/assistants/">
         <strong>2. Create the minimal project</strong>
-        <span>Use the required powers directory and one async run function per file.</span>
+        <span>Use the required actions directory and one async run function per file.</span>
       </a>
     </li>
     <li>
@@ -45,10 +45,10 @@
   <span class="section-label">Trust boundary</span>
   <h2 id="boundary-title">The SDK describes; the Controller decides</h2>
   <ol>
-    <li>Shimpz Genesis derives a machine contract from the files in <code>powers/</code>.</li>
+    <li>Shimpz Genesis derives a machine contract from the files in <code>actions/</code>.</li>
     <li>The platform generates locks and runtime/container artifacts during pre-build.</li>
     <li>The Controller validates the manifest and generated contract without importing source.</li>
-    <li>Every input and output is validated again when a Power runs.</li>
+    <li>Every input and output is validated again when an Action runs.</li>
   </ol>
 </section>
 
