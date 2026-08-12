@@ -174,9 +174,10 @@ esac
         switch_group = binary_dir / "sg"
         switch_group.write_text(
             """#!/bin/sh
-printf '%s|%s|%s|%s|%s|%s\n' \
+printf '%s|%s|%s|%s|%s|%s|%s\n' \
   "$1" "$2" "$SHIMPZ_DOCKER_GROUP_HANDOFF" "$SHIMPZ_DOCKER_GROUP_ACTION" \
-  "$SHIMPZ_DOCKER_GROUP_SCRIPT" "$SHIMPZ_DOCKER_GROUP_RELEASE" >"$FAKE_HANDOFF"
+  "$SHIMPZ_DOCKER_GROUP_SOURCE" "$SHIMPZ_DOCKER_GROUP_SCRIPT" \
+  "$SHIMPZ_DOCKER_GROUP_RELEASE" >"$FAKE_HANDOFF"
 exit 73
 """,
             encoding="utf-8",
@@ -207,6 +208,15 @@ exit 73
                 text=True,
                 env=environment,
             )
+            piped = subprocess.run(
+                ["/bin/sh"],
+                check=False,
+                capture_output=True,
+                text=True,
+                input=script_path.read_text(encoding="utf-8"),
+                env=environment,
+            )
+            piped_fields = handoff.read_text(encoding="utf-8").strip().split("|")
         check(result.returncode == 73, "the stale process is replaced by the bounded group handoff")
         check(
             fields
@@ -215,6 +225,7 @@ exit 73
                 "-c",
                 "1",
                 "scheduled",
+                "file",
                 str(script_path),
                 "",
             ],
@@ -225,4 +236,18 @@ exit 73
         check(
             manual.stdout.count("space installer // stable") == 1,
             "the stale-group handoff does not repeat the installer brand",
+        )
+        check(piped.returncode == 73, "a piped install performs the bounded stale-group handoff")
+        check(
+            piped_fields
+            == [
+                grp.getgrgid(os.getgid()).gr_name,
+                "-c",
+                "1",
+                "install",
+                "public",
+                "",
+                "",
+            ],
+            "a piped install refetches only the public installer instead of executing the shell binary",
         )

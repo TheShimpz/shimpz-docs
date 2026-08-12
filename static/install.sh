@@ -170,7 +170,7 @@ die() {
 lock_handoff="${SHIMPZ_UPDATE_LOCK_HELD:-0}"
 unset SHIMPZ_UPDATE_LOCK_HELD
 docker_group_handoff="${SHIMPZ_DOCKER_GROUP_HANDOFF:-0}"
-unset SHIMPZ_DOCKER_GROUP_HANDOFF SHIMPZ_DOCKER_GROUP_SCRIPT
+unset SHIMPZ_DOCKER_GROUP_HANDOFF SHIMPZ_DOCKER_GROUP_SOURCE SHIMPZ_DOCKER_GROUP_SCRIPT
 unset SHIMPZ_DOCKER_GROUP_ACTION SHIMPZ_DOCKER_GROUP_RELEASE
 requested_release_ref=""
 case "${1:-}" in
@@ -232,8 +232,19 @@ esac
 refresh_stale_docker_group() {
 	[ "$docker_group_handoff" != "1" ] || return 1
 	[ "$(uname -s)" = "Linux" ] || return 1
-	[ -f "$0" ] || return 1
 	command -v sg >/dev/null 2>&1 || return 1
+	if [ -f "$0" ] && [ "$(sed -n '1p' "$0" 2>/dev/null)" = "#!/bin/sh" ]; then
+		docker_group_source="file"
+		docker_group_script="$0"
+	else
+		case "$action" in
+			install|reset) ;;
+			*) return 1 ;;
+		esac
+		command -v curl >/dev/null 2>&1 || return 1
+		docker_group_source="public"
+		docker_group_script=""
+	fi
 	docker_socket_path="${docker_endpoint#unix://}"
 	[ -S "$docker_socket_path" ] || return 1
 	docker_socket_gid="$(stat -c '%g' "$docker_socket_path" 2>/dev/null)" || return 1
@@ -257,17 +268,25 @@ refresh_stale_docker_group() {
 		""|-*|*[!a-zA-Z0-9_.-]*) return 1 ;;
 	esac
 	SHIMPZ_DOCKER_GROUP_HANDOFF=1
-	SHIMPZ_DOCKER_GROUP_SCRIPT="$0"
+	SHIMPZ_DOCKER_GROUP_SOURCE="$docker_group_source"
+	SHIMPZ_DOCKER_GROUP_SCRIPT="$docker_group_script"
 	SHIMPZ_DOCKER_GROUP_ACTION="$action"
 	SHIMPZ_DOCKER_GROUP_RELEASE="$requested_release_ref"
-	export SHIMPZ_DOCKER_GROUP_HANDOFF SHIMPZ_DOCKER_GROUP_SCRIPT
+	export SHIMPZ_DOCKER_GROUP_HANDOFF SHIMPZ_DOCKER_GROUP_SOURCE SHIMPZ_DOCKER_GROUP_SCRIPT
 	export SHIMPZ_DOCKER_GROUP_ACTION SHIMPZ_DOCKER_GROUP_RELEASE
 	exec sg "$docker_socket_group" -c '
-		case "$SHIMPZ_DOCKER_GROUP_ACTION" in
-			install) exec /bin/sh "$SHIMPZ_DOCKER_GROUP_SCRIPT" ;;
-			reset) exec /bin/sh "$SHIMPZ_DOCKER_GROUP_SCRIPT" --reset ;;
-			scheduled) exec /bin/sh "$SHIMPZ_DOCKER_GROUP_SCRIPT" --scheduled ;;
-			apply) exec /bin/sh "$SHIMPZ_DOCKER_GROUP_SCRIPT" --apply-release "$SHIMPZ_DOCKER_GROUP_RELEASE" ;;
+		case "${SHIMPZ_DOCKER_GROUP_SOURCE}:${SHIMPZ_DOCKER_GROUP_ACTION}" in
+			file:install) exec /bin/sh "$SHIMPZ_DOCKER_GROUP_SCRIPT" ;;
+			file:reset) exec /bin/sh "$SHIMPZ_DOCKER_GROUP_SCRIPT" --reset ;;
+			file:scheduled) exec /bin/sh "$SHIMPZ_DOCKER_GROUP_SCRIPT" --scheduled ;;
+			file:apply) exec /bin/sh "$SHIMPZ_DOCKER_GROUP_SCRIPT" --apply-release "$SHIMPZ_DOCKER_GROUP_RELEASE" ;;
+			public:install|public:reset)
+				public_script="$(curl -fsSL https://install.shimpz.com)" || exit 69
+				case "$SHIMPZ_DOCKER_GROUP_ACTION" in
+					install) printf "%s\n" "$public_script" | /bin/sh ;;
+					reset) printf "%s\n" "$public_script" | /bin/sh -s -- --reset ;;
+				esac
+				;;
 			*) exit 64 ;;
 		esac
 	'
