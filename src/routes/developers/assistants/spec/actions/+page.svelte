@@ -58,7 +58,7 @@
   <span id="boundary-title" class="kicker">Keep Actions specific</span>
   <p>
     Do not expose arbitrary URLs, methods, headers, shell commands, or raw provider responses.
-    A Action should describe one useful result and return only the fields the Brain needs.
+    An Action should describe one useful result and return only the fields the Brain needs.
   </p>
 </aside>
 
