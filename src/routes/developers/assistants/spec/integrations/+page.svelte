@@ -35,7 +35,9 @@
     <code>dns.read</code>, <code>dns.write</code>, and <code>offline_access</code>. Unknown providers,
     unsupported scopes, duplicates, and empty lists fail admission. A DNS mutation Action must separately
     declare and perform <code>approval</code> and <code>auth:reauth</code> before it reads the bearer token;
-    the scope declaration alone does not satisfy those human gates.
+    the scope declaration alone does not satisfy those human gates. Shimpz is pre-production and
+    <code>dns.write</code> is not yet enabled on the Cloudflare OAuth client, so a four-scope grant cannot currently
+    be completed and DNS mutation Actions cannot execute.
   </p>
 </section>
 
