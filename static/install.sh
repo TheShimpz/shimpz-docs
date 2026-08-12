@@ -722,11 +722,15 @@ reset_dynamic_space() {
 	printf '\n' >/dev/tty
 	[ -n "$supervisor_password" ] || die "the Supervisor password is required"
 	step "Resetting Teams and Assistants through the authenticated controller"
-	if ! printf '%s\n' "$supervisor_password" | docker exec -i "$admin_id" python -c 'import auth,json,state,sys,supervisor; from team import bridge,transport; password=sys.stdin.readline(4098).removesuffix("\n"); record=state.get(); valid=bool(password) and auth.verify_password(password,record.get("salt",""),record.get("password_hash","")); identity=state.local_supervisor() if valid else None; supervisor.materialize_public_key(identity) if identity is not None else None; session=auth.issue_session(record["session_secret"],ttl=60) if valid else ""; scope=transport.supervisor_session(session,account=False,local_identity=identity) if valid else None; scope.__enter__() if scope is not None else None; response=bridge.reset_space() if scope is not None else None; scope.__exit__(None,None,None) if scope is not None else None; document=response.body if response is not None else {}; raise SystemExit(0 if response is not None and response.status==200 and isinstance(document,dict) and document.get("reset") is True else 1)' >/dev/null 2>&1; then
-		unset supervisor_password
-		die "the authenticated Team reset did not complete"
-	fi
+	reset_result=0
+	printf '%s\n' "$supervisor_password" | docker exec -i "$admin_id" python -c 'import auth,json,state,sys,supervisor; from team import bridge,transport; password=sys.stdin.readline(4098).removesuffix("\n"); record=state.get(); valid=bool(password) and auth.verify_password(password,record.get("salt",""),record.get("password_hash","")); valid or sys.exit(2); identity=state.local_supervisor(); supervisor.materialize_public_key(identity); session=auth.issue_session(record["session_secret"],ttl=60); scope=transport.supervisor_session(session,account=False,local_identity=identity); scope.__enter__(); response=bridge.reset_space(); scope.__exit__(None,None,None); document=response.body; raise SystemExit(0 if response.status==200 and isinstance(document,dict) and document.get("reset") is True else 1)' >/dev/null 2>&1 \
+		|| reset_result=$?
 	unset supervisor_password
+	case "$reset_result" in
+		0) ;;
+		2) die "the Supervisor password is incorrect" ;;
+		*) die "the authenticated Team reset did not complete" ;;
+	esac
 	dynamic_assistant_container_ids_value="$(dynamic_assistant_container_ids)" \
 		|| die "could not verify Assistant reset"
 	dynamic_network_ids_value="$(dynamic_network_ids)" || die "could not verify Team reset"

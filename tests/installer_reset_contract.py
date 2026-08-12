@@ -63,6 +63,7 @@ def assert_reset_contract(
         "transport.supervisor_session",
         "bridge.reset_space",
         'document.get("reset") is True',
+        "the Supervisor password is incorrect",
         "the authenticated Team reset did not complete",
         "a Space-labeled container has invalid ownership labels",
         "invalid managed Assistant egress proxy name",
@@ -72,6 +73,10 @@ def assert_reset_contract(
         "reset left unexpected Shimpz Space Docker resources",
     ):
         check(marker in script, f"orphan recovery remains bounded by {marker!r}")
+    check(
+        "valid or sys.exit(2)" in script and '2) die "the Supervisor password is incorrect"' in script,
+        "reset distinguishes rejected Supervisor credentials from Team lifecycle failure",
+    )
     reset_branch = script.split('if [ "$action" = "reset" ]; then', 1)[1].split(
         '\nhost_os="$(uname -s)"',
         1,
