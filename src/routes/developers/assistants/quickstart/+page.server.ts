@@ -2,47 +2,27 @@ import { highlightCode } from "$lib/server/highlight";
 
 import type { PageServerLoad } from "./$types";
 
-const manifest = `[shimpz]
-spec = 1
-id = "echo-demo"
-version = "0.1.0"
-name = "Echo Assistant"
-summary = "Returns a message unchanged."
-creators = ["@your-handle"]
-github = "https://github.com/your-handle/echo-assistant"
-genesis = "Use echo when the user asks you to repeat a short message."
+const create = `shimpz new assistant hello-assistant
+cd hello-assistant`;
 
-[network]
-allowed_hosts = []`;
-
-const project = `[project]
-name = "echo-assistant"
-version = "0.1.0"
-requires-python = ">=3.14"
-dependencies = ["shimpz==0.1.0"]`;
-
-const action = `from typing import TypedDict
-
-from shimpz import action
-
-
-class EchoResult(TypedDict):
-    message: str
-
-
-@action()
-async def run(message: str) -> EchoResult:
-    return {"message": message}`;
+const files = `hello-assistant/
+├── .gitignore
+├── README.md
+├── actions/hello_world.py
+├── icon.png
+├── lib/hello.py
+├── tests/test_hello.py
+├── pyproject.toml
+└── shimpz.toml`;
 
 const verify = `shimpz check
-shimpz test echo --input '{"message":"hello"}'`;
+shimpz test hello-world --input '{"name":"Ada"}'`;
 
-const result = `{"message":"hello"}`;
+const result = `{"message":"Hello, Ada!"}`;
 
 export const load: PageServerLoad = async () => ({
-  manifest: await highlightCode(manifest, "toml"),
-  project: await highlightCode(project, "toml"),
-  action: await highlightCode(action, "python"),
+  create: await highlightCode(create, "bash"),
+  files: await highlightCode(files, "text"),
   verify: await highlightCode(verify, "bash"),
   result: await highlightCode(result, "json"),
 });

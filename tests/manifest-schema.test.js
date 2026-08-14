@@ -10,10 +10,6 @@ const manifestGuide = await readFile(
   new URL("../src/routes/developers/assistants/spec/manifest/+page.svelte", import.meta.url),
   "utf8",
 );
-const quickstartPage = await readFile(
-  new URL("../src/routes/developers/assistants/quickstart/+page.server.ts", import.meta.url),
-  "utf8",
-);
 const schema = JSON.parse(
   await readFile(new URL("../static/specs/assistant/manifest.schema.json", import.meta.url), "utf8"),
 );
@@ -159,7 +155,6 @@ test("static manifest schema projection pins Developers authority", () => {
 
 test("static published manifest examples contain both required tables and a valid id", () => {
   assertManifestExample(manifestPage);
-  assertManifestExample(quickstartPage);
   assert.match(manifestGuide, />Two required tables/);
   assert.match(manifestGuide, /<dt><code>\[shimpz\]<\/code><\/dt>/);
   assert.match(manifestGuide, /<dt><code>\[network\]<\/code><\/dt>/);

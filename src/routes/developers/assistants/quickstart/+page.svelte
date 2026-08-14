@@ -7,69 +7,85 @@
 </script>
 
 <svelte:head>
-  <title>Python Assistant quickstart — Shimpz docs</title>
+  <title>Build your first Assistant — Shimpz docs</title>
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/quickstart/" />
-  <meta name="description" content="Create and test a Python Shimpz Assistant without Docker." />
+  <meta name="description" content="Generate, validate, and run your first Python Shimpz Assistant without Docker." />
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/">Developers</a><span aria-hidden="true">/</span>
-  <strong>Python quickstart</strong>
+  <a href="/developers/">Creators</a><span aria-hidden="true">/</span>
+  <strong>Build your first Assistant</strong>
 </nav>
 
 <header class="docs-page-header">
-  <span class="section-label">Docker-free development</span>
-  <h1>Test one Action with two CLI commands</h1>
+  <span class="section-label">About 5 minutes · No Docker</span>
+  <h1>Build and run your first Assistant</h1>
   <p class="docs-lede">
-    Create three small source files, then let the native <code>shimpz</code> CLI manage Python 3.14,
-    <code>uv</code>, and the released SDK.
+    Generate a working Python Assistant, validate its complete source package, and invoke one Action locally.
   </p>
 </header>
 
 <aside class="scope-note" aria-labelledby="requirements-title">
-  <span id="requirements-title" class="kicker">Install the CLI</span>
+  <span id="requirements-title" class="kicker">Before you start</span>
   <p>
-    Download the native binary from
+    You need the native <code>shimpz</code> CLI. Download it from
     <a href="https://github.com/TheShimpz/shimpz-cli/releases">GitHub Releases</a>, or run
-    <code>cargo install shimpz-cli --locked</code>. Both install the <code>shimpz</code> command.
+    <code>cargo install shimpz-cli --locked</code>. Confirm the installation with <code>shimpz --version</code>.
   </p>
 </aside>
 
-<section class="guide-section" aria-labelledby="manifest-title">
-  <span class="section-label">1 · Manifest</span>
-  <h2 id="manifest-title">Create shimpz.toml</h2>
-  <CodeBlock label="Identity and Genesis" title="shimpz.toml" variant="code" {...data.manifest} />
+<section class="guide-section" aria-labelledby="create-title">
+  <span class="section-label">1 · Create</span>
+  <h2 id="create-title">Generate a valid starter</h2>
+  <CodeBlock label="Create a Python Assistant" title="Terminal" variant="code" {...data.create} />
+  <p>
+    The generator pins the current released SDK and creates every required source file, including the Assistant
+    icon. It does not need Docker or a running Shimpz Space.
+  </p>
 </section>
 
-<section class="guide-section" aria-labelledby="project-title">
-  <span class="section-label">2 · Python</span>
-  <h2 id="project-title">Create pyproject.toml</h2>
-  <CodeBlock label="Released Python SDK" title="pyproject.toml" variant="code" {...data.project} />
-</section>
-
-<section class="guide-section" aria-labelledby="action-title">
-  <span class="section-label">3 · Action</span>
-  <h2 id="action-title">Create actions/echo.py</h2>
-  <CodeBlock label="One closed Echo Action" title="actions/echo.py" variant="code" {...data.action} />
+<section class="guide-section" aria-labelledby="files-title">
+  <span class="section-label">2 · Inspect</span>
+  <h2 id="files-title">Know the files you own</h2>
+  <CodeBlock label="Generated starter" title="Project tree" variant="code" {...data.files} />
+  <ul>
+    <li><code>shimpz.toml</code> declares identity, Genesis, network intent, and optional Integrations.</li>
+    <li><code>actions/hello_world.py</code> declares the typed <code>hello-world</code> Action.</li>
+    <li><code>pyproject.toml</code> pins Python 3.14 and the released Shimpz SDK.</li>
+    <li><code>icon.png</code> is the Assistant identity image included in the immutable source package.</li>
+  </ul>
 </section>
 
 <section class="guide-section" aria-labelledby="verify-title">
-  <span class="section-label">4 · Verify</span>
-  <h2 id="verify-title">Check the project and invoke echo</h2>
+  <span class="section-label">3 · Verify</span>
+  <h2 id="verify-title">Validate the package and invoke the Action</h2>
   <CodeBlock label="Native local checks" title="Terminal" variant="code" {...data.verify} />
-  <p>The test prints the direct validated result:</p>
+  <p><code>shimpz check</code> must report <strong>Assistant is valid</strong>. The test then prints:</p>
   <CodeBlock label="Action result" title="stdout" variant="code" {...data.result} />
 </section>
 
-<aside class="scope-note" aria-labelledby="artifact-title">
-  <span id="artifact-title" class="kicker">Nothing else to commit</span>
+<aside class="scope-note" aria-labelledby="proof-title">
+  <span id="proof-title" class="kicker">What you proved</span>
   <p>
-    The platform generates the machine contract, lock files, and container/runtime artifacts before
-    building the Assistant. Local Action tests do not require Docker.
+    The manifest, icon, Action contract, dependency set, and direct result satisfy the current local contract.
+    Publication performs its own checks again before accepting the immutable package.
   </p>
 </aside>
 
-<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the developer guide">
-  <a href="/developers/assistants/spec/execution/"><span>Back</span><strong>Execution model</strong></a>
-  <a href="/developers/assistants/spec/"><span>Next</span><strong>Spec overview</strong></a>
+<section class="guide-section" aria-labelledby="troubleshooting-title">
+  <span class="section-label">If it fails</span>
+  <h2 id="troubleshooting-title">Fix the first visible error</h2>
+  <dl>
+    <dt><code>shimpz: command not found</code></dt>
+    <dd>Install the CLI, open a new terminal, and run <code>shimpz --version</code> before retrying.</dd>
+    <dt>SDK or Python download fails</dt>
+    <dd>Check network access and retry once. The CLI manages its own Python 3.14 and <code>uv</code>.</dd>
+    <dt>Assistant validation fails</dt>
+    <dd>Read the first reported file and field, correct it, then run <code>shimpz check</code> again.</dd>
+  </dl>
+</section>
+
+<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Creator guide">
+  <a href="/developers/"><span>Back</span><strong>Creator overview</strong></a>
+  <a href="/developers/assistants/"><span>Next</span><strong>Project layout</strong></a>
 </nav>
