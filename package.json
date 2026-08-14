@@ -25,7 +25,7 @@
     "vite": "^8.0.16"
   },
   "dependencies": {
-    "@shimpz/frontend": "https://codeload.github.com/TheShimpz/shimpz-frontend/tar.gz/31b6b088de4bc70ea2674b238e788c6227807771",
+    "@shimpz/frontend": "https://codeload.github.com/TheShimpz/shimpz-frontend/tar.gz/f3bd0a0b9a8996ba085898b00c9c61ddd13b6d19",
     "@fontsource-variable/inter": "^5.1.1",
     "@fontsource/ibm-plex-mono": "^5.2.7"
   }

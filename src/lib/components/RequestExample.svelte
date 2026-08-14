@@ -1,7 +1,11 @@
 <script lang="ts">
   import "@shimpz/frontend/tokens.css";
 
-  import { ActionRequestFields, Button, DialogFrame, SelectField, themeClass } from "@shimpz/frontend";
+  import ActionRequestFields from "@shimpz/frontend/components/ActionRequestFields";
+  import Button from "@shimpz/frontend/components/Button";
+  import DialogFrame from "@shimpz/frontend/components/DialogFrame";
+  import SelectField from "@shimpz/frontend/components/SelectField";
+  import { themeClass } from "@shimpz/frontend/theme";
 
   import type { ActionRequestExample } from "$lib/actionRequestExamples";
 
