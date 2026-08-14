@@ -47,6 +47,8 @@ test("static Action request guides cover the public SDK and settled safety bound
   }
   assert.match(pages, /At most 8 human requests/);
   assert.match(pages, /At most 16 human requests/);
+  assert.match(pages, /at most one authorization request/i);
+  assert.match(pages, /cannot combine\s+approval with authentication/i);
   assert.match(pages, /300 seconds/);
   assert.match(pages, /third-party secret/i);
   assert.match(pages, /request-before-action/i);

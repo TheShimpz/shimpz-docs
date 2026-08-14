@@ -56,9 +56,10 @@
 <aside class="scope-note" aria-labelledby="approval-boundary-title">
   <span id="approval-boundary-title" class="kicker">Approval is not authentication</span>
   <p>
-    Approval records intent; it does not prove that the human recently used a platform factor. For a sensitive
-    action that needs fresh assurance, request <a href="/developers/assistants/requests/auth/">authentication</a>
-    after collecting non-secret inputs and before the action.
+    Use approval when the decision needs no fresh authentication proof. If a sensitive Action needs a platform
+    factor, declare one <a href="/developers/assistants/requests/auth/">authentication request</a> instead: its
+    successful ceremony both proves the named mechanism and authorizes the exact Action. One Action cannot combine
+    approval with authentication.
   </p>
 </aside>
 

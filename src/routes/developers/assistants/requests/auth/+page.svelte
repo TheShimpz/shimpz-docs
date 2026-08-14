@@ -41,6 +41,11 @@
     password inside the same pending ceremony; the Action remains paused and receives nothing until
     assurance succeeds or the request terminates. Hosted invalid-factor behavior remains terminal.
   </p>
+  <p>
+    An Action declares and issues at most one authorization request: either <code>approval</code> or one
+    <code>auth:*</code> mechanism. Input requests remain independent. Do not add approval before authentication;
+    successful authentication already authorizes the exact pending Action.
+  </p>
 </section>
 
 <section class="guide-section" aria-labelledby="password-title">
