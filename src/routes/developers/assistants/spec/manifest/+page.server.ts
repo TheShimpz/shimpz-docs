@@ -5,7 +5,7 @@ import type { PageServerLoad } from "./$types";
 const manifest = `[shimpz]
 spec = 1
 id = "shimpz-cloudflare"
-version = "0.4.3"
+version = "0.4.4"
 name = "Shimpz Cloudflare"
 summary = "Inspect Cloudflare zones and safely manage common DNS records through OAuth."
 creators = ["@shimpz"]

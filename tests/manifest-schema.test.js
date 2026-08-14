@@ -179,6 +179,17 @@ test("static published manifest examples contain both required tables and a vali
   }
 });
 
+test("static documented Cloudflare manifest keeps one coherent current tuple", () => {
+  const manifest = extractManifest(manifestPage);
+  const version = manifest.match(/^version = "([^"]+)"$/m)?.[1];
+  const scopes = manifest
+    .match(/^scopes = \[([^\]]+)\]$/m)?.[1]
+    .split(",")
+    .map((scope) => scope.trim().replaceAll('"', ""));
+  assert.equal(version, "0.4.4");
+  assert.deepEqual(scopes, ["zone.read", "dns.read", "dns.write", "offline_access"]);
+});
+
 test("static published shimpz.toml schema exposes only authored Spec v1 fields", () => {
   assert.deepEqual(Object.keys(schema.properties).sort(), ["integrations", "network", "shimpz"]);
   assert.deepEqual(schema.properties.shimpz, { $ref: "#/$defs/shimpz" });
