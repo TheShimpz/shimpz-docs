@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readdirSync, readFileSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 
@@ -51,7 +51,17 @@ test("static discovery artifacts cover every canonical public page", () => {
   }
 
   const llms = text("static/llms.txt");
-  for (const url of expectedURLs) assert.match(llms, new RegExp(`${url.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:[)#])`));
+  const llmsURLs = [...llms.matchAll(/\]\((https:\/\/docs\.shimpz\.com\/[^)#]*)(?:#[^)]*)?\)/g)].map(
+    (match) => match[1],
+  );
+  const llmsPageURLs = llmsURLs.filter((url) => new URL(url).pathname.endsWith("/")).sort();
+  assert.deepEqual(llmsPageURLs, expectedURLs);
+
+  for (const url of llmsURLs.filter((candidate) => !new URL(candidate).pathname.endsWith("/"))) {
+    const target = new URL(url);
+    assert.equal(target.origin, ORIGIN);
+    assert.ok(statSync(new URL(`static${target.pathname}`, ROOT)).isFile(), `${url} resolves to a static authority`);
+  }
 });
 
 test("static robots policy points crawlers to the canonical sitemap", () => {
