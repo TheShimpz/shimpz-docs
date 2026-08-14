@@ -13,7 +13,7 @@
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/requests/input/" />
   <meta
     name="description"
-    content="Collect text, textarea, password, phone, select, checkbox, or radio input from a Shimpz Action."
+    content="Collect text, textarea, password, phone, select, choice, or choices input from a Shimpz Action."
   />
 </svelte:head>
 
