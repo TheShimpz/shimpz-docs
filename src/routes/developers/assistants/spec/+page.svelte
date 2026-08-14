@@ -45,7 +45,7 @@
   <span class="section-label">Platform pre-build</span>
   <h2 id="build-title">Generated artifacts never pollute source</h2>
   <ol>
-    <li>The SDK validates the project and imports each Action in isolation.</li>
+    <li>The SDK validates the project and every direct Action file.</li>
     <li>It derives the canonical <code>shimpz.contract.json</code>.</li>
     <li>The platform resolves and locks dependencies and creates the runtime/container files.</li>
     <li>The Controller admits only the reviewed immutable build.</li>
@@ -54,11 +54,12 @@
 
 <section class="guide-section" aria-labelledby="runtime-title">
   <span class="section-label">Runtime</span>
-  <h2 id="runtime-title">Invocation contains only input and Integrations</h2>
+  <h2 id="runtime-title">Invocation contains input, Integrations, and bounded replay</h2>
   <p>
     The Controller validates Action input, resolves only declared OAuth bearer tokens, and invokes
-    <code>/usr/local/bin/shimpz-action &lt;action-id&gt;</code> over bounded stdin. An Action returns one
-    validated JSON object over stdout.
+    <code>/usr/local/bin/shimpz-action &lt;action-id&gt;</code> over bounded stdin. The first invocation contains input
+    and Integrations; a replay also contains completed human-request responses. An Action returns one validated JSON
+    object over stdout.
   </p>
 </section>
 

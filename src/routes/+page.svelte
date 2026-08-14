@@ -7,12 +7,6 @@
 </svelte:head>
 
 <section id="start" class="docs-hero" aria-labelledby="page-title">
-  <div class="terminal-prompt" aria-label="Shimpz quick start">
-    <span aria-hidden="true">$</span>
-    <span>shimpz start</span>
-    <span class="terminal-cursor" aria-hidden="true"></span>
-  </div>
-
   <div class="docs-hero-title">
     <img
       class="docs-hero-mark"

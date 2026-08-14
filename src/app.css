@@ -299,17 +299,6 @@ a { color: inherit; text-decoration: none; }
   .docs-hero-title h1 { margin-right: 0; }
   .docs-hero-mark { display: block; width: clamp(5rem, 14vw, 9rem); height: auto; }
   .docs-lede { max-width: 64ch !important; color: var(--color-muted); font-size: 1.12rem; line-height: 1.72; }
-  .terminal-prompt {
-    display: inline-flex; align-items: center; gap: 0.55rem; min-height: 2rem;
-    color: var(--color-muted); font-family: var(--font-mono); font-size: var(--type-caption);
-    font-weight: 650; letter-spacing: 0.08em; text-transform: uppercase;
-  }
-  .terminal-prompt > :first-child { color: var(--color-cyan); }
-  .terminal-cursor {
-    width: 0.5rem; height: 1em; background: var(--color-cyan);
-    animation: cursor-blink 1.15s steps(2, start) infinite;
-  }
-
   .scope-note {
     margin: 2rem 0 0; padding: 1.25rem 1.4rem; background: var(--color-card);
     border-left: 2px solid var(--color-cyan); box-shadow: inset 0 0 0 1px var(--color-border);
@@ -652,7 +641,7 @@ a { color: inherit; text-decoration: none; }
     .glitch:hover::after { animation: glx-b 0.5s steps(2, end) infinite; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .terminal-cursor, .caret::after { animation: none; opacity: 1; }
+    .caret::after { animation: none; opacity: 1; }
     .card, .btn-primary, .btn-ghost, .field, .docs-nav-link, .docs-nav-sublink, .docs-prose a,
     a.external-link, a.external-link::after, .github-link, .terminal-copy { transition: none; }
     .card:hover { transform: none; }

@@ -79,8 +79,8 @@
     <dt><code>[integrations.&lt;provider&gt;]</code></dt>
     <dd>
       An optional table keyed by a registered provider id. Its only key is a unique, non-empty
-      <code>scopes</code> list from that provider's supported catalog. The published provider and
-      scope list. Provider endpoints and OAuth client configuration remain Controller-owned.
+      <code>scopes</code> list from that provider's supported catalog. Both the provider and every scope must exist in
+      the current published catalog. Provider endpoints and OAuth client configuration remain Controller-owned.
     </dd>
   </dl>
 </section>

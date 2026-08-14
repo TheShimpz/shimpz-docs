@@ -38,11 +38,18 @@
   <ol>
     <li>The Brain selects a reviewed Action and supplies JSON arguments.</li>
     <li>The Controller validates those arguments against the generated input schema.</li>
-    <li>It resolves only declared Integrations and writes <code>{`{input, integrations}`}</code> to bounded stdin.</li>
+    <li>
+      It resolves only declared Integrations and writes <code>{`{input, integrations}`}</code> to bounded stdin. A
+      replay also carries the bounded <code>responses</code> transcript.
+    </li>
     <li>It executes <code>/usr/local/bin/shimpz-action &lt;action-id&gt;</code> in the Assistant runtime.</li>
-    <li>The SDK imports only that Action file and runs its async body once.</li>
+    <li>The SDK loads the reviewed project, selects the named Action, and runs its async body once.</li>
     <li>The Controller bounds and validates the direct JSON result before the Brain can use it.</li>
   </ol>
+  <p>
+    Each invocation has an 8-second execution deadline. The encoded request and direct response are each limited to
+    512 KiB before schema and private-value validation.
+  </p>
 </section>
 
 <section class="guide-section" aria-labelledby="isolation-title">

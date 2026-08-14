@@ -13,16 +13,15 @@ class ZoneResult(TypedDict):
 
 
 @action(integrations=["cloudflare"])
-async def run(domain: str, *, ctx: Context = None) -> ZoneResult:
+async def run(domain: str, *, ctx: Context) -> ZoneResult:
     token = ctx.integrations.cloudflare.access_token
     result = await fetch_zone(domain, token)
     return {"zone_id": result["id"], "status": result["status"]}`;
 
 const contract = `{
   "id": "inspect-zone",
-  "method": "POST",
-  "path": "/v1/actions/inspect-zone",
   "integrations": ["cloudflare"],
+  "human_requests": [],
   "input_schema": {
     "type": "object",
     "properties": {"domain": {"type": "string"}},

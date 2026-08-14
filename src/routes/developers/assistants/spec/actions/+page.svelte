@@ -49,9 +49,11 @@
     {...data.contract}
   />
   <p>
-    The generated route is fixed to <code>POST /v1/actions/&lt;id&gt;</code>. The Controller validates
-    every input and result against the reviewed schemas.
+    The entry contains only the canonical Action id, declared Integrations and human-request capabilities, and the
+    two closed schemas. The Controller addresses the Action by id and validates every input and result against those
+    reviewed schemas; Assistants do not declare HTTP transport.
   </p>
+  <p>One Assistant contract contains between 1 and 128 Actions in canonical id order.</p>
 </section>
 
 <aside class="scope-note" aria-labelledby="boundary-title">

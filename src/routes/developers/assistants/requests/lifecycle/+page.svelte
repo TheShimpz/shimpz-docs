@@ -45,7 +45,7 @@
 
 <section class="guide-section" aria-labelledby="ordering-title">
   <span class="section-label">Safe ordering</span>
-  <h2 id="ordering-title">Collect, approve, authenticate, then access secrets and act</h2>
+  <h2 id="ordering-title">Collect inputs, request one authorization, then access secrets and act</h2>
   <CodeBlock label="Replay-safe Action shape" title="actions/publish_record.py" variant="code" {...data.safeOrder} />
   <p>
     Reading an Integration access token closes the human-request phase. The SDK rejects every later request. This
