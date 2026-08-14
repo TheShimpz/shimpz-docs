@@ -1,3 +1,7 @@
+<script lang="ts">
+  import CodeBlock from "$lib/components/CodeBlock.svelte";
+</script>
+
 <svelte:head>
   <title>Build a Shimpz Assistant — Shimpz docs</title>
   <link rel="canonical" href="https://docs.shimpz.com/developers/" />
@@ -45,6 +49,30 @@
       </a>
     </li>
   </ul>
+</section>
+
+<section class="guide-section" aria-labelledby="develop-title">
+  <span class="section-label">Optional coding agent</span>
+  <h2 id="develop-title">Load the current Shimpz guide into Codex or Claude Code</h2>
+  <p>
+    Install the coding agent you intend to use, then run one command from the Assistant project. You may also pass
+    another Assistant project directory as the final argument.
+  </p>
+  <CodeBlock
+    label="Start Codex in the current Assistant project"
+    title="Terminal · Assistant project"
+    lines={[{ value: "shimpz develop codex" }]}
+  />
+  <CodeBlock
+    label="Start Claude Code in another Assistant project"
+    title="Terminal · Assistant project"
+    lines={[{ value: "shimpz develop claude /path/to/assistant" }]}
+  />
+  <p>
+    Shimpz loads the current versioned Assistant development guide and starts the selected agent in that directory.
+    By default, the agent keeps its own permission protections. Adding <code>--yolo</code> disables those protections
+    and lets the agent run commands with your operating-system user's access.
+  </p>
 </section>
 
 <section class="guide-section" aria-labelledby="boundary-title">
