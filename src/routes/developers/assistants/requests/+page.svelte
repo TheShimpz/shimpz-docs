@@ -16,7 +16,7 @@
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/">Build Assistants</a><span aria-hidden="true">/</span><strong>Human requests</strong>
+  <a href="/developers/">Creator overview</a><span aria-hidden="true">/</span><strong>Human requests</strong>
 </nav>
 
 <header class="docs-page-header">
@@ -73,6 +73,6 @@
 </section>
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue human requests">
-  <a href="/developers/assistants/spec/actions/"><span>Back</span><strong>Actions</strong></a>
+  <a href="/developers/assistants/spec/network/"><span>Back</span><strong>Network access</strong></a>
   <a href="/developers/assistants/requests/approval/"><span>Next</span><strong>Approval</strong></a>
 </nav>

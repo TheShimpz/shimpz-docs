@@ -129,6 +129,16 @@
       ],
     },
     {
+      label: "Publish",
+      items: [
+        {
+          href: "/developers/assistants/publish/",
+          label: "Publish an Assistant",
+          description: "Authorize one immutable release",
+        },
+      ],
+    },
+    {
       label: "Reference",
       items: [
         {

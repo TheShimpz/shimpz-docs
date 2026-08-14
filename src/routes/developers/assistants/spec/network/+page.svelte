@@ -13,7 +13,7 @@
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/assistants/spec/">Assistant Spec v1</a><span aria-hidden="true">/</span>
+  <a href="/developers/">Creator overview</a><span aria-hidden="true">/</span>
   <strong>Network access</strong>
 </nav>
 
@@ -81,5 +81,5 @@
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec">
   <a href="/developers/assistants/spec/integrations/"><span>Back</span><strong>Integrations</strong></a>
-  <a href="/developers/assistants/spec/execution/"><span>Next</span><strong>Execution model</strong></a>
+  <a href="/developers/assistants/requests/"><span>Next</span><strong>Human requests</strong></a>
 </nav>

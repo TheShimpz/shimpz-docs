@@ -13,7 +13,7 @@
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/assistants/spec/">Assistant Spec v1</a><span aria-hidden="true">/</span>
+  <a href="/developers/">Creator overview</a><span aria-hidden="true">/</span>
   <strong>Actions</strong>
 </nav>
 

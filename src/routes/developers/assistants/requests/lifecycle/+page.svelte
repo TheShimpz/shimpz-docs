@@ -122,5 +122,5 @@
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue human requests">
   <a href="/developers/assistants/requests/auth/"><span>Back</span><strong>Authentication</strong></a>
-  <a href="/developers/assistants/spec/"><span>Next</span><strong>Assistant Spec v1</strong></a>
+  <a href="/developers/assistants/publish/"><span>Next</span><strong>Publish an Assistant</strong></a>
 </nav>

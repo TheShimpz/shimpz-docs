@@ -14,7 +14,7 @@
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/">Build Assistants</a><span aria-hidden="true">/</span><strong>Assistant Spec v1</strong>
+  <a href="/developers/">Creator overview</a><span aria-hidden="true">/</span><strong>Assistant Spec v1</strong>
 </nav>
 
 <header class="docs-page-header">
@@ -71,10 +71,8 @@
     allowlist, limits, normalized metadata, golden vectors, and verifier are published together:
   </p>
   <p>
-    Choose visibility explicitly with <code>shimpz publish --visibility public</code> or
-    <code>shimpz publish --visibility private</code>. The CLI shows the Assistant, version, source
-    digest, and attributed Creator handles before recording your consent. Every Creator listed in
-    <code>shimpz.toml</code> must authenticate and consent to that same immutable publication tuple.
+    When the exact source is ready, follow <a href="/developers/assistants/publish/">Publish an Assistant</a> to
+    choose visibility, authorize the release, and verify its installable artifact.
   </p>
   <ul>
     <li><a href="/specs/source-package/v1/README.md">Source package v1 overview</a></li>
@@ -100,6 +98,6 @@
 </aside>
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec">
-  <a href="/developers/"><span>Back</span><strong>Creator overview</strong></a>
+  <a href="/developers/assistants/publish/"><span>Back</span><strong>Publish an Assistant</strong></a>
   <a href="/developers/assistants/spec/manifest/"><span>Next</span><strong>shimpz.toml</strong></a>
 </nav>

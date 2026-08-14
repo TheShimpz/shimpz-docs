@@ -16,7 +16,7 @@
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/assistants/spec/">Assistant Spec v1</a><span aria-hidden="true">/</span>
+  <a href="/developers/">Creator overview</a><span aria-hidden="true">/</span>
   <strong>Assistant icon</strong>
 </nav>
 
@@ -67,7 +67,8 @@
   <p>
     <code>shimpz check</code> verifies the signature, dimensions, size, PNG chunk integrity, and absence of
     animation before upload. A different icon changes the source digest, so increment the Assistant version
-    and publish again. Installed Teams receive it only through the reviewed update lifecycle.
+    before you <a href="/developers/assistants/publish/">publish another immutable release</a>. Installed Teams
+    receive it only through the reviewed update lifecycle.
   </p>
 </section>
 

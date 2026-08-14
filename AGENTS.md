@@ -68,6 +68,9 @@
   current.
 - Keep one canonical owner for each fact. Derive protocol pins, versions, commands, schemas, and generated reference
   from their authoritative artifact whenever possible; never hand-copy a value that can drift.
+- A change that hand-copies CLI commands, scopes, states, output, or error codes must re-verify them against the
+  published CLI source. Record the verified CLI version or commit in the change evidence; a Docs-only source test
+  must not claim that it proves an independent repository's contract.
 - Do not make absolute custody, browser, secrecy, availability, or security claims from a visual impression. State
   the precise current boundary and preserve enough context for the claim to remain true without an image.
 

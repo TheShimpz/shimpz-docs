@@ -18,7 +18,7 @@
 
 <section class="guide-section" aria-labelledby="path-title">
   <span class="section-label">Learning path</span>
-  <h2 id="path-title">Run one Action, then learn the contract</h2>
+  <h2 id="path-title">Run one Action, learn the contract, then publish</h2>
   <ul class="docs-entry-list">
     <li>
       <a class="docs-entry-link" href="/developers/assistants/quickstart/">
@@ -38,6 +38,12 @@
         <span>See what belongs in source and what Shimpz generates during pre-build.</span>
       </a>
     </li>
+    <li>
+      <a class="docs-entry-link" href="/developers/assistants/publish/">
+        <strong>4. Publish one immutable release</strong>
+        <span>Choose its visibility, authorize the exact source, and wait for an installable artifact.</span>
+      </a>
+    </li>
   </ul>
 </section>
 
@@ -51,14 +57,6 @@
     <li>Every input and output is validated again when an Action runs.</li>
   </ol>
 </section>
-
-<aside class="scope-note" aria-labelledby="sdk-title">
-  <span id="sdk-title" class="kicker">SDK architecture</span>
-  <p>
-    Shared deterministic behavior lives in the Rust <code>shimpz-genesis</code> foundation. The public
-    Python package and import are both <code>shimpz</code>.
-  </p>
-</aside>
 
 <nav class="docs-page-nav" aria-label="Continue the Creator guide">
   <a href="/developers/assistants/quickstart/"><span>Next</span><strong>Build your first Assistant</strong></a>

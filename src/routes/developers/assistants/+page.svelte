@@ -13,7 +13,7 @@
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/assistants/spec/">Assistant Spec v1</a><span aria-hidden="true">/</span>
+  <a href="/developers/">Creator overview</a><span aria-hidden="true">/</span>
   <strong>Project structure</strong>
 </nav>
 
@@ -56,6 +56,6 @@
 </aside>
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec">
-  <a href="/developers/assistants/spec/manifest/"><span>Back</span><strong>shimpz.toml</strong></a>
+  <a href="/developers/assistants/quickstart/"><span>Back</span><strong>Build your first Assistant</strong></a>
   <a href="/developers/assistants/icons/"><span>Next</span><strong>Assistant icon</strong></a>
 </nav>

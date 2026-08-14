@@ -8,8 +8,7 @@ const workflow = `my-assistant/
 ├── pyproject.toml
 └── actions/
 
-shimpz check
-shimpz publish --visibility public`;
+shimpz check`;
 
 export const load: PageServerLoad = async () => ({
   workflow: await highlightCode(workflow, "text"),
