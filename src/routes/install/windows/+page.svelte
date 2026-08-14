@@ -76,7 +76,14 @@
       title="Ubuntu · Shimpz install"
       lines={[{ value: "curl -fsSL https://install.shimpz.com | sh" }]}
     />
-    <p>When it finishes, open <code>http://127.0.0.1:7777</code> in your normal Windows browser.</p>
+  </li>
+
+  <li>
+    <h2>Confirm that Admin opens</h2>
+    <p>
+      When the installer succeeds, open <code>http://127.0.0.1:7777</code> in your normal Windows browser.
+      Continue when you see the initial password setup or sign-in screen.
+    </p>
   </li>
 </ol>
 

@@ -34,7 +34,8 @@
     <h2>Install the Assistant</h2>
     <p>
       Open <strong>Assistants</strong>, confirm the Team shown under <strong>Installation destination</strong>,
-      open the Assistant you want, and choose <strong>Install</strong>. Wait until it is ready.
+      open the Assistant you want, and choose <strong>Install</strong>. Continue when Admin reports
+      <strong>Assistant installed</strong> and the Assistant remains available for that Team.
     </p>
   </li>
 
@@ -55,12 +56,15 @@
   </li>
 
   <li>
-    <h2>Ask a follow-up</h2>
-    <p>Use a value returned in the first answer:</p>
+    <h2>Confirm the result, then ask a follow-up</h2>
+    <p>
+      The turn is complete when Chat shows the Assistant's result with no human request still pending. If the result
+      contains a list or table, choose one returned value for a follow-up:
+    </p>
     <blockquote>Show me more details about the first result.</blockquote>
     <p>
-      Tabular results should appear as a readable table. Private values reach only the selected Action; the Brain,
-      browser, and chat response never receive them.
+      Private values are submitted from the dedicated form only to the exact selected Action. Shimpz does not add
+      them to the Brain context, chat transcript, or chat response.
     </p>
   </li>
 </ol>

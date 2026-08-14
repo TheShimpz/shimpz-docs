@@ -50,6 +50,16 @@
       or OAuth tokens into the message box.
     </p>
   </li>
+
+  <li>
+    <h2>Verify the Team can reply</h2>
+    <p>Open <strong>Chat</strong> and send a message that does not require an Assistant:</p>
+    <blockquote>Reply with this Team's name and one short sentence.</blockquote>
+    <p>
+      Continue when the Team returns a complete reply without asking for model configuration. This proves the Team,
+      model selection, and provider key are ready before you add an Assistant.
+    </p>
+  </li>
 </ol>
 
 <section class="guide-section" aria-labelledby="chat-progress-title">
@@ -129,5 +139,5 @@
 </section>
 
 <nav class="docs-page-nav" aria-label="Continue the user guide">
-  <a href="/assistants/"><span>Next</span><strong>Install an Assistant</strong></a>
+  <a href="/assistants/"><span>Next</span><strong>Add an Assistant</strong></a>
 </nav>

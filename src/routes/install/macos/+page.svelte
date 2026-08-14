@@ -57,6 +57,14 @@
       lines={[{ value: "curl -fsSL https://install.shimpz.com | sh" }]}
     />
   </li>
+
+  <li>
+    <h2>Confirm that Admin opens</h2>
+    <p>
+      A successful installer prints the local Admin address. Open <code>http://127.0.0.1:7777</code> and continue
+      when you see the initial password setup or sign-in screen.
+    </p>
+  </li>
 </ol>
 
 <aside class="scope-note" aria-labelledby="managed-mac-title">
