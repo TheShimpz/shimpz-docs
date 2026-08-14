@@ -46,11 +46,16 @@
 <section class="guide-section" aria-labelledby="ordering-title">
   <span class="section-label">Safe ordering</span>
   <h2 id="ordering-title">Collect inputs, request one authorization, then access secrets and act</h2>
-  <CodeBlock label="Replay-safe Action shape" title="actions/publish_record.py" variant="code" {...data.safeOrder} />
+  <CodeBlock
+    label="Illustrative replay-safe Action shape"
+    title="actions/publish_record.py"
+    variant="code"
+    {...data.safeOrder}
+  />
   <p>
     Reading an Integration access token closes the human-request phase. The SDK rejects every later request. This
     makes the boundary visible in code, but it cannot prove that arbitrary outbound traffic had no side effect;
-    Creator code must still obey request-before-action.
+    Creator code must still obey request-before-action. The final provider helper is illustrative Creator code.
   </p>
 </section>
 

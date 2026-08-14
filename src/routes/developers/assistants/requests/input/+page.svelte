@@ -31,6 +31,14 @@
   </p>
 </header>
 
+<aside class="scope-note" aria-labelledby="input-fragments-title">
+  <span id="input-fragments-title" class="kicker">Illustrative fragments</span>
+  <p>
+    The snippets below belong inside a declared Action; imports, the decorator, and the surrounding async function
+    are omitted.
+  </p>
+</aside>
+
 <section class="guide-section" aria-labelledby="contract-title">
   <span class="section-label">Return contract</span>
   <h2 id="contract-title">Seven presentations, two result shapes</h2>

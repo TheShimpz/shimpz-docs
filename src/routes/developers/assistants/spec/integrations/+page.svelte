@@ -47,7 +47,10 @@
   <CodeBlock label="Action-scoped Integration access" title="actions/inspect_zone.py" variant="code" {...data.action} />
   <p>
     An Action receives only Integrations listed in its <code>@action(integrations=[...])</code> declaration.
-    Read the bearer token from <code>ctx.integrations.&lt;provider&gt;.access_token</code>.
+    One Action may list at most four Integration ids, and every Integration declared in <code>shimpz.toml</code> must
+    be used by at least one Action. Read the bearer token from
+    <code>ctx.integrations.&lt;provider&gt;.access_token</code>. The <code>fetch_zone</code> call is an illustrative
+    placeholder for the Creator's provider client.
   </p>
 </section>
 

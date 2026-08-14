@@ -44,10 +44,16 @@
 <section class="guide-section" aria-labelledby="declare-title">
   <span class="section-label">Declare before use</span>
   <h2 id="declare-title">The decorator is the reviewed capability boundary</h2>
-  <CodeBlock label="Declared human request capabilities" title="actions/create_record.py" variant="code" {...data.action} />
+  <CodeBlock
+    label="Illustrative declared human request capabilities"
+    title="actions/create_record.py"
+    variant="code"
+    {...data.action}
+  />
   <p>
     Every exact kind must appear in <code>@action(human_requests=[...])</code>. An undeclared kind is rejected before
     a modal appears. Titles, descriptions, labels, and options are bounded inert text; they never grant authority.
+    The provider operation at the end is an illustrative helper that the Creator implements.
   </p>
 </section>
 

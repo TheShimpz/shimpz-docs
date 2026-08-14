@@ -31,10 +31,16 @@
 <section class="guide-section" aria-labelledby="example-title">
   <span class="section-label">Practical example</span>
   <h2 id="example-title">Describe the action, then perform it</h2>
-  <CodeBlock label="Approval before a DNS write" title="actions/publish_dns.py" variant="code" {...data.approval} />
+  <CodeBlock
+    label="Illustrative approval before a DNS write"
+    title="actions/publish_dns.py"
+    variant="code"
+    {...data.approval}
+  />
   <p>
     <code>request_approval</code> returns <code>None</code> only after approval. Do not branch on a Boolean result:
-    denial, dismissal, cancellation, or expiry terminates the Action and never reaches the next line.
+    denial, dismissal, cancellation, or expiry terminates the Action and never reaches the next line. The final
+    provider helper is illustrative Creator code.
   </p>
   <RequestExample id="approval" examples={approvalExamples} />
 </section>

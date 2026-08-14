@@ -25,4 +25,6 @@ test("static public commands and SDK examples use only current contracts", () =>
   assert.match(execution, /8-second execution deadline/);
   assert.match(execution, /512 KiB/);
   assert.match(quickstart, /Rust 1\.97\.1/);
+  assert.match(actionGuide, /str<\/code>, <code>int<\/code>, <code>float<\/code>, and <code>bool/);
+  assert.match(actionGuide, /Action results must be a <code>TypedDict/);
 });

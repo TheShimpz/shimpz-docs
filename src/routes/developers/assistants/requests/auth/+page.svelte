@@ -31,6 +31,14 @@
   </p>
 </header>
 
+<aside class="scope-note" aria-labelledby="auth-fragments-title">
+  <span id="auth-fragments-title" class="kicker">Illustrative fragments</span>
+  <p>
+    The snippets below belong inside a declared Action; the decorator, surrounding async function, and Creator-owned
+    operation are omitted.
+  </p>
+</aside>
+
 <section class="guide-section" aria-labelledby="blocking-title">
   <span class="section-label">Automatic block</span>
   <h2 id="blocking-title">Successful assurance returns nothing; failure never returns</h2>

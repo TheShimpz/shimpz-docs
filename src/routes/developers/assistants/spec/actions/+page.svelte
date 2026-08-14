@@ -29,7 +29,7 @@
 <section class="guide-section" aria-labelledby="declare-title">
   <span class="section-label">Declaration</span>
   <h2 id="declare-title">Use a narrow verb and object in the filename</h2>
-  <CodeBlock label="One file-backed Action" title="actions/inspect_zone.py" variant="code" {...data.action} />
+  <CodeBlock label="Illustrative file-backed Action" title="actions/inspect_zone.py" variant="code" {...data.action} />
   <ul>
     <li><code>inspect_zone.py</code> becomes the Action id <code>inspect-zone</code>.</li>
     <li>The only decorated function is named <code>run</code> and is asynchronous.</li>
@@ -37,6 +37,31 @@
     <li>Typed parameters become required Brain input; <code>ctx</code> is invocation context.</li>
     <li>The typed return value defines the output the Brain may receive.</li>
   </ul>
+  <p>
+    <code>fetch_zone</code> represents the Creator's provider client; replace that illustrative helper with your own
+    implementation.
+  </p>
+</section>
+
+<section class="guide-section" aria-labelledby="types-title">
+  <span class="section-label">Supported schemas</span>
+  <h2 id="types-title">Use the closed annotation subset</h2>
+  <dl>
+    <dt>Scalar values</dt>
+    <dd><code>str</code>, <code>int</code>, <code>float</code>, and <code>bool</code>.</dd>
+    <dt>Closed choices</dt>
+    <dd><code>Literal</code> with unique, non-empty string values.</dd>
+    <dt>Collections and objects</dt>
+    <dd><code>list[T]</code> and nested <code>TypedDict</code>. Action results must be a <code>TypedDict</code>.</dd>
+    <dt>Optional object fields</dt>
+    <dd><code>NotRequired[T]</code> or <code>Required[T]</code> inside a <code>TypedDict</code>.</dd>
+    <dt>Descriptions and constraints</dt>
+    <dd>
+      <code>Annotated</code> may add a description and type-appropriate string, number, or list bounds. Parameter
+      defaults, unions, tuples, arbitrary dictionaries, positional-only arguments, <code>*args</code>, and
+      <code>**kwargs</code> are rejected.
+    </dd>
+  </dl>
 </section>
 
 <section class="guide-section" aria-labelledby="contract-title">
