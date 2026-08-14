@@ -3,12 +3,12 @@
 </script>
 
 <svelte:head>
-  <title>Update or remove Shimpz — Shimpz docs</title>
+  <title>Maintain your Shimpz Space — Shimpz docs</title>
   <meta name="description" content="Update a stable Shimpz installation or remove its local data." />
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/">User guide</a><span aria-hidden="true">/</span><strong>Update or remove</strong>
+  <a href="/">Use Shimpz</a><span aria-hidden="true">/</span><strong>Maintain your Space</strong>
 </nav>
 
 <header class="docs-page-header">
@@ -46,5 +46,5 @@
 </section>
 
 <nav class="docs-page-nav" aria-label="Continue the user guide">
-  <a href="/concepts/"><span>Next</span><strong>Simple glossary</strong></a>
+  <a href="/concepts/"><span>Next</span><strong>Core concepts</strong></a>
 </nav>

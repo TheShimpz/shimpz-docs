@@ -8,7 +8,7 @@
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/">User guide</a><span aria-hidden="true">/</span><span>Installation</span
+  <a href="/">Use Shimpz</a><span aria-hidden="true">/</span><span>Installation</span
   ><span aria-hidden="true">/</span><strong>macOS</strong>
 </nav>
 
@@ -68,5 +68,5 @@
 </aside>
 
 <nav class="docs-page-nav" aria-label="Continue the user guide">
-  <a href="/admin/"><span>Next</span><strong>First access</strong></a>
+  <a href="/admin/"><span>Next</span><strong>Create your first Team</strong></a>
 </nav>

@@ -7,14 +7,14 @@
 </script>
 
 <svelte:head>
-  <title>Assistant project layout — Shimpz docs</title>
+  <title>Assistant project structure — Shimpz docs</title>
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/" />
   <meta name="description" content="Structure a file-backed Python Shimpz Assistant." />
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
   <a href="/developers/assistants/spec/">Assistant Spec v1</a><span aria-hidden="true">/</span>
-  <strong>Project layout</strong>
+  <strong>Project structure</strong>
 </nav>
 
 <header class="docs-page-header">

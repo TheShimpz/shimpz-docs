@@ -11,9 +11,9 @@ function text(path) {
   return readFileSync(new URL(path, ROOT), "utf8");
 }
 
-test("static Developer navigation exposes the dedicated Action request submenu", () => {
+test("static Creator navigation exposes the dedicated human request submenu", () => {
   const layout = text("src/routes/+layout.svelte");
-  assert.match(layout, /label: "Action requests"/);
+  assert.match(layout, /label: "Ask a human"/);
   for (const page of ["approval", "input", "auth", "lifecycle"]) {
     assert.match(layout, new RegExp(`/developers/assistants/requests/${page}/`));
   }

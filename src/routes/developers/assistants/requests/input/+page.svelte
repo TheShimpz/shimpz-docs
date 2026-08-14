@@ -17,7 +17,7 @@
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/assistants/requests/">Action requests</a><span aria-hidden="true">/</span>
+  <a href="/developers/assistants/requests/">Human requests</a><span aria-hidden="true">/</span>
   <strong>Inputs</strong>
 </nav>
 
@@ -155,7 +155,7 @@
   </ul>
 </section>
 
-<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue Action requests">
+<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue human requests">
   <a href="/developers/assistants/requests/approval/"><span>Back</span><strong>Approval</strong></a>
   <a href="/developers/assistants/requests/auth/"><span>Next</span><strong>Authentication</strong></a>
 </nav>

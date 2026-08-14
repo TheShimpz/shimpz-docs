@@ -1,5 +1,5 @@
 <svelte:head>
-  <title>Install an Assistant — Shimpz docs</title>
+  <title>Add an Assistant — Shimpz docs</title>
   <meta
     name="description"
     content="Install an Assistant and provide an Integration or Secret only when an Action requires it."
@@ -7,7 +7,7 @@
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/">User guide</a><span aria-hidden="true">/</span><strong>Install an Assistant</strong>
+  <a href="/">Use Shimpz</a><span aria-hidden="true">/</span><strong>Add an Assistant</strong>
 </nav>
 
 <header class="docs-page-header">
@@ -106,6 +106,6 @@
 </section>
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the user guide">
-  <a href="/admin/"><span>Back</span><strong>First access</strong></a>
-  <a href="/manage/"><span>Next</span><strong>Update or remove</strong></a>
+  <a href="/admin/"><span>Back</span><strong>Create your first Team</strong></a>
+  <a href="/manage/"><span>Next</span><strong>Maintain your Space</strong></a>
 </nav>

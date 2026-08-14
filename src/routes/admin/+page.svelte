@@ -3,12 +3,12 @@
 </script>
 
 <svelte:head>
-  <title>First access — Shimpz docs</title>
+  <title>Create your first Team — Shimpz docs</title>
   <meta name="description" content="Open Shimpz, create your first Team, and configure its Brain." />
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/">User guide</a><span aria-hidden="true">/</span><strong>First access</strong>
+  <a href="/">Use Shimpz</a><span aria-hidden="true">/</span><strong>Create your first Team</strong>
 </nav>
 
 <header class="docs-page-header">

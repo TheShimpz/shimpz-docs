@@ -16,8 +16,8 @@
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/assistants/requests/">Action requests</a><span aria-hidden="true">/</span>
-  <strong>Lifecycle & security</strong>
+  <a href="/developers/assistants/requests/">Human requests</a><span aria-hidden="true">/</span>
+  <strong>Replay and lifecycle</strong>
 </nav>
 
 <header class="docs-page-header">
@@ -120,7 +120,7 @@
   </p>
 </aside>
 
-<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue Action requests">
+<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue human requests">
   <a href="/developers/assistants/requests/auth/"><span>Back</span><strong>Authentication</strong></a>
-  <a href="/developers/assistants/quickstart/"><span>Next</span><strong>Python quickstart</strong></a>
+  <a href="/developers/assistants/spec/"><span>Next</span><strong>Assistant Spec v1</strong></a>
 </nav>

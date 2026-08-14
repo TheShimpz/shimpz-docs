@@ -30,7 +30,7 @@
   const userNavigation: NavigationSection[] = [
     {
       label: "Start here",
-      items: [{ href: "/", label: "Quick start", description: "What you need and what happens" }],
+      items: [{ href: "/", label: "Get started", description: "Install and reach your first useful result" }],
     },
     {
       label: "Installation",
@@ -41,16 +41,16 @@
       ],
     },
     {
-      label: "Your Space",
+      label: "Set up and use",
       items: [
-        { href: "/admin/", label: "First access", description: "Create a Team and configure its Brain" },
-        { href: "/assistants/", label: "Install an Assistant", description: "Add a capability to a Team" },
-        { href: "/manage/", label: "Update or remove", description: "Safe maintenance commands" },
+        { href: "/admin/", label: "Create your first Team", description: "Open Admin and configure its model" },
+        { href: "/assistants/", label: "Add an Assistant", description: "Give one Team a useful capability" },
+        { href: "/manage/", label: "Maintain your Space", description: "Update, inspect, reset, or remove" },
       ],
     },
     {
-      label: "Reference",
-      items: [{ href: "/concepts/", label: "Simple glossary", description: "The six names you will see" }],
+      label: "Understand",
+      items: [{ href: "/concepts/", label: "Core concepts", description: "Space, Team, Brain, Assistant, and Action" }],
     },
   ];
 
@@ -58,25 +58,20 @@
     {
       label: "Start here",
       items: [
-        { href: "/developers/", label: "Developer quick start", description: "Choose the smallest useful change" },
+        { href: "/developers/", label: "Creator overview", description: "Understand the build and publication path" },
+        {
+          href: "/developers/assistants/quickstart/",
+          label: "Build your first Assistant",
+          description: "Generate, validate, and run one Action",
+        },
       ],
     },
     {
-      label: "Assistant Spec v1",
+      label: "Build",
       items: [
         {
-          href: "/developers/assistants/spec/",
-          label: "Overview",
-          description: "Minimal source, generated runtime",
-        },
-        {
-          href: "/developers/assistants/spec/manifest/",
-          label: "shimpz.toml",
-          description: "Declare identity and security intent",
-        },
-        {
           href: "/developers/assistants/",
-          label: "Project layout",
+          label: "Project structure",
           description: "One Python file per Action",
         },
         {
@@ -86,12 +81,12 @@
         },
         {
           href: "/developers/assistants/spec/actions/",
-          label: "Actions",
+          label: "Define Actions",
           description: "Define one async run per file",
         },
         {
           href: "/developers/assistants/spec/integrations/",
-          label: "Integrations",
+          label: "Integrations and OAuth",
           description: "Request reviewed OAuth scopes",
         },
         {
@@ -99,24 +94,14 @@
           label: "Network access",
           description: "Allow exact outbound hosts",
         },
-        {
-          href: "/developers/assistants/spec/execution/",
-          label: "Execution model",
-          description: "Pre-build and invoke Actions",
-        },
-        {
-          href: "/developers/assistants/quickstart/",
-          label: "Python quickstart",
-          description: "Run the minimal starter end to end",
-        },
       ],
     },
     {
-      label: "Action requests",
+      label: "Ask a human",
       items: [
         {
           href: "/developers/assistants/requests/",
-          label: "Overview",
+          label: "Human requests",
           description: "Pause for one attributable human decision",
           children: [
             {
@@ -136,10 +121,30 @@
             },
             {
               href: "/developers/assistants/requests/lifecycle/",
-              label: "Lifecycle & security",
+              label: "Replay and lifecycle",
               description: "Replay, limits, denial, and secrets",
             },
           ],
+        },
+      ],
+    },
+    {
+      label: "Reference",
+      items: [
+        {
+          href: "/developers/assistants/spec/",
+          label: "Assistant Spec v1",
+          description: "Minimal source and generated runtime",
+        },
+        {
+          href: "/developers/assistants/spec/manifest/",
+          label: "shimpz.toml",
+          description: "Declare identity and security intent",
+        },
+        {
+          href: "/developers/assistants/spec/execution/",
+          label: "Execution model",
+          description: "Pre-build and invoke Actions",
         },
       ],
     },
@@ -147,7 +152,7 @@
 
   const isDeveloperGuide = $derived(page.url.pathname.startsWith("/developers/"));
   const navigation = $derived(isDeveloperGuide ? developerNavigation : userNavigation);
-  const guideLabel = $derived(isDeveloperGuide ? "Developer guide" : "User guide");
+  const guideLabel = $derived(isDeveloperGuide ? "Build Assistants" : "Use Shimpz");
   const guideSummary = $derived(
     isDeveloperGuide ? "build and validate Assistants" : "install and use your Space",
   );
@@ -211,13 +216,13 @@
       href="/"
       class="chip justify-center"
       class:is-active={!isDeveloperGuide}
-      aria-current={!isDeveloperGuide ? "page" : undefined}>User</a
+      aria-current={!isDeveloperGuide ? "page" : undefined}>Use Shimpz</a
     >
     <a
       href="/developers/"
       class="chip justify-center"
       class:is-active={isDeveloperGuide}
-      aria-current={isDeveloperGuide ? "page" : undefined}>Developers</a
+      aria-current={isDeveloperGuide ? "page" : undefined}>Build Assistants</a
     >
   </div>
 {/snippet}

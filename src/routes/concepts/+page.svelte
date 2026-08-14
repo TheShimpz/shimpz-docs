@@ -1,10 +1,10 @@
 <svelte:head>
-  <title>Shimpz glossary — Shimpz docs</title>
+  <title>Core Shimpz concepts — Shimpz docs</title>
   <meta name="description" content="Understand Space, Team, Brain, Assistant, Action, and Integration in plain language." />
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/">User guide</a><span aria-hidden="true">/</span><strong>Simple glossary</strong>
+  <a href="/">Use Shimpz</a><span aria-hidden="true">/</span><strong>Core concepts</strong>
 </nav>
 
 <header class="docs-page-header">
@@ -57,5 +57,5 @@
 </section>
 
 <nav class="docs-page-nav" aria-label="Return to the beginning">
-  <a href="/"><span>Back to</span><strong>Quick start</strong></a>
+  <a href="/"><span>Back to</span><strong>Get started</strong></a>
 </nav>

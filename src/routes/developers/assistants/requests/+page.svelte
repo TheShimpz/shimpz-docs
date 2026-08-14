@@ -7,7 +7,7 @@
 </script>
 
 <svelte:head>
-  <title>Action human requests — Shimpz docs</title>
+  <title>Ask a human during an Action — Shimpz docs</title>
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/requests/" />
   <meta
     name="description"
@@ -16,7 +16,7 @@
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/">Developers</a><span aria-hidden="true">/</span><strong>Action requests</strong>
+  <a href="/developers/">Build Assistants</a><span aria-hidden="true">/</span><strong>Human requests</strong>
 </nav>
 
 <header class="docs-page-header">
@@ -72,7 +72,7 @@
   </ul>
 </section>
 
-<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue Action requests">
+<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue human requests">
   <a href="/developers/assistants/spec/actions/"><span>Back</span><strong>Actions</strong></a>
   <a href="/developers/assistants/requests/approval/"><span>Next</span><strong>Approval</strong></a>
 </nav>

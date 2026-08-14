@@ -13,7 +13,7 @@
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/">Creators</a><span aria-hidden="true">/</span>
+  <a href="/developers/">Build Assistants</a><span aria-hidden="true">/</span>
   <strong>Build your first Assistant</strong>
 </nav>
 
@@ -87,5 +87,5 @@
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Creator guide">
   <a href="/developers/"><span>Back</span><strong>Creator overview</strong></a>
-  <a href="/developers/assistants/"><span>Next</span><strong>Project layout</strong></a>
+  <a href="/developers/assistants/"><span>Next</span><strong>Project structure</strong></a>
 </nav>
