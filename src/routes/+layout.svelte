@@ -30,7 +30,14 @@
   const userNavigation: NavigationSection[] = [
     {
       label: "Start here",
-      items: [{ href: "/", label: "Get started", description: "Install and reach your first useful result" }],
+      items: [
+        { href: "/", label: "Get started", description: "Install and reach your first useful result" },
+        {
+          href: "/concepts/",
+          label: "Core concepts",
+          description: "Space, Team, Brain, Assistant, Action, Integration",
+        },
+      ],
     },
     {
       label: "Installation",
@@ -48,10 +55,6 @@
         { href: "/manage/", label: "Maintain your Space", description: "Update or reset a Local Space" },
       ],
     },
-    {
-      label: "Understand",
-      items: [{ href: "/concepts/", label: "Core concepts", description: "Space, Team, Brain, Assistant, Action, Integration" }],
-    },
   ];
 
   const developerNavigation: NavigationSection[] = [
@@ -63,6 +66,11 @@
           href: "/developers/assistants/quickstart/",
           label: "Build your first Assistant",
           description: "Generate, validate, and run one Action",
+        },
+        {
+          href: "/developers/assistants/publish/",
+          label: "Publish an Assistant",
+          description: "Authorize one immutable release",
         },
       ],
     },
@@ -125,16 +133,6 @@
               description: "Replay, limits, denial, and secrets",
             },
           ],
-        },
-      ],
-    },
-    {
-      label: "Publish",
-      items: [
-        {
-          href: "/developers/assistants/publish/",
-          label: "Publish an Assistant",
-          description: "Authorize one immutable release",
         },
       ],
     },
