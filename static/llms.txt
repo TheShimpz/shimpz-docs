@@ -11,6 +11,7 @@
 - [Create your first Team](https://docs.shimpz.com/admin/): Open Admin, create one Team, and verify its Brain can reply.
 - [Add an Assistant](https://docs.shimpz.com/assistants/): Install one Assistant and reach a useful Team result.
 - [Maintain your Space](https://docs.shimpz.com/manage/): Update or reset a Local Space with the installer.
+- [Help and recovery](https://docs.shimpz.com/help/): Start from a visible Local symptom and follow the current safe recovery path.
 - [Core concepts](https://docs.shimpz.com/concepts/): Understand Space, Team, Brain, Assistant, Action, and Integration.
 
 ## Build Assistants

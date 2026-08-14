@@ -53,6 +53,7 @@
         { href: "/admin/", label: "Create your first Team", description: "Open Admin and configure its model" },
         { href: "/assistants/", label: "Add an Assistant", description: "Give one Team a useful capability" },
         { href: "/manage/", label: "Maintain your Space", description: "Update or reset a Local Space" },
+        { href: "/help/", label: "Help and recovery", description: "Start from the symptom you can see" },
       ],
     },
   ];

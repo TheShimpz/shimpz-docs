@@ -40,7 +40,7 @@
   </li>
 
   <li>
-    <h2>Install Docker</h2>
+    <h2 id="check-docker-title">Install Docker</h2>
     <p>
       Install <a
         class="external-link"
@@ -68,7 +68,7 @@
   </li>
 
   <li>
-    <h2>Confirm that Admin opens</h2>
+    <h2 id="confirm-admin-title">Confirm that Admin opens</h2>
     <p>
       A successful installer prints the exact local Admin address. Open that address on the same computer; it is
       <code>http://127.0.0.1:7777</code> when <code>SHIMPZ_PORT</code> was not changed. Continue when you see the

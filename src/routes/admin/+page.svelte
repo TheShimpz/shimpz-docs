@@ -61,7 +61,7 @@
   </li>
 
   <li>
-    <h2>Verify the Team can reply</h2>
+    <h2 id="verify-team-title">Verify the Team can reply</h2>
     <p>Open <strong>Chat</strong> and send a message that does not require an Assistant:</p>
     <blockquote>Reply with this Team's name and one short sentence.</blockquote>
     <p>
@@ -110,6 +110,7 @@
     return to the original authenticated Admin tab, and paste it into the completion field. The code is not a
     provider token or OAuth authorization code, and you should never paste it into chat or another site.
   </p>
+  <h3 id="oauth-bad-gateway-title">Bad Gateway means authorization did not start</h3>
   <p>
     If the provider tab shows <strong>Bad Gateway</strong> before Cloudflare asks for consent, authorization did not
     start and no provider grant was created. Shimpz fails closed when its hosted broker cannot reach the private

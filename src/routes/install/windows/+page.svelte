@@ -57,7 +57,7 @@
   </li>
 
   <li>
-    <h2>Check Docker inside Ubuntu</h2>
+    <h2 id="check-docker-title">Check Docker inside Ubuntu</h2>
     <CodeBlock
       label="Check Docker inside Ubuntu"
       title="Ubuntu · Docker check"
@@ -80,7 +80,7 @@
   </li>
 
   <li>
-    <h2>Confirm that Admin opens</h2>
+    <h2 id="confirm-admin-title">Confirm that Admin opens</h2>
     <p>
       When the installer succeeds, open the exact address it prints in your normal Windows browser. The default is
       <code>http://127.0.0.1:7777</code>; a configured <code>SHIMPZ_PORT</code> changes it. Continue when you see the
