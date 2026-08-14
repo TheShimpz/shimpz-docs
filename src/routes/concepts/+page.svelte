@@ -21,7 +21,10 @@
   <dd>An isolated workspace with its own chat, Brain settings, Assistants, Integrations, and files.</dd>
 
   <dt><strong>Brain</strong></dt>
-  <dd>The language model that answers as the Team and chooses which available Action can help.</dd>
+  <dd>
+    The shared reasoning runtime that uses the model configured for a Team to write replies and choose which
+    available Action can help.
+  </dd>
 
   <dt><strong>Assistant</strong></dt>
   <dd>A focused capability installed in one Team.</dd>

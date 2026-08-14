@@ -39,7 +39,7 @@
   <span id="before-start-title" class="kicker">Before you start</span>
   <p>
     You need Docker, an OpenAI or Anthropic API key for the Team's Brain, and about ten minutes. If an Assistant
-    needs an Account or Secret, Shimpz asks for it only when an Action actually needs it.
+    needs an Integration or private input, Shimpz asks for it only when an Action actually needs it.
   </p>
 </aside>
 
