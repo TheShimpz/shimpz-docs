@@ -2,7 +2,7 @@
   <title>Add an Assistant — Shimpz docs</title>
   <meta
     name="description"
-    content="Install an Assistant and provide an Integration or Secret only when an Action requires it."
+    content="Install an Assistant and provide an Integration or private input only when an Action requires it."
   />
 </svelte:head>
 
@@ -41,8 +41,11 @@
 
   <li>
     <h2>Ask for one useful result</h2>
-    <p>Open <strong>Chat</strong> and send this first message:</p>
-    <blockquote>Use the installed Assistant to show me what it can read.</blockquote>
+    <p>
+      On the Assistant page, choose one declared Action that matches your goal. Open <strong>Chat</strong> and ask for
+      that outcome in normal language. For example, a DNS Assistant might receive:
+    </p>
+    <blockquote>Use the installed DNS Assistant to list the zones I can access.</blockquote>
     <p>If private access is necessary, the turn pauses and shows the exact requirement.</p>
   </li>
 
@@ -50,7 +53,7 @@
     <h2>Provide only what the Action requests</h2>
     <p>
       If an Integration is required, choose <strong>Continue</strong>, review the provider and scopes, and approve on
-      the provider's website. If a Secret is required, Shimpz shows its name and purpose in a private form.
+      the provider's website. If a third-party private value is required, Shimpz shows one bounded request form.
       The same conversation continues after the requirement is satisfied.
     </p>
   </li>
@@ -58,8 +61,8 @@
   <li>
     <h2>Confirm the result, then ask a follow-up</h2>
     <p>
-      The turn is complete when Chat shows the Assistant's result with no human request still pending. If the result
-      contains a list or table, choose one returned value for a follow-up:
+      The turn is complete when Chat shows the Team's complete response with no human request still pending. If the
+      response contains a list or table, choose one returned value for a follow-up:
     </p>
     <blockquote>Show me more details about the first result.</blockquote>
     <p>
@@ -104,8 +107,9 @@
   <span class="section-label">Remove access</span>
   <h2 id="disconnect-title">Disconnect before uninstalling</h2>
   <p>
-    Disconnect any Integration to revoke its grant, remove configured Secrets, then uninstall the Assistant.
-    Uninstalling the Assistant does not delete the Team or its conversation history.
+    Disconnect any Integration to revoke its provider grant, then uninstall the Assistant. Third-party password
+    input is memory-only and is never a configured value to remove. Uninstalling the Assistant does not delete the
+    Team or its conversation history.
   </p>
 </section>
 

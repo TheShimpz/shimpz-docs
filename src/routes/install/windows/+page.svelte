@@ -81,8 +81,9 @@
   <li>
     <h2>Confirm that Admin opens</h2>
     <p>
-      When the installer succeeds, open <code>http://127.0.0.1:7777</code> in your normal Windows browser.
-      Continue when you see the initial password setup or sign-in screen.
+      When the installer succeeds, open the exact address it prints in your normal Windows browser. The default is
+      <code>http://127.0.0.1:7777</code>; a configured <code>SHIMPZ_PORT</code> changes it. Continue when you see the
+      initial password setup or sign-in screen.
     </p>
   </li>
 </ol>

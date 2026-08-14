@@ -29,8 +29,9 @@
   <span id="requirements-title" class="kicker">Before you start</span>
   <p>
     You need the native <code>shimpz</code> CLI. Download it from
-    <a href="https://github.com/TheShimpz/shimpz-cli/releases">GitHub Releases</a>, or run
-    <code>cargo install shimpz-cli --locked</code>. Confirm the installation with <code>shimpz --version</code>.
+    <a href="https://github.com/TheShimpz/shimpz-cli/releases">GitHub Releases</a>. If you already have Rust 1.97.1
+    or newer, you can instead run <code>cargo install shimpz-cli --locked</code>. Confirm the installation with
+    <code>shimpz --version</code>.
   </p>
 </aside>
 

@@ -15,7 +15,10 @@
 
 <dl>
   <dt><strong>Space</strong></dt>
-  <dd>Your complete Shimpz installation on one machine.</dd>
+  <dd>
+    One complete Shimpz installation. A Local Space runs on infrastructure you control; a Hosted Space runs on
+    Shimpz-managed infrastructure.
+  </dd>
 
   <dt><strong>Team</strong></dt>
   <dd>An isolated workspace with its own chat, Brain settings, Assistants, Integrations, and files.</dd>

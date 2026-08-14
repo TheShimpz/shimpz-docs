@@ -45,12 +45,12 @@
       items: [
         { href: "/admin/", label: "Create your first Team", description: "Open Admin and configure its model" },
         { href: "/assistants/", label: "Add an Assistant", description: "Give one Team a useful capability" },
-        { href: "/manage/", label: "Maintain your Space", description: "Update, inspect, reset, or remove" },
+        { href: "/manage/", label: "Maintain your Space", description: "Update or reset a Local Space" },
       ],
     },
     {
       label: "Understand",
-      items: [{ href: "/concepts/", label: "Core concepts", description: "Space, Team, Brain, Assistant, and Action" }],
+      items: [{ href: "/concepts/", label: "Core concepts", description: "Space, Team, Brain, Assistant, Action, Integration" }],
     },
   ];
 

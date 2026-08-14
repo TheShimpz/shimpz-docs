@@ -28,7 +28,8 @@
 
 <p>
   The installer checks the replacement before switching to it. If the new version does not become healthy,
-  it keeps or restores the previous working version.
+  it keeps or restores the previous working version. A successful run ends with
+  <strong>Shimpz Space is up to date</strong>.
 </p>
 
 <section class="guide-section" aria-labelledby="reset-title">
@@ -36,13 +37,15 @@
   <h2 id="reset-title">Reset only when you want to delete everything</h2>
   <p>
     Reset removes the managed Assistants, Teams, Integrations, Admin state, and local Shimpz data. It cannot be
-    undone. Disconnect provider Integrations first when possible.
+    undone. Disconnect provider Integrations first when possible. Run reset in an interactive terminal: it requires
+    the current Supervisor password before deleting anything.
   </p>
   <CodeBlock
     label="Permanently reset Shimpz"
     title="Terminal · destructive reset"
     lines={[{ value: "curl -fsSL https://install.shimpz.com | sh -s -- --reset" }]}
   />
+  <p>Reset is complete only when the installer prints <strong>Shimpz Space was reset</strong>.</p>
 </section>
 
 <nav class="docs-page-nav" aria-label="Continue the user guide">

@@ -15,6 +15,7 @@ test("static public commands and SDK examples use only current contracts", () =>
   const actionGuide = text("src/routes/developers/assistants/spec/actions/+page.svelte");
   const integrationExample = text("src/routes/developers/assistants/spec/integrations/+page.server.ts");
   const execution = text("src/routes/developers/assistants/spec/execution/+page.svelte");
+  const quickstart = text("src/routes/developers/assistants/quickstart/+page.svelte");
 
   assert.doesNotMatch(home, /shimpz start/);
   assert.doesNotMatch(`${actionExample}\n${integrationExample}`, /ctx: Context = None|dict\[str, str\]/);
@@ -23,4 +24,5 @@ test("static public commands and SDK examples use only current contracts", () =>
   assert.match(execution, /responses/);
   assert.match(execution, /8-second execution deadline/);
   assert.match(execution, /512 KiB/);
+  assert.match(quickstart, /Rust 1\.97\.1/);
 });

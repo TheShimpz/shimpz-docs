@@ -28,6 +28,14 @@
       title="Browser · local Admin"
       lines={[{ value: "http://127.0.0.1:7777", prompt: "›" }]}
     />
+    <p>
+      Open the exact address printed by the installer. The address above is the default; a configured
+      <code>SHIMPZ_PORT</code> changes the port.
+    </p>
+    <p>
+      When the installed port is not <code>7777</code>, use the printed address for normal Admin work and open
+      <code>https://local.shimpz.com</code> when you need to authorize an Assistant Integration.
+    </p>
     <p>Create the initial Admin password when asked. Use at least 12 characters and do not reuse it elsewhere.</p>
   </li>
 

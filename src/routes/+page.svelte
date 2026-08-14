@@ -23,9 +23,8 @@
   </div>
 
   <p class="docs-lede">
-    Shimpz runs on your computer with Docker. The installer downloads tested stable images, opens a private
-    Admin at <code>127.0.0.1:7777</code>, and guides you through the rest. You do not need to clone code or
-    build anything.
+    Shimpz runs on your computer with Docker. The installer downloads tested stable images, prints the exact private
+    Admin address, and guides you through the rest. You do not need to clone code or build anything.
   </p>
 </section>
 
@@ -73,7 +72,3 @@
     <li><strong>Install an Assistant.</strong> Choose one useful capability from the Store and add it to the Team.</li>
   </ol>
 </section>
-
-<nav class="docs-page-nav" aria-label="Continue the user guide">
-  <a href="/admin/"><span>Next</span><strong>Create your first Team</strong></a>
-</nav>
