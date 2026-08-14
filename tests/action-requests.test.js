@@ -39,9 +39,9 @@ test("static Action request guides cover the public SDK and settled safety bound
     "select",
     "choice",
     "choices",
-    "reauth",
-    "second-factor",
-    "phishing-resistant",
+    "auth:password",
+    "auth:totp",
+    "auth:passkey",
   ]) {
     assert.match(pages, new RegExp(surface));
   }
@@ -74,9 +74,9 @@ test("static every specialized request guide uses a real PNG modal screenshot", 
     "input-select",
     "input-choice",
     "input-choices",
-    "auth-reauth",
-    "auth-second-factor",
-    "auth-phishing-resistant",
+    "auth-password",
+    "auth-totp",
+    "auth-passkey",
   ];
   for (const name of names) {
     const image = readFileSync(new URL(`${name}.png`, SCREENSHOT));

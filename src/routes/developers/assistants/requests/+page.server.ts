@@ -13,7 +13,7 @@ class CreatedRecord(TypedDict):
 
 
 @action(
-    human_requests=["input:choice", "approval", "auth:reauth"],
+    human_requests=["input:choice", "auth:password"],
 )
 async def run(zone: str, *, ctx: Context) -> CreatedRecord:
     mode = ctx.request_input(
@@ -28,12 +28,8 @@ async def run(zone: str, *, ctx: Context) -> CreatedRecord:
             ),
         )
     )
-    ctx.request_approval(
-        title="Create the DNS record",
-        description=f"Create {zone} in {mode} mode.",
-    )
     ctx.request_auth(
-        "reauth",
+        "password",
         title="Confirm this DNS change",
         description="Re-enter your platform credential to authorize this action.",
     )

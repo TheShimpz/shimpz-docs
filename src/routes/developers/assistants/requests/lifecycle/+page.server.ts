@@ -14,7 +14,7 @@ class PublishedRecord(TypedDict):
 
 @action(
     integrations=["cloudflare"],
-    human_requests=["input:choice", "approval", "auth:reauth"],
+    human_requests=["input:choice", "auth:password"],
 )
 async def run(zone: str, *, ctx: Context) -> PublishedRecord:
     # Replay-safe prefix: pure decisions only.
@@ -30,12 +30,8 @@ async def run(zone: str, *, ctx: Context) -> PublishedRecord:
             ),
         )
     )
-    ctx.request_approval(
-        title="Publish the DNS record",
-        description=f"Publish {zone} in {mode} mode.",
-    )
     ctx.request_auth(
-        "reauth",
+        "password",
         title="Confirm the DNS publication",
         description="Reauthenticate before this external write.",
     )
