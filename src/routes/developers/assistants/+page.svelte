@@ -50,7 +50,7 @@
 <aside class="scope-note" aria-labelledby="generated-title">
   <span id="generated-title" class="kicker">Generated during pre-build</span>
   <p>
-    Shimpz Genesis creates <code>shimpz.contract.json</code>. The platform resolves dependencies and
+    The SDK creates <code>shimpz.contract.json</code>. The platform resolves dependencies and
     builds the immutable runtime. Do not hand-edit or commit those artifacts.
   </p>
 </aside>

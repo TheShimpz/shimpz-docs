@@ -45,7 +45,7 @@
   <span class="section-label">Trust boundary</span>
   <h2 id="boundary-title">The SDK describes; the Controller decides</h2>
   <ol>
-    <li>Shimpz Genesis derives a machine contract from the files in <code>actions/</code>.</li>
+    <li>The SDK derives a machine contract from the files in <code>actions/</code>.</li>
     <li>The platform generates locks and runtime/container artifacts during pre-build.</li>
     <li>The Controller validates the manifest and generated contract without importing source.</li>
     <li>Every input and output is validated again when an Action runs.</li>

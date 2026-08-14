@@ -90,7 +90,7 @@
   <p>
     Root-level fields, misplaced fields, and unknown keys fail validation. The
     <a href="/specs/assistant/manifest.schema.json">published shimpz.toml schema</a> describes the
-    document shape; Shimpz Genesis and Controller admission enforce additional semantic invariants.
+    document shape; SDK validation and Controller admission enforce additional semantic invariants.
   </p>
 </aside>
 

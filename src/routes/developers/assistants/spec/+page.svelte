@@ -39,7 +39,7 @@
   <span class="section-label">Platform pre-build</span>
   <h2 id="build-title">Generated artifacts never pollute source</h2>
   <ol>
-    <li>Shimpz Genesis validates the project and imports each Action in isolation.</li>
+    <li>The SDK validates the project and imports each Action in isolation.</li>
     <li>It derives the canonical <code>shimpz.contract.json</code>.</li>
     <li>The platform resolves and locks dependencies and creates the runtime/container files.</li>
     <li>The Controller admits only the reviewed immutable build.</li>

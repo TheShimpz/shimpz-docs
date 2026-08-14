@@ -25,7 +25,7 @@
   <span class="section-label">Pre-build</span>
   <h2 id="build-title">Delivery details stay out of the repository</h2>
   <ol>
-    <li>Shimpz Genesis validates <code>shimpz.toml</code> and every direct <code>actions/*.py</code> file.</li>
+    <li>The SDK validates <code>shimpz.toml</code> and every direct <code>actions/*.py</code> file.</li>
     <li>It generates the canonical machine contract.</li>
     <li>The platform resolves and locks dependencies and creates the runtime/container files.</li>
     <li>The immutable artifact is admitted against the reviewed manifest and contract.</li>
