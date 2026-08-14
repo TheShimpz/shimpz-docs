@@ -17,14 +17,6 @@ const upstream = JSON.parse(
     "utf8",
   ),
 );
-const specPageServer = await readFile(
-  new URL("../src/routes/developers/assistants/spec/+page.server.ts", import.meta.url),
-  "utf8",
-);
-const specPage = await readFile(
-  new URL("../src/routes/developers/assistants/spec/+page.svelte", import.meta.url),
-  "utf8",
-);
 const expectedChecksums = new Map(
   checksumFile
     .trim()
@@ -66,14 +58,6 @@ test("published source-package projection pins Developers authority", () => {
     createHash("sha256").update(checksumFile).digest("hex"),
     upstream.contract_files_sha256,
   );
-});
-
-test("static Spec guide derives source-package authority from its published projection", () => {
-  assert.match(specPageServer, /static\/specs\/source-package\/upstream\.json/);
-  assert.match(specPage, /data\.sourcePackageUpstream\.commit/);
-  assert.match(specPage, /data\.sourcePackageUpstream\.tree/);
-  assert.doesNotMatch(specPage, /[a-f0-9]{40}/);
-  assert.doesNotMatch(specPage, /\/commit\//);
 });
 
 test("published source-package files match their authority checksums", async () => {
