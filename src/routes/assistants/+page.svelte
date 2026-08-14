@@ -1,5 +1,6 @@
 <svelte:head>
   <title>Add an Assistant — Shimpz docs</title>
+  <link rel="canonical" href="https://docs.shimpz.com/assistants/" />
   <meta
     name="description"
     content="Install an Assistant and provide an Integration or private input only when an Action requires it."

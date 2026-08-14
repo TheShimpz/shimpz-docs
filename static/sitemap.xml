@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://docs.shimpz.com/</loc></url>
+  <url><loc>https://docs.shimpz.com/admin/</loc></url>
+  <url><loc>https://docs.shimpz.com/assistants/</loc></url>
+  <url><loc>https://docs.shimpz.com/concepts/</loc></url>
+  <url><loc>https://docs.shimpz.com/developers/</loc></url>
+  <url><loc>https://docs.shimpz.com/developers/assistants/</loc></url>
+  <url><loc>https://docs.shimpz.com/developers/assistants/icons/</loc></url>
+  <url><loc>https://docs.shimpz.com/developers/assistants/publish/</loc></url>
+  <url><loc>https://docs.shimpz.com/developers/assistants/quickstart/</loc></url>
+  <url><loc>https://docs.shimpz.com/developers/assistants/requests/</loc></url>
+  <url><loc>https://docs.shimpz.com/developers/assistants/requests/approval/</loc></url>
+  <url><loc>https://docs.shimpz.com/developers/assistants/requests/auth/</loc></url>
+  <url><loc>https://docs.shimpz.com/developers/assistants/requests/input/</loc></url>
+  <url><loc>https://docs.shimpz.com/developers/assistants/requests/lifecycle/</loc></url>
+  <url><loc>https://docs.shimpz.com/developers/assistants/spec/</loc></url>
+  <url><loc>https://docs.shimpz.com/developers/assistants/spec/actions/</loc></url>
+  <url><loc>https://docs.shimpz.com/developers/assistants/spec/execution/</loc></url>
+  <url><loc>https://docs.shimpz.com/developers/assistants/spec/integrations/</loc></url>
+  <url><loc>https://docs.shimpz.com/developers/assistants/spec/manifest/</loc></url>
+  <url><loc>https://docs.shimpz.com/developers/assistants/spec/network/</loc></url>
+  <url><loc>https://docs.shimpz.com/install/linux/</loc></url>
+  <url><loc>https://docs.shimpz.com/install/macos/</loc></url>
+  <url><loc>https://docs.shimpz.com/install/windows/</loc></url>
+  <url><loc>https://docs.shimpz.com/manage/</loc></url>
+</urlset>

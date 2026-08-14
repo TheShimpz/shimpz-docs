@@ -4,6 +4,7 @@
 
 <svelte:head>
   <title>Install Shimpz on Windows — Shimpz docs</title>
+  <link rel="canonical" href="https://docs.shimpz.com/install/windows/" />
   <meta name="description" content="Install stable Shimpz inside Ubuntu on WSL2 with Docker Desktop." />
 </svelte:head>
 

@@ -4,6 +4,7 @@
 
 <svelte:head>
   <title>Maintain your Shimpz Space — Shimpz docs</title>
+  <link rel="canonical" href="https://docs.shimpz.com/manage/" />
   <meta name="description" content="Update a stable Shimpz installation or remove its local data." />
 </svelte:head>
 

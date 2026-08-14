@@ -4,6 +4,7 @@
 
 <svelte:head>
   <title>Install Shimpz on Linux — Shimpz docs</title>
+  <link rel="canonical" href="https://docs.shimpz.com/install/linux/" />
   <meta
     name="description"
     content="Install the stable Shimpz Space release on a Linux amd64 computer or server."

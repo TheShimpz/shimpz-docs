@@ -4,6 +4,7 @@
 
 <svelte:head>
   <title>Create your first Team — Shimpz docs</title>
+  <link rel="canonical" href="https://docs.shimpz.com/admin/" />
   <meta name="description" content="Open Shimpz, create your first Team, and configure its Brain." />
 </svelte:head>
 

@@ -1,0 +1,38 @@
+# Shimpz documentation
+
+> Current public guidance for people who use Shimpz and Creators who build Assistants. Treat the linked pages and machine-readable specifications as current; do not infer roadmap behavior from them.
+
+## Use Shimpz
+
+- [Get started](https://docs.shimpz.com/): Choose a supported Local platform and follow the first-success journey.
+- [Install on Linux](https://docs.shimpz.com/install/linux/): Install a Local Space on Linux amd64.
+- [Install on macOS](https://docs.shimpz.com/install/macos/): Install a Local Space on Apple Silicon with Docker Desktop.
+- [Install on Windows](https://docs.shimpz.com/install/windows/): Install a Local Space inside Ubuntu on WSL2.
+- [Create your first Team](https://docs.shimpz.com/admin/): Open Admin, create one Team, and verify its Brain can reply.
+- [Add an Assistant](https://docs.shimpz.com/assistants/): Install one Assistant and reach a useful Team result.
+- [Maintain your Space](https://docs.shimpz.com/manage/): Update or reset a Local Space with the installer.
+- [Core concepts](https://docs.shimpz.com/concepts/): Understand Space, Team, Brain, Assistant, Action, and Integration.
+
+## Build Assistants
+
+- [Creator overview](https://docs.shimpz.com/developers/): Follow the complete build and publication learning path.
+- [Build your first Assistant](https://docs.shimpz.com/developers/assistants/quickstart/): Generate, validate, and run one Action locally.
+- [Project structure](https://docs.shimpz.com/developers/assistants/): Use the minimal file-backed Assistant shape.
+- [Assistant icon](https://docs.shimpz.com/developers/assistants/icons/): Provide the canonical immutable identity image.
+- [Define Actions](https://docs.shimpz.com/developers/assistants/spec/actions/): Declare typed one-shot Python Actions.
+- [Integrations and OAuth](https://docs.shimpz.com/developers/assistants/spec/integrations/): Request reviewed provider scopes without owning tokens.
+- [Network access](https://docs.shimpz.com/developers/assistants/spec/network/): Declare exact outbound hosts.
+- [Human requests](https://docs.shimpz.com/developers/assistants/requests/): Choose approval, input, or platform authentication.
+- [Approval](https://docs.shimpz.com/developers/assistants/requests/approval/): Ask for one attributable human approval.
+- [Inputs](https://docs.shimpz.com/developers/assistants/requests/input/): Collect one bounded closed field.
+- [Authentication](https://docs.shimpz.com/developers/assistants/requests/auth/): Request fresh platform assurance.
+- [Replay and lifecycle](https://docs.shimpz.com/developers/assistants/requests/lifecycle/): Understand replay, denial, expiry, and limits.
+- [Publish an Assistant](https://docs.shimpz.com/developers/assistants/publish/): Authorize one immutable private or public release.
+
+## Reference
+
+- [Assistant Spec v1](https://docs.shimpz.com/developers/assistants/spec/): Read the current source and generated-runtime boundary.
+- [shimpz.toml](https://docs.shimpz.com/developers/assistants/spec/manifest/): Reference every authored manifest field.
+- [Execution model](https://docs.shimpz.com/developers/assistants/spec/execution/): Reference pre-build and one-shot Action execution.
+- [Assistant manifest schema](https://docs.shimpz.com/specs/assistant/manifest.schema.json): Validate authored shimpz.toml data against the published schema.
+- [Source package v1](https://docs.shimpz.com/specs/source-package/v1/README.md): Inspect the pinned byte-level publication contract and verifier.

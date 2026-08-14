@@ -4,6 +4,7 @@
 
 <svelte:head>
   <title>Install Shimpz on macOS — Shimpz docs</title>
+  <link rel="canonical" href="https://docs.shimpz.com/install/macos/" />
   <meta name="description" content="Install stable Shimpz on an Apple Silicon Mac with Docker Desktop." />
 </svelte:head>
 

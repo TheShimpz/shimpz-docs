@@ -1,5 +1,6 @@
 <svelte:head>
   <title>Get started with Shimpz — Shimpz docs</title>
+  <link rel="canonical" href="https://docs.shimpz.com/" />
   <meta
     name="description"
     content="Install Shimpz, create your first Team, and add an Assistant with a guided local setup."

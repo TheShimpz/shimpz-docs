@@ -1,5 +1,6 @@
 <svelte:head>
   <title>Core Shimpz concepts — Shimpz docs</title>
+  <link rel="canonical" href="https://docs.shimpz.com/concepts/" />
   <meta name="description" content="Understand Space, Team, Brain, Assistant, Action, and Integration in plain language." />
 </svelte:head>
 
