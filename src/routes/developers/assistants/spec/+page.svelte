@@ -1,3 +1,9 @@
+<script lang="ts">
+  import type { PageData } from "./$types";
+
+  let { data }: { data: PageData } = $props();
+</script>
+
 <svelte:head>
   <title>Assistant Spec v1 — Shimpz docs</title>
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/spec/" />
@@ -78,13 +84,9 @@
   </ul>
   <dl>
     <dt>Developers authority commit</dt>
-    <dd>
-      <a href="https://github.com/TheShimpz/shimpz-developers/commit/62baa183c053143bea47ce128cfcab8884b9555d">
-        <code>62baa183c053143bea47ce128cfcab8884b9555d</code>
-      </a>
-    </dd>
+    <dd><code>{data.sourcePackageUpstream.commit}</code></dd>
     <dt>Contract tree</dt>
-    <dd><code>a9840a62a671be7fd7cff9cb24d89529e4404bd1</code></dd>
+    <dd><code>{data.sourcePackageUpstream.tree}</code></dd>
   </dl>
 </section>
 
