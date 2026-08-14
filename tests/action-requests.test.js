@@ -4,7 +4,6 @@ import { test } from "node:test";
 
 const ROOT = new URL("../", import.meta.url);
 const ROUTE = new URL("src/routes/developers/assistants/requests/", ROOT);
-const SCREENSHOT = new URL("static/developers/action-requests/", ROOT);
 
 /** @param {string} path */
 function text(path) {
@@ -66,8 +65,13 @@ test("static complete Action examples use SDK-supported TypedDict results", () =
   assert.match(examples, /TypedDict/);
 });
 
-test("static every specialized request guide uses a real PNG modal screenshot", () => {
-  const names = [
+test("static native request examples cover every settled request kind without frozen screenshots", () => {
+  const fixtures = text("src/lib/actionRequestExamples.ts");
+  const component = text("src/lib/components/RequestExample.svelte");
+  const pages = ["approval", "input", "auth"]
+    .map((name) => readFileSync(new URL(`${name}/+page.svelte`, ROUTE), "utf8"))
+    .join("\n");
+  const ids = [
     "approval",
     "input-text",
     "input-textarea",
@@ -80,9 +84,13 @@ test("static every specialized request guide uses a real PNG modal screenshot", 
     "auth-totp",
     "auth-passkey",
   ];
-  for (const name of names) {
-    const image = readFileSync(new URL(`${name}.png`, SCREENSHOT));
-    assert.deepEqual([...image.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
-    assert.ok(image.length > 1_000, `${name} screenshot is unexpectedly small`);
+  for (const id of ids) {
+    assert.match(fixtures, new RegExp(`id: "${id}"`));
   }
+  for (const primitive of ["ActionRequestFields", "Button", "DialogFrame", "SelectField", "themeClass"]) {
+    assert.match(component, new RegExp(`\\b${primitive}\\b`));
+  }
+  assert.match(component, /nothing is submitted/);
+  assert.doesNotMatch(component, /fetch\(|onsubmit|AssistantHumanRequestDialog|PromptDialog|Modal/);
+  assert.doesNotMatch(`${pages}\n${component}`, /RequestScreenshot|action-requests\/.*\.png/);
 });

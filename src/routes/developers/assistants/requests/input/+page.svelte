@@ -1,6 +1,7 @@
 <script lang="ts">
   import CodeBlock from "$lib/components/CodeBlock.svelte";
-  import RequestScreenshot from "$lib/components/RequestScreenshot.svelte";
+  import RequestExample from "$lib/components/RequestExample.svelte";
+  import { inputExamples } from "$lib/actionRequestExamples";
 
   import type { PageData } from "./$types";
 
@@ -45,6 +46,7 @@
     Import <code>InputRequest</code> and, for option controls, <code>InputOption</code> from <code>shimpz</code>. Declare
     each exact kind, such as <code>input:text</code>, in the Action's <code>human_requests</code> list.
   </p>
+  <RequestExample id="input" examples={inputExamples} />
 </section>
 
 <section class="guide-section" aria-labelledby="text-title">
@@ -52,11 +54,6 @@
   <h2 id="text-title">text</h2>
   <p>Use for one short identifier, hostname, label, or other bounded value.</p>
   <CodeBlock label="Short text input" title="Inside a declared Action" variant="code" {...data.text} />
-  <RequestScreenshot
-    src="/developers/action-requests/input-text.png"
-    alt="Action input dialog with a single-line text field"
-    caption="text renders one standard single-line field with its required or optional state."
-  />
 </section>
 
 <section class="guide-section" aria-labelledby="textarea-title">
@@ -64,11 +61,6 @@
   <h2 id="textarea-title">textarea</h2>
   <p>Use for a bounded explanation or note where line breaks help the human communicate clearly.</p>
   <CodeBlock label="Multiline input" title="Inside a declared Action" variant="code" {...data.textarea} />
-  <RequestScreenshot
-    src="/developers/action-requests/input-textarea.png"
-    alt="Action input dialog with a multiline textarea"
-    caption="textarea provides a larger multiline editor while preserving the same bounded response contract."
-  />
 </section>
 
 <section class="guide-section" aria-labelledby="password-title">
@@ -79,11 +71,6 @@
     masked and memory-only. It is never a Shimpz Account password or Local Supervisor password.
   </p>
   <CodeBlock label="Third-party secret input" title="Inside a declared Action" variant="code" {...data.password} />
-  <RequestScreenshot
-    src="/developers/action-requests/input-password.png"
-    alt="Action password input dialog warning that the secret is delivered to the named Assistant"
-    caption="The warning names the receiving Assistant and distinguishes this value from Shimpz authentication."
-  />
   <aside class="scope-note" aria-labelledby="password-rules-title">
     <span id="password-rules-title" class="kicker">Secret-last rules</span>
     <p>
@@ -100,11 +87,6 @@
   <h2 id="phone-title">phone</h2>
   <p>Use for one phone number. The specialized control helps entry; your Action still owns domain-specific parsing.</p>
   <CodeBlock label="Phone input" title="Inside a declared Action" variant="code" {...data.phone} />
-  <RequestScreenshot
-    src="/developers/action-requests/input-phone.png"
-    alt="Action input dialog with a telephone field"
-    caption="phone renders a telephone-aware field without expanding the wire value beyond one bounded string."
-  />
 </section>
 
 <section class="guide-section" aria-labelledby="select-title">
@@ -112,11 +94,6 @@
   <h2 id="select-title">select</h2>
   <p>Use when several compact options fit naturally in a dropdown.</p>
   <CodeBlock label="Select input" title="Inside a declared Action" variant="code" {...data.select} />
-  <RequestScreenshot
-    src="/developers/action-requests/input-select.png"
-    alt="Action input dialog with a select dropdown"
-    caption="select returns only the chosen option value, never its display label or description."
-  />
 </section>
 
 <section class="guide-section" aria-labelledby="choice-title">
@@ -124,11 +101,6 @@
   <h2 id="choice-title">choice</h2>
   <p>Use when the human should compare all mutually exclusive options and their descriptions at once.</p>
   <CodeBlock label="Radio choice input" title="Inside a declared Action" variant="code" {...data.choice} />
-  <RequestScreenshot
-    src="/developers/action-requests/input-choice.png"
-    alt="Action input dialog with a radio group"
-    caption="choice has the same one-value result as select, presented as an accessible radio group."
-  />
 </section>
 
 <section class="guide-section" aria-labelledby="choices-title">
@@ -136,11 +108,6 @@
   <h2 id="choices-title">choices</h2>
   <p>Use for a bounded set of independent selections. Declare both minimum and maximum intentionally.</p>
   <CodeBlock label="Checkbox choices input" title="Inside a declared Action" variant="code" {...data.choices} />
-  <RequestScreenshot
-    src="/developers/action-requests/input-choices.png"
-    alt="Action input dialog with a checkbox group and selection bounds"
-    caption="choices shows the allowed selection count and returns the selected option values in display order."
-  />
 </section>
 
 <section class="guide-section" aria-labelledby="bounds-title">

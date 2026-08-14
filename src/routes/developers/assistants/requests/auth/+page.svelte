@@ -1,6 +1,7 @@
 <script lang="ts">
   import CodeBlock from "$lib/components/CodeBlock.svelte";
-  import RequestScreenshot from "$lib/components/RequestScreenshot.svelte";
+  import RequestExample from "$lib/components/RequestExample.svelte";
+  import { authExamples } from "$lib/actionRequestExamples";
 
   import type { PageData } from "./$types";
 
@@ -48,6 +49,13 @@
   </p>
 </section>
 
+<section class="guide-section" aria-labelledby="auth-preview-title">
+  <span class="section-label">Native interface</span>
+  <h2 id="auth-preview-title">Compare the three trusted ceremonies</h2>
+  <p>Switch between the mechanisms to see the semantic control Shimpz presents without exposing it to the Action.</p>
+  <RequestExample id="auth" examples={authExamples} />
+</section>
+
 <section class="guide-section" aria-labelledby="password-title">
   <span class="section-label">Password</span>
   <h2 id="password-title">password</h2>
@@ -56,11 +64,6 @@
     the Supervisor password; Hosted verifies the authenticated Account Owner through Account authority.
   </p>
   <CodeBlock label="Fresh password assurance" title="Inside a declared Action" variant="code" {...data.password} />
-  <RequestScreenshot
-    src="/developers/action-requests/auth-password.png"
-    alt="Action authentication dialog requesting the current platform password"
-    caption="The password is submitted to the platform ceremony. The Action receives only success or a terminal block."
-  />
 </section>
 
 <section class="guide-section" aria-labelledby="factor-title">
@@ -68,11 +71,6 @@
   <h2 id="factor-title">totp</h2>
   <p>Use when a sensitive Hosted action requires the Account Owner's configured TOTP authenticator.</p>
   <CodeBlock label="Fresh TOTP assurance" title="Inside a declared Action" variant="code" {...data.totp} />
-  <RequestScreenshot
-    src="/developers/action-requests/auth-totp.png"
-    alt="Action authentication dialog requesting an authenticator code"
-    caption="The authenticator code stays inside Account's ceremony and is never placed in the Team chat transcript."
-  />
 </section>
 
 <section class="guide-section" aria-labelledby="passkey-title">
@@ -84,11 +82,6 @@
     title="Inside a declared Action"
     variant="code"
     {...data.passkey}
-  />
-  <RequestScreenshot
-    src="/developers/action-requests/auth-passkey.png"
-    alt="Action authentication dialog offering a passkey ceremony"
-    caption="The browser and Account complete WebAuthn. The resulting one-use assurance handle is consumed by Team, not the Action."
   />
 </section>
 

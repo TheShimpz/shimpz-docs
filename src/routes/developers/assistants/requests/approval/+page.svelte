@@ -1,6 +1,7 @@
 <script lang="ts">
   import CodeBlock from "$lib/components/CodeBlock.svelte";
-  import RequestScreenshot from "$lib/components/RequestScreenshot.svelte";
+  import RequestExample from "$lib/components/RequestExample.svelte";
+  import { approvalExamples } from "$lib/actionRequestExamples";
 
   import type { PageData } from "./$types";
 
@@ -10,7 +11,7 @@
 <svelte:head>
   <title>Request approval from an Action — Shimpz docs</title>
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/requests/approval/" />
-  <meta name="description" content="Ask an authenticated human to approve one fully described Action action." />
+  <meta name="description" content="Ask an authenticated human to approve one fully described Action." />
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
@@ -35,11 +36,7 @@
     <code>request_approval</code> returns <code>None</code> only after approval. Do not branch on a Boolean result:
     denial, dismissal, cancellation, or expiry terminates the Action and never reaches the next line.
   </p>
-  <RequestScreenshot
-    src="/developers/action-requests/approval.png"
-    alt="Approval dialog identifying Shimpz Cloudflare and its List reviewed Cloudflare zones Action"
-    caption="Rendered Admin experience. The human sees the exact Assistant, Action, action, and expiry before choosing."
-  />
+  <RequestExample id="approval" examples={approvalExamples} />
 </section>
 
 <section class="guide-section" aria-labelledby="copy-title">
