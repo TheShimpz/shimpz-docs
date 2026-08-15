@@ -16,7 +16,7 @@
 		path / /install.sh
 	}
 	handle @installer {
-		header Content-Type "text/x-shellscript; charset=utf-8"
+		header Content-Type "text/plain; charset=utf-8"
 		header Cache-Control "no-store"
 		rewrite * /install.sh
 		file_server
