@@ -896,11 +896,14 @@ def test_reserved_container_name_preflight_is_early_and_fail_closed():
 
 
 def test_static_docs_origin_serves_only_the_installer_paths():
+    installer_handle = CADDY[CADDY.index("handle @installer {") : CADDY.index("@installer_missing")]
+    global_headers = CADDY[CADDY.index("\theader {") : CADDY.index("\troot * /srv")]
     check("!static/" in DOCKERIGNORE and "!static/**" in DOCKERIGNORE, "installer enters the Docs image context")
     check("host install.shimpz.com" in CADDY, "installer hostname has an explicit route")
     check("path / /install.sh" in CADDY, "only root and the canonical installer path are served")
-    check('Content-Type "text/plain; charset=utf-8"' in CADDY, "installer source renders directly in browsers")
-    check('Cache-Control "no-store"' in CADDY, "bootstrap is never retained by intermediary caches")
+    check('Content-Type "text/plain; charset=utf-8"' in installer_handle, "installer source renders directly in browsers")
+    check('Cache-Control "no-store"' in installer_handle, "bootstrap is never retained by intermediary caches")
+    check('X-Content-Type-Options "nosniff"' in global_headers, "installer text cannot be reinterpreted by browsers")
     check(
         "@installer_missing host install.shimpz.com\n\thandle @installer_missing {\n\t\trespond 404\n\t}" in CADDY,
         "unknown installer-host paths are handled as real 404s before the Docs fallback",
