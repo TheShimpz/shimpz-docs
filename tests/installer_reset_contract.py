@@ -20,7 +20,7 @@ class ResetRun:
 
 
 def _fake_docker() -> str:
-    return r'''#!/bin/sh
+    return r"""#!/bin/sh
 case "$*" in
   "compose version") : ;;
   "compose version --short") printf '2.40.0\n' ;;
@@ -41,29 +41,29 @@ case "$*" in
   *"inspect --type=container --format"*"com.docker.compose.project"*"unbound-container") printf 'other-project\n' ;;
   *) printf 'unexpected docker call: %s\n' "$*" >&2; exit 72 ;;
 esac
-'''
+"""
 
 
 def _fake_systemctl() -> str:
-    return r'''#!/bin/sh
+    return r"""#!/bin/sh
 case "$*" in
   "--user show-environment"|"--user disable --now shimpz-update.timer"|"--user daemon-reload") : ;;
   "--user is-active --quiet shimpz-update.timer") [ "$FAKE_SCHEDULER_STUCK" = "1" ] ;;
   "--user is-enabled --quiet shimpz-update.timer") exit 1 ;;
   *) printf 'unexpected systemctl call: %s\n' "$*" >&2; exit 72 ;;
 esac
-'''
+"""
 
 
 def _fake_launchctl() -> str:
-    return r'''#!/bin/sh
+    return r"""#!/bin/sh
 case "$*" in
   "print gui/"*"/com.shimpz.update") [ "$FAKE_SCHEDULER_STUCK" = "1" ] ;;
   "print gui/"*) : ;;
   "bootout gui/"*) : ;;
   *) printf 'unexpected launchctl call: %s\n' "$*" >&2; exit 72 ;;
 esac
-'''
+"""
 
 
 def _run_reset(
@@ -138,7 +138,7 @@ def _run_reset(
             for path in scheduler_paths:
                 if platform == "Darwin":
                     path.write_text(
-                        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!-- shimpz-local-update-v1 -->\n",
+                        '<?xml version="1.0" encoding="UTF-8"?>\n<!-- shimpz-local-update-v1 -->\n',
                         encoding="utf-8",
                     )
                 else:
@@ -252,7 +252,7 @@ def assert_reset_contract(
         "reset distinguishes rejected Supervisor credentials from Team lifecycle failure",
     )
     check(
-        "stty \"$terminal_state\" </dev/tty 2>/dev/null || true; release_lock" in script
+        'stty "$terminal_state" </dev/tty 2>/dev/null || true; release_lock' in script
         and "trap 'release_lock' EXIT HUP INT TERM" in script,
         "the authenticated reset restores the install lock trap after reading the password",
     )

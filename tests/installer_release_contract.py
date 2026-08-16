@@ -38,7 +38,7 @@ esac
         docker.chmod(0o700)
         sed = binary_dir / "sed"
         sed.write_text(
-            r'''#!/bin/sh
+            r"""#!/bin/sh
 # Reproduce BSD sed's outcome for the retired negated-match expression; this is
 # intentionally not a general BSD sed emulator. Every other call uses host sed.
 case "$*" in
@@ -50,7 +50,7 @@ case "$*" in
     ;;
   *) exec /bin/sed "$@" ;;
 esac
-''',
+""",
             encoding="utf-8",
         )
         sed.chmod(0o700)

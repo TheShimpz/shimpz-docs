@@ -942,7 +942,9 @@ def test_static_docs_origin_serves_only_the_installer_paths():
     check("!static/" in DOCKERIGNORE and "!static/**" in DOCKERIGNORE, "installer enters the Docs image context")
     check("host install.shimpz.com" in CADDY, "installer hostname has an explicit route")
     check("path / /install.sh" in CADDY, "only root and the canonical installer path are served")
-    check('Content-Type "text/plain; charset=utf-8"' in installer_handle, "installer source renders directly in browsers")
+    check(
+        'Content-Type "text/plain; charset=utf-8"' in installer_handle, "installer source renders directly in browsers"
+    )
     check('Cache-Control "no-store"' in installer_handle, "bootstrap is never retained by intermediary caches")
     check('X-Content-Type-Options "nosniff"' in global_headers, "installer text cannot be reinterpreted by browsers")
     check(
