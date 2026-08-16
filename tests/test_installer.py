@@ -60,6 +60,26 @@ def _run_previous_ref_validator(image: str, repository: str) -> subprocess.Compl
     )
 
 
+def _run_space_id_from_env(contents: str) -> subprocess.CompletedProcess[str]:
+    function = _shell_functions("validate_space_id", "validate_repository_digest_image")
+    with tempfile.TemporaryDirectory() as raw_home:
+        env_file = Path(raw_home) / ".env"
+        env_file.write_text(contents, encoding="utf-8")
+        command = (
+            "set -eu\n"
+            "die() { printf '%s\\n' \"$*\" >&2; exit 1; }\n"
+            f'{function}\nENV_FILE="$TEST_ENV_FILE"\n'
+            "space_id_from_env_file\n"
+        )
+        return subprocess.run(
+            ["/bin/sh", "-c", command],
+            check=False,
+            capture_output=True,
+            text=True,
+            env={"TEST_ENV_FILE": str(env_file)},
+        )
+
+
 def _run_project_validator(
     records: list[str],
     *,
@@ -201,6 +221,19 @@ def test_version_command_reports_the_stable_installer_release():
 
 def test_runtime_version_floor_is_numeric_and_fail_closed():
     assert_runtime_version_floor(SCRIPT, SCRIPT_PATH, check)
+
+
+def test_installed_space_identity_is_strict_and_unambiguous():
+    valid = "space-" + "a" * 24
+    accepted = _run_space_id_from_env(f"SHIMPZ_SPACE_ID={valid}\n")
+    check(accepted.returncode == 0 and accepted.stdout.strip() == valid, "one valid installed Space id is accepted")
+
+    for contents in ("SHIMPZ_PORT=7777\n", f"SHIMPZ_SPACE_ID={valid}\nSHIMPZ_SPACE_ID={valid}\n"):
+        rejected = _run_space_id_from_env(contents)
+        check(rejected.returncode != 0, "a missing or ambiguous installed Space id is rejected")
+        check("invalid Shimpz Space identity" in rejected.stderr, "invalid installed identity has a clear error")
+
+    check("space_id_from_env_file || true" not in SCRIPT, "installed Space identity errors are never masked")
 
 
 def test_local_healthchecks_are_fast_at_start_and_cheap_when_idle():
@@ -777,7 +810,7 @@ def test_static_space_identity_socket_access_and_cpu_set_are_runtime_derived():
         "the digest-pinned controller proves Docker access before an existing release is touched",
     )
     check(
-        'space_id="$(space_id_from_env_file || true)"' in SCRIPT,
+        'space_id="$(space_id_from_env_file)"' in SCRIPT,
         "updates preserve the existing generated Space identity",
     )
     check(

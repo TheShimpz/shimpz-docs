@@ -77,6 +77,11 @@ def assert_reset_contract(
         "valid or sys.exit(2)" in script and '2) die "the Supervisor password is incorrect"' in script,
         "reset distinguishes rejected Supervisor credentials from Team lifecycle failure",
     )
+    check(
+        "stty \"$terminal_state\" </dev/tty 2>/dev/null || true; release_lock" in script
+        and "trap 'release_lock' EXIT HUP INT TERM" in script,
+        "the authenticated reset restores the install lock trap after reading the password",
+    )
     reset_branch = script.split('if [ "$action" = "reset" ]; then', 1)[1].split(
         '\nhost_os="$(uname -s)"',
         1,

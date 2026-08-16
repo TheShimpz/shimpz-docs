@@ -456,7 +456,7 @@ generated_space_id() {
 space_id_from_env_file() {
 	[ -f "$ENV_FILE" ] || return 1
 	space_lines="$(sed -n 's/^SHIMPZ_SPACE_ID=//p' "$ENV_FILE")"
-	[ -n "$space_lines" ] || return 1
+	[ -n "$space_lines" ] || die "invalid Shimpz Space identity"
 	[ "$(printf '%s\n' "$space_lines" | wc -l | tr -d ' ')" -eq 1 ] || die "invalid Shimpz Space identity"
 	validate_space_id "$space_lines"
 	printf '%s\n' "$space_lines"
@@ -730,14 +730,14 @@ reset_dynamic_space() {
 		|| die "authenticated reset requires an interactive terminal"
 	printf '  Supervisor password: ' >/dev/tty
 	terminal_state="$(stty -g </dev/tty)" || die "could not secure the password prompt"
-	trap 'stty "$terminal_state" </dev/tty 2>/dev/null || true' EXIT HUP INT TERM
+	trap 'stty "$terminal_state" </dev/tty 2>/dev/null || true; release_lock' EXIT HUP INT TERM
 	stty -echo </dev/tty || die "could not secure the password prompt"
 	IFS= read -r supervisor_password </dev/tty || {
 		stty "$terminal_state" </dev/tty 2>/dev/null || true
 		die "could not read the Supervisor password"
 	}
 	stty "$terminal_state" </dev/tty || die "could not restore the terminal"
-	trap - EXIT HUP INT TERM
+	trap 'release_lock' EXIT HUP INT TERM
 	printf '\n' >/dev/tty
 	[ -n "$supervisor_password" ] || die "the Supervisor password is required"
 	step "Resetting Teams and Assistants through the authenticated controller"
@@ -1000,7 +1000,10 @@ if [ "$action" = "reset" ]; then
 	fi
 	[ "$managed_state" -eq 1 ] || die "no managed Shimpz Space installation was found"
 	validate_project_resources
-	reset_space_id="$(space_id_from_env_file || true)"
+	reset_space_id=""
+	if [ -f "$ENV_FILE" ]; then
+		reset_space_id="$(space_id_from_env_file)"
+	fi
 	if [ -n "$controller_space_id" ]; then
 		if [ -n "$reset_space_id" ]; then
 			[ "$reset_space_id" = "$controller_space_id" ] \
@@ -1102,7 +1105,10 @@ validate_reserved_container_names
 if [ -f "$MARKER_FILE" ]; then
 	install_mode="update"
 	info "Updating Shimpz Space; your Admin data will be preserved"
-	space_id="$(space_id_from_env_file || true)"
+	space_id=""
+	if [ -f "$ENV_FILE" ]; then
+		space_id="$(space_id_from_env_file)"
+	fi
 	[ -n "$space_id" ] || space_id="$(generated_space_id)"
 else
 	install_mode="install"
