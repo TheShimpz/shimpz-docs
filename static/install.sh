@@ -931,9 +931,7 @@ drain_piped_installer_source() {
 	if [ -f "$0" ] || [ -t 0 ]; then
 		return 0
 	fi
-	while IFS= read -r discarded_source_line; do
-		:
-	done
+	dd of=/dev/null 2>/dev/null
 }
 
 remove_corrupt_install() {
