@@ -36,6 +36,22 @@ esac
             encoding="utf-8",
         )
         docker.chmod(0o700)
+        sed = binary_dir / "sed"
+        sed.write_text(
+            r'''#!/bin/sh
+case "$*" in
+  *'\|'*)
+    for argument in "$@"; do
+      release_path="$argument"
+    done
+    exec /bin/cat "$release_path"
+    ;;
+  *) exec /bin/sed "$@" ;;
+esac
+''',
+            encoding="utf-8",
+        )
+        sed.chmod(0o700)
         shell = home / "validator.sh"
         shell.write_text(
             """#!/bin/sh
@@ -202,7 +218,11 @@ def assert_atomic_release_contract(
     )
 
     invalid = {
-        "unknown field": valid.replace("schema=local-v1", "schema=local-v1\nmount=/var/run/docker.sock"),
+        "unknown field": valid.replace(
+            f"egress=ghcr.io/theshimpz/shimpz-egress@sha256:{digest}",
+            "mount=/var/run/docker.sock",
+        ),
+        "unterminated trailing field": valid + "mount=/var/run/docker.sock",
         "duplicate field": valid.replace("ordinal=42", "ordinal=42\nordinal=43"),
         "unknown schema": valid.replace("schema=local-v1", "schema=local-v2"),
         "zero ordinal": valid.replace("ordinal=42", "ordinal=0"),

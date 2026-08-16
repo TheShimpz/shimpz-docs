@@ -1476,10 +1476,12 @@ load_release_set() {
 	chmod 600 "$release_metadata"
 	[ "$(wc -l <"$release_metadata" | tr -d ' ')" -eq 8 ] \
 		|| die "the Local release metadata must contain exactly eight fields"
-	if sed -n '/^\(schema\|ordinal\|umbrella_revision\|reconciler_sha256\|admin\|team\|brain\|egress\)=/!p' \
-		"$release_metadata" | grep . >/dev/null 2>&1; then
-		die "the Local release metadata contains an unknown field"
-	fi
+	while IFS= read -r release_record || [ -n "$release_record" ]; do
+		case "$release_record" in
+			schema=*|ordinal=*|umbrella_revision=*|reconciler_sha256=*|admin=*|team=*|brain=*|egress=*) ;;
+			*) die "the Local release metadata contains an unknown field" ;;
+		esac
+	done <"$release_metadata"
 	[ "$(release_value schema "$release_metadata")" = "local-v1" ] \
 		|| die "the Local release schema is not supported"
 	release_ordinal="$(release_value ordinal "$release_metadata")"

@@ -305,6 +305,9 @@ def test_static_delivery_is_pull_only_and_content_addressed():
 
 def test_atomic_release_metadata_is_closed_and_repository_bound():
     assert_atomic_release_contract(_shell_functions, check)
+    executable_lines = "\n".join(line for line in SCRIPT.splitlines() if "brand_line" not in line)
+    for extension in (r"\|", r"\+", r"\?"):
+        check(extension not in executable_lines, f"installer excludes non-portable GNU BRE extension {extension!r}")
     check(
         'docker create --platform "$docker_platform" "$release_ref" /release.env' in SCRIPT,
         "metadata extraction supplies a harmless argv for the commandless scratch image",
