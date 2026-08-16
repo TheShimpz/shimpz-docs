@@ -29,6 +29,12 @@
     <a href="/install/macos/#check-docker-title">macOS</a>, or
     <a href="/install/windows/#check-docker-title">Windows with WSL2</a>.
   </p>
+  <p>
+    If Docker works and the installer reports that its existing Local Space failed runtime validation, read the
+    listed deletion scope. Answer <strong>Yes</strong> only when you intend to erase that complete Local Space and
+    install a fresh one. Answer <strong>No</strong> or press Enter to leave every local resource unchanged. Continue
+    with <a href="/manage/">Maintain your Space</a> for the full recovery and reset boundaries.
+  </p>
 
   <h3>Admin does not open</h3>
   <p>

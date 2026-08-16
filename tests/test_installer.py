@@ -16,6 +16,7 @@ from installer_egress_contract import (
 from installer_project_contract import assert_project_validator_contract
 from installer_project_harness import run_project_validator
 from installer_reconciler_contract import assert_reconciler_contract, install_systemd_units, run_lock_contract
+from installer_recovery_contract import assert_recovery_contract
 from installer_release_contract import assert_atomic_release_contract, assert_pull_only_delivery
 from installer_reset_contract import assert_reset_contract
 from installer_runtime_contract import (
@@ -122,7 +123,7 @@ SPACE_LABEL="com.shimpz.local.space-id"
 reset_space_id="space-111111111111111111111111"
 die() { printf '%s\n' "$*" >&2; exit 1; }
 """
-            + _shell_functions("dynamic_container_ids", "remove_validated_project_resources")
+            + _shell_functions("dynamic_container_ids", "remove_project_resources")
             + "\nvalidate_dynamic_resources\n",
             encoding="utf-8",
         )
@@ -234,6 +235,10 @@ def test_installed_space_identity_is_strict_and_unambiguous():
         check("invalid Shimpz Space identity" in rejected.stderr, "invalid installed identity has a clear error")
 
     check("space_id_from_env_file || true" not in SCRIPT, "installed Space identity errors are never masked")
+
+
+def test_corrupt_install_recovery_contract():
+    assert_recovery_contract(SCRIPT, _shell_functions, check)
 
 
 def test_local_healthchecks_are_fast_at_start_and_cheap_when_idle():

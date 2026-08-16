@@ -33,6 +33,15 @@
   <strong>Shimpz Space is up to date</strong>.
 </p>
 
+<p>
+  If the installer-owned Local Space exists but its current Docker runtime fails validation, the installer names
+  the failure and asks whether to delete that Space and install a fresh one. <strong>Yes</strong> permanently removes
+  its managed Teams, Assistants, credentials, settings, conversations, and Docker data before continuing in the
+  same terminal. <strong>No</strong>, Enter, or a non-interactive run leaves it unchanged. This recovery choice is
+  available only for a corrupt installer-owned Space; resetting a healthy Space still requires the Supervisor
+  password.
+</p>
+
 <section class="guide-section" aria-labelledby="reset-title">
   <span class="section-label">Permanent removal</span>
   <h2 id="reset-title">Reset only when you want to delete everything</h2>

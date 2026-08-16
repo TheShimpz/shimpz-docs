@@ -147,7 +147,7 @@ usage() {
 Install the stable Shimpz Space release.
 
 Usage:
-  install.sh             Install or safely update Shimpz Space
+  install.sh             Install, safely update, or recover Shimpz Space
   install.sh --reset     Stop Shimpz Space and delete its local data
   install.sh --version   Print the installer version
   install.sh --help      Show this help
@@ -467,12 +467,12 @@ validate_repository_digest_image() {
 	repository="$2"
 	image_digest="${image_value#"${repository}@sha256:"}"
 	[ "$image_digest" != "$image_value" ] \
-		|| die "refusing reset: a managed container does not use its responsibility-owned image"
+		|| die "managed runtime is invalid: a container does not use its responsibility-owned image"
 	case "$image_digest" in
-		""|*[!0-9a-f]*) die "refusing reset: a managed container image digest is invalid" ;;
+		""|*[!0-9a-f]*) die "managed runtime is invalid: a container image digest is invalid" ;;
 	esac
 	[ "${#image_digest}" -eq 64 ] \
-		|| die "refusing reset: a managed container image digest is invalid"
+		|| die "managed runtime is invalid: a container image digest is invalid"
 }
 
 record_controller_identity() {
@@ -481,7 +481,7 @@ record_controller_identity() {
 		| sed -n 's/^SHIMPZ_SPACE_ID=//p')" \
 		|| die "could not inspect the managed controller identity"
 	[ "$(printf '%s\n' "$controller_space_lines" | wc -l | tr -d ' ')" -eq 1 ] \
-		|| die "refusing reset: managed controller has an ambiguous Space identity"
+		|| die "managed runtime is invalid: controller has an ambiguous Space identity"
 	validate_space_id "$controller_space_lines"
 	controller_space_id="$controller_space_lines"
 }
@@ -511,48 +511,48 @@ validate_project_resources() {
 		case "${container_name}|${container_service}" in
 			"/shimpz-admin|admin")
 				validate_repository_digest_image "$container_image" "$ADMIN_REPOSITORY"
-				[ "$admin_seen" -eq 0 ] || die "refusing reset: duplicate managed Admin container"
+			[ "$admin_seen" -eq 0 ] || die "managed runtime is invalid: duplicate Admin container"
 				admin_seen=1
 				admin_id="$resource_id"
 				;;
 			"/shimpz-team|team")
 				validate_repository_digest_image "$container_image" "$TEAM_REPOSITORY"
-				[ "$controller_seen" -eq 0 ] || die "refusing reset: duplicate managed controller container"
+			[ "$controller_seen" -eq 0 ] || die "managed runtime is invalid: duplicate controller container"
 				controller_seen=1
 				record_controller_identity "$resource_id"
 				;;
 			"/shimpz-brain|brain")
 				validate_repository_digest_image "$container_image" "$BRAIN_REPOSITORY"
-				[ "$brain_runtime_seen" -eq 0 ] || die "refusing reset: duplicate managed Brain runtime container"
+			[ "$brain_runtime_seen" -eq 0 ] || die "managed runtime is invalid: duplicate Brain runtime container"
 				brain_runtime_seen=1
 				;;
 			"/shimpz-brain-egress|shimpz-brain-egress")
 				validate_repository_digest_image "$container_image" "$EGRESS_REPOSITORY"
-				[ "$brain_egress_seen" -eq 0 ] || die "refusing reset: duplicate managed Brain egress container"
+			[ "$brain_egress_seen" -eq 0 ] || die "managed runtime is invalid: duplicate Brain egress container"
 				brain_egress_seen=1
 				;;
 			"/shimpz-assistant-egress|shimpz-assistant-egress")
 				validate_repository_digest_image "$container_image" "$EGRESS_REPOSITORY"
 				[ "$assistant_egress_proxy_seen" -eq 0 ] \
-					|| die "refusing reset: duplicate managed Assistant egress proxy container"
+				|| die "managed runtime is invalid: duplicate Assistant egress proxy container"
 				assistant_egress_proxy_seen=1
 				;;
 			"/shimpz-assistant-release|shimpz-assistant-release")
 				validate_repository_digest_image "$container_image" "$EGRESS_REPOSITORY"
 				[ "$assistant_release_proxy_seen" -eq 0 ] \
-					|| die "refusing reset: duplicate managed Assistant release proxy container"
+				|| die "managed runtime is invalid: duplicate Assistant release proxy container"
 				assistant_release_proxy_seen=1
 				;;
 			"/shimpz-account-egress|shimpz-account-egress")
 				validate_repository_digest_image "$container_image" "$EGRESS_REPOSITORY"
 				[ "$account_egress_proxy_seen" -eq 0 ] \
-					|| die "refusing reset: duplicate managed OAuth broker proxy container"
+				|| die "managed runtime is invalid: duplicate OAuth broker proxy container"
 				account_egress_proxy_seen=1
 				;;
 			"/shimpz-account-egress-init|shimpz-account-egress-init")
 				validate_repository_digest_image "$container_image" "$EGRESS_REPOSITORY"
 				[ "$account_egress_init_seen" -eq 0 ] \
-					|| die "refusing reset: duplicate managed Account egress initializer"
+				|| die "managed runtime is invalid: duplicate Account egress initializer"
 				account_egress_init_seen=1
 				;;
 			*) die "refusing to manage unknown Compose container ${container_name}; inspect or remove it before retrying" ;;
@@ -584,7 +584,7 @@ validate_project_resources() {
 			"${PROJECT_NAME}_brain_runtime_state|brain_runtime_state"|\
 			"${PROJECT_NAME}_assistant_egress_policy|assistant_egress_policy"|\
 			"${PROJECT_NAME}_assistant_egress_audit|assistant_egress_audit") ;;
-			*) die "refusing reset: the Compose project contains an unknown volume" ;;
+			*) die "managed runtime is invalid: the Compose project contains an unknown volume" ;;
 		esac
 	done
 	for resource_id in $network_ids; do
@@ -599,7 +599,7 @@ validate_project_resources() {
 			"${PROJECT_NAME}_assistant_egress_out|assistant_egress_out"|\
 			"${PROJECT_NAME}_account_egress|account_egress"|\
 			"${PROJECT_NAME}_account_egress_out|account_egress_out") ;;
-			*) die "refusing reset: the Compose project contains an unknown network" ;;
+			*) die "managed runtime is invalid: the Compose project contains an unknown network" ;;
 		esac
 	done
 }
@@ -638,54 +638,54 @@ validate_dynamic_resources() {
 		assistant_value="${dynamic_rest#*|}"
 		[ "$managed_value" = "1" ] && [ "$profile_value" = "$LOCAL_PROFILE" ] \
 			&& [ "$space_value" = "$reset_space_id" ] \
-			|| die "refusing reset: a Space-labeled container has invalid ownership labels"
+			|| die "managed runtime is invalid: a Space-labeled container has invalid ownership labels"
 		case "$kind_value" in
 			assistant)
-				case "$dynamic_name" in "/shimpz-local-"*) ;; *) die "refusing reset: invalid managed Assistant name" ;; esac
-				case "$team_value" in ""|*[!a-z0-9_]*) die "refusing reset: invalid managed Team id" ;; esac
-				[ "${#team_value}" -le 40 ] || die "refusing reset: invalid managed Team id"
-				case "$assistant_value" in ""|*[!a-z0-9-]*) die "refusing reset: invalid managed Assistant id" ;; esac
-				case "$assistant_value" in [a-z]*) ;; *) die "refusing reset: invalid managed Assistant id" ;; esac
-				case "$assistant_value" in *--*|*-) die "refusing reset: invalid managed Assistant id" ;; esac
-				[ "${#assistant_value}" -le 48 ] || die "refusing reset: invalid managed Assistant id"
+				case "$dynamic_name" in "/shimpz-local-"*) ;; *) die "managed runtime is invalid: invalid Assistant name" ;; esac
+				case "$team_value" in ""|*[!a-z0-9_]*) die "managed runtime is invalid: invalid Team id" ;; esac
+				[ "${#team_value}" -le 40 ] || die "managed runtime is invalid: invalid Team id"
+				case "$assistant_value" in ""|*[!a-z0-9-]*) die "managed runtime is invalid: invalid Assistant id" ;; esac
+				case "$assistant_value" in [a-z]*) ;; *) die "managed runtime is invalid: invalid Assistant id" ;; esac
+				case "$assistant_value" in *--*|*-) die "managed runtime is invalid: invalid Assistant id" ;; esac
+				[ "${#assistant_value}" -le 48 ] || die "managed runtime is invalid: invalid Assistant id"
 				;;
 			assistant-egress)
 				case "$dynamic_name" in
 					"/shimpz-assistant-egress") ;;
-					*) die "refusing reset: invalid managed Assistant egress proxy name" ;;
+					*) die "managed runtime is invalid: invalid Assistant egress proxy name" ;;
 				esac
 				[ "$dynamic_assistant_egress_seen" -eq 0 ] \
-					|| die "refusing reset: duplicate managed Assistant egress proxy"
+					|| die "managed runtime is invalid: duplicate Assistant egress proxy"
 				dynamic_assistant_egress_seen=1
 				;;
 			assistant-release)
 				case "$dynamic_name" in
 					"/shimpz-assistant-release") ;;
-					*) die "refusing reset: invalid managed Assistant release proxy name" ;;
+					*) die "managed runtime is invalid: invalid Assistant release proxy name" ;;
 				esac
 				[ "$dynamic_assistant_release_seen" -eq 0 ] \
-					|| die "refusing reset: duplicate managed Assistant release proxy"
+					|| die "managed runtime is invalid: duplicate Assistant release proxy"
 				dynamic_assistant_release_seen=1
 				;;
 			brain-egress)
 				case "$dynamic_name" in
 					"/shimpz-brain-egress") ;;
-					*) die "refusing reset: invalid managed Brain egress name" ;;
+					*) die "managed runtime is invalid: invalid Brain egress name" ;;
 				esac
 				[ "$dynamic_brain_egress_seen" -eq 0 ] \
-					|| die "refusing reset: duplicate managed Brain egress"
+					|| die "managed runtime is invalid: duplicate Brain egress"
 				dynamic_brain_egress_seen=1
 				;;
 			account-egress)
 				case "$dynamic_name" in
 					"/shimpz-account-egress") ;;
-					*) die "refusing reset: invalid managed OAuth broker proxy name" ;;
+					*) die "managed runtime is invalid: invalid OAuth broker proxy name" ;;
 				esac
 				[ "$dynamic_account_egress_seen" -eq 0 ] \
-					|| die "refusing reset: duplicate managed OAuth broker proxy"
+					|| die "managed runtime is invalid: duplicate OAuth broker proxy"
 				dynamic_account_egress_seen=1
 				;;
-			*) die "refusing reset: a Space-labeled container has invalid ownership labels" ;;
+			*) die "managed runtime is invalid: a Space-labeled container has invalid ownership labels" ;;
 		esac
 	done
 	for resource_id in $dynamic_network_ids_value; do
@@ -700,10 +700,10 @@ validate_dynamic_resources() {
 		team_value="${dynamic_rest#*|}"
 		[ "$managed_value" = "1" ] && [ "$profile_value" = "$LOCAL_PROFILE" ] \
 			&& [ "$space_value" = "$reset_space_id" ] && [ "$kind_value" = "team" ] \
-			|| die "refusing reset: a Space-labeled network has invalid ownership labels"
-		case "$dynamic_name" in "shimpz-local-"*) ;; *) die "refusing reset: invalid managed Team network name" ;; esac
-		case "$team_value" in ""|*[!a-z0-9_]*) die "refusing reset: invalid managed Team id" ;; esac
-		[ "${#team_value}" -le 40 ] || die "refusing reset: invalid managed Team id"
+			|| die "managed runtime is invalid: a Space-labeled network has invalid ownership labels"
+		case "$dynamic_name" in "shimpz-local-"*) ;; *) die "managed runtime is invalid: invalid Team network name" ;; esac
+		case "$team_value" in ""|*[!a-z0-9_]*) die "managed runtime is invalid: invalid Team id" ;; esac
+		[ "${#team_value}" -le 40 ] || die "managed runtime is invalid: invalid Team id"
 	done
 }
 
@@ -712,7 +712,7 @@ reset_dynamic_space() {
 		dynamic_assistant_container_ids_value="$(dynamic_assistant_container_ids)" \
 			|| die "could not inspect managed Assistant containers"
 		[ -z "${dynamic_assistant_container_ids_value}${dynamic_network_ids_value}" ] \
-			|| die "refusing reset: managed Team resources exist without their controller"
+			|| die "managed runtime is invalid: Team resources exist without their controller"
 		return 0
 	}
 	controller_running="$(docker inspect --type=container --format '{{.State.Running}}' "$controller_id")" \
@@ -757,16 +757,238 @@ reset_dynamic_space() {
 		|| die "the authenticated reset left managed Team resources"
 }
 
-remove_validated_project_resources() {
+remove_project_resources() {
 	for resource_id in $container_ids; do
-		docker rm --force "$resource_id" >/dev/null
+		docker rm --force "$resource_id" >/dev/null \
+			|| die "could not remove a managed Shimpz Space container"
 	done
 	for resource_id in $network_ids; do
-		docker network rm "$resource_id" >/dev/null
+		docker network rm "$resource_id" >/dev/null \
+			|| die "could not remove a managed Shimpz Space network"
 	done
 	for resource_id in $volume_ids; do
-		docker volume rm "$resource_id" >/dev/null
+		docker volume rm "$resource_id" >/dev/null \
+			|| die "could not remove a managed Shimpz Space volume"
 	done
+}
+
+managed_local_container_ids() {
+	docker ps --all --quiet \
+		--filter "label=com.shimpz.local.managed=1" \
+		--filter "label=com.shimpz.local.profile=${LOCAL_PROFILE}"
+}
+
+managed_local_network_ids() {
+	docker network ls --quiet \
+		--filter "label=com.shimpz.local.managed=1" \
+		--filter "label=com.shimpz.local.profile=${LOCAL_PROFILE}"
+}
+
+recovery_dynamic_container_ids() {
+	[ -n "$recovery_space_id" ] || return 0
+	docker ps --all --quiet \
+		--filter "label=com.shimpz.local.managed=1" \
+		--filter "label=com.shimpz.local.profile=${LOCAL_PROFILE}" \
+		--filter "label=${SPACE_LABEL}=${recovery_space_id}"
+}
+
+recovery_dynamic_network_ids() {
+	[ -n "$recovery_space_id" ] || return 0
+	docker network ls --quiet \
+		--filter "label=com.shimpz.local.managed=1" \
+		--filter "label=com.shimpz.local.profile=${LOCAL_PROFILE}" \
+		--filter "label=${SPACE_LABEL}=${recovery_space_id}"
+}
+
+validate_recovery_dynamic_ownership() {
+	reset_space_id="$recovery_space_id"
+	space_container_ids="$(dynamic_container_ids)" \
+		|| die "could not inspect Space-labeled containers before recovery"
+	space_network_ids="$(dynamic_network_ids)" \
+		|| die "could not inspect Space-labeled networks before recovery"
+	for resource_id in $space_container_ids; do
+		ownership_record="$(docker inspect --type=container --format '{{index .Config.Labels "com.shimpz.local.managed"}}|{{index .Config.Labels "com.shimpz.local.profile"}}|{{index .Config.Labels "com.shimpz.local.space-id"}}' "$resource_id")" \
+			|| die "could not inspect a Space-labeled container before recovery"
+		[ "$ownership_record" = "1|${LOCAL_PROFILE}|${recovery_space_id}" ] \
+			|| die "automatic recovery refused a container without exact current Space ownership"
+	done
+	for resource_id in $space_network_ids; do
+		ownership_record="$(docker network inspect --format '{{index .Labels "com.shimpz.local.managed"}}|{{index .Labels "com.shimpz.local.profile"}}|{{index .Labels "com.shimpz.local.space-id"}}' "$resource_id")" \
+			|| die "could not inspect a Space-labeled network before recovery"
+		[ "$ownership_record" = "1|${LOCAL_PROFILE}|${recovery_space_id}" ] \
+			|| die "automatic recovery refused a network without exact current Space ownership"
+	done
+}
+
+validate_no_unbound_dynamic_resources() {
+	local_container_ids="$(managed_local_container_ids)" \
+		|| die "could not inspect Local managed containers before recovery"
+	local_network_ids="$(managed_local_network_ids)" \
+		|| die "could not inspect Local managed networks before recovery"
+	for resource_id in $local_container_ids; do
+		resource_project="$(docker inspect --type=container --format '{{index .Config.Labels "com.docker.compose.project"}}' "$resource_id")" \
+			|| die "could not inspect a Local managed container before recovery"
+		[ "$resource_project" = "$PROJECT_NAME" ] \
+			|| die "automatic recovery needs the current Space identity before deleting Team or Assistant resources"
+	done
+	for resource_id in $local_network_ids; do
+		resource_project="$(docker network inspect --format '{{index .Labels "com.docker.compose.project"}}' "$resource_id")" \
+			|| die "could not inspect a Local managed network before recovery"
+		[ "$resource_project" = "$PROJECT_NAME" ] \
+			|| die "automatic recovery needs the current Space identity before deleting Team or Assistant resources"
+	done
+}
+
+prepare_corrupt_recovery() {
+	validate_scheduler_ownership
+	recovery_space_id=""
+	if [ -f "$ENV_FILE" ]; then
+		recovery_space_id="$(space_id_from_env_file)"
+	fi
+	recovery_controller_space_id=""
+	if recovery_controller_project="$(docker inspect --type=container \
+		--format '{{index .Config.Labels "com.docker.compose.project"}}' shimpz-team 2>/dev/null)"; then
+		[ "$recovery_controller_project" = "$PROJECT_NAME" ] \
+			|| die "automatic recovery refused a controller outside ${PROJECT_NAME}"
+		recovery_controller_lines="$(docker inspect --type=container --format '{{range .Config.Env}}{{println .}}{{end}}' shimpz-team \
+			| sed -n 's/^SHIMPZ_SPACE_ID=//p')" \
+			|| die "could not inspect the managed controller identity before recovery"
+		[ -n "$recovery_controller_lines" ] \
+			&& [ "$(printf '%s\n' "$recovery_controller_lines" | wc -l | tr -d ' ')" -eq 1 ] \
+			|| die "automatic recovery refused an ambiguous controller Space identity"
+		validate_space_id "$recovery_controller_lines"
+		recovery_controller_space_id="$recovery_controller_lines"
+	fi
+	if [ -n "$recovery_space_id" ] && [ -n "$recovery_controller_space_id" ]; then
+		[ "$recovery_space_id" = "$recovery_controller_space_id" ] \
+			|| die "automatic recovery refused mismatched local and controller Space identities"
+	elif [ -z "$recovery_space_id" ]; then
+		recovery_space_id="$recovery_controller_space_id"
+	fi
+	if [ -n "$recovery_space_id" ]; then
+		validate_recovery_dynamic_ownership
+	else
+		validate_no_unbound_dynamic_resources
+	fi
+	container_ids="$(project_container_ids)" \
+		|| die "could not inspect Shimpz Space containers before recovery"
+	volume_ids="$(project_volume_ids)" \
+		|| die "could not inspect Shimpz Space volumes before recovery"
+	network_ids="$(project_network_ids)" \
+		|| die "could not inspect Shimpz Space networks before recovery"
+	recovery_dynamic_container_ids_value="$(recovery_dynamic_container_ids)" \
+		|| die "could not inspect current Space containers before recovery"
+	recovery_dynamic_network_ids_value="$(recovery_dynamic_network_ids)" \
+		|| die "could not inspect current Space networks before recovery"
+}
+
+count_resource_ids() {
+	resource_ids="$1"
+	if [ -n "$resource_ids" ]; then
+		printf '%s\n' "$resource_ids" | wc -w | tr -d ' '
+	else
+		printf '0\n'
+	fi
+}
+
+print_recovery_container_names() {
+	printed_names=""
+	for resource_id in $container_ids $recovery_dynamic_container_ids_value; do
+		resource_name="$(docker inspect --type=container --format '{{.Name}}' "$resource_id")" \
+			|| die "could not name a container before recovery"
+		case " $printed_names " in
+			*" ${resource_name} "*) ;;
+			*) printed_names="${printed_names} ${resource_name}" ;;
+		esac
+	done
+	[ -z "$printed_names" ] || printf '  Containers%s\n' "$printed_names" >&2
+}
+
+remove_installer_files() {
+	rm -f \
+		"$COMPOSE_FILE" "$ENV_FILE" "$MARKER_FILE" \
+		"${COMPOSE_FILE}.previous" "${ENV_FILE}.previous" \
+		"${COMPOSE_FILE}.tmp" "${ENV_FILE}.tmp" \
+		"$RECONCILER_FILE" "$RECONCILER_CANDIDATE" "$RECONCILER_PREVIOUS" \
+		"$STATUS_FILE" "${STATUS_FILE}.tmp" "$FAILED_RELEASE_FILE" "${FAILED_RELEASE_FILE}.tmp"
+}
+
+remove_corrupt_install() {
+	remove_scheduler
+	recovery_dynamic_container_ids_value="$(recovery_dynamic_container_ids)" \
+		|| die "could not refresh current Space containers for recovery"
+	for resource_id in $recovery_dynamic_container_ids_value; do
+		docker rm --force "$resource_id" >/dev/null \
+			|| die "could not remove a current Space container during recovery"
+	done
+	recovery_dynamic_network_ids_value="$(recovery_dynamic_network_ids)" \
+		|| die "could not refresh current Space networks for recovery"
+	for resource_id in $recovery_dynamic_network_ids_value; do
+		docker network rm "$resource_id" >/dev/null \
+			|| die "could not remove a current Space network during recovery"
+	done
+	container_ids="$(project_container_ids)" \
+		|| die "could not refresh Shimpz Space containers for recovery"
+	volume_ids="$(project_volume_ids)" \
+		|| die "could not refresh Shimpz Space volumes for recovery"
+	network_ids="$(project_network_ids)" \
+		|| die "could not refresh Shimpz Space networks for recovery"
+	remove_project_resources
+	if project_resources_exist; then
+		die "automatic recovery left unexpected Shimpz Space Docker resources"
+	fi
+	if [ -n "$recovery_space_id" ]; then
+		reset_space_id="$recovery_space_id"
+		remaining_space_containers="$(dynamic_container_ids)" \
+			|| die "could not verify current Space container removal"
+		remaining_space_networks="$(dynamic_network_ids)" \
+			|| die "could not verify current Space network removal"
+		[ -z "${remaining_space_containers}${remaining_space_networks}" ] \
+			|| die "automatic recovery left unexpected current Space resources"
+	else
+		validate_no_unbound_dynamic_resources
+	fi
+	remove_installer_files
+	install_mode="install"
+	space_id="$(generated_space_id)"
+	info "Corrupt Local Space removed; installing a fresh Shimpz Space"
+}
+
+offer_corrupt_reinstall() {
+	recovery_reason="$1"
+	[ "$action" = "install" ] || die "$recovery_reason"
+	prepare_corrupt_recovery
+	warn "The existing Local Space failed current runtime validation"
+	printf '%s\n' "$recovery_reason" >&2
+	printf '  Project  %s\n' "$PROJECT_NAME" >&2
+	[ -z "$recovery_space_id" ] || printf '  Space    %s\n' "$recovery_space_id" >&2
+	printf '  Scope    %s project containers, %s volumes, %s project networks\n' \
+		"$(count_resource_ids "$container_ids")" \
+		"$(count_resource_ids "$volume_ids")" \
+		"$(count_resource_ids "$network_ids")" >&2
+	printf '           %s current Space containers, %s current Space networks\n' \
+		"$(count_resource_ids "$recovery_dynamic_container_ids_value")" \
+		"$(count_resource_ids "$recovery_dynamic_network_ids_value")" >&2
+	print_recovery_container_names
+	notice "Yes permanently deletes this Local Space, every Team and Assistant, credentials, settings, and conversations"
+	if ! { [ -r /dev/tty ] && [ -w /dev/tty ] \
+		&& ( : </dev/tty ) 2>/dev/null && ( : >/dev/tty ) 2>/dev/null; }; then
+		die "automatic recovery requires an interactive terminal; nothing was changed"
+	fi
+	while :; do
+		printf '  Delete the corrupt Local Space and install a fresh one? [y/N] ' >/dev/tty
+		IFS= read -r recovery_answer </dev/tty \
+			|| die "could not read the recovery choice; nothing was changed"
+		case "$recovery_answer" in
+			[yY]|[yY][eE][sS]) break ;;
+			""|[nN]|[nN][oO])
+				printf '  Existing Local Space left unchanged.\n' >&2
+				exit 1
+				;;
+			*) printf '  Please answer Yes or No.\n' >/dev/tty ;;
+		esac
+	done
+	remove_corrupt_install
 }
 
 write_release_status() {
@@ -1023,22 +1245,17 @@ if [ "$action" = "reset" ]; then
 		if project_resources_exist; then
 			step "Removing verified rollback leftovers"
 			validate_project_resources
-			remove_validated_project_resources
+			remove_project_resources
 		fi
 	elif [ -n "${container_ids}${volume_ids}${network_ids}" ]; then
 		step "Removing verified orphaned Docker data"
-		remove_validated_project_resources
+		remove_project_resources
 	fi
 	if project_resources_exist; then
 		die "reset left unexpected Shimpz Space Docker resources; inspect them before retrying"
 	fi
 	remove_scheduler
-	rm -f \
-		"$COMPOSE_FILE" "$ENV_FILE" "$MARKER_FILE" \
-		"${COMPOSE_FILE}.previous" "${ENV_FILE}.previous" \
-		"${COMPOSE_FILE}.tmp" "${ENV_FILE}.tmp" \
-		"$RECONCILER_FILE" "$RECONCILER_CANDIDATE" "$RECONCILER_PREVIOUS" \
-		"$STATUS_FILE" "${STATUS_FILE}.tmp" "$FAILED_RELEASE_FILE" "${FAILED_RELEASE_FILE}.tmp"
+	remove_installer_files
 	release_lock
 	rmdir "$SHIMPZ_HOME" 2>/dev/null || true
 	printf '\n'
@@ -1094,11 +1311,11 @@ fi
 if [ "$action" = "scheduled" ] && { [ ! -f "$MARKER_FILE" ] || [ ! -f "$ENV_FILE" ]; }; then
 	die "the automatic update scheduler found no complete Shimpz installation"
 fi
-if [ -f "$MARKER_FILE" ] && [ -f "$ENV_FILE" ]; then
+if [ -f "$MARKER_FILE" ]; then
 	[ "$(sed -n '1p' "$MARKER_FILE")" = "$MARKER_VALUE" ] || die "invalid install marker in ${SHIMPZ_HOME}"
 fi
 if [ ! -f "$MARKER_FILE" ] && project_resources_exist; then
-	die "managed Shimpz Docker data exists without an install marker. Nothing was changed. Reset it first with: ${reset_command}"
+	die "managed Shimpz Docker data exists without an install marker. Nothing was changed; inspect and remove that unowned project explicitly"
 fi
 validate_reserved_container_names
 
@@ -1118,13 +1335,27 @@ fi
 validate_space_id "$space_id"
 if project_resources_exist; then
 	step "Validating the existing managed runtime"
-	validate_project_resources
-	if [ -n "$controller_space_id" ]; then
-		[ "$controller_space_id" = "$space_id" ] \
-			|| die "existing controller and local Space identities differ"
+	if runtime_validation_error="$(
+		validate_project_resources
+		if [ -n "$controller_space_id" ]; then
+			[ "$controller_space_id" = "$space_id" ] \
+				|| die "managed runtime is invalid: controller and local Space identities differ"
+		fi
+		reset_space_id="$space_id"
+		validate_dynamic_resources
+	) 2>&1"; then
+		validate_project_resources
+		if [ -n "$controller_space_id" ]; then
+			[ "$controller_space_id" = "$space_id" ] \
+				|| die "managed runtime is invalid: controller and local Space identities differ"
+		fi
+		reset_space_id="$space_id"
+		validate_dynamic_resources
+	else
+		offer_corrupt_reinstall "$runtime_validation_error"
 	fi
-	reset_space_id="$space_id"
-	validate_dynamic_resources
+elif [ "$install_mode" = "update" ]; then
+	offer_corrupt_reinstall "managed runtime is invalid: no Shimpz Space Docker resources were found"
 fi
 
 umask 077
