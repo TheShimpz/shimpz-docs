@@ -23,8 +23,9 @@ def _assert_explicit_terminal_yes(script, shell_functions, check):
         1,
     )[0]
     check(
-        install_validation.index('if runtime_validation_error="$(')
+        install_validation.index('if runtime_validation_error="$({')
         < install_validation.index("validate_project_resources", 1)
+        < install_validation.index('} 2>&1)"; then')
         < install_validation.index("else\n\t\toffer_corrupt_reinstall"),
         "a healthy managed runtime validates normally without reaching the recovery prompt",
     )

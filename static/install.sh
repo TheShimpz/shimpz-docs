@@ -1335,7 +1335,7 @@ fi
 validate_space_id "$space_id"
 if project_resources_exist; then
 	step "Validating the existing managed runtime"
-	if runtime_validation_error="$(
+	if runtime_validation_error="$({
 		validate_project_resources
 		if [ -n "$controller_space_id" ]; then
 			[ "$controller_space_id" = "$space_id" ] \
@@ -1343,7 +1343,7 @@ if project_resources_exist; then
 		fi
 		reset_space_id="$space_id"
 		validate_dynamic_resources
-	) 2>&1"; then
+	} 2>&1)"; then
 		validate_project_resources
 		if [ -n "$controller_space_id" ]; then
 			[ "$controller_space_id" = "$space_id" ] \
