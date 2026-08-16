@@ -91,8 +91,15 @@ def assert_reconciler_contract(script: str, check: Callable[[object, str], None]
     )
     check(
         'exec env SHIMPZ_UPDATE_LOCK_HELD=1 SHIMPZ_PORT="$install_port"' in script
-        and '/bin/sh "$RECONCILER_CANDIDATE" --apply-release "$release_image_ref"' in script,
+        and 'apply_option="--apply-release"' in script
+        and '[ "$install_mode" != "install" ] || apply_option="--apply-fresh-release"' in script
+        and '/bin/sh "$RECONCILER_CANDIDATE" "$apply_option" "$release_image_ref"' in script,
         "bootstrap and scheduled selection hand off exact release application to the verified candidate",
+    )
+    check(
+        script.index("drain_piped_installer_source\n\texec env")
+        < script.index('/bin/sh "$RECONCILER_CANDIDATE" "$apply_option" "$release_image_ref"'),
+        "a piped bootstrap drains its verified public source before replacing the shell with the candidate",
     )
     check(
         'docker cp "${release_container}:/reconcile.sh"' in script

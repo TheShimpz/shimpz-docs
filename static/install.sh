@@ -171,14 +171,21 @@ lock_handoff="${SHIMPZ_UPDATE_LOCK_HELD:-0}"
 unset SHIMPZ_UPDATE_LOCK_HELD
 docker_group_handoff="${SHIMPZ_DOCKER_GROUP_HANDOFF:-0}"
 unset SHIMPZ_DOCKER_GROUP_HANDOFF SHIMPZ_DOCKER_GROUP_SOURCE SHIMPZ_DOCKER_GROUP_SCRIPT
-unset SHIMPZ_DOCKER_GROUP_ACTION SHIMPZ_DOCKER_GROUP_RELEASE
+unset SHIMPZ_DOCKER_GROUP_ACTION SHIMPZ_DOCKER_GROUP_RELEASE SHIMPZ_DOCKER_GROUP_FRESH_APPLY
 requested_release_ref=""
+fresh_apply=0
 case "${1:-}" in
 	"") action="install" ;;
 	--reset) action="reset" ;;
 	--scheduled) action="scheduled" ;;
 	--apply-release)
 		action="apply"
+		requested_release_ref="${2:-}"
+		[ -n "$requested_release_ref" ] || die "the exact Local release reference is required"
+		;;
+	--apply-fresh-release)
+		action="apply"
+		fresh_apply=1
 		requested_release_ref="${2:-}"
 		[ -n "$requested_release_ref" ] || die "the exact Local release reference is required"
 		;;
@@ -272,14 +279,21 @@ refresh_stale_docker_group() {
 	SHIMPZ_DOCKER_GROUP_SCRIPT="$docker_group_script"
 	SHIMPZ_DOCKER_GROUP_ACTION="$action"
 	SHIMPZ_DOCKER_GROUP_RELEASE="$requested_release_ref"
+	SHIMPZ_DOCKER_GROUP_FRESH_APPLY="$fresh_apply"
 	export SHIMPZ_DOCKER_GROUP_HANDOFF SHIMPZ_DOCKER_GROUP_SOURCE SHIMPZ_DOCKER_GROUP_SCRIPT
-	export SHIMPZ_DOCKER_GROUP_ACTION SHIMPZ_DOCKER_GROUP_RELEASE
+	export SHIMPZ_DOCKER_GROUP_ACTION SHIMPZ_DOCKER_GROUP_RELEASE SHIMPZ_DOCKER_GROUP_FRESH_APPLY
 	exec sg "$docker_socket_group" -c '
 		case "${SHIMPZ_DOCKER_GROUP_SOURCE}:${SHIMPZ_DOCKER_GROUP_ACTION}" in
 			file:install) exec /bin/sh "$SHIMPZ_DOCKER_GROUP_SCRIPT" ;;
 			file:reset) exec /bin/sh "$SHIMPZ_DOCKER_GROUP_SCRIPT" --reset ;;
 			file:scheduled) exec /bin/sh "$SHIMPZ_DOCKER_GROUP_SCRIPT" --scheduled ;;
-			file:apply) exec /bin/sh "$SHIMPZ_DOCKER_GROUP_SCRIPT" --apply-release "$SHIMPZ_DOCKER_GROUP_RELEASE" ;;
+			file:apply)
+				case "$SHIMPZ_DOCKER_GROUP_FRESH_APPLY" in
+					0) exec /bin/sh "$SHIMPZ_DOCKER_GROUP_SCRIPT" --apply-release "$SHIMPZ_DOCKER_GROUP_RELEASE" ;;
+					1) exec /bin/sh "$SHIMPZ_DOCKER_GROUP_SCRIPT" --apply-fresh-release "$SHIMPZ_DOCKER_GROUP_RELEASE" ;;
+					*) exit 64 ;;
+				esac
+				;;
 			public:install|public:reset)
 				public_script="$(curl -fsSL https://install.shimpz.com)" || exit 69
 				case "$SHIMPZ_DOCKER_GROUP_ACTION" in
@@ -913,6 +927,15 @@ remove_installer_files() {
 		"$STATUS_FILE" "${STATUS_FILE}.tmp" "$FAILED_RELEASE_FILE" "${FAILED_RELEASE_FILE}.tmp"
 }
 
+drain_piped_installer_source() {
+	if [ -f "$0" ] || [ -t 0 ]; then
+		return 0
+	fi
+	while IFS= read -r discarded_source_line; do
+		:
+	done
+}
+
 remove_corrupt_install() {
 	remove_scheduler
 	recovery_dynamic_container_ids_value="$(recovery_dynamic_container_ids)" \
@@ -982,6 +1005,7 @@ offer_corrupt_reinstall() {
 		case "$recovery_answer" in
 			[yY]|[yY][eE][sS]) break ;;
 			""|[nN]|[nN][oO])
+				drain_piped_installer_source
 				printf '  Existing Local Space left unchanged.\n' >&2
 				exit 1
 				;;
@@ -1319,7 +1343,16 @@ if [ ! -f "$MARKER_FILE" ] && project_resources_exist; then
 fi
 validate_reserved_container_names
 
-if [ -f "$MARKER_FILE" ]; then
+if [ "$fresh_apply" -eq 1 ]; then
+	[ -f "$MARKER_FILE" ] || die "fresh release application requires the owned install marker"
+	[ ! -f "$ENV_FILE" ] || die "fresh release application refused existing local configuration"
+	if project_resources_exist; then
+		die "fresh release application refused existing Shimpz Docker resources"
+	fi
+	install_mode="install"
+	info "Installing a fresh Shimpz Space"
+	space_id="$(generated_space_id)"
+elif [ -f "$MARKER_FILE" ]; then
 	install_mode="update"
 	info "Updating Shimpz Space; your Admin data will be preserved"
 	space_id=""
@@ -1606,8 +1639,11 @@ if [ "$action" != "apply" ]; then
 		fi
 		die "this Local release already failed its health gate; waiting for another promoted release"
 	fi
+	apply_option="--apply-release"
+	[ "$install_mode" != "install" ] || apply_option="--apply-fresh-release"
+	drain_piped_installer_source
 	exec env SHIMPZ_UPDATE_LOCK_HELD=1 SHIMPZ_PORT="$install_port" \
-		/bin/sh "$RECONCILER_CANDIDATE" --apply-release "$release_image_ref"
+		/bin/sh "$RECONCILER_CANDIDATE" "$apply_option" "$release_image_ref"
 fi
 if [ "$release_outcome" = "current" ]; then
 	persist_reconciler

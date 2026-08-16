@@ -29,6 +29,10 @@ def _assert_explicit_terminal_yes(script, shell_functions, check):
         < install_validation.index("else\n\t\toffer_corrupt_reinstall"),
         "a healthy managed runtime validates normally without reaching the recovery prompt",
     )
+    check(
+        '""|[nN]|[nN][oO])\n\t\t\t\tdrain_piped_installer_source' in recovery_function,
+        "declining recovery drains a piped public installer before exiting",
+    )
     for answer in ("", "No", "n"):
         declined = run_recovery(functions, answer=answer)
         check(declined.returncode != 0, "No or the default choice declines corrupt-install recovery")
