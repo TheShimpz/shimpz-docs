@@ -351,6 +351,7 @@ SYSTEMD_SERVICE="${SYSTEMD_USER_DIR}/shimpz-update.service"
 SYSTEMD_TIMER="${SYSTEMD_USER_DIR}/shimpz-update.timer"
 LAUNCH_AGENT="${HOME}/Library/LaunchAgents/com.shimpz.update.plist"
 SCHEDULER_MARKER="shimpz-local-update-v1"
+[ -h "$SHIMPZ_HOME" ] && die "refusing to use symbolic-link installer directory: ${SHIMPZ_HOME}"
 if { [ "$action" = "scheduled" ] || [ "$action" = "apply" ]; } && [ -f "$ENV_FILE" ]; then
 	install_port="$(sed -n 's/^SHIMPZ_PORT=//p' "$ENV_FILE")"
 	[ "$(printf '%s\n' "$install_port" | wc -l | tr -d ' ')" -eq 1 ] \
@@ -851,13 +852,13 @@ validate_no_unbound_dynamic_resources() {
 		resource_project="$(docker inspect --type=container --format '{{index .Config.Labels "com.docker.compose.project"}}' "$resource_id")" \
 			|| die "could not inspect a Local managed container before recovery"
 		[ "$resource_project" = "$PROJECT_NAME" ] \
-			|| die "automatic recovery needs the current Space identity before deleting Team or Assistant resources"
+			|| die "cleanup needs the current Space identity before deleting Team or Assistant resources"
 	done
 	for resource_id in $local_network_ids; do
 		resource_project="$(docker network inspect --format '{{index .Labels "com.docker.compose.project"}}' "$resource_id")" \
 			|| die "could not inspect a Local managed network before recovery"
 		[ "$resource_project" = "$PROJECT_NAME" ] \
-			|| die "automatic recovery needs the current Space identity before deleting Team or Assistant resources"
+			|| die "cleanup needs the current Space identity before deleting Team or Assistant resources"
 	done
 }
 
@@ -927,12 +928,16 @@ print_recovery_container_names() {
 }
 
 remove_installer_files() {
-	rm -f \
+	if ! rm -f \
 		"$COMPOSE_FILE" "$ENV_FILE" "$MARKER_FILE" \
 		"${COMPOSE_FILE}.previous" "${ENV_FILE}.previous" \
 		"${COMPOSE_FILE}.tmp" "${ENV_FILE}.tmp" \
-		"$RECONCILER_FILE" "$RECONCILER_CANDIDATE" "$RECONCILER_PREVIOUS" \
-		"$STATUS_FILE" "${STATUS_FILE}.tmp" "$FAILED_RELEASE_FILE" "${FAILED_RELEASE_FILE}.tmp"
+		"$RECONCILER_FILE" "$RECONCILER_CANDIDATE" "${RECONCILER_CANDIDATE}.tmp" \
+		"$RECONCILER_PREVIOUS" "${RECONCILER_PREVIOUS}.tmp" \
+		"$STATUS_FILE" "${STATUS_FILE}.tmp" "$FAILED_RELEASE_FILE" "${FAILED_RELEASE_FILE}.tmp" \
+		"${SHIMPZ_HOME}/release.env.tmp"; then
+		die "known Local installer files could not be removed"
+	fi
 }
 
 remove_corrupt_install() {
@@ -1101,24 +1106,54 @@ failed_release_matches() {
 	[ "$failed_release_ref" = "$release_image_ref" ]
 }
 
+scheduler_files_exist() {
+	case "$(uname -s)" in
+		Linux)
+			[ -e "$SYSTEMD_SERVICE" ] || [ -e "$SYSTEMD_TIMER" ] \
+				|| [ -e "${SYSTEMD_SERVICE}.tmp" ] || [ -e "${SYSTEMD_TIMER}.tmp" ]
+			;;
+		Darwin) [ -e "$LAUNCH_AGENT" ] || [ -e "${LAUNCH_AGENT}.tmp" ] ;;
+		*) return 1 ;;
+	esac
+}
+
 remove_scheduler() {
 	validate_scheduler_ownership
 	host_scheduler_os="$(uname -s)"
 	case "$host_scheduler_os" in
 		Linux)
-			if command -v systemctl >/dev/null 2>&1; then
+			systemd_scheduler_present=0
+			if [ -e "$SYSTEMD_SERVICE" ] || [ -e "$SYSTEMD_TIMER" ]; then
+				systemd_scheduler_present=1
+				command -v systemctl >/dev/null 2>&1 \
+					&& systemctl --user show-environment >/dev/null 2>&1 \
+					|| die "could not inspect the owned automatic update scheduler"
 				systemctl --user disable --now shimpz-update.timer >/dev/null 2>&1 || true
+				if systemctl --user is-active --quiet shimpz-update.timer \
+					|| systemctl --user is-enabled --quiet shimpz-update.timer; then
+					die "the owned automatic update scheduler could not be stopped"
+				fi
 			fi
-			rm -f "$SYSTEMD_SERVICE" "$SYSTEMD_TIMER"
-			if command -v systemctl >/dev/null 2>&1; then
-				systemctl --user daemon-reload >/dev/null 2>&1 || true
+			rm -f "$SYSTEMD_SERVICE" "$SYSTEMD_TIMER" \
+				"${SYSTEMD_SERVICE}.tmp" "${SYSTEMD_TIMER}.tmp" \
+				|| die "owned automatic update scheduler files could not be removed"
+			if [ "$systemd_scheduler_present" -eq 1 ]; then
+				systemctl --user daemon-reload >/dev/null 2>&1 \
+					|| die "could not refresh the automatic update scheduler"
 			fi
 			;;
 		Darwin)
-			if command -v launchctl >/dev/null 2>&1; then
+			if [ -e "$LAUNCH_AGENT" ]; then
+				command -v launchctl >/dev/null 2>&1 \
+					&& launchctl print "gui/$(id -u)" >/dev/null 2>&1 \
+					|| die "could not inspect the owned automatic update scheduler"
 				launchctl bootout "gui/$(id -u)" "$LAUNCH_AGENT" >/dev/null 2>&1 || true
+				if launchctl print "gui/$(id -u)/com.shimpz.update" >/dev/null 2>&1; then
+					die "the owned automatic update scheduler could not be stopped"
+				fi
 			fi
-			rm -f "$LAUNCH_AGENT"
+			rm -f "$LAUNCH_AGENT" "${LAUNCH_AGENT}.tmp" \
+				|| die "owned automatic update scheduler files could not be removed"
 			;;
 	esac
 }
@@ -1198,16 +1233,20 @@ validate_scheduler_ownership() {
 	host_scheduler_os="$(uname -s)"
 	case "$host_scheduler_os" in
 		Linux)
-			for scheduler_path in "$SYSTEMD_SERVICE" "$SYSTEMD_TIMER"; do
+			for scheduler_path in \
+				"$SYSTEMD_SERVICE" "$SYSTEMD_TIMER" \
+				"${SYSTEMD_SERVICE}.tmp" "${SYSTEMD_TIMER}.tmp"; do
 				[ ! -e "$scheduler_path" ] \
 					|| [ "$(sed -n '1p' "$scheduler_path")" = "# ${SCHEDULER_MARKER}" ] \
 					|| die "refusing to replace an unowned user scheduler: ${scheduler_path}"
 			done
 			;;
 		Darwin)
-			[ ! -e "$LAUNCH_AGENT" ] \
-				|| [ "$(sed -n '2p' "$LAUNCH_AGENT")" = "<!-- ${SCHEDULER_MARKER} -->" ] \
-				|| die "refusing to replace an unowned user scheduler: ${LAUNCH_AGENT}"
+			for scheduler_path in "$LAUNCH_AGENT" "${LAUNCH_AGENT}.tmp"; do
+				[ ! -e "$scheduler_path" ] \
+					|| [ "$(sed -n '2p' "$scheduler_path")" = "<!-- ${SCHEDULER_MARKER} -->" ] \
+					|| die "refusing to replace an unowned user scheduler: ${scheduler_path}"
+			done
 			;;
 	esac
 }
@@ -1256,7 +1295,10 @@ if [ "$action" = "reset" ]; then
 	if project_resources_exist; then
 		managed_state=1
 	fi
-	[ "$managed_state" -eq 1 ] || die "no managed Shimpz Space installation was found"
+	if scheduler_files_exist; then
+		managed_state=1
+	fi
+	[ "$managed_state" -eq 1 ] || info "No managed Local state was present; confirming the clean result"
 	validate_project_resources
 	reset_space_id=""
 	if [ -f "$ENV_FILE" ]; then
@@ -1274,10 +1316,13 @@ if [ "$action" = "reset" ]; then
 		validate_space_id "$reset_space_id"
 		validate_dynamic_resources
 		reset_dynamic_space
+	else
+		validate_no_unbound_dynamic_resources
 	fi
 	if [ -f "$COMPOSE_FILE" ] && [ -f "$ENV_FILE" ]; then
 		step "Stopping Shimpz Space and removing Docker data"
-		compose down --volumes --remove-orphans
+		compose down --volumes --remove-orphans \
+			|| die "could not stop Shimpz Space and remove its Docker data"
 		if project_resources_exist; then
 			step "Removing verified rollback leftovers"
 			validate_project_resources
@@ -1293,11 +1338,23 @@ if [ "$action" = "reset" ]; then
 	remove_scheduler
 	remove_installer_files
 	release_lock
-	rmdir "$SHIMPZ_HOME" 2>/dev/null || true
+	preserved_installer_entries=0
+	if [ -d "$SHIMPZ_HOME" ] && ! rmdir "$SHIMPZ_HOME" 2>/dev/null; then
+		warn "Unrecognized files remain in ${SHIMPZ_HOME}; they were preserved"
+		for entry in "$SHIMPZ_HOME"/* "$SHIMPZ_HOME"/.[!.]* "$SHIMPZ_HOME"/..?*; do
+			[ -e "$entry" ] || [ -h "$entry" ] || continue
+			preserved_installer_entries=1
+			printf '  Preserved %s\n' "$entry" >&2
+		done
+		[ "$preserved_installer_entries" -eq 1 ] \
+			|| die "the empty Local installer directory could not be removed"
+		printf '  Move or delete the preserved entries before installing Shimpz again.\n' >&2
+	fi
 	printf '\n'
 	success "Shimpz Space was reset"
-	printf '  Data     Managed Space, Team, and Assistant Docker data was removed\n'
-	printf '  Files    Known installer files were removed from %s\n' "$SHIMPZ_HOME"
+	printf '  Data     No managed Space, Team, or Assistant Docker data remains\n'
+	printf '  Files    No known installer files remain in %s\n' "$SHIMPZ_HOME"
+	printf '  Updates  No owned automatic update scheduler remains\n'
 	printf '  Install  %s\n' "${reset_command% -s -- --reset}"
 	exit 0
 fi

@@ -239,7 +239,14 @@ def run_recovery(
             (state / resource).touch()
         shimpz_home = home / ".shimpz"
         shimpz_home.mkdir()
-        for filename in ("compose.yaml", ".shimpz-space", "reconcile.sh"):
+        for filename in (
+            "compose.yaml",
+            ".shimpz-space",
+            "reconcile.sh",
+            "release.env.tmp",
+            "reconcile.candidate.tmp",
+            "reconcile.previous.tmp",
+        ):
             (shimpz_home / filename).touch()
         if owned_identity:
             (shimpz_home / ".env").write_text(

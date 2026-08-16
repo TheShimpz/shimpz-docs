@@ -164,7 +164,8 @@ def assert_reconciler_contract(script: str, check: Callable[[object, str], None]
     )
     check(
         'rm -f "$SYSTEMD_SERVICE" "$SYSTEMD_TIMER"' in script
-        and 'rm -f "$LAUNCH_AGENT"' in script
-        and '"$RECONCILER_FILE" "$RECONCILER_CANDIDATE" "$RECONCILER_PREVIOUS"' in script,
-        "reset removes the exact owned schedulers and reconciliation files",
+        and 'rm -f "$LAUNCH_AGENT" "${LAUNCH_AGENT}.tmp"' in script
+        and '"$RECONCILER_FILE" "$RECONCILER_CANDIDATE" "${RECONCILER_CANDIDATE}.tmp"' in script
+        and '"$RECONCILER_PREVIOUS" "${RECONCILER_PREVIOUS}.tmp"' in script,
+        "reset removes the exact owned schedulers, temporaries, and reconciliation files",
     )
