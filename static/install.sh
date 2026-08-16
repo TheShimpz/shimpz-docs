@@ -992,15 +992,18 @@ offer_corrupt_reinstall() {
 		"$(count_resource_ids "$recovery_dynamic_container_ids_value")" \
 		"$(count_resource_ids "$recovery_dynamic_network_ids_value")" >&2
 	print_recovery_container_names
-	notice "Yes permanently deletes this Local Space, every Team and Assistant, credentials, settings, and conversations"
+	notice "Yes permanently removes every listed owned resource and the installed Local state; this cannot be undone" >&2
 	if ! { [ -r /dev/tty ] && [ -w /dev/tty ] \
 		&& ( : </dev/tty ) 2>/dev/null && ( : >/dev/tty ) 2>/dev/null; }; then
+		drain_piped_installer_source
 		die "automatic recovery requires an interactive terminal; nothing was changed"
 	fi
 	while :; do
-		printf '  Delete the corrupt Local Space and install a fresh one? [y/N] ' >/dev/tty
-		IFS= read -r recovery_answer </dev/tty \
-			|| die "could not read the recovery choice; nothing was changed"
+		printf '  Permanently remove the listed corrupt Local state and install a fresh Space? [y/N] ' >/dev/tty
+		if ! IFS= read -r recovery_answer </dev/tty; then
+			drain_piped_installer_source
+			die "could not read the recovery choice; nothing was changed"
+		fi
 		case "$recovery_answer" in
 			[yY]|[yY][eE][sS]) break ;;
 			""|[nN]|[nN][oO])
@@ -1012,6 +1015,16 @@ offer_corrupt_reinstall() {
 		esac
 	done
 	remove_corrupt_install
+}
+
+validate_existing_runtime() {
+	validate_project_resources
+	if [ -n "$controller_space_id" ]; then
+		[ "$controller_space_id" = "$space_id" ] \
+			|| die "managed runtime is invalid: controller and local Space identities differ"
+	fi
+	reset_space_id="$space_id"
+	validate_dynamic_resources
 }
 
 write_release_status() {
@@ -1368,21 +1381,9 @@ validate_space_id "$space_id"
 if project_resources_exist; then
 	step "Validating the existing managed runtime"
 	if runtime_validation_error="$({
-		validate_project_resources
-		if [ -n "$controller_space_id" ]; then
-			[ "$controller_space_id" = "$space_id" ] \
-				|| die "managed runtime is invalid: controller and local Space identities differ"
-		fi
-		reset_space_id="$space_id"
-		validate_dynamic_resources
+		validate_existing_runtime
 	} 2>&1)"; then
-		validate_project_resources
-		if [ -n "$controller_space_id" ]; then
-			[ "$controller_space_id" = "$space_id" ] \
-				|| die "managed runtime is invalid: controller and local Space identities differ"
-		fi
-		reset_space_id="$space_id"
-		validate_dynamic_resources
+		validate_existing_runtime
 	else
 		offer_corrupt_reinstall "$runtime_validation_error"
 	fi
