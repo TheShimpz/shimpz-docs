@@ -928,7 +928,7 @@ remove_installer_files() {
 }
 
 drain_piped_installer_source() {
-	if [ -f "$0" ] || [ -t 0 ]; then
+	if [ -t 0 ]; then
 		return 0
 	fi
 	dd of=/dev/null 2>/dev/null
