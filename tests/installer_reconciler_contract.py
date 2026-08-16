@@ -102,6 +102,10 @@ def assert_reconciler_contract(script: str, check: Callable[[object, str], None]
         "a piped bootstrap drains its verified public source before replacing the shell with the candidate",
     )
     check(
+        '[ "$docker_group_source" != "public" ] || drain_piped_installer_source\n\texec sg' in script,
+        "the stale Docker-group handoff drains the outer public installer pipe before replacing its shell",
+    )
+    check(
         'docker cp "${release_container}:/reconcile.sh"' in script
         and '[ "$actual_reconciler_sha256" = "$reconciler_sha256" ]' in script,
         "the OCI reconciler is extracted and hash-checked before execution",

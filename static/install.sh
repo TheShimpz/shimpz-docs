@@ -142,6 +142,13 @@ warn() {
 	printf '  %s%s[warn]%s %s\n' "$ERR_BOLD" "$ERR_YELLOW" "$ERR_RESET" "$*" >&2
 }
 
+drain_piped_installer_source() {
+	if [ -t 0 ]; then
+		return 0
+	fi
+	dd of=/dev/null 2>/dev/null
+}
+
 usage() {
 	cat <<'EOF'
 Install the stable Shimpz Space release.
@@ -282,6 +289,7 @@ refresh_stale_docker_group() {
 	SHIMPZ_DOCKER_GROUP_FRESH_APPLY="$fresh_apply"
 	export SHIMPZ_DOCKER_GROUP_HANDOFF SHIMPZ_DOCKER_GROUP_SOURCE SHIMPZ_DOCKER_GROUP_SCRIPT
 	export SHIMPZ_DOCKER_GROUP_ACTION SHIMPZ_DOCKER_GROUP_RELEASE SHIMPZ_DOCKER_GROUP_FRESH_APPLY
+	[ "$docker_group_source" != "public" ] || drain_piped_installer_source
 	exec sg "$docker_socket_group" -c '
 		case "${SHIMPZ_DOCKER_GROUP_SOURCE}:${SHIMPZ_DOCKER_GROUP_ACTION}" in
 			file:install) exec /bin/sh "$SHIMPZ_DOCKER_GROUP_SCRIPT" ;;
@@ -925,13 +933,6 @@ remove_installer_files() {
 		"${COMPOSE_FILE}.tmp" "${ENV_FILE}.tmp" \
 		"$RECONCILER_FILE" "$RECONCILER_CANDIDATE" "$RECONCILER_PREVIOUS" \
 		"$STATUS_FILE" "${STATUS_FILE}.tmp" "$FAILED_RELEASE_FILE" "${FAILED_RELEASE_FILE}.tmp"
-}
-
-drain_piped_installer_source() {
-	if [ -t 0 ]; then
-		return 0
-	fi
-	dd of=/dev/null 2>/dev/null
 }
 
 remove_corrupt_install() {

@@ -5,7 +5,8 @@ from installer_recovery_harness import run_recovery
 
 def _recovery_functions(shell_functions):
     return (
-        shell_functions("validate_space_id", "validate_repository_digest_image")
+        shell_functions("drain_piped_installer_source", "usage")
+        + shell_functions("validate_space_id", "validate_repository_digest_image")
         + shell_functions("dynamic_container_ids", "validate_dynamic_resources")
         + shell_functions("remove_project_resources", "write_release_status")
     )
