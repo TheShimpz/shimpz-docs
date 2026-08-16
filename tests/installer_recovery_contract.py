@@ -37,6 +37,13 @@ def _assert_explicit_terminal_yes(script, shell_functions, check):
         and "validate_dynamic_resources" not in install_validation,
         "diagnostic and parent-state validation share one non-duplicated runtime validator",
     )
+    runtime_validator = shell_functions("validate_existing_runtime", "write_release_status")
+    check(
+        runtime_validator.index("validate_project_resources")
+        < runtime_validator.index('reset_space_id="$space_id"')
+        < runtime_validator.index("validate_dynamic_resources"),
+        "the shared runtime validator retains both ownership boundaries in order",
+    )
     check(
         '""|[nN]|[nN][oO])\n\t\t\t\tdrain_piped_installer_source' in recovery_function,
         "declining recovery drains a piped public installer before exiting",
