@@ -852,13 +852,13 @@ validate_no_unbound_dynamic_resources() {
 		resource_project="$(docker inspect --type=container --format '{{index .Config.Labels "com.docker.compose.project"}}' "$resource_id")" \
 			|| die "could not inspect a Local managed container before recovery"
 		[ "$resource_project" = "$PROJECT_NAME" ] \
-			|| die "cleanup needs the current Space identity before deleting Team or Assistant resources"
+			|| die "cleanup needs the current Space identity before deleting Team or Assistant resources; restore the current .env, or inspect and remove those resources manually before retrying"
 	done
 	for resource_id in $local_network_ids; do
 		resource_project="$(docker network inspect --format '{{index .Labels "com.docker.compose.project"}}' "$resource_id")" \
 			|| die "could not inspect a Local managed network before recovery"
 		[ "$resource_project" = "$PROJECT_NAME" ] \
-			|| die "cleanup needs the current Space identity before deleting Team or Assistant resources"
+			|| die "cleanup needs the current Space identity before deleting Team or Assistant resources; restore the current .env, or inspect and remove those resources manually before retrying"
 	done
 }
 
@@ -1281,6 +1281,7 @@ validate_scheduler() {
 }
 
 if [ "$action" = "reset" ]; then
+	# Preflight ownership before the reset notice; remove_scheduler revalidates immediately before mutation.
 	validate_scheduler_ownership
 	notice "This permanently removes local Admin, Team, and Assistant data"
 	step "Validating managed Docker resources"
@@ -2262,44 +2263,44 @@ if ! compose up -d --wait --wait-timeout 120 --no-build --pull never --remove-or
 	compose logs --no-color --tail 20 shimpz-account-egress >&2 || true
 	compose logs --no-color --tail 20 shimpz-brain-egress >&2 || true
 	compose logs --no-color --tail 20 brain >&2 || true
-		if [ "$had_previous" -eq 1 ]; then
-			step "Verifying the previous pinned release"
-			if ! hydrate_previous_release; then
-				mv "${ENV_FILE}.previous" "$ENV_FILE"
-				mv "${COMPOSE_FILE}.previous" "$COMPOSE_FILE"
-				remember_failed_release
-				write_optional_release_status \
-					"rollback-needed" "$release_image_ref" "$release_ordinal" "$admin_image_ref"
-				die "the candidate failed and rollback images could not be verified; previous files were restored without deleting Docker data"
-			fi
+	if [ "$had_previous" -eq 1 ]; then
+		step "Verifying the previous pinned release"
+		if ! hydrate_previous_release; then
+			mv "${ENV_FILE}.previous" "$ENV_FILE"
+			mv "${COMPOSE_FILE}.previous" "$COMPOSE_FILE"
+			remember_failed_release
+			write_optional_release_status \
+				"rollback-needed" "$release_image_ref" "$release_ordinal" "$admin_image_ref"
+			die "the candidate failed and rollback images could not be verified; previous files were restored without deleting Docker data"
+		fi
 	fi
 	compose down --remove-orphans >/dev/null || true
 	if [ "$had_previous" -eq 1 ]; then
-			step "Restoring the previous pinned release"
-			mv "${ENV_FILE}.previous" "$ENV_FILE"
-			mv "${COMPOSE_FILE}.previous" "$COMPOSE_FILE"
-			if ! compose up -d --wait --wait-timeout 120 --no-build --pull never --remove-orphans; then
-				remember_failed_release
-				write_optional_release_status \
-					"rollback-needed" "$release_image_ref" "$release_ordinal" "$previous_admin_ref"
-				die "rollback also failed; inspect with: (cd \"${SHIMPZ_HOME}\" && docker compose -p ${PROJECT_NAME} logs)"
-			fi
+		step "Restoring the previous pinned release"
+		mv "${ENV_FILE}.previous" "$ENV_FILE"
+		mv "${COMPOSE_FILE}.previous" "$COMPOSE_FILE"
+		if ! compose up -d --wait --wait-timeout 120 --no-build --pull never --remove-orphans; then
 			remember_failed_release
 			write_optional_release_status \
 				"rollback-needed" "$release_image_ref" "$release_ordinal" "$previous_admin_ref"
-			warn "Previous version restored; your Admin data was preserved"
-			die "the update failed, so Shimpz is still running the previous version"
+			die "rollback also failed; inspect with: (cd \"${SHIMPZ_HOME}\" && docker compose -p ${PROJECT_NAME} logs)"
 		fi
 		remember_failed_release
 		write_optional_release_status \
-			"rollback-needed" "$release_image_ref" "$release_ordinal" "$admin_image_ref"
-		die "installation failed"
+			"rollback-needed" "$release_image_ref" "$release_ordinal" "$previous_admin_ref"
+		warn "Previous version restored; your Admin data was preserved"
+		die "the update failed, so Shimpz is still running the previous version"
 	fi
+	remember_failed_release
+	write_optional_release_status \
+		"rollback-needed" "$release_image_ref" "$release_ordinal" "$admin_image_ref"
+	die "installation failed"
+fi
 
-	rm -f "${ENV_FILE}.previous" "${COMPOSE_FILE}.previous"
-	persist_reconciler
-	rm -f "$FAILED_RELEASE_FILE"
-	write_release_status "$release_outcome" "$release_image_ref" "$release_ordinal"
+rm -f "${ENV_FILE}.previous" "${COMPOSE_FILE}.previous"
+persist_reconciler
+rm -f "$FAILED_RELEASE_FILE"
+write_release_status "$release_outcome" "$release_image_ref" "$release_ordinal"
 printf '\n'
 if [ "$install_mode" = "update" ]; then
 	success "Shimpz Space is up to date"

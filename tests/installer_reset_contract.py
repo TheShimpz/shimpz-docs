@@ -32,8 +32,13 @@ case "$*" in
   "ps --all --quiet --filter label=com.docker.compose.project=shimpz-space") : ;;
   "volume ls --quiet --filter label=com.docker.compose.project=shimpz-space") : ;;
   "network ls --quiet --filter label=com.docker.compose.project=shimpz-space") : ;;
-  *"ps --all --quiet"*"label=com.shimpz.local.managed=1"*) : ;;
+  *"ps --all --quiet"*"label=com.shimpz.local.managed=1"*)
+    if [ "$FAKE_UNBOUND_RESOURCES" = "1" ]; then
+      printf 'unbound-container\n'
+    fi
+    ;;
   *"network ls --quiet"*"label=com.shimpz.local.managed=1"*) : ;;
+  *"inspect --type=container --format"*"com.docker.compose.project"*"unbound-container") printf 'other-project\n' ;;
   *) printf 'unexpected docker call: %s\n' "$*" >&2; exit 72 ;;
 esac
 '''
@@ -150,6 +155,7 @@ def _run_reset(
             "XDG_CONFIG_HOME": str(root / "config"),
             "TERM": "dumb",
             "FAKE_SCHEDULER_STUCK": "1" if scheduler_stuck else "0",
+            "FAKE_UNBOUND_RESOURCES": "1" if state == "unbound" else "0",
         }
         results = tuple(
             _RUN(
@@ -288,3 +294,8 @@ def assert_reset_contract(
     symlink = _run_reset(script, state="symlink")
     check(symlink.results[0].returncode != 0, "reset refuses an installer home reached through a symbolic link")
     check(symlink.symlink_target_marker_exists, "symlink refusal mutates no target state")
+
+    unbound = _run_reset(script, state="unbound")
+    unbound_output = unbound.results[0].stdout + unbound.results[0].stderr
+    check(unbound.results[0].returncode != 0, "reset refuses dynamic resources without a current Space identity")
+    check("restore the current .env" in unbound_output, "unbound reset explains the safe next action")

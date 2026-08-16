@@ -73,16 +73,18 @@ def _assert_yes_deletes_only_owned_scope(shell_functions, check):
     check(not recovered.remaining_resources, "recovery removes every exact project and current Space resource")
     check(not recovered.installer_files_remain, "recovery removes only the known installer files before bootstrap")
     check(
-        set(recovered.docker_calls)
-        == {
-            "container:project-admin",
-            "container:project-proxy",
-            "container:dynamic-assistant",
-            "container:shimpz-team",
-            "network:project-network",
-            "network:dynamic-network",
-            "volume:project-volume",
-        },
+        sorted(recovered.docker_calls)
+        == sorted(
+            [
+                "container:project-admin",
+                "container:project-proxy",
+                "container:dynamic-assistant",
+                "container:shimpz-team",
+                "network:project-network",
+                "network:dynamic-network",
+                "volume:project-volume",
+            ]
+        ),
         "recovery deletes the exact bounded resources once",
     )
 

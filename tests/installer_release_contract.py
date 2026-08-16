@@ -39,6 +39,8 @@ esac
         sed = binary_dir / "sed"
         sed.write_text(
             r'''#!/bin/sh
+# Reproduce BSD sed's outcome for the retired negated-match expression; this is
+# intentionally not a general BSD sed emulator. Every other call uses host sed.
 case "$*" in
   *'\|'*)
     for argument in "$@"; do

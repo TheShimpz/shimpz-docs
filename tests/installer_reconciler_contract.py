@@ -113,7 +113,7 @@ def assert_reconciler_contract(script: str, check: Callable[[object, str], None]
     check(
         'mv "$RECONCILER_CANDIDATE" "$RECONCILER_FILE"' in script
         and "compose up -d --wait --wait-timeout 120" in script
-        and script.index("compose up -d --wait --wait-timeout 120") < script.rindex("\tpersist_reconciler\n"),
+        and script.index("compose up -d --wait --wait-timeout 120") < script.rindex("\npersist_reconciler\n"),
         "the candidate replaces the installed reconciler only after the health gate",
     )
     check(
