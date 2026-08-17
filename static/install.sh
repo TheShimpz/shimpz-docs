@@ -426,6 +426,18 @@ compose() {
 	docker compose --progress quiet --project-name "$PROJECT_NAME" --env-file "$ENV_FILE" -f "$COMPOSE_FILE" "$@"
 }
 
+report_managed_status() {
+	for service_name in \
+		team shimpz-assistant-egress shimpz-assistant-release \
+		shimpz-account-egress shimpz-brain-egress brain admin; do
+		service_id="$(compose ps --all --quiet "$service_name" 2>/dev/null || true)"
+		[ -n "$service_id" ] || continue
+		docker inspect --type=container \
+			--format '  {{.Name}} status={{.State.Status}} exit={{.State.ExitCode}} oom={{.State.OOMKilled}}{{if .State.Health}} health={{.State.Health.Status}}{{end}}' \
+			"$service_id" >&2 || true
+	done
+}
+
 project_container_ids() {
 	docker ps --all --quiet --filter "label=com.docker.compose.project=${PROJECT_NAME}"
 }
@@ -1793,17 +1805,14 @@ services:
     memswap_limit: 64m
     pids_limit: 32
     logging:
-      driver: json-file
-      options:
-        max-size: "1m"
-        max-file: "1"
+      driver: none
 
   team:
     container_name: shimpz-team
     image: ${SHIMPZ_TEAM_IMAGE:?installer must pin SHIMPZ_TEAM_IMAGE}
     platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}
     pull_policy: never
-    restart: unless-stopped
+    restart: on-failure
     user: "10001:10001"
     read_only: true
     cap_drop:
@@ -1853,10 +1862,7 @@ services:
     pids_limit: 128
     stop_grace_period: 15s
     logging:
-      driver: json-file
-      options:
-        max-size: "1m"
-        max-file: "2"
+      driver: none
     depends_on:
       shimpz-account-egress-init:
         condition: service_completed_successfully
@@ -1877,7 +1883,7 @@ services:
     image: ${SHIMPZ_EGRESS_IMAGE:?installer must pin SHIMPZ_EGRESS_IMAGE}
     platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}
     pull_policy: never
-    restart: unless-stopped
+    restart: on-failure
     user: "10005:10005"
     command: ["assistant"]
     group_add:
@@ -1922,10 +1928,7 @@ services:
         hard: 512
     stop_grace_period: 15s
     logging:
-      driver: json-file
-      options:
-        max-size: "1m"
-        max-file: "2"
+      driver: none
     networks:
       - assistant_egress_out
 
@@ -1934,7 +1937,7 @@ services:
     image: ${SHIMPZ_EGRESS_IMAGE:?installer must pin SHIMPZ_EGRESS_IMAGE}
     platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}
     pull_policy: never
-    restart: unless-stopped
+    restart: on-failure
     user: "10004:10004"
     command: ["release"]
     read_only: true
@@ -1975,10 +1978,7 @@ services:
         hard: 256
     stop_grace_period: 15s
     logging:
-      driver: json-file
-      options:
-        max-size: "1m"
-        max-file: "2"
+      driver: none
     networks:
       - assistant_release
       - assistant_release_out
@@ -1988,7 +1988,7 @@ services:
     image: ${SHIMPZ_EGRESS_IMAGE:?installer must pin SHIMPZ_EGRESS_IMAGE}
     platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}
     pull_policy: never
-    restart: unless-stopped
+    restart: on-failure
     user: "10006:10006"
     command: ["account"]
     group_add:
@@ -2022,10 +2022,7 @@ services:
       shimpz-account-egress-init:
         condition: service_completed_successfully
     logging:
-      driver: json-file
-      options:
-        max-size: "1m"
-        max-file: "2"
+      driver: none
     networks:
       - account_egress
       - account_egress_out
@@ -2042,7 +2039,7 @@ services:
     image: ${SHIMPZ_EGRESS_IMAGE:?installer must pin SHIMPZ_EGRESS_IMAGE}
     platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}
     pull_policy: never
-    restart: unless-stopped
+    restart: on-failure
     user: "10001:10001"
     command: ["brain"]
     read_only: true
@@ -2075,10 +2072,7 @@ services:
         hard: 512
     stop_grace_period: 15s
     logging:
-      driver: json-file
-      options:
-        max-size: "1m"
-        max-file: "2"
+      driver: none
     networks:
       - brain_egress
       - brain_egress_out
@@ -2095,7 +2089,7 @@ services:
     image: ${SHIMPZ_BRAIN_IMAGE:?installer must pin SHIMPZ_BRAIN_IMAGE}
     platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}
     pull_policy: never
-    restart: unless-stopped
+    restart: on-failure
     user: "10001:10001"
     group_add:
       - "10016"
@@ -2132,10 +2126,7 @@ services:
       shimpz-brain-egress:
         condition: service_healthy
     logging:
-      driver: json-file
-      options:
-        max-size: "1m"
-        max-file: "2"
+      driver: none
     networks:
       - brain_runtime
       - brain_egress
@@ -2145,7 +2136,7 @@ services:
     image: ${SHIMPZ_ADMIN_IMAGE:?installer must pin SHIMPZ_ADMIN_IMAGE}
     platform: ${SHIMPZ_SPACE_PLATFORM:?installer must pin SHIMPZ_SPACE_PLATFORM}
     pull_policy: never
-    restart: unless-stopped
+    restart: on-failure
     user: "1000:1000"
     group_add:
       - "10010"
@@ -2190,10 +2181,7 @@ services:
       brain:
         condition: service_healthy
     logging:
-      driver: json-file
-      options:
-        max-size: "1m"
-        max-file: "2"
+      driver: none
     networks:
       - control
       - egress
@@ -2257,12 +2245,7 @@ mv "${COMPOSE_FILE}.tmp" "$COMPOSE_FILE"
 step "Starting the Shimpz Admin, local Team controller, and isolated Brain runtime"
 if ! compose up -d --wait --wait-timeout 120 --no-build --pull never --remove-orphans; then
 	warn "The new release did not become healthy"
-	compose logs --no-color --tail 20 team >&2 || true
-	compose logs --no-color --tail 20 shimpz-assistant-egress >&2 || true
-	compose logs --no-color --tail 20 shimpz-assistant-release >&2 || true
-	compose logs --no-color --tail 20 shimpz-account-egress >&2 || true
-	compose logs --no-color --tail 20 shimpz-brain-egress >&2 || true
-	compose logs --no-color --tail 20 brain >&2 || true
+	report_managed_status
 	if [ "$had_previous" -eq 1 ]; then
 		step "Verifying the previous pinned release"
 		if ! hydrate_previous_release; then
@@ -2283,7 +2266,7 @@ if ! compose up -d --wait --wait-timeout 120 --no-build --pull never --remove-or
 			remember_failed_release
 			write_optional_release_status \
 				"rollback-needed" "$release_image_ref" "$release_ordinal" "$previous_admin_ref"
-			die "rollback also failed; inspect with: (cd \"${SHIMPZ_HOME}\" && docker compose -p ${PROJECT_NAME} logs)"
+			die "rollback also failed; run the installer again after checking the reported container status"
 		fi
 		remember_failed_release
 		write_optional_release_status \

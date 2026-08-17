@@ -653,6 +653,12 @@ def test_static_runtime_separates_socketless_admin_from_local_controller():
     assert_assistant_egress_runtime(assistant_egress, compose, check)
     assert_assistant_release_runtime(assistant_release, compose, check)
     assert_account_egress_runtime(account_egress, compose, check)
+    check(compose.count("driver: none") == 8, "every canonical Local service disables Docker log persistence")
+    check("driver: json-file" not in compose, "the canonical Local graph has no plaintext Docker log files")
+    check(
+        compose.count("restart: on-failure") == 7 and "restart: unless-stopped" not in compose,
+        "daemon restart cannot bypass storage admission for long-running Local services",
+    )
 
 
 def test_reset_accepts_only_the_exact_space_owned_egress_proxy():
@@ -863,16 +869,16 @@ def test_static_update_rollback_and_reset_are_bounded():
     )
     failed_candidate = candidate_branch[1].split("\nfi\n\nrm -f", 1)[0]
     check(
-        failed_candidate.index("compose logs --no-color --tail 20 team")
-        < failed_candidate.index("compose logs --no-color --tail 20 shimpz-assistant-egress")
-        < failed_candidate.index("compose logs --no-color --tail 20 shimpz-assistant-release")
-        < failed_candidate.index("compose logs --no-color --tail 20 shimpz-account-egress")
-        < failed_candidate.index("compose logs --no-color --tail 20 shimpz-brain-egress")
-        < failed_candidate.index("compose logs --no-color --tail 20 brain >&2")
+        failed_candidate.index("report_managed_status")
         < failed_candidate.index("hydrate_previous_release")
         < failed_candidate.index("compose down --remove-orphans")
         < failed_candidate.index('step "Restoring the previous pinned release"'),
-        "candidate diagnostics and rollback refs are secured before containers are removed",
+        "bounded candidate status and rollback refs are secured before containers are removed",
+    )
+    check("compose logs" not in SCRIPT, "failed Local starts never persist or replay container output")
+    check(
+        ".State.Status" in SCRIPT and ".State.ExitCode" in SCRIPT and ".State.OOMKilled" in SCRIPT,
+        "failed Local starts report only bounded lifecycle metadata",
     )
     check(
         failed_candidate.index('mv "${ENV_FILE}.previous" "$ENV_FILE"')
