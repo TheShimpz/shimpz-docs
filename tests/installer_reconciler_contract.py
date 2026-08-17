@@ -1,9 +1,33 @@
 """Automatic Local reconciliation contracts for the public installer."""
 
+import os
+import shutil
 import subprocess
 import tempfile
 from collections.abc import Callable
 from pathlib import Path
+
+
+def run_shell_fixture(
+    source: str,
+    environment: dict[str, str] | None = None,
+    *,
+    sudo: bool = False,
+) -> subprocess.CompletedProcess[str]:
+    """Run an exact local shell fixture for installer contract modules."""
+    shell = shutil.which("sh")
+    if shell is None:
+        raise AssertionError("the native runner does not provide a POSIX shell")
+    command = [shell, "-c", "set -eu\n" + source]
+    if sudo:
+        command = ["sudo", "-n", *command]
+    return subprocess.run(
+        command,
+        check=False,
+        capture_output=True,
+        text=True,
+        env={**os.environ, **(environment or {})},
+    )
 
 
 def _lock_block(script: str) -> str:

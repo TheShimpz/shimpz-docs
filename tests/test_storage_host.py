@@ -10,7 +10,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-from test_installer import run_shell
+from installer_reconciler_contract import run_shell_fixture
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = (ROOT / "static" / "install.sh").read_text(encoding="utf-8")
@@ -88,7 +88,7 @@ reset_secure_storage "$space_id"
 printf 'verified-linux-luks-reopen\n'
 """
         )
-        result = run_shell(source, sudo=True)
+        result = run_shell_fixture(source, sudo=True)
         if result.returncode != 0 or "verified-linux-luks-reopen" not in result.stdout:
             raise AssertionError(f"live LUKS detector failed\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}")
         print(result.stdout.strip())
@@ -99,7 +99,7 @@ def macos_negative() -> None:
         raise AssertionError("the FileVault probe must run on macOS")
     source = shell_functions("macos_storage_verified", "bitlocker_record_valid") + "\nmacos_storage_verified\n"
     with tempfile.TemporaryDirectory(prefix="shimpz-empty-home-") as empty_home:
-        result = run_shell(source, environment={"HOME": empty_home})
+        result = run_shell_fixture(source, environment={"HOME": empty_home})
     if result.returncode == 0:
         raise AssertionError("the production macOS probe admitted a host with no default Docker.raw data disk")
     print("verified-macos-fail-closed")
@@ -110,7 +110,7 @@ def windows_negative() -> None:
         raise AssertionError("the BitLocker probe must run on Windows")
     source = shell_functions("bitlocker_record_valid", "ensure_storage_admission") + "\nwindows_bitlocker_verified\n"
     with tempfile.TemporaryDirectory(prefix="shimpz-empty-localappdata-") as empty_data:
-        result = run_shell(source, environment={"LOCALAPPDATA": empty_data})
+        result = run_shell_fixture(source, environment={"LOCALAPPDATA": empty_data})
     if result.returncode == 0:
         raise AssertionError("the production Windows probe admitted a missing default Docker data VHDX")
     print("verified-windows-fail-closed")

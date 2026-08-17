@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Contracts for the pull-only, digest-pinned Shimpz Space installer."""
 
-import os
-import shutil
 import stat
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -17,7 +16,12 @@ from installer_egress_contract import (
 )
 from installer_project_contract import assert_project_validator_contract
 from installer_project_harness import run_project_validator
-from installer_reconciler_contract import assert_reconciler_contract, install_systemd_units, run_lock_contract
+from installer_reconciler_contract import (
+    assert_reconciler_contract,
+    install_systemd_units,
+    run_lock_contract,
+    run_shell_fixture,
+)
 from installer_recovery_contract import assert_recovery_contract
 from installer_release_contract import assert_atomic_release_contract, assert_pull_only_delivery
 from installer_reset_contract import assert_reset_contract
@@ -45,28 +49,6 @@ def _shell_functions(start_name: str, end_name: str) -> str:
     start = SCRIPT.index(f"{start_name}() {{")
     end = SCRIPT.index(f"{end_name}() {{", start)
     return SCRIPT[start:end]
-
-
-def run_shell(
-    source: str,
-    environment: dict[str, str] | None = None,
-    *,
-    sudo: bool = False,
-) -> subprocess.CompletedProcess[str]:
-    """Run an exact local shell fixture for installer contract modules."""
-    shell = shutil.which("sh")
-    if shell is None:
-        raise AssertionError("the native runner does not provide a POSIX shell")
-    command = [shell, "-c", "set -eu\n" + source]
-    if sudo:
-        command = ["sudo", "-n", *command]
-    return subprocess.run(
-        command,
-        check=False,
-        capture_output=True,
-        text=True,
-        env={**os.environ, **(environment or {})},
-    )
 
 
 def _compose_template() -> str:
@@ -908,7 +890,7 @@ def test_static_update_rollback_and_reset_are_bounded():
 
 
 def test_local_data_at_rest_admission_is_fail_closed():
-    assert_storage_contract(SCRIPT, _shell_functions, run_shell, check)
+    assert_storage_contract(SCRIPT, _shell_functions, run_shell_fixture, check)
 
 
 def test_previous_release_refs_are_bound_to_their_responsibility():
@@ -980,7 +962,12 @@ def test_static_docs_origin_serves_only_the_installer_paths():
 
 
 if __name__ == "__main__":
-    contracts = [value for name, value in globals().items() if name.startswith("test_") and callable(value)]
+    if sys.argv[1:] == ["--storage-only"]:
+        contracts = [test_local_data_at_rest_admission_is_fail_closed]
+    elif sys.argv[1:]:
+        raise SystemExit("usage: test_installer.py [--storage-only]")
+    else:
+        contracts = [value for name, value in globals().items() if name.startswith("test_") and callable(value)]
     for contract in contracts:
         contract()
     print(f"{len(contracts)} Shimpz Space installer contracts passed")
