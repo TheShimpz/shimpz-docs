@@ -107,7 +107,7 @@ def _assert_scheduled_unlock_is_non_privileged(
         binary_dir = root / "bin"
         binary_dir.mkdir()
         sentinel = root / "sudo-called"
-        for command_name in ("cryptsetup", "sudo"):
+        for command_name in ("cryptsetup", "findmnt", "mountpoint", "readlink", "stat", "sudo"):
             command = binary_dir / command_name
             command.write_text(
                 "#!/bin/sh\n" + (f": >'{sentinel}'\n" if command_name == "sudo" else "") + "exit 99\n",
