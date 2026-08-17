@@ -354,6 +354,7 @@ SECURE_MARKER_FILE="${SECURITY_DIR}/.shimpz-storage"
 SECURE_POOL_IMAGE="${SECURITY_DIR}/local-data.luks"
 SECURE_POOL_UUID_FILE="${SECURITY_DIR}/local-data.uuid"
 SECURE_POOL_MOUNT="${SECURITY_DIR}/volumes"
+SECURE_POOL_SIZE="64G"
 SYSTEMD_USER_DIR="${XDG_CONFIG_HOME:-${HOME}/.config}/systemd/user"
 SYSTEMD_SERVICE="${SYSTEMD_USER_DIR}/shimpz-update.service"
 SYSTEMD_TIMER="${SYSTEMD_USER_DIR}/shimpz-update.timer"
@@ -1139,7 +1140,7 @@ linux_mapping_identity_valid() {
 	space_hex="${space_id#space-}"
 	secure_mapping="shimpz-${space_hex}"
 	mapper_path="/dev/mapper/${secure_mapping}"
-	[ -e "$mapper_path" ] && [ ! -h "$SECURE_POOL_IMAGE" ] || return 1
+	[ -e "$mapper_path" ] || return 1
 	dm_block=""
 	for dm_name_path in /sys/class/block/dm-*/dm/name; do
 		[ -f "$dm_name_path" ] || continue
@@ -1150,6 +1151,11 @@ linux_mapping_identity_valid() {
 	case "$dm_block" in dm-[0-9]*) ;; *) return 1 ;; esac
 	dm_uuid="$(cat "/sys/class/block/${dm_block}/dm/uuid" 2>/dev/null)" || return 1
 	mapper_major_minor="$(cat "/sys/class/block/${dm_block}/dev" 2>/dev/null)" || return 1
+	mapper_hex_device="$(stat -c '%t:%T' "$mapper_path" 2>/dev/null)" || return 1
+	mapper_hex_major="${mapper_hex_device%%:*}"
+	mapper_hex_minor="${mapper_hex_device#*:}"
+	mapper_node_major_minor="$(printf '%d:%d' "0x${mapper_hex_major}" "0x${mapper_hex_minor}")" || return 1
+	[ "$mapper_node_major_minor" = "$mapper_major_minor" ] || return 1
 	pool_uuid_compact="$(printf '%s' "$pool_uuid" | tr -d '-')"
 	case "$dm_uuid" in "CRYPT-LUKS2-${pool_uuid_compact}-"*) ;; *) return 1 ;; esac
 	set -- "/sys/class/block/${dm_block}/slaves/"*
@@ -1160,6 +1166,43 @@ linux_mapping_identity_valid() {
 	backing_real="$(readlink -f "$backing_file" 2>/dev/null)" || return 1
 	pool_real="$(readlink -f "$SECURE_POOL_IMAGE" 2>/dev/null)" || return 1
 	[ "$backing_real" = "$pool_real" ]
+}
+
+linux_pool_mapping_name() {
+	linux_pool_metadata_valid || return 1
+	pool_real="$(readlink -f "$SECURE_POOL_IMAGE" 2>/dev/null)" || return 1
+	pool_uuid_compact="$(printf '%s' "$pool_uuid" | tr -d '-')"
+	discovered_mapping=""
+	for dm_name_path in /sys/class/block/dm-*/dm/name; do
+		[ -f "$dm_name_path" ] || continue
+		dm_block="$(basename "$(dirname "$(dirname "$dm_name_path")")")"
+		set -- "/sys/class/block/${dm_block}/slaves/"*
+		[ "$#" -eq 1 ] && [ -e "$1" ] || continue
+		loop_block="${1##*/}"
+		case "$loop_block" in loop[0-9]*) ;; *) continue ;; esac
+		backing_file="$(sed 's/\\040/ /g' "/sys/class/block/${loop_block}/loop/backing_file" 2>/dev/null)" \
+			|| return 1
+		case "$backing_file" in
+			*" (deleted)")
+				deleted_backing_file="${backing_file% (deleted)}"
+				[ "$deleted_backing_file" != "$SECURE_POOL_IMAGE" ] \
+					&& [ "$deleted_backing_file" != "$pool_real" ] || return 1
+				continue
+				;;
+		esac
+		if ! backing_real="$(readlink -f "$backing_file" 2>/dev/null)"; then
+			[ "$backing_file" != "$SECURE_POOL_IMAGE" ] && [ "$backing_file" != "$pool_real" ] || return 1
+			continue
+		fi
+		[ "$backing_real" = "$pool_real" ] || continue
+		dm_uuid="$(cat "/sys/class/block/${dm_block}/dm/uuid" 2>/dev/null)" || return 1
+		case "$dm_uuid" in "CRYPT-LUKS2-${pool_uuid_compact}-"*) ;; *) return 1 ;; esac
+		mapping_name="$(cat "$dm_name_path" 2>/dev/null)" || return 1
+		printf '%s\n' "$mapping_name" | grep -Eq '^shimpz-[0-9a-f]{24}$' || return 1
+		[ -z "$discovered_mapping" ] || return 1
+		discovered_mapping="$mapping_name"
+	done
+	printf '%s\n' "$discovered_mapping"
 }
 
 linux_mapping_name_exists() {
@@ -1254,13 +1297,15 @@ reset_secure_storage() {
 		|| die "refusing to reset an invalid Local security directory"
 	[ "$(detect_storage_profile)" = "linux-luks" ] \
 		|| die "selective Local storage can be reset only on its native Linux host"
-	for tool_name in cryptsetup findmnt mountpoint readlink stat umount; do
+	for tool_name in cryptsetup findmnt grep mountpoint readlink stat umount; do
 		command -v "$tool_name" >/dev/null 2>&1 \
 			|| die "${tool_name} is required to reset encrypted Local storage"
 	done
-	[ -n "$1" ] || die "refusing to reset encrypted Local storage without its Space identity"
-	space_id="$1"
-	validate_space_id "$space_id"
+	requested_space_id="$1"
+	original_space_id="${space_id-}"
+	if [ -n "$requested_space_id" ]; then
+		validate_space_id "$requested_space_id"
+	fi
 	for security_entry in "$SECURITY_DIR"/* "$SECURITY_DIR"/.[!.]* "$SECURITY_DIR"/..?*; do
 		[ -e "$security_entry" ] || [ -h "$security_entry" ] || continue
 		case "$security_entry" in
@@ -1269,10 +1314,12 @@ reset_secure_storage() {
 		esac
 	done
 	linux_pool_metadata_valid || die "refusing to reset encrypted Local storage with invalid identity"
-	space_hex="${space_id#space-}"
-	secure_mapping="shimpz-${space_hex}"
-	mapper_path="/dev/mapper/${secure_mapping}"
-	if linux_mapping_name_exists "$secure_mapping"; then
+	secure_mapping="$(linux_pool_mapping_name)" \
+		|| die "refusing to reset encrypted Local storage with ambiguous mapping identity"
+	if [ -n "$secure_mapping" ]; then
+		space_id="space-${secure_mapping#shimpz-}"
+		[ -z "$requested_space_id" ] || [ "$space_id" = "$requested_space_id" ] \
+			|| die "refusing to reset encrypted Local storage with mismatched Space identity"
 		linux_mapping_identity_valid || die "refusing to close a foreign Local storage mapping"
 		if mountpoint -q "$SECURE_POOL_MOUNT"; then
 			linux_mount_identity_valid || die "refusing to unmount a foreign Local storage filesystem"
@@ -1283,9 +1330,12 @@ reset_secure_storage() {
 		require_storage_privilege
 		root_command cryptsetup close "$secure_mapping" \
 			|| die "the encrypted Local storage mapping could not be closed"
+		linux_mapping_name_exists "$secure_mapping" \
+			&& die "the encrypted Local storage mapping remained open after reset"
 	elif mountpoint -q "$SECURE_POOL_MOUNT"; then
 		die "refusing to unmount Local storage without its owned mapping"
 	fi
+	space_id="$original_space_id"
 	rm -f "$SECURE_POOL_UUID_FILE" "$SECURE_POOL_IMAGE" "$SECURE_MARKER_FILE" \
 		|| die "encrypted Local storage files could not be removed"
 	rmdir "$SECURE_POOL_MOUNT" || die "the empty Local storage mountpoint could not be removed"
@@ -1306,7 +1356,8 @@ provision_linux_storage() {
 	mkdir -m 700 "$SECURITY_DIR"
 	printf '%s\n' "$SECURITY_MARKER" >"$SECURE_MARKER_FILE"
 	chmod 600 "$SECURE_MARKER_FILE"
-	truncate -s 64G "$SECURE_POOL_IMAGE" || die "could not allocate the encrypted Local storage image"
+	truncate -s "$SECURE_POOL_SIZE" "$SECURE_POOL_IMAGE" \
+		|| die "could not allocate the encrypted Local storage image"
 	chmod 600 "$SECURE_POOL_IMAGE"
 	root_command install -d -o 0 -g 0 -m 000 "$SECURE_POOL_MOUNT" \
 		|| die "could not create the protected Local storage mountpoint"
@@ -1385,11 +1436,16 @@ bitlocker_record_valid() {
 	[ "$1" = "shimpz-bitlocker-v1|FullyEncrypted|On|100" ]
 }
 
-windows_bitlocker_verified() {
+windows_bitlocker_record() {
 	command -v powershell.exe >/dev/null 2>&1 || return 1
-	bitlocker_record="$(powershell.exe -NoProfile -NonInteractive -Command \
+	bitlocker_raw_record="$(powershell.exe -NoProfile -NonInteractive -Command \
 		'$ErrorActionPreference="Stop"; $disk=Join-Path $env:LOCALAPPDATA "Docker\wsl\data\docker_data.vhdx"; if (-not (Test-Path -LiteralPath $disk -PathType Leaf)) { throw "missing Docker data disk" }; $root=[System.IO.Path]::GetPathRoot($disk); $volume=Get-BitLockerVolume -MountPoint $root; if ($null -eq $volume) { throw "missing BitLocker volume" }; "shimpz-bitlocker-v1|$($volume.VolumeStatus)|$($volume.ProtectionStatus)|$($volume.EncryptionPercentage)"' \
-		2>/dev/null | tr -d '\r')" || return 1
+		2>/dev/null)" || return 1
+	printf '%s\n' "$bitlocker_raw_record" | tr -d '\r'
+}
+
+windows_bitlocker_verified() {
+	bitlocker_record="$(windows_bitlocker_record)" || return 1
 	bitlocker_record_valid "$bitlocker_record"
 }
 
