@@ -247,6 +247,7 @@ def assert_storage_contract(
         "--cipher aes-xts-plain64 --key-size 512 --pbkdf argon2id",
         'secure_mapping="shimpz-${space_hex}"',
         '"/sys/class/block/${dm_block}/dm/uuid"',
+        "stat -Lc '%t:%T'",
         "mapper_node_major_minor",
         '"/sys/class/block/${loop_block}/loop/backing_file"',
         'deleted_backing_file="${backing_file% (deleted)}"',

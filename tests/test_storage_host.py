@@ -184,7 +184,7 @@ def macos_native() -> None:
         fdesetup.chmod(0o700)
         environment = {
             "HOME": empty_home,
-            "PATH": f"{binary_dir}:/usr/bin:/bin",
+            "PATH": f"{binary_dir}:/usr/bin:/bin:/usr/sbin:/sbin",
             "SHIMPZ_RAM_NAME": f"SHIMPZ_{secrets.token_hex(6)}",
         }
         missing = run_shell_fixture(verifier + "\nmacos_storage_verified\n", environment)

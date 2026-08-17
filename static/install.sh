@@ -1151,7 +1151,7 @@ linux_mapping_identity_valid() {
 	case "$dm_block" in dm-[0-9]*) ;; *) return 1 ;; esac
 	dm_uuid="$(cat "/sys/class/block/${dm_block}/dm/uuid" 2>/dev/null)" || return 1
 	mapper_major_minor="$(cat "/sys/class/block/${dm_block}/dev" 2>/dev/null)" || return 1
-	mapper_hex_device="$(stat -c '%t:%T' "$mapper_path" 2>/dev/null)" || return 1
+	mapper_hex_device="$(stat -Lc '%t:%T' "$mapper_path" 2>/dev/null)" || return 1
 	mapper_hex_major="${mapper_hex_device%%:*}"
 	mapper_hex_minor="${mapper_hex_device#*:}"
 	mapper_node_major_minor="$(printf '%d:%d' "0x${mapper_hex_major}" "0x${mapper_hex_minor}")" || return 1
