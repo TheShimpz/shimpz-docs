@@ -4,16 +4,12 @@
 from __future__ import annotations
 
 import argparse
-import fcntl
 import os
-import pty
 import secrets
-import select
 import shutil
 import subprocess
 import sys
 import tempfile
-import termios
 import time
 from pathlib import Path
 
@@ -30,6 +26,8 @@ def shell_functions(start_name: str, end_name: str) -> str:
 
 
 def send_hidden_response(terminal: int, response: bytes) -> None:
+    import termios
+
     deadline = time.monotonic() + 2
     while termios.tcgetattr(terminal)[3] & termios.ECHO:
         if time.monotonic() >= deadline:
@@ -39,6 +37,11 @@ def send_hidden_response(terminal: int, response: bytes) -> None:
 
 
 def run_pty_shell_fixture(source: str) -> subprocess.CompletedProcess[str]:
+    import fcntl
+    import pty
+    import select
+    import termios
+
     passphrase = b"ci-only-storage-passphrase"
     with tempfile.TemporaryDirectory(prefix="shimpz-storage-fixture-") as raw_fixture:
         fixture = Path(raw_fixture) / "run"
@@ -215,7 +218,10 @@ printf 'verified-different-device-denied\n'
     if same_device.returncode != 0:
         raise AssertionError("the production macOS probe rejected Docker.raw on the startup data filesystem")
     if different_device.returncode != 0 or "verified-different-device-denied" not in different_device.stdout:
-        raise AssertionError("the production macOS probe did not deny Docker.raw on a different filesystem device")
+        raise AssertionError(
+            "the production macOS probe did not deny Docker.raw on a different filesystem device\n"
+            f"stdout:\n{different_device.stdout}\nstderr:\n{different_device.stderr}"
+        )
     print("verified-macos-filevault-path-and-device")
 
 

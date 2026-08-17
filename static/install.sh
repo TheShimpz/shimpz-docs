@@ -1291,6 +1291,13 @@ discard_new_linux_pool() {
 	rmdir "$SECURITY_DIR" 2>/dev/null || true
 }
 
+fail_new_linux_pool() {
+	provision_stage="$1"
+	discard_new_linux_pool \
+		|| die "Local storage provisioning failed during ${provision_stage} and left owned residue"
+	die "Local storage provisioning failed during ${provision_stage}"
+}
+
 reset_secure_storage() {
 	[ -e "$SECURITY_DIR" ] || return 0
 	[ -d "$SECURITY_DIR" ] && [ ! -h "$SECURITY_DIR" ] \
@@ -1371,17 +1378,18 @@ provision_linux_storage() {
 	printf '%s\n' "$pool_uuid" >"${SECURE_POOL_UUID_FILE}.tmp"
 	chmod 600 "${SECURE_POOL_UUID_FILE}.tmp"
 	mv "${SECURE_POOL_UUID_FILE}.tmp" "$SECURE_POOL_UUID_FILE"
-	if ! root_command cryptsetup open --type luks2 "$SECURE_POOL_IMAGE" "$secure_mapping" </dev/tty \
-		|| ! linux_mapping_identity_valid \
-		|| ! root_command mkfs.ext4 -q -m 0 "/dev/mapper/${secure_mapping}" \
-		|| ! root_command mount -o nodev,nosuid "/dev/mapper/${secure_mapping}" "$SECURE_POOL_MOUNT" \
-		|| ! root_command chown "$(id -u):$(id -g)" "$SECURE_POOL_MOUNT" \
-		|| ! chmod 700 "$SECURE_POOL_MOUNT" \
-		|| ! prepare_linux_volume_layout \
-		|| ! linux_pool_mounted_valid; then
-		discard_new_linux_pool || die "failed Local storage provisioning left owned residue"
-		die "encrypted Local storage provisioning did not complete"
-	fi
+	root_command cryptsetup open --type luks2 "$SECURE_POOL_IMAGE" "$secure_mapping" </dev/tty \
+		|| fail_new_linux_pool "LUKS open"
+	linux_mapping_identity_valid || fail_new_linux_pool "mapping identity validation"
+	root_command mkfs.ext4 -q -m 0 "/dev/mapper/${secure_mapping}" \
+		|| fail_new_linux_pool "ext4 creation"
+	root_command mount -o nodev,nosuid "/dev/mapper/${secure_mapping}" "$SECURE_POOL_MOUNT" \
+		|| fail_new_linux_pool "protected mount"
+	root_command chown "$(id -u):$(id -g)" "$SECURE_POOL_MOUNT" \
+		|| fail_new_linux_pool "mount ownership"
+	chmod 700 "$SECURE_POOL_MOUNT" || fail_new_linux_pool "mount permissions"
+	prepare_linux_volume_layout || fail_new_linux_pool "volume ownership layout"
+	linux_pool_mounted_valid || fail_new_linux_pool "final mounted-pool admission"
 }
 
 ensure_linux_storage() {
