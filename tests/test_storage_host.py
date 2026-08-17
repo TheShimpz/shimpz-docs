@@ -33,6 +33,7 @@ def send_hidden_response(terminal: int, response: bytes) -> None:
         if time.monotonic() >= deadline:
             raise AssertionError("the LUKS prompt did not disable terminal echo")
         time.sleep(0.01)
+    time.sleep(0.1)
     os.write(terminal, response + b"\n")
 
 
