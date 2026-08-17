@@ -4,13 +4,13 @@
 from __future__ import annotations
 
 import argparse
-import os
 import secrets
 import shutil
-import subprocess
 import sys
 import tempfile
 from pathlib import Path
+
+from test_installer import run_shell
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = (ROOT / "static" / "install.sh").read_text(encoding="utf-8")
@@ -20,22 +20,6 @@ def shell_functions(start_name: str, end_name: str) -> str:
     start = SCRIPT.index(f"{start_name}() {{")
     end = SCRIPT.index(f"{end_name}() {{", start)
     return SCRIPT[start:end]
-
-
-def run_shell(source: str, *, environment: dict[str, str] | None = None, sudo: bool = False) -> subprocess.CompletedProcess[str]:
-    shell = shutil.which("sh")
-    if shell is None:
-        raise AssertionError("the native runner does not provide a POSIX shell")
-    command = [shell, "-c", "set -eu\n" + source]
-    if sudo:
-        command = ["sudo", "-n", *command]
-    return subprocess.run(
-        command,
-        check=False,
-        capture_output=True,
-        text=True,
-        env={**os.environ, **(environment or {})},
-    )
 
 
 def linux_live() -> None:

@@ -2,30 +2,32 @@
 
 from __future__ import annotations
 
-import os
 import subprocess
 import tempfile
 from collections.abc import Callable
 from pathlib import Path
 
-
-def _run_shell(source: str, environment: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["/bin/sh", "-c", "set -eu\n" + source],
-        check=False,
-        capture_output=True,
-        text=True,
-        env={**os.environ, **(environment or {})},
-    )
+ShellRunner = Callable[[str, dict[str, str] | None], subprocess.CompletedProcess[str]]
 
 
-def _assert_exact_parsers(shell_functions: Callable[[str, str], str], check: Callable[[object, str], None]) -> None:
+def _assert_exact_parsers(
+    shell_functions: Callable[[str, str], str],
+    run_shell: ShellRunner,
+    check: Callable[[object, str], None],
+) -> None:
     profile_parser = shell_functions("storage_profile_from_evidence", "detect_storage_profile")
-    for evidence, expected in (("Linux 0 0", "linux-luks"), ("Linux 1 1", "windows-wsl"), ("Darwin 0 0", "macos-filevault")):
-        accepted = _run_shell(profile_parser + f"\nstorage_profile_from_evidence {evidence}\n")
-        check(accepted.returncode == 0 and accepted.stdout.strip() == expected, "exact host evidence selects one profile")
+    for evidence, expected in (
+        ("Linux 0 0", "linux-luks"),
+        ("Linux 1 1", "windows-wsl"),
+        ("Darwin 0 0", "macos-filevault"),
+    ):
+        accepted = run_shell(profile_parser + f"\nstorage_profile_from_evidence {evidence}\n", None)
+        check(
+            accepted.returncode == 0 and accepted.stdout.strip() == expected,
+            "exact host evidence selects one profile",
+        )
     for evidence in ("Linux 1 0", "Linux 0 1", "Darwin 1 0", "FreeBSD 0 0"):
-        rejected = _run_shell(profile_parser + f"\nstorage_profile_from_evidence {evidence}\n")
+        rejected = run_shell(profile_parser + f"\nstorage_profile_from_evidence {evidence}\n", None)
         check(rejected.returncode != 0, "contradictory or unsupported host evidence is denied")
 
     luks_parser = shell_functions("luks_dump_valid", "linux_pool_metadata_valid")
@@ -37,7 +39,7 @@ Keyslots:
   0: luks2
         Key:        512 bits
         PBKDF:      argon2id"""
-    accepted = _run_shell(luks_parser + '\nluks_dump_valid "$TEST_RECORD"\n', {"TEST_RECORD": valid_luks})
+    accepted = run_shell(luks_parser + '\nluks_dump_valid "$TEST_RECORD"\n', {"TEST_RECORD": valid_luks})
     check(accepted.returncode == 0, "the production parser accepts exact LUKS2 AES-XTS/Argon2id metadata")
     for invalid in (
         valid_luks.replace("Version:       2", "Version:       1"),
@@ -46,11 +48,11 @@ Keyslots:
         valid_luks.replace("argon2id", "pbkdf2"),
         valid_luks + "\nVersion:       1",
     ):
-        rejected = _run_shell(luks_parser + '\nluks_dump_valid "$TEST_RECORD"\n', {"TEST_RECORD": invalid})
+        rejected = run_shell(luks_parser + '\nluks_dump_valid "$TEST_RECORD"\n', {"TEST_RECORD": invalid})
         check(rejected.returncode != 0, "the production LUKS parser rejects downgraded or ambiguous metadata")
 
     bitlocker_parser = shell_functions("bitlocker_record_valid", "windows_bitlocker_verified")
-    accepted = _run_shell(
+    accepted = run_shell(
         bitlocker_parser + '\nbitlocker_record_valid "$TEST_RECORD"\n',
         {"TEST_RECORD": "shimpz-bitlocker-v1|FullyEncrypted|On|100"},
     )
@@ -62,7 +64,7 @@ Keyslots:
         "FullyEncrypted|On|100",
         "shimpz-bitlocker-v1|FullyEncrypted|On|100\nextra",
     ):
-        rejected = _run_shell(
+        rejected = run_shell(
             bitlocker_parser + '\nbitlocker_record_valid "$TEST_RECORD"\n',
             {"TEST_RECORD": invalid},
         )
@@ -72,12 +74,13 @@ Keyslots:
 def _assert_profile_aware_renderer(
     script: str,
     shell_functions: Callable[[str, str], str],
+    run_shell: ShellRunner,
     check: Callable[[object, str], None],
 ) -> None:
     renderer = shell_functions("render_volume_definitions", "validate_existing_runtime")
     volume_names = script.split('LOCAL_VOLUME_NAMES="', 1)[1].split('"', 1)[0]
     common = f'LOCAL_VOLUME_NAMES="{volume_names}"\n'
-    linux = _run_shell(common + 'storage_profile="linux-luks"\n' + renderer + "\nrender_volume_definitions\n")
+    linux = run_shell(common + 'storage_profile="linux-luks"\n' + renderer + "\nrender_volume_definitions\n", None)
     check(linux.returncode == 0, f"the Linux volume renderer executes: {linux.stderr.strip()}")
     check(linux.stdout.count("driver: local") == 23, "every Linux Local volume is a local-driver bind")
     check(linux.stdout.count("o: bind") == 23, "every Linux Local volume refuses implicit source creation")
@@ -85,13 +88,17 @@ def _assert_profile_aware_renderer(
         linux.stdout.count("${SHIMPZ_SECURE_VOLUME_ROOT:?") == 23,
         "every Linux Local volume is rooted below the admitted encrypted mount",
     )
-    desktop = _run_shell(common + 'storage_profile="macos-filevault"\n' + renderer + "\nrender_volume_definitions\n")
+    desktop = run_shell(
+        common + 'storage_profile="macos-filevault"\n' + renderer + "\nrender_volume_definitions\n",
+        None,
+    )
     check(desktop.returncode == 0, "the Docker Desktop named-volume renderer executes")
     check("driver:" not in desktop.stdout and desktop.stdout.count(":\n") == 23, "Desktop keeps 23 named volumes")
 
 
 def _assert_scheduled_unlock_is_non_privileged(
     shell_functions: Callable[[str, str], str],
+    run_shell: ShellRunner,
     check: Callable[[object, str], None],
 ) -> None:
     ensure_function = shell_functions("ensure_linux_storage", "macos_storage_verified")
@@ -103,9 +110,7 @@ def _assert_scheduled_unlock_is_non_privileged(
         for command_name in ("cryptsetup", "sudo"):
             command = binary_dir / command_name
             command.write_text(
-                "#!/bin/sh\n"
-                + (f": >'{sentinel}'\n" if command_name == "sudo" else "")
-                + "exit 99\n",
+                "#!/bin/sh\n" + (f": >'{sentinel}'\n" if command_name == "sudo" else "") + "exit 99\n",
                 encoding="utf-8",
             )
             command.chmod(0o700)
@@ -122,7 +127,7 @@ die() { printf '%s\n' "$*" >&2; exit 1; }
 ensure_linux_storage
 """
         )
-        result = _run_shell(
+        result = run_shell(
             source,
             {"PATH": f"{binary_dir}:/usr/bin:/bin", "TEST_SECURITY_DIR": str(root)},
         )
@@ -134,6 +139,7 @@ ensure_linux_storage
 def assert_storage_contract(
     script: str,
     shell_functions: Callable[[str, str], str],
+    run_shell: ShellRunner,
     check: Callable[[object, str], None],
 ) -> None:
     for marker in (
@@ -154,14 +160,14 @@ def assert_storage_contract(
         check(marker in script, f"storage admission retains {marker!r}")
     check("rm -rf" not in script and "umount -l" not in script, "secure reset is exact and never forced or recursive")
     check(
-        script.index("wsl_kernel=0") < script.index("case \"${host_os}:${host_arch}\" in"),
+        script.index("wsl_kernel=0") < script.index('case "${host_os}:${host_arch}" in'),
         "WSL is classified before the native Linux storage arm",
     )
     startup = "compose up -d --wait --wait-timeout 120 --no-build --pull never --remove-orphans"
     first_start = script.index(startup)
     second_start = script.index(startup, first_start + 1)
     check(
-        script.rfind("ensure_storage_admission", 0, first_start) > script.rfind("step \"Starting", 0, first_start),
+        script.rfind("ensure_storage_admission", 0, first_start) > script.rfind('step "Starting', 0, first_start),
         "candidate start has an immediately preceding storage gate",
     )
     check(
@@ -169,6 +175,6 @@ def assert_storage_contract(
         > script.rfind('mv "${COMPOSE_FILE}.previous" "$COMPOSE_FILE"', first_start, second_start),
         "rollback start re-runs storage admission after restoring its graph",
     )
-    _assert_exact_parsers(shell_functions, check)
-    _assert_profile_aware_renderer(script, shell_functions, check)
-    _assert_scheduled_unlock_is_non_privileged(shell_functions, check)
+    _assert_exact_parsers(shell_functions, run_shell, check)
+    _assert_profile_aware_renderer(script, shell_functions, run_shell, check)
+    _assert_scheduled_unlock_is_non_privileged(shell_functions, run_shell, check)

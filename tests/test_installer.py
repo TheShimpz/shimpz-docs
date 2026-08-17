@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Contracts for the pull-only, digest-pinned Shimpz Space installer."""
 
+import os
+import shutil
 import stat
 import subprocess
 import tempfile
@@ -43,6 +45,28 @@ def _shell_functions(start_name: str, end_name: str) -> str:
     start = SCRIPT.index(f"{start_name}() {{")
     end = SCRIPT.index(f"{end_name}() {{", start)
     return SCRIPT[start:end]
+
+
+def run_shell(
+    source: str,
+    environment: dict[str, str] | None = None,
+    *,
+    sudo: bool = False,
+) -> subprocess.CompletedProcess[str]:
+    """Run an exact local shell fixture for installer contract modules."""
+    shell = shutil.which("sh")
+    if shell is None:
+        raise AssertionError("the native runner does not provide a POSIX shell")
+    command = [shell, "-c", "set -eu\n" + source]
+    if sudo:
+        command = ["sudo", "-n", *command]
+    return subprocess.run(
+        command,
+        check=False,
+        capture_output=True,
+        text=True,
+        env={**os.environ, **(environment or {})},
+    )
 
 
 def _compose_template() -> str:
@@ -884,7 +908,7 @@ def test_static_update_rollback_and_reset_are_bounded():
 
 
 def test_local_data_at_rest_admission_is_fail_closed():
-    assert_storage_contract(SCRIPT, _shell_functions, check)
+    assert_storage_contract(SCRIPT, _shell_functions, run_shell, check)
 
 
 def test_previous_release_refs_are_bound_to_their_responsibility():
