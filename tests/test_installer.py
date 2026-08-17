@@ -24,6 +24,7 @@ from installer_runtime_contract import (
     assert_runtime_version_floor,
     assert_stale_group_handoff,
 )
+from installer_storage_contract import assert_storage_contract
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT_PATH = ROOT / "static" / "install.sh"
@@ -42,6 +43,13 @@ def _shell_functions(start_name: str, end_name: str) -> str:
     start = SCRIPT.index(f"{start_name}() {{")
     end = SCRIPT.index(f"{end_name}() {{", start)
     return SCRIPT[start:end]
+
+
+def _compose_template() -> str:
+    """Return both static halves emitted around the profile-aware volume renderer."""
+    first = SCRIPT.split("cat >\"${COMPOSE_FILE}.tmp\" <<'COMPOSE'", 1)[1].split("\nCOMPOSE", 1)[0]
+    second = SCRIPT.split("cat >>\"${COMPOSE_FILE}.tmp\" <<'COMPOSE'", 1)[1].split("\nCOMPOSE", 1)[0]
+    return first + second
 
 
 def _run_previous_ref_validator(image: str, repository: str) -> subprocess.CompletedProcess[str]:
@@ -217,7 +225,7 @@ def test_static_local_installer_contains_no_oauth_client_credentials():
 
 def test_version_command_reports_the_stable_installer_release():
     version = subprocess.run(["sh", str(SCRIPT_PATH), "--version"], check=False, capture_output=True, text=True)
-    check(version.returncode == 0 and version.stdout.strip() == "0.9.0", "version is an explicit stable release")
+    check(version.returncode == 0 and version.stdout.strip() == "1.0.0", "version is an explicit stable release")
 
 
 def test_runtime_version_floor_is_numeric_and_fail_closed():
@@ -594,36 +602,20 @@ def _check_compose_isolation(admin: str, compose: str, controller: str) -> None:
         "controller_chat_continuation_" not in admin,
         "Admin never mounts encrypted chat continuations or their key",
     )
-    check(SCRIPT.count("  controller_action_journal:") == 1, "Compose declares exactly one Action journal volume")
-    check(
-        SCRIPT.count("  controller_publications:") == 1,
-        "Compose declares exactly one Assistant publication-binding volume",
-    )
-    check(
-        SCRIPT.count("  controller_cosign_trust:") == 1,
-        "Compose declares exactly one persistent private Cosign trust volume",
-    )
-    check(
-        SCRIPT.count("  controller_assistant_integration_state:") == 1,
-        "Compose declares exactly one encrypted Assistant OAuth-state volume",
-    )
-    check(
-        SCRIPT.count("  controller_assistant_integration_key:") == 1,
-        "Compose declares exactly one independent Assistant OAuth-key volume",
-    )
-    check(
-        SCRIPT.count("  controller_chat_continuation_state:") == 1,
-        "Compose declares exactly one encrypted chat-continuation state volume",
-    )
-    check(
-        SCRIPT.count("  controller_chat_continuation_key:") == 1,
-        "Compose declares exactly one independent chat-continuation key volume",
-    )
-    check(
-        SCRIPT.count("  supervisor_key:") == 1,
-        "Compose declares exactly one Local Supervisor public-key volume",
-    )
-    check(SCRIPT.count("  release_status:") == 1, "Compose declares exactly one read-only Admin platform-status volume")
+    volume_names = SCRIPT.split('LOCAL_VOLUME_NAMES="', 1)[1].split('"', 1)[0].split()
+    check(len(volume_names) == len(set(volume_names)) == 23, "the profile-aware renderer declares 23 unique volumes")
+    for volume_name in (
+        "controller_action_journal",
+        "controller_publications",
+        "controller_cosign_trust",
+        "controller_assistant_integration_state",
+        "controller_assistant_integration_key",
+        "controller_chat_continuation_state",
+        "controller_chat_continuation_key",
+        "supervisor_key",
+        "release_status",
+    ):
+        check(volume_names.count(volume_name) == 1, f"Compose declares exactly one {volume_name} volume")
     check("SHIMPZ_CLOUDFLARE_OAUTH_CLIENT" not in SCRIPT, "installer contains no OAuth client credentials")
     check("SHIMPZ_X_OAUTH_CLIENT_ID" not in SCRIPT, "installer contains no unsupported X OAuth configuration")
     check("postgres" not in SCRIPT, "bootstrap does not claim an unshipped PostgreSQL dependency")
@@ -631,7 +623,7 @@ def _check_compose_isolation(admin: str, compose: str, controller: str) -> None:
 
 
 def test_static_runtime_separates_socketless_admin_from_local_controller():
-    compose = SCRIPT.split("cat >\"${COMPOSE_FILE}.tmp\" <<'COMPOSE'", 1)[1].split("\nCOMPOSE", 1)[0]
+    compose = _compose_template()
     initializer = compose.split("  shimpz-account-egress-init:", 1)[1].split("\n  team:", 1)[0]
     controller = compose.split("  team:", 1)[1].split("\n  shimpz-assistant-egress:", 1)[0]
     assistant_egress = compose.split("\n  shimpz-assistant-egress:\n", 1)[1].split(
@@ -737,7 +729,7 @@ def test_reset_accepts_only_the_exact_space_owned_egress_proxy():
 
 
 def test_static_admin_chat_origin_allowlist_is_loopback_only():
-    compose = SCRIPT.split("cat >\"${COMPOSE_FILE}.tmp\" <<'COMPOSE'", 1)[1].split("\nCOMPOSE", 1)[0]
+    compose = _compose_template()
     admin = compose.split("  admin:", 1)[1].split("\nvolumes:", 1)[0]
     origin_lines = [line.strip() for line in admin.splitlines() if "SHIMPZ_ADMIN_ALLOWED_ORIGINS:" in line]
     check(
@@ -889,6 +881,10 @@ def test_static_update_rollback_and_reset_are_bounded():
     check("umask 077" in SCRIPT and "chmod 700" in SCRIPT, "local installer state is private")
     check(SCRIPT.count("chmod 600") >= 3, "generated config, environment, and marker are owner-only")
     assert_reset_contract(SCRIPT, check)
+
+
+def test_local_data_at_rest_admission_is_fail_closed():
+    assert_storage_contract(SCRIPT, _shell_functions, check)
 
 
 def test_previous_release_refs_are_bound_to_their_responsibility():

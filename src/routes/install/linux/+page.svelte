@@ -23,7 +23,8 @@
     <span class="platform-status is-supported">Supported · amd64</span>
   </div>
   <p class="docs-lede">
-    Follow these steps on a Linux amd64 computer or server. Your user must be allowed to run Docker.
+    Follow these steps on a Linux amd64 computer or server. Shimpz encrypts its Local volumes without requiring an
+    encrypted host disk.
   </p>
 </header>
 
@@ -37,6 +38,16 @@
       lines={[{ value: "uname -m" }, { value: "x86_64", kind: "output" }]}
     />
     <p>Continue when the result is <code>x86_64</code>.</p>
+  </li>
+
+  <li>
+    <h2>Install the storage tools</h2>
+    <p>On Ubuntu or Debian, install the tools used to create and verify the LUKS2 volume:</p>
+    <CodeBlock
+      label="Install encrypted storage tools"
+      title="Terminal · Ubuntu or Debian"
+      lines={[{ value: "sudo apt-get update && sudo apt-get install -y cryptsetup e2fsprogs util-linux" }]}
+    />
   </li>
 
   <li>
@@ -59,12 +70,24 @@
 
   <li>
     <h2>Install Shimpz</h2>
-    <p>Run the installer from the same terminal:</p>
+    <p>
+      Run the installer from the same terminal. It asks for administrator authorization and then asks you to create
+      the passphrase for the encrypted Local volume. Keep that passphrase in your password manager.
+    </p>
     <CodeBlock
       label="Install Shimpz on Linux"
       title="Terminal · Shimpz install"
       lines={[{ value: "curl -fsSL https://install.shimpz.com | sh" }]}
     />
+  </li>
+
+  <li>
+    <h2>Unlock after a restart</h2>
+    <p>
+      Shimpz never stores the volume passphrase and remains stopped after the host restarts. Run the same install
+      command again, enter the existing passphrase, and wait for the success message. Automatic update checks do not
+      prompt, use <code>sudo</code>, or start a locked Space.
+    </p>
   </li>
 
   <li>

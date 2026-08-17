@@ -5,7 +5,10 @@
 <svelte:head>
   <title>Install Shimpz on Windows — Shimpz docs</title>
   <link rel="canonical" href="https://docs.shimpz.com/install/windows/" />
-  <meta name="description" content="Install stable Shimpz inside Ubuntu on WSL2 with Docker Desktop." />
+  <meta
+    name="description"
+    content="Install stable Shimpz inside Ubuntu on WSL2 with Docker Desktop, systemd, and BitLocker."
+  />
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
@@ -20,7 +23,7 @@
     <span class="platform-status is-supported">WSL2 · x64</span>
   </div>
   <p class="docs-lede">
-    Shimpz runs inside Ubuntu on WSL2. PowerShell installs WSL; the Ubuntu terminal runs Docker and Shimpz.
+    Shimpz runs inside Ubuntu on WSL2 and keeps its Docker volumes on a BitLocker-protected Windows disk.
   </p>
 </header>
 
@@ -42,6 +45,40 @@
   </li>
 
   <li>
+    <h2>Require systemd inside WSL2</h2>
+    <p>In the Ubuntu terminal, enable systemd:</p>
+    <CodeBlock
+      label="Enable systemd in Ubuntu on WSL2"
+      title="Ubuntu · systemd"
+      lines={[{ value: "printf '[boot]\\nsystemd=true\\n' | sudo tee /etc/wsl.conf >/dev/null" }]}
+    />
+    <p>
+      Close Ubuntu, run <code>wsl --shutdown</code> in PowerShell, then reopen Ubuntu. The installer refuses a WSL2
+      distribution that does not run systemd as PID 1.
+    </p>
+  </li>
+
+  <li>
+    <h2>Turn on BitLocker</h2>
+    <p>
+      Use a Windows edition that provides BitLocker. Fully encrypt the Windows volume containing your user profile
+      and make sure protection is on; encryption that is suspended or still in progress is not accepted.
+    </p>
+    <CodeBlock
+      label="Check BitLocker protection"
+      title="PowerShell · Administrator"
+      lines={[
+        {
+          value:
+            "Get-BitLockerVolume -MountPoint $env:SystemDrive | Select-Object VolumeStatus, ProtectionStatus, EncryptionPercentage",
+          prompt: ">",
+        },
+      ]}
+    />
+    <p>Continue only when the result is <code>FullyEncrypted</code>, <code>On</code>, and <code>100</code>.</p>
+  </li>
+
+  <li>
     <h2>Connect Docker Desktop</h2>
     <p>
       Install <a
@@ -53,7 +90,10 @@
       <strong>Settings → Resources → WSL Integration</strong>.
     </p>
     <p>Use a Docker Desktop release that provides Docker Engine 25.0 or newer and Docker Compose 2.20.2 or newer.</p>
-    <p>Do not install a second Docker Engine inside Ubuntu.</p>
+    <p>
+      Do not install a second Docker Engine inside Ubuntu, and keep Docker Desktop's WSL data disk at its default
+      location. A custom data root is refused because the installer cannot prove that it is on the checked volume.
+    </p>
   </li>
 
   <li>

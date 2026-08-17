@@ -2,7 +2,7 @@
 
 set -eu
 
-INSTALLER_VERSION="0.9.0"
+INSTALLER_VERSION="1.0.0"
 RELEASE_REPOSITORY="ghcr.io/theshimpz/shimpz-local-release"
 ADMIN_REPOSITORY="ghcr.io/theshimpz/shimpz-admin"
 TEAM_REPOSITORY="ghcr.io/theshimpz/shimpz-team-local"
@@ -166,6 +166,7 @@ Supported hosts:
   Linux amd64 with Docker Engine 25.0+ and Docker Compose 2.20.2+.
   Apple Silicon macOS arm64 with Docker Desktop providing Engine 25.0+
   and Docker Compose 2.20.2+.
+  Windows 11 amd64 through WSL2 with systemd, Docker Desktop, and BitLocker.
 EOF
 }
 
@@ -223,6 +224,8 @@ PROJECT_NAME="shimpz-space"
 RESERVED_CONTAINER_NAMES="shimpz-admin shimpz-team shimpz-brain shimpz-brain-egress shimpz-assistant-egress shimpz-assistant-release shimpz-account-egress shimpz-account-egress-init"
 SHIMPZ_HOME_NAME=".shimpz"
 MARKER_VALUE="shimpz-space-managed-v1"
+SECURITY_MARKER="shimpz-local-storage-v1"
+LOCAL_VOLUME_NAMES="config data controller_token controller_audit controller_storage controller_inference controller_action_journal controller_publications controller_cosign_trust controller_assistant_integration_state controller_assistant_integration_key controller_chat_continuation_state controller_chat_continuation_key supervisor_key release_status assistant_egress_policy assistant_egress_audit assistant_release_audit account_egress_capability account_egress_audit brain_egress_audit brain_runtime_token brain_runtime_state"
 ADMIN_ALLOWED_ORIGINS="http://localhost:${SHIMPZ_PORT:-7777},http://127.0.0.1:${SHIMPZ_PORT:-7777}"
 reset_command="curl -fsSL https://install.shimpz.com | sh -s -- --reset"
 step "Checking Docker and Compose"
@@ -346,6 +349,11 @@ RECONCILER_CANDIDATE="${SHIMPZ_HOME}/reconcile.candidate"
 RECONCILER_PREVIOUS="${SHIMPZ_HOME}/reconcile.previous"
 STATUS_FILE="${SHIMPZ_HOME}/release-status.json"
 FAILED_RELEASE_FILE="${SHIMPZ_HOME}/failed-release.env"
+SECURITY_DIR="${SHIMPZ_HOME}/security"
+SECURE_MARKER_FILE="${SECURITY_DIR}/.shimpz-storage"
+SECURE_POOL_IMAGE="${SECURITY_DIR}/local-data.luks"
+SECURE_POOL_UUID_FILE="${SECURITY_DIR}/local-data.uuid"
+SECURE_POOL_MOUNT="${SECURITY_DIR}/volumes"
 SYSTEMD_USER_DIR="${XDG_CONFIG_HOME:-${HOME}/.config}/systemd/user"
 SYSTEMD_SERVICE="${SYSTEMD_USER_DIR}/shimpz-update.service"
 SYSTEMD_TIMER="${SYSTEMD_USER_DIR}/shimpz-update.timer"
@@ -620,6 +628,21 @@ validate_project_resources() {
 			"${PROJECT_NAME}_assistant_egress_policy|assistant_egress_policy"|\
 			"${PROJECT_NAME}_assistant_egress_audit|assistant_egress_audit") ;;
 			*) die "managed runtime is invalid: the Compose project contains an unknown volume" ;;
+		esac
+		volume_name="${volume_record%%|*}"
+		volume_key="${volume_record#*|}"
+		volume_backend="$(docker volume inspect --format '{{.Driver}}|{{with .Options}}{{index . "type"}}{{end}}|{{with .Options}}{{index . "o"}}{{end}}|{{with .Options}}{{index . "device"}}{{end}}' "$resource_id")" \
+			|| die "could not verify managed Shimpz Space volume backend ${resource_id}"
+		case "$storage_profile" in
+			linux-luks)
+				[ "$volume_backend" = "local|none|bind|${SECURE_POOL_MOUNT}/${volume_key}" ] \
+					|| die "managed runtime is invalid: ${volume_name} is not bound to encrypted Local storage"
+				;;
+			macos-filevault|windows-wsl)
+				[ "$volume_backend" = "local|||" ] \
+					|| die "managed runtime is invalid: ${volume_name} is not a Docker-managed encrypted-disk volume"
+				;;
+			*) die "managed runtime is invalid: the host storage profile is unknown" ;;
 		esac
 	done
 	for resource_id in $network_ids; do
@@ -987,6 +1010,7 @@ remove_corrupt_install() {
 	else
 		validate_no_unbound_dynamic_resources
 	fi
+	reset_secure_storage "$recovery_space_id"
 	remove_installer_files
 	install_mode="install"
 	space_id="$(generated_space_id)"
@@ -1032,6 +1056,372 @@ offer_corrupt_reinstall() {
 		esac
 	done
 	remove_corrupt_install
+}
+
+storage_profile_from_evidence() {
+	case "$1:$2:$3" in
+		Linux:0:0) printf 'linux-luks\n' ;;
+		Linux:1:1) printf 'windows-wsl\n' ;;
+		Darwin:0:0) printf 'macos-filevault\n' ;;
+		*) return 1 ;;
+	esac
+}
+
+detect_storage_profile() {
+	storage_os="$(uname -s)" || die "could not determine the host storage profile"
+	wsl_kernel=0
+	wsl_interop=0
+	if [ "$storage_os" = "Linux" ]; then
+		grep -qi microsoft /proc/version 2>/dev/null && wsl_kernel=1
+		[ -e /proc/sys/fs/binfmt_misc/WSLInterop ] && wsl_interop=1
+	fi
+	storage_profile_from_evidence "$storage_os" "$wsl_kernel" "$wsl_interop" \
+		|| die "the host storage profile is unsupported or WSL identity is ambiguous"
+}
+
+linux_volume_specs() {
+	cat <<'EOF'
+config:1000:1000:700
+data:1000:1000:700
+controller_token:10001:10010:750
+controller_audit:10001:10001:700
+controller_storage:10001:10001:700
+controller_inference:10001:10001:700
+controller_action_journal:10001:10001:700
+controller_publications:10001:10001:700
+controller_cosign_trust:10001:10001:700
+controller_assistant_integration_state:10001:10001:700
+controller_assistant_integration_key:10001:10001:700
+controller_chat_continuation_state:10001:10001:700
+controller_chat_continuation_key:10001:10001:700
+supervisor_key:1000:10021:750
+release_status:1000:1000:700
+assistant_egress_policy:10001:10017:750
+assistant_egress_audit:10005:10005:700
+assistant_release_audit:10004:10004:700
+account_egress_capability:10006:10022:750
+account_egress_audit:10006:10006:700
+brain_egress_audit:10001:10001:700
+brain_runtime_token:10001:10016:750
+brain_runtime_state:10001:10001:700
+EOF
+}
+
+luks_dump_valid() {
+	validated_luks_dump="$1"
+	[ "$(printf '%s\n' "$validated_luks_dump" | grep -Ec '^Version:')" -eq 1 ] || return 1
+	[ "$(printf '%s\n' "$validated_luks_dump" | grep -Ec '^[[:space:]]*cipher:')" -eq 1 ] || return 1
+	[ "$(printf '%s\n' "$validated_luks_dump" | grep -Ec '^[[:space:]]*Key:')" -eq 1 ] || return 1
+	[ "$(printf '%s\n' "$validated_luks_dump" | grep -Ec '^[[:space:]]*PBKDF:')" -eq 1 ] || return 1
+	[ "$(printf '%s\n' "$validated_luks_dump" | grep -Ec '^Version:[[:space:]]+2$')" -eq 1 ] || return 1
+	[ "$(printf '%s\n' "$validated_luks_dump" | grep -Ec '^[[:space:]]*cipher:[[:space:]]+aes-xts-plain64$')" -eq 1 ] \
+		|| return 1
+	[ "$(printf '%s\n' "$validated_luks_dump" | grep -Ec '^[[:space:]]*Key:[[:space:]]+512 bits$')" -eq 1 ] \
+		|| return 1
+	[ "$(printf '%s\n' "$validated_luks_dump" | grep -Ec '^[[:space:]]*PBKDF:[[:space:]]+argon2id$')" -eq 1 ]
+}
+
+linux_pool_metadata_valid() {
+	[ -f "$SECURE_MARKER_FILE" ] && [ ! -h "$SECURE_MARKER_FILE" ] \
+		&& [ "$(sed -n '1p' "$SECURE_MARKER_FILE" 2>/dev/null)" = "$SECURITY_MARKER" ] \
+		&& [ -f "$SECURE_POOL_IMAGE" ] && [ ! -h "$SECURE_POOL_IMAGE" ] \
+		&& [ -f "$SECURE_POOL_UUID_FILE" ] && [ ! -h "$SECURE_POOL_UUID_FILE" ] || return 1
+	pool_uuid="$(sed -n '1p' "$SECURE_POOL_UUID_FILE" 2>/dev/null)" || return 1
+	[ -n "$pool_uuid" ] && [ "$(wc -l <"$SECURE_POOL_UUID_FILE" | tr -d ' ')" -eq 1 ] || return 1
+	actual_uuid="$(cryptsetup luksUUID "$SECURE_POOL_IMAGE" 2>/dev/null)" || return 1
+	[ "$actual_uuid" = "$pool_uuid" ] || return 1
+	luks_dump="$(LC_ALL=C cryptsetup luksDump "$SECURE_POOL_IMAGE" 2>/dev/null)" || return 1
+	luks_dump_valid "$luks_dump"
+}
+
+linux_mapping_identity_valid() {
+	linux_pool_metadata_valid || return 1
+	space_hex="${space_id#space-}"
+	secure_mapping="shimpz-${space_hex}"
+	mapper_path="/dev/mapper/${secure_mapping}"
+	[ -e "$mapper_path" ] && [ ! -h "$SECURE_POOL_IMAGE" ] || return 1
+	dm_block=""
+	for dm_name_path in /sys/class/block/dm-*/dm/name; do
+		[ -f "$dm_name_path" ] || continue
+		[ "$(cat "$dm_name_path" 2>/dev/null)" = "$secure_mapping" ] || continue
+		[ -z "$dm_block" ] || return 1
+		dm_block="$(basename "$(dirname "$(dirname "$dm_name_path")")")"
+	done
+	case "$dm_block" in dm-[0-9]*) ;; *) return 1 ;; esac
+	dm_uuid="$(cat "/sys/class/block/${dm_block}/dm/uuid" 2>/dev/null)" || return 1
+	mapper_major_minor="$(cat "/sys/class/block/${dm_block}/dev" 2>/dev/null)" || return 1
+	pool_uuid_compact="$(printf '%s' "$pool_uuid" | tr -d '-')"
+	case "$dm_uuid" in "CRYPT-LUKS2-${pool_uuid_compact}-"*) ;; *) return 1 ;; esac
+	set -- "/sys/class/block/${dm_block}/slaves/"*
+	[ "$#" -eq 1 ] && [ -e "$1" ] || return 1
+	loop_block="${1##*/}"
+	case "$loop_block" in loop[0-9]*) ;; *) return 1 ;; esac
+	backing_file="$(sed 's/\\040/ /g' "/sys/class/block/${loop_block}/loop/backing_file" 2>/dev/null)" || return 1
+	backing_real="$(readlink -f "$backing_file" 2>/dev/null)" || return 1
+	pool_real="$(readlink -f "$SECURE_POOL_IMAGE" 2>/dev/null)" || return 1
+	[ "$backing_real" = "$pool_real" ]
+}
+
+linux_mapping_name_exists() {
+	for dm_name_path in /sys/class/block/dm-*/dm/name; do
+		[ -f "$dm_name_path" ] || continue
+		[ "$(cat "$dm_name_path" 2>/dev/null)" = "$1" ] && return 0
+	done
+	return 1
+}
+
+linux_volume_layout_valid() {
+	for volume_spec in $(linux_volume_specs); do
+		volume_name="${volume_spec%%:*}"
+		volume_fields="${volume_spec#*:}"
+		volume_uid="${volume_fields%%:*}"
+		volume_fields="${volume_fields#*:}"
+		volume_gid="${volume_fields%%:*}"
+		volume_mode="${volume_fields#*:}"
+		volume_path="${SECURE_POOL_MOUNT}/${volume_name}"
+		[ -d "$volume_path" ] && [ ! -h "$volume_path" ] || return 1
+		[ "$(stat -c '%u:%g:%a' "$volume_path" 2>/dev/null)" = "${volume_uid}:${volume_gid}:${volume_mode}" ] \
+			|| return 1
+	done
+}
+
+linux_mount_identity_valid() {
+	linux_mapping_identity_valid || return 1
+	mount_source="$(findmnt -rn -M "$SECURE_POOL_MOUNT" -o SOURCE 2>/dev/null)" || return 1
+	mount_fstype="$(findmnt -rn -M "$SECURE_POOL_MOUNT" -o FSTYPE 2>/dev/null)" || return 1
+	mount_major_minor="$(findmnt -rn -M "$SECURE_POOL_MOUNT" -o MAJ:MIN 2>/dev/null)" || return 1
+	[ "$mount_fstype" = "ext4" ] || return 1
+	[ -n "$mount_source" ] && [ "$mount_major_minor" = "$mapper_major_minor" ]
+}
+
+linux_pool_mounted_valid() {
+	linux_mount_identity_valid || return 1
+	[ "$(stat -c '%u:%g:%a' "$SECURE_POOL_MOUNT" 2>/dev/null)" = "$(id -u):$(id -g):700" ] \
+		|| return 1
+	linux_volume_layout_valid
+}
+
+require_storage_privilege() {
+	[ "$action" != "scheduled" ] || die "automatic reconciliation cannot unlock Local storage"
+	[ -r /dev/tty ] && [ -w /dev/tty ] \
+		&& ( : </dev/tty ) 2>/dev/null && ( : >/dev/tty ) 2>/dev/null \
+		|| die "Local storage unlock requires an interactive terminal"
+	if [ "$(id -u)" -ne 0 ]; then
+		command -v sudo >/dev/null 2>&1 || die "sudo is required to manage encrypted Local storage"
+		sudo -v </dev/tty || die "administrator authorization is required to manage encrypted Local storage"
+	fi
+}
+
+root_command() {
+	if [ "$(id -u)" -eq 0 ]; then
+		"$@"
+	else
+		sudo -n "$@"
+	fi
+}
+
+prepare_linux_volume_layout() {
+	for volume_spec in $(linux_volume_specs); do
+		volume_name="${volume_spec%%:*}"
+		volume_fields="${volume_spec#*:}"
+		volume_uid="${volume_fields%%:*}"
+		volume_fields="${volume_fields#*:}"
+		volume_gid="${volume_fields%%:*}"
+		volume_mode="${volume_fields#*:}"
+		root_command install -d -o "$volume_uid" -g "$volume_gid" -m "$volume_mode" \
+			"${SECURE_POOL_MOUNT}/${volume_name}" || return 1
+	done
+}
+
+discard_new_linux_pool() {
+	space_hex="${space_id#space-}"
+	secure_mapping="shimpz-${space_hex}"
+	if linux_mount_identity_valid; then
+		root_command umount "$SECURE_POOL_MOUNT" >/dev/null 2>&1 || return 1
+	fi
+	if linux_mapping_identity_valid; then
+		root_command cryptsetup close "$secure_mapping" >/dev/null 2>&1 || return 1
+	fi
+	linux_mapping_name_exists "$secure_mapping" && return 1
+	rm -f "$SECURE_POOL_UUID_FILE" "$SECURE_POOL_IMAGE" "$SECURE_MARKER_FILE"
+	rmdir "$SECURE_POOL_MOUNT" 2>/dev/null || true
+	rmdir "$SECURITY_DIR" 2>/dev/null || true
+}
+
+reset_secure_storage() {
+	[ -e "$SECURITY_DIR" ] || return 0
+	[ -d "$SECURITY_DIR" ] && [ ! -h "$SECURITY_DIR" ] \
+		|| die "refusing to reset an invalid Local security directory"
+	[ "$(detect_storage_profile)" = "linux-luks" ] \
+		|| die "selective Local storage can be reset only on its native Linux host"
+	for tool_name in cryptsetup findmnt mountpoint readlink stat umount; do
+		command -v "$tool_name" >/dev/null 2>&1 \
+			|| die "${tool_name} is required to reset encrypted Local storage"
+	done
+	[ -n "$1" ] || die "refusing to reset encrypted Local storage without its Space identity"
+	space_id="$1"
+	validate_space_id "$space_id"
+	for security_entry in "$SECURITY_DIR"/* "$SECURITY_DIR"/.[!.]* "$SECURITY_DIR"/..?*; do
+		[ -e "$security_entry" ] || [ -h "$security_entry" ] || continue
+		case "$security_entry" in
+			"$SECURE_MARKER_FILE"|"$SECURE_POOL_IMAGE"|"$SECURE_POOL_UUID_FILE"|"$SECURE_POOL_MOUNT") ;;
+			*) die "refusing to delete unrecognized Local security content: ${security_entry}" ;;
+		esac
+	done
+	linux_pool_metadata_valid || die "refusing to reset encrypted Local storage with invalid identity"
+	space_hex="${space_id#space-}"
+	secure_mapping="shimpz-${space_hex}"
+	mapper_path="/dev/mapper/${secure_mapping}"
+	if linux_mapping_name_exists "$secure_mapping"; then
+		linux_mapping_identity_valid || die "refusing to close a foreign Local storage mapping"
+		if mountpoint -q "$SECURE_POOL_MOUNT"; then
+			linux_mount_identity_valid || die "refusing to unmount a foreign Local storage filesystem"
+			require_storage_privilege
+			root_command umount "$SECURE_POOL_MOUNT" \
+				|| die "encrypted Local storage is busy and could not be unmounted"
+		fi
+		require_storage_privilege
+		root_command cryptsetup close "$secure_mapping" \
+			|| die "the encrypted Local storage mapping could not be closed"
+	elif mountpoint -q "$SECURE_POOL_MOUNT"; then
+		die "refusing to unmount Local storage without its owned mapping"
+	fi
+	rm -f "$SECURE_POOL_UUID_FILE" "$SECURE_POOL_IMAGE" "$SECURE_MARKER_FILE" \
+		|| die "encrypted Local storage files could not be removed"
+	rmdir "$SECURE_POOL_MOUNT" || die "the empty Local storage mountpoint could not be removed"
+	rmdir "$SECURITY_DIR" || die "the empty Local security directory could not be removed"
+}
+
+provision_linux_storage() {
+	for tool_name in cryptsetup findmnt install mkfs.ext4 mount mountpoint readlink stat truncate umount; do
+		command -v "$tool_name" >/dev/null 2>&1 \
+			|| die "${tool_name} is required for encrypted Local storage"
+	done
+	[ ! -e "$SECURITY_DIR" ] || die "encrypted Local storage already exists but is not current-valid"
+	require_storage_privilege
+	space_hex="${space_id#space-}"
+	secure_mapping="shimpz-${space_hex}"
+	linux_mapping_name_exists "$secure_mapping" \
+		&& die "a foreign device-mapper mapping already uses the Local Space identity"
+	mkdir -m 700 "$SECURITY_DIR"
+	printf '%s\n' "$SECURITY_MARKER" >"$SECURE_MARKER_FILE"
+	chmod 600 "$SECURE_MARKER_FILE"
+	truncate -s 64G "$SECURE_POOL_IMAGE" || die "could not allocate the encrypted Local storage image"
+	chmod 600 "$SECURE_POOL_IMAGE"
+	root_command install -d -o 0 -g 0 -m 000 "$SECURE_POOL_MOUNT" \
+		|| die "could not create the protected Local storage mountpoint"
+	if ! root_command cryptsetup luksFormat --batch-mode --type luks2 \
+		--cipher aes-xts-plain64 --key-size 512 --pbkdf argon2id "$SECURE_POOL_IMAGE" </dev/tty; then
+		discard_new_linux_pool || die "failed Local storage initialization left owned residue"
+		die "could not initialize encrypted Local storage"
+	fi
+	pool_uuid="$(cryptsetup luksUUID "$SECURE_POOL_IMAGE" 2>/dev/null)" \
+		|| die "could not read the encrypted Local storage identity"
+	printf '%s\n' "$pool_uuid" >"${SECURE_POOL_UUID_FILE}.tmp"
+	chmod 600 "${SECURE_POOL_UUID_FILE}.tmp"
+	mv "${SECURE_POOL_UUID_FILE}.tmp" "$SECURE_POOL_UUID_FILE"
+	if ! root_command cryptsetup open --type luks2 "$SECURE_POOL_IMAGE" "$secure_mapping" </dev/tty \
+		|| ! linux_mapping_identity_valid \
+		|| ! root_command mkfs.ext4 -q -m 0 "/dev/mapper/${secure_mapping}" \
+		|| ! root_command mount -o nodev,nosuid "/dev/mapper/${secure_mapping}" "$SECURE_POOL_MOUNT" \
+		|| ! root_command chown "$(id -u):$(id -g)" "$SECURE_POOL_MOUNT" \
+		|| ! chmod 700 "$SECURE_POOL_MOUNT" \
+		|| ! prepare_linux_volume_layout \
+		|| ! linux_pool_mounted_valid; then
+		discard_new_linux_pool || die "failed Local storage provisioning left owned residue"
+		die "encrypted Local storage provisioning did not complete"
+	fi
+}
+
+ensure_linux_storage() {
+	for tool_name in cryptsetup findmnt mountpoint readlink stat; do
+		command -v "$tool_name" >/dev/null 2>&1 \
+			|| die "${tool_name} is required to verify encrypted Local storage"
+	done
+	if [ ! -e "$SECURITY_DIR" ]; then
+		[ "$install_mode" = "install" ] || die "the existing Local Space has no encrypted storage"
+		provision_linux_storage
+		return 0
+	fi
+	linux_pool_metadata_valid || die "encrypted Local storage metadata is invalid"
+	if linux_pool_mounted_valid; then
+		return 0
+	fi
+	if [ "$action" = "scheduled" ]; then
+		info "Encrypted Local storage is locked; no workloads were started"
+		exit 0
+	fi
+	require_storage_privilege
+	space_hex="${space_id#space-}"
+	secure_mapping="shimpz-${space_hex}"
+	mapper_path="/dev/mapper/${secure_mapping}"
+	if linux_mapping_name_exists "$secure_mapping"; then
+		linux_mapping_identity_valid || die "the encrypted Local storage mapping has foreign identity"
+	else
+		root_command cryptsetup open --type luks2 "$SECURE_POOL_IMAGE" "$secure_mapping" </dev/tty \
+			|| die "the encrypted Local storage passphrase was not accepted"
+		linux_mapping_identity_valid || die "the opened Local storage mapping failed identity validation"
+	fi
+	if ! mountpoint -q "$SECURE_POOL_MOUNT"; then
+		root_command mount -o nodev,nosuid "$mapper_path" "$SECURE_POOL_MOUNT" \
+			|| die "could not mount encrypted Local storage"
+		root_command chown "$(id -u):$(id -g)" "$SECURE_POOL_MOUNT" \
+			|| die "could not restore encrypted Local storage ownership"
+		chmod 700 "$SECURE_POOL_MOUNT" || die "could not restore encrypted Local storage permissions"
+	fi
+	linux_pool_mounted_valid || die "encrypted Local storage did not pass admission"
+}
+
+macos_storage_verified() {
+	command -v fdesetup >/dev/null 2>&1 && fdesetup isactive >/dev/null 2>&1 || return 1
+	docker_disk="${HOME}/Library/Containers/com.docker.docker/Data/vms/0/data/Docker.raw"
+	[ -f "$docker_disk" ] && [ ! -h "$docker_disk" ] || return 1
+	startup_device="$(stat -f '%d' /System/Volumes/Data 2>/dev/null)" || return 1
+	docker_device="$(stat -f '%d' "$docker_disk" 2>/dev/null)" || return 1
+	[ -n "$startup_device" ] && [ "$docker_device" = "$startup_device" ]
+}
+
+bitlocker_record_valid() {
+	[ "$1" = "shimpz-bitlocker-v1|FullyEncrypted|On|100" ]
+}
+
+windows_bitlocker_verified() {
+	command -v powershell.exe >/dev/null 2>&1 || return 1
+	bitlocker_record="$(powershell.exe -NoProfile -NonInteractive -Command \
+		'$ErrorActionPreference="Stop"; $disk=Join-Path $env:LOCALAPPDATA "Docker\wsl\data\docker_data.vhdx"; if (-not (Test-Path -LiteralPath $disk -PathType Leaf)) { throw "missing Docker data disk" }; $root=[System.IO.Path]::GetPathRoot($disk); $volume=Get-BitLockerVolume -MountPoint $root; if ($null -eq $volume) { throw "missing BitLocker volume" }; "shimpz-bitlocker-v1|$($volume.VolumeStatus)|$($volume.ProtectionStatus)|$($volume.EncryptionPercentage)"' \
+		2>/dev/null | tr -d '\r')" || return 1
+	bitlocker_record_valid "$bitlocker_record"
+}
+
+ensure_storage_admission() {
+	case "$storage_profile" in
+		linux-luks) ensure_linux_storage ;;
+		macos-filevault)
+			macos_storage_verified \
+				|| die "FileVault must protect Docker Desktop's default Docker.raw data disk"
+			;;
+		windows-wsl)
+			[ "$(cat /proc/1/comm 2>/dev/null)" = "systemd" ] \
+				|| die "WSL2 must run systemd as PID 1 before Shimpz can install"
+			windows_bitlocker_verified \
+				|| die "BitLocker must fully encrypt and actively protect Docker Desktop's default WSL data disk"
+			;;
+		*) die "the host storage profile is invalid" ;;
+	esac
+}
+
+render_volume_definitions() {
+	for volume_name in $LOCAL_VOLUME_NAMES; do
+		printf '  %s:\n' "$volume_name"
+		if [ "$storage_profile" = "linux-luks" ]; then
+			printf '%s\n' \
+				'    driver: local' \
+				'    driver_opts:' \
+				'      type: none' \
+				'      o: bind' \
+				"      device: \${SHIMPZ_SECURE_VOLUME_ROOT:?installer must mount encrypted Local storage}/${volume_name}"
+		fi
+	done
 }
 
 validate_existing_runtime() {
@@ -1292,6 +1682,8 @@ validate_scheduler() {
 	esac
 }
 
+storage_profile="$(detect_storage_profile)"
+
 if [ "$action" = "reset" ]; then
 	# Preflight ownership before the reset notice; remove_scheduler revalidates immediately before mutation.
 	validate_scheduler_ownership
@@ -1348,6 +1740,7 @@ if [ "$action" = "reset" ]; then
 	if project_resources_exist; then
 		die "reset left unexpected Shimpz Space Docker resources; inspect them before retrying"
 	fi
+	reset_secure_storage "$reset_space_id"
 	remove_scheduler
 	remove_installer_files
 	release_lock
@@ -1378,6 +1771,10 @@ case "${host_os}:${host_arch}" in
 	Linux:x86_64|Linux:amd64)
 		docker_platform="linux/amd64"
 		docker_socket_candidates="/var/run/docker.sock"
+		if [ "$storage_profile" = "windows-wsl" ]; then
+			[ "$(cat /proc/1/comm 2>/dev/null)" = "systemd" ] \
+				|| die "WSL2 must run systemd as PID 1 before Shimpz can install"
+		fi
 		;;
 	Darwin:arm64)
 		docker_platform="linux/arm64"
@@ -1459,6 +1856,17 @@ if project_resources_exist; then
 	fi
 elif [ "$install_mode" = "update" ]; then
 	offer_corrupt_reinstall "managed runtime is invalid: no Shimpz Space Docker resources were found"
+fi
+
+if [ "$install_mode" = "update" ]; then
+	if [ "$storage_profile" = "linux-luks" ] && ! linux_pool_metadata_valid; then
+		offer_corrupt_reinstall "managed runtime is invalid: encrypted Local storage is absent or invalid"
+	fi
+	step "Verifying encrypted Local storage"
+	ensure_storage_admission
+elif [ "$action" = "apply" ]; then
+	step "Verifying encrypted Local storage"
+	ensure_storage_admission
 fi
 
 umask 077
@@ -1772,7 +2180,11 @@ SHIMPZ_SPACE_ID=${space_id}
 SHIMPZ_CPUSET=${docker_cpuset}
 SHIMPZ_PROJECT_NAME=${PROJECT_NAME}
 SHIMPZ_ADMIN_ALLOWED_ORIGINS=${ADMIN_ALLOWED_ORIGINS}
+SHIMPZ_STORAGE_PROFILE=${storage_profile}
 EOF
+if [ "$storage_profile" = "linux-luks" ]; then
+	printf 'SHIMPZ_SECURE_VOLUME_ROOT=%s\n' "$SECURE_POOL_MOUNT" >>"${ENV_FILE}.tmp"
+fi
 chmod 600 "${ENV_FILE}.tmp"
 
 cat >"${COMPOSE_FILE}.tmp" <<'COMPOSE'
@@ -2187,29 +2599,9 @@ services:
       - egress
 
 volumes:
-  config:
-  data:
-  controller_token:
-  controller_audit:
-  controller_storage:
-  controller_inference:
-  controller_action_journal:
-  controller_publications:
-  controller_cosign_trust:
-  controller_assistant_integration_state:
-  controller_assistant_integration_key:
-  controller_chat_continuation_state:
-  controller_chat_continuation_key:
-  supervisor_key:
-  release_status:
-  assistant_egress_policy:
-  assistant_egress_audit:
-  assistant_release_audit:
-  account_egress_capability:
-  account_egress_audit:
-  brain_egress_audit:
-  brain_runtime_token:
-  brain_runtime_state:
+COMPOSE
+render_volume_definitions >>"${COMPOSE_FILE}.tmp"
+cat >>"${COMPOSE_FILE}.tmp" <<'COMPOSE'
 
 networks:
   control:
@@ -2243,6 +2635,7 @@ mv "${ENV_FILE}.tmp" "$ENV_FILE"
 mv "${COMPOSE_FILE}.tmp" "$COMPOSE_FILE"
 
 step "Starting the Shimpz Admin, local Team controller, and isolated Brain runtime"
+ensure_storage_admission
 if ! compose up -d --wait --wait-timeout 120 --no-build --pull never --remove-orphans; then
 	warn "The new release did not become healthy"
 	report_managed_status
@@ -2262,6 +2655,7 @@ if ! compose up -d --wait --wait-timeout 120 --no-build --pull never --remove-or
 		step "Restoring the previous pinned release"
 		mv "${ENV_FILE}.previous" "$ENV_FILE"
 		mv "${COMPOSE_FILE}.previous" "$COMPOSE_FILE"
+		ensure_storage_admission
 		if ! compose up -d --wait --wait-timeout 120 --no-build --pull never --remove-orphans; then
 			remember_failed_release
 			write_optional_release_status \

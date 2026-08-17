@@ -9,6 +9,7 @@ def _recovery_functions(shell_functions):
         + shell_functions("validate_space_id", "validate_repository_digest_image")
         + shell_functions("dynamic_container_ids", "validate_dynamic_resources")
         + shell_functions("remove_project_resources", "write_release_status")
+        + shell_functions("detect_storage_profile", "validate_existing_runtime")
     )
 
 

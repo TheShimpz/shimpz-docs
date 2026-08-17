@@ -125,6 +125,12 @@ RECONCILER_CANDIDATE="$SHIMPZ_HOME/reconcile.candidate"
 RECONCILER_PREVIOUS="$SHIMPZ_HOME/reconcile.previous"
 STATUS_FILE="$SHIMPZ_HOME/release-status.json"
 FAILED_RELEASE_FILE="$SHIMPZ_HOME/failed-release.env"
+SECURITY_DIR="$SHIMPZ_HOME/security"
+SECURE_MARKER_FILE="$SECURITY_DIR/.shimpz-storage"
+SECURE_POOL_IMAGE="$SECURITY_DIR/local-data.luks"
+SECURE_POOL_UUID_FILE="$SECURITY_DIR/local-data.uuid"
+SECURE_POOL_MOUNT="$SECURITY_DIR/volumes"
+SECURITY_MARKER="shimpz-local-storage-v1"
 action="install"
 die() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
 warn() { printf 'WARN: %s\n' "$*" >&2; }
