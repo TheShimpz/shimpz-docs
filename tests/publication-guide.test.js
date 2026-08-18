@@ -16,8 +16,8 @@ test("static publication guide follows the current one-command contract", () => 
   const spec = text("src/routes/developers/assistants/spec/+page.svelte");
 
   assert.match(layout, /\/developers\/assistants\/publish\//);
-  assert.match(page, /shimpz publish --visibility public/);
-  assert.match(page, /shimpz publish --visibility private/);
+  assert.match(page, /shimpz assistant publish --visibility public/);
+  assert.match(page, /shimpz assistant publish --visibility private/);
   assert.match(page, /identity:read/);
   assert.match(page, /assistant:publish/);
   assert.match(page, /Assistant published and installable\./);
@@ -28,7 +28,7 @@ test("static publication guide follows the current one-command contract", () => 
   assert.match(page, /Visibility is a separate[\s\S]*immutable publication setting/);
   assert.match(page, /A separate <code>shimpz auth<\/code> step is not required/);
   assert.doesNotMatch(page, /Neuron|Bearer |\/api\/v1\/publications/);
-  assert.doesNotMatch(icons, /shimpz publish/);
-  assert.doesNotMatch(spec, /shimpz publish --visibility/);
+  assert.doesNotMatch(icons, /shimpz assistant publish/);
+  assert.doesNotMatch(spec, /shimpz assistant publish --visibility/);
   assert.match(spec, /href="\/developers\/assistants\/publish\/"/);
 });

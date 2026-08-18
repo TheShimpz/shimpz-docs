@@ -14,9 +14,9 @@
 
 <header class="docs-page-header">
   <span class="section-label">Maintenance</span>
-  <h1>Use the same installer</h1>
+  <h1>Manage the Space with the CLI</h1>
   <p class="docs-lede">
-    Running the installation command again updates Shimpz to the current stable images. Existing Teams,
+    Running <code>shimpz install</code> again reconciles Shimpz to the current atomic release. Existing Teams,
     Integrations, settings, and conversations remain in place.
   </p>
 </header>
@@ -24,22 +24,22 @@
 <CodeBlock
   label="Update Shimpz"
   title="Terminal · stable update"
-  lines={[{ value: "curl -fsSL https://install.shimpz.com | sh" }]}
+  lines={[{ value: "shimpz install" }]}
 />
 
 <p>
-  The installer checks the replacement before switching to it. If the new version does not become healthy,
+  The release-bound CLI checks the replacement before switching to it. If the new version does not become healthy,
   it keeps or restores the previous working version. A successful run ends with
   <strong>Shimpz Space is up to date</strong>.
 </p>
 
 <p>
-  If the installer-owned Local Space exists but its current Docker runtime fails validation, the installer names
+  If the CLI-owned Local Space exists but its current Docker runtime fails validation, the CLI names
   the failure, lists the exact owned scope, and asks whether to remove that corrupt Local state and install a fresh
   Space. <strong>Yes</strong> permanently removes every listed resource and the installed Local state before
   continuing in the same terminal. Any listed Team, Assistant, credential, setting, conversation, or Docker data is
   lost. <strong>No</strong>, Enter, or a non-interactive run leaves it unchanged. This recovery choice is available
-  only for a corrupt installer-owned Space; resetting a healthy Space still requires the Supervisor password.
+  only for a corrupt CLI-owned Space; resetting a healthy Space still requires the Supervisor password.
 </p>
 
 <section class="guide-section" aria-labelledby="reset-title">
@@ -53,9 +53,9 @@
   <CodeBlock
     label="Permanently reset Shimpz"
     title="Terminal · destructive reset"
-    lines={[{ value: "curl -fsSL https://install.shimpz.com | sh -s -- --reset" }]}
+    lines={[{ value: "shimpz reset" }]}
   />
-  <p>Reset is complete only when the installer prints <strong>Shimpz Space was reset</strong>.</p>
+  <p>Reset is complete only when the CLI prints <strong>Shimpz Space was reset successfully</strong>.</p>
 </section>
 
 <nav class="docs-page-nav" aria-label="Continue the user guide">

@@ -61,7 +61,7 @@
   <span class="section-label">3 · Verify</span>
   <h2 id="verify-title">Validate the package and invoke the Action</h2>
   <CodeBlock label="Native local checks" title="Terminal" variant="code" {...data.verify} />
-  <p><code>shimpz check</code> must report <strong>Assistant is valid</strong>. The test then prints:</p>
+  <p><code>shimpz assistant check</code> must report <strong>Assistant is valid</strong>. The Action run then prints:</p>
   <CodeBlock label="Action result" title="stdout" variant="code" {...data.result} />
 </section>
 
@@ -82,7 +82,7 @@
     <dt>SDK or Python download fails</dt>
     <dd>Check network access and retry once. The CLI manages its own Python 3.14 and <code>uv</code>.</dd>
     <dt>Assistant validation fails</dt>
-    <dd>Read the first reported file and field, correct it, then run <code>shimpz check</code> again.</dd>
+    <dd>Read the first reported file and field, correct it, then run <code>shimpz assistant check</code> again.</dd>
   </dl>
 </section>
 

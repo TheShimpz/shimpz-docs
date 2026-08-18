@@ -65,7 +65,7 @@
   <h2 id="workflow-title">Validate before you publish</h2>
   <CodeBlock label="Assistant icon workflow" title="Project and validation" variant="code" {...data.workflow} />
   <p>
-    <code>shimpz check</code> verifies the signature, dimensions, size, PNG chunk integrity, and absence of
+    <code>shimpz assistant check</code> verifies the signature, dimensions, size, PNG chunk integrity, and absence of
     animation before upload. A different icon changes the source digest, so increment the Assistant version
     before you <a href="/developers/assistants/publish/">publish another immutable release</a>. Installed Teams
     receive it only through the reviewed update lifecycle.

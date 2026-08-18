@@ -2,7 +2,7 @@ import { highlightCode } from "$lib/server/highlight";
 
 import type { PageServerLoad } from "./$types";
 
-const create = `shimpz new assistant hello-assistant
+const create = `shimpz assistant new hello-assistant
 cd hello-assistant`;
 
 const files = `hello-assistant/
@@ -15,8 +15,8 @@ const files = `hello-assistant/
 ├── pyproject.toml
 └── shimpz.toml`;
 
-const verify = `shimpz check
-shimpz test hello-world --input '{"name":"Ada"}'`;
+const verify = `shimpz assistant check
+shimpz assistant run hello-world --input '{"name":"Ada"}'`;
 
 const result = `{"message":"Hello, Ada!"}`;
 

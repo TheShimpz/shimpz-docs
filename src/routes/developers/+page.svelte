@@ -61,12 +61,12 @@
   <CodeBlock
     label="Start Codex in the current Assistant project"
     title="Terminal · Assistant project"
-    lines={[{ value: "shimpz develop codex" }]}
+    lines={[{ value: "shimpz assistant develop codex" }]}
   />
   <CodeBlock
     label="Start Claude Code in another Assistant project"
     title="Terminal · Assistant project"
-    lines={[{ value: "shimpz develop claude /path/to/assistant" }]}
+    lines={[{ value: "shimpz assistant develop claude /path/to/assistant" }]}
   />
   <p>
     Shimpz loads the current versioned Assistant development guide and starts the selected agent in that directory.

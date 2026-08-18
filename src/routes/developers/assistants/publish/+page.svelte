@@ -4,13 +4,13 @@
   import type { CodeLine } from "$lib/code";
 
   const publicCommand: readonly CodeLine[] = [
-    { kind: "command", prompt: "$", value: "shimpz check" },
+    { kind: "command", prompt: "$", value: "shimpz assistant check" },
     { kind: "output", prompt: "✓", value: "Assistant is valid." },
-    { kind: "command", prompt: "$", value: "shimpz publish --visibility public" },
+    { kind: "command", prompt: "$", value: "shimpz assistant publish --visibility public" },
   ];
 
   const privateCommand: readonly CodeLine[] = [
-    { kind: "command", prompt: "$", value: "shimpz publish --visibility private" },
+    { kind: "command", prompt: "$", value: "shimpz assistant publish --visibility private" },
   ];
 
   const progressStates = [
@@ -87,7 +87,7 @@
   <p>For an unlisted release, choose private explicitly:</p>
   <CodeBlock label="Private Assistant publication" title="Assistant project" lines={privateCommand} />
   <p>
-    <code>shimpz publish</code> builds the canonical source package, validates its generated contract, obtains
+    <code>shimpz assistant publish</code> builds the canonical source package, validates its generated contract, obtains
     <code>identity:read</code> and <code>assistant:publish</code> authorization when needed, records your exact Creator
     consent, submits the release, and waits for its artifact. A separate <code>shimpz auth</code> step is not required.
   </p>
@@ -141,11 +141,11 @@
     <dt><code>version_already_published</code> or <code>visibility_already_set</code></dt>
     <dd>Do not mutate or reclassify that release. Choose a new version for changed source or visibility.</dd>
     <dt>Validation fails before upload</dt>
-    <dd>Fix the first reported project field or file, rerun <code>shimpz check</code>, then publish again.</dd>
+    <dd>Fix the first reported project field or file, rerun <code>shimpz assistant check</code>, then publish again.</dd>
     <dt>Dependency, test, scan, build, or signing failure</dt>
     <dd>Use the safe failure code and build-run URL. Fix authored source only when the failure belongs to it.</dd>
     <dt>The wait reaches 30 minutes</dt>
-    <dd>The CLI instructs you to rerun the same <code>shimpz publish</code> command with unchanged source.</dd>
+    <dd>The CLI instructs you to rerun the same <code>shimpz assistant publish</code> command with unchanged source.</dd>
   </dl>
 </section>
 

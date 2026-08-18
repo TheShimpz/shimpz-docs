@@ -67,7 +67,7 @@
   <span class="section-label">Published contract</span>
   <h2 id="package-contract-title">Source packages have one byte-level authority</h2>
   <p>
-    <code>shimpz publish</code> creates an uncompressed canonical POSIX ustar archive. Its exact
+    <code>shimpz assistant publish</code> creates an uncompressed canonical POSIX ustar archive. Its exact
     allowlist, limits, normalized metadata, golden vectors, and verifier are published together:
   </p>
   <p>
