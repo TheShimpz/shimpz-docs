@@ -24,9 +24,7 @@ def test_bootstrap_is_small_posix_and_self_describing() -> None:
     check(SCRIPT_PATH.stat().st_mode & stat.S_IXUSR, "published bootstrap is executable")
     syntax = subprocess.run(["sh", "-n", str(SCRIPT_PATH)], capture_output=True, text=True, check=False)
     check(syntax.returncode == 0, f"bootstrap passes sh -n: {syntax.stderr}")
-    help_result = subprocess.run(
-        ["sh", str(SCRIPT_PATH), "--help"], capture_output=True, text=True, check=False
-    )
+    help_result = subprocess.run(["sh", str(SCRIPT_PATH), "--help"], capture_output=True, text=True, check=False)
     check(help_result.returncode == 0, "help needs no Docker or network")
     for contract in (
         "curl -fsSL https://install.shimpz.com | sh",
@@ -37,9 +35,7 @@ def test_bootstrap_is_small_posix_and_self_describing() -> None:
         "Apple Silicon macOS arm64",
     ):
         check(contract in help_result.stdout, f"help includes {contract}")
-    version = subprocess.run(
-        ["sh", str(SCRIPT_PATH), "--version"], capture_output=True, text=True, check=False
-    )
+    version = subprocess.run(["sh", str(SCRIPT_PATH), "--version"], capture_output=True, text=True, check=False)
     check(version.returncode == 0 and version.stdout.strip() == "2.0.0", "version is exact")
 
 
@@ -88,7 +84,7 @@ def test_bootstrap_recovers_only_a_verified_stale_docker_group() -> None:
     ):
         check(contract in SCRIPT, f"bootstrap preserves stale-session recovery {contract}")
     check("SHIMPZ_RUN_5" not in SCRIPT, "closed handoff supports only the required arities")
-    check("command=\"" not in SCRIPT, "group handoff never assembles a command string")
+    check('command="' not in SCRIPT, "group handoff never assembles a command string")
 
 
 def test_public_origin_serves_only_the_bootstrap_for_installer_host() -> None:
@@ -100,11 +96,7 @@ def test_public_origin_serves_only_the_bootstrap_for_installer_host() -> None:
 
 
 def main() -> None:
-    tests = [
-        value
-        for name, value in sorted(globals().items())
-        if name.startswith("test_") and callable(value)
-    ]
+    tests = [value for name, value in sorted(globals().items()) if name.startswith("test_") and callable(value)]
     for test in tests:
         test()
     print(f"{len(tests)} CLI bootstrap contracts passed")
