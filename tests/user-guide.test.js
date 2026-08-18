@@ -24,7 +24,8 @@ test("static user journey names observable current outcomes", () => {
   assert.match(admin, /https:\/\/local\.shimpz\.com/);
   assert.match(manage, /Shimpz Space is up to date/);
   assert.match(manage, /Shimpz Space was reset/);
-  assert.match(manage, /interactive terminal/);
+  assert.match(manage, /attests its\s+loopback listener/);
+  assert.match(manage, /If no\s+managed runtime remains/);
   assert.match(assistant, /Team's complete response/);
   assert.match(assistant, /memory-only/);
   assert.doesNotMatch(assistant, /configured Secrets|Assistant's result|show me what it can read/);

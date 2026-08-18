@@ -39,7 +39,7 @@
   Space. <strong>Yes</strong> permanently removes every listed resource and the installed Local state before
   continuing in the same terminal. Any listed Team, Assistant, credential, setting, conversation, or Docker data is
   lost. <strong>No</strong>, Enter, or a non-interactive run leaves it unchanged. This recovery choice is available
-  only for a corrupt CLI-owned Space; resetting a healthy Space still requires the Supervisor password.
+  only for a corrupt CLI-owned Space. A reset of a running, attested Space still requires the Supervisor password.
 </p>
 
 <section class="guide-section" aria-labelledby="reset-title">
@@ -47,8 +47,10 @@
   <h2 id="reset-title">Reset only when you want to delete everything</h2>
   <p>
     Reset removes the managed Assistants, Teams, Integrations, Admin state, and local Shimpz data. It cannot be
-    undone. Disconnect provider Integrations first when possible. Run reset in an interactive terminal: it requires
-    the current Supervisor password before deleting anything.
+    undone. Disconnect provider Integrations first when possible. When the owned Admin is running, reset attests its
+    loopback listener and requires the current Supervisor password before asking Admin to delete domain state. If no
+    managed runtime remains, the CLI can finish removing only the validated scheduler, files, and encrypted-storage
+    residue without a password; foreign or ambiguous state is preserved and reported as an error.
   </p>
   <CodeBlock
     label="Permanently reset Shimpz"
