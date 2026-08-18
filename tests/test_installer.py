@@ -78,9 +78,7 @@ def test_bootstrap_compensates_activation_and_refuses_foreign_commands() -> None
     ):
         check(contract in SCRIPT, f"bootstrap preserves compensation contract {contract}")
     check(
-        SCRIPT.index(
-            'if [ -e "$candidate_target" ] || [ -L "$candidate_target" ]; then'
-        )
+        SCRIPT.index('if [ -e "$candidate_target" ] || [ -L "$candidate_target" ]; then')
         < SCRIPT.index('cp "$candidate_cli" "$candidate_target"'),
         "bootstrap unlinks a verified stale candidate before copying",
     )
