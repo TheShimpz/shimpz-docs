@@ -17,8 +17,8 @@
   gitlink.
 - Shimpz is pre-production. Document only implemented behavior; change runtime-coupled commands and paths
   atomically with their implementation and retain no compatibility instructions.
-- The installer-emitted Compose is the Local topology authority. Preserve fail-closed image verification,
-  loopback exposure, secret files, reset semantics, and architecture/platform checks.
+- The installer is only the fail-closed acquisition bootstrap. The release-bound CLI emits and owns the canonical
+  Local graph, lifecycle, reset semantics, storage admission, and architecture/platform checks.
 - Use Node.js 24 and the pinned pnpm release. User-visible Svelte behavior requires Playwright against the built
   site.
 - Tests that support workers use half of local processors and all GitHub Actions runner processors. Do not add
