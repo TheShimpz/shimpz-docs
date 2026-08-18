@@ -20,7 +20,7 @@ def check(condition: object, message: str) -> None:
 
 def test_bootstrap_is_small_posix_and_self_describing() -> None:
     check(SCRIPT.startswith("#!/bin/sh\n\nset -eu\n"), "bootstrap is fail-fast POSIX shell")
-    check(len(SCRIPT.splitlines()) <= 220, "bootstrap remains a small acquisition boundary")
+    check(len(SCRIPT.splitlines()) <= 280, "bootstrap remains a small acquisition boundary")
     check(SCRIPT_PATH.stat().st_mode & stat.S_IXUSR, "published bootstrap is executable")
     syntax = subprocess.run(["sh", "-n", str(SCRIPT_PATH)], capture_output=True, text=True, check=False)
     check(syntax.returncode == 0, f"bootstrap passes sh -n: {syntax.stderr}")
@@ -56,10 +56,10 @@ def test_bootstrap_has_one_closed_digest_verified_handoff() -> None:
         '"$managed_cli" install --release "$release_ref"',
     ):
         check(contract in SCRIPT, f"bootstrap preserves {contract}")
-    check(SCRIPT.count('"$docker" pull') == 1, "bootstrap pulls only the atomic release")
+    check(SCRIPT.count('run_command "$docker" pull') == 1, "bootstrap pulls only the atomic release")
     check("docker compose up" not in SCRIPT, "bootstrap does not own lifecycle or graph execution")
     check("--reset" not in SCRIPT, "bootstrap does not retain the retired reset option")
-    check("eval " not in SCRIPT and "sh -c" not in SCRIPT, "bootstrap has no dynamic shell execution")
+    check("eval " not in SCRIPT, "bootstrap never evaluates dynamically assembled shell")
     check(SCRIPT.count("curl -fsSL") == 1, "curl appears only in the usage example")
 
 
@@ -73,6 +73,22 @@ def test_bootstrap_compensates_activation_and_refuses_foreign_commands() -> None
         'ln -s "$managed_cli" "$public_cli"',
     ):
         check(contract in SCRIPT, f"bootstrap preserves compensation contract {contract}")
+
+
+def test_bootstrap_recovers_only_a_verified_stale_docker_group() -> None:
+    for contract in (
+        "[ -S /var/run/docker.sock ]",
+        "candidate_group=\"$(/usr/bin/stat -c '%G' /var/run/docker.sock)\"",
+        'account_name="$(/usr/bin/id -un)"',
+        'has_group "$candidate_group" $(/usr/bin/id -Gn "$account_name")',
+        'has_group "$candidate_group" $(/usr/bin/id -Gn) && return 1',
+        'docker_group="$candidate_group"',
+        '/usr/bin/sg "$docker_group" -c',
+        'run_command "$managed_cli" install --release "$release_ref"',
+    ):
+        check(contract in SCRIPT, f"bootstrap preserves stale-session recovery {contract}")
+    check("SHIMPZ_RUN_5" not in SCRIPT, "closed handoff supports only the required arities")
+    check("command=\"" not in SCRIPT, "group handoff never assembles a command string")
 
 
 def test_public_origin_serves_only_the_bootstrap_for_installer_host() -> None:

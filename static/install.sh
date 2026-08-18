@@ -48,6 +48,46 @@ resolve_docker() {
 	return 1
 }
 
+has_group() {
+	wanted_group="$1"
+	shift
+	for available_group in "$@"; do
+		[ "$available_group" != "$wanted_group" ] || return 0
+	done
+	return 1
+}
+
+run_command() {
+	if [ -z "${docker_group:-}" ]; then
+		"$@"
+		return
+	fi
+	case "$#" in
+		1) SHIMPZ_RUN_0="$1" /usr/bin/sg "$docker_group" -c 'exec "$SHIMPZ_RUN_0"' ;;
+		2) SHIMPZ_RUN_0="$1" SHIMPZ_RUN_1="$2" /usr/bin/sg "$docker_group" -c 'exec "$SHIMPZ_RUN_0" "$SHIMPZ_RUN_1"' ;;
+		3) SHIMPZ_RUN_0="$1" SHIMPZ_RUN_1="$2" SHIMPZ_RUN_2="$3" /usr/bin/sg "$docker_group" -c 'exec "$SHIMPZ_RUN_0" "$SHIMPZ_RUN_1" "$SHIMPZ_RUN_2"' ;;
+		5) SHIMPZ_RUN_0="$1" SHIMPZ_RUN_1="$2" SHIMPZ_RUN_2="$3" SHIMPZ_RUN_3="$4" SHIMPZ_RUN_4="$5" /usr/bin/sg "$docker_group" -c 'exec "$SHIMPZ_RUN_0" "$SHIMPZ_RUN_1" "$SHIMPZ_RUN_2" "$SHIMPZ_RUN_3" "$SHIMPZ_RUN_4"' ;;
+		*) fail "internal command handoff has an unsupported argument count" ;;
+	esac
+}
+
+resolve_docker_access() {
+	docker_group=""
+	"$docker" info >/dev/null 2>&1 && return 0
+	[ "$(uname -s)" = "Linux" ] || return 1
+	[ -S /var/run/docker.sock ] || return 1
+	[ -x /usr/bin/id ] && [ -x /usr/bin/stat ] && [ -x /usr/bin/sg ] || return 1
+	candidate_group="$(/usr/bin/stat -c '%G' /var/run/docker.sock)"
+	[ -n "$candidate_group" ] && [ "$candidate_group" != UNKNOWN ] || return 1
+	account_name="$(/usr/bin/id -un)"
+	# shellcheck disable=SC2046 # Intentional group-list tokenization from fixed id output.
+	has_group "$candidate_group" $(/usr/bin/id -Gn "$account_name") || return 1
+	# shellcheck disable=SC2046 # Intentional group-list tokenization from fixed id output.
+	has_group "$candidate_group" $(/usr/bin/id -Gn) && return 1
+	docker_group="$candidate_group"
+	run_command "$docker" info >/dev/null 2>&1
+}
+
 resolve_host() {
 	os="$(uname -s)"
 	arch="$(uname -m)"
@@ -97,7 +137,7 @@ cleanup() {
 	status=$?
 	trap - EXIT HUP INT TERM
 	if [ "${container_id:-}" ]; then
-		"$docker" rm "$container_id" >/dev/null 2>&1 || true
+		run_command "$docker" rm "$container_id" >/dev/null 2>&1 || true
 	fi
 	if [ "$status" -ne 0 ] && [ "${activated:-0}" -eq 1 ]; then
 		[ ! -e "$managed_cli" ] || rm -f "$managed_cli"
@@ -109,8 +149,8 @@ cleanup() {
 
 resolve_host
 docker="$(resolve_docker)" || fail "Docker is not installed in a supported system path"
-"$docker" info >/dev/null 2>&1 || fail "Docker is not running or this user cannot access it"
-"$docker" compose version >/dev/null 2>&1 || fail "Docker Compose v2 is unavailable"
+resolve_docker_access || fail "Docker is not running or this user cannot access it"
+run_command "$docker" compose version >/dev/null 2>&1 || fail "Docker Compose v2 is unavailable"
 
 temporary="$(mktemp -d "${TMPDIR:-/tmp}/shimpz-bootstrap.XXXXXX")"
 chmod 700 "$temporary"
@@ -120,9 +160,9 @@ trap cleanup EXIT HUP INT TERM
 
 printf '  [..] Resolving the atomic Local release\n'
 selector="$RELEASE_REPOSITORY:$RELEASE_CHANNEL"
-"$docker" pull --quiet --platform "$platform" "$selector" >/dev/null
+run_command "$docker" pull --quiet --platform "$platform" "$selector" >/dev/null
 release_ref=""
-for candidate in $("$docker" image inspect --format '{{range .RepoDigests}}{{println .}}{{end}}' "$selector"); do
+for candidate in $(run_command "$docker" image inspect --format '{{range .RepoDigests}}{{println .}}{{end}}' "$selector"); do
 	if valid_digest_ref "$candidate"; then
 		[ -z "$release_ref" ] || fail "Docker returned ambiguous Local release digests"
 		release_ref="$candidate"
@@ -130,13 +170,13 @@ for candidate in $("$docker" image inspect --format '{{range .RepoDigests}}{{pri
 done
 [ -n "$release_ref" ] || fail "Docker returned no trusted Local release digest"
 
-container_id="$("$docker" create --platform "$platform" "$release_ref" "$member")"
+container_id="$(run_command "$docker" create --platform "$platform" "$release_ref" "$member")"
 case "$container_id" in *[!0-9a-f]*|"") fail "Docker returned an invalid temporary container" ;; esac
 release_metadata="$temporary/release.env"
 candidate_cli="$temporary/shimpz"
-"$docker" cp "$container_id:/release.env" "$release_metadata" >/dev/null
-"$docker" cp "$container_id:$member" "$candidate_cli" >/dev/null
-"$docker" rm "$container_id" >/dev/null
+run_command "$docker" cp "$container_id:/release.env" "$release_metadata" >/dev/null
+run_command "$docker" cp "$container_id:$member" "$candidate_cli" >/dev/null
+run_command "$docker" rm "$container_id" >/dev/null
 container_id=""
 
 [ "$(wc -l < "$release_metadata" | tr -d ' ')" -eq 10 ] || fail "the atomic release metadata is not closed"
@@ -170,7 +210,7 @@ mv "$candidate_target" "$managed_cli"
 activated=1
 
 printf '  [..] Installing the release-bound Shimpz Space\n'
-"$managed_cli" install --release "$release_ref"
+run_command "$managed_cli" install --release "$release_ref"
 
 public_dir="$HOME/.local/bin"
 public_cli="$public_dir/shimpz"
