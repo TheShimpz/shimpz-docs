@@ -83,7 +83,13 @@ def test_bootstrap_recovers_only_a_verified_stale_docker_group() -> None:
         'run_command "$managed_cli" install --release "$release_ref"',
     ):
         check(contract in SCRIPT, f"bootstrap preserves stale-session recovery {contract}")
-    check("SHIMPZ_RUN_5" not in SCRIPT, "closed handoff supports only the required arities")
+    for arity in (4, 6):
+        check(f"\t\t{arity}) SHIMPZ_RUN_0=" in SCRIPT, f"closed handoff supports required arity {arity}")
+    check(
+        'exec "$SHIMPZ_RUN_0" "$SHIMPZ_RUN_1" "$SHIMPZ_RUN_2" "$SHIMPZ_RUN_3"' in SCRIPT,
+        "four-argument handoff preserves argument boundaries",
+    )
+    check('"$SHIMPZ_RUN_4" "$SHIMPZ_RUN_5"' in SCRIPT, "six-argument handoff preserves argument boundaries")
     check('command="' not in SCRIPT, "group handoff never assembles a command string")
 
 

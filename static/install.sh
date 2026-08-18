@@ -66,7 +66,9 @@ run_command() {
 		1) SHIMPZ_RUN_0="$1" /usr/bin/sg "$docker_group" -c 'exec "$SHIMPZ_RUN_0"' ;;
 		2) SHIMPZ_RUN_0="$1" SHIMPZ_RUN_1="$2" /usr/bin/sg "$docker_group" -c 'exec "$SHIMPZ_RUN_0" "$SHIMPZ_RUN_1"' ;;
 		3) SHIMPZ_RUN_0="$1" SHIMPZ_RUN_1="$2" SHIMPZ_RUN_2="$3" /usr/bin/sg "$docker_group" -c 'exec "$SHIMPZ_RUN_0" "$SHIMPZ_RUN_1" "$SHIMPZ_RUN_2"' ;;
+		4) SHIMPZ_RUN_0="$1" SHIMPZ_RUN_1="$2" SHIMPZ_RUN_2="$3" SHIMPZ_RUN_3="$4" /usr/bin/sg "$docker_group" -c 'exec "$SHIMPZ_RUN_0" "$SHIMPZ_RUN_1" "$SHIMPZ_RUN_2" "$SHIMPZ_RUN_3"' ;;
 		5) SHIMPZ_RUN_0="$1" SHIMPZ_RUN_1="$2" SHIMPZ_RUN_2="$3" SHIMPZ_RUN_3="$4" SHIMPZ_RUN_4="$5" /usr/bin/sg "$docker_group" -c 'exec "$SHIMPZ_RUN_0" "$SHIMPZ_RUN_1" "$SHIMPZ_RUN_2" "$SHIMPZ_RUN_3" "$SHIMPZ_RUN_4"' ;;
+		6) SHIMPZ_RUN_0="$1" SHIMPZ_RUN_1="$2" SHIMPZ_RUN_2="$3" SHIMPZ_RUN_3="$4" SHIMPZ_RUN_4="$5" SHIMPZ_RUN_5="$6" /usr/bin/sg "$docker_group" -c 'exec "$SHIMPZ_RUN_0" "$SHIMPZ_RUN_1" "$SHIMPZ_RUN_2" "$SHIMPZ_RUN_3" "$SHIMPZ_RUN_4" "$SHIMPZ_RUN_5"' ;;
 		*) fail "internal command handoff has an unsupported argument count" ;;
 	esac
 }
