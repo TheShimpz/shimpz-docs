@@ -63,7 +63,7 @@ def test_bootstrap_has_one_closed_digest_verified_handoff() -> None:
     check(SCRIPT.count("curl -fsSL") == 1, "curl appears only in the usage example")
 
 
-def test_bootstrap_compensates_activation_and_refuses_foreign_commands() -> None:
+def test_bootstrap_compensates_activation_and_preserves_foreign_commands() -> None:
     for contract in (
         'previous_cli="$managed_dir/shimpz.previous"',
         'mv "$managed_cli" "$previous_cli"',
@@ -73,7 +73,10 @@ def test_bootstrap_compensates_activation_and_refuses_foreign_commands() -> None
         'mv "$previous_cli" "$managed_cli"',
         '[ -f "$candidate_target" ] && [ ! -L "$candidate_target" ]',
         'rm -f "$candidate_target"',
-        'fail "an unowned public shimpz command already exists"',
+        "confirm_public_replace() {",
+        "[ -r /dev/tty ] && [ -w /dev/tty ] || return 1",
+        '[ "$answer" = "Yes" ]',
+        "Preserved the existing command",
         'ln -s "$managed_cli" "$public_cli"',
     ):
         check(contract in SCRIPT, f"bootstrap preserves compensation contract {contract}")
@@ -81,6 +84,11 @@ def test_bootstrap_compensates_activation_and_refuses_foreign_commands() -> None
         SCRIPT.index('if [ -e "$candidate_target" ] || [ -L "$candidate_target" ]; then')
         < SCRIPT.index('cp "$candidate_cli" "$candidate_target"'),
         "bootstrap unlinks a verified stale candidate before copying",
+    )
+    install_index = SCRIPT.index('run_command "$managed_cli" install --release "$release_ref"')
+    check(
+        install_index < SCRIPT.index("activated=0", install_index) < SCRIPT.index('public_dir="$HOME/.local/bin"'),
+        "a successful Space install ends executable compensation before public command handling",
     )
 
 

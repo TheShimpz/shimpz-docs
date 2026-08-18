@@ -11,6 +11,13 @@ fail() {
 	exit 1
 }
 
+confirm_public_replace() {
+	[ -r /dev/tty ] && [ -w /dev/tty ] || return 1
+	printf 'A different command exists at %s. Replace only that entry? [Yes/No] ' "$public_cli" >/dev/tty
+	IFS= read -r answer </dev/tty || return 1
+	[ "$answer" = "Yes" ]
+}
+
 usage() {
 	cat <<'EOF'
 Install or reconcile the stable Shimpz Space.
@@ -236,20 +243,32 @@ activated=1
 
 printf '  [..] Installing the release-bound Shimpz Space\n'
 run_command "$managed_cli" install --release "$release_ref"
+rm -f "$previous_cli"
+activated=0
 
 public_dir="$HOME/.local/bin"
 public_cli="$public_dir/shimpz"
 mkdir -p "$public_dir"
 [ ! -L "$public_dir" ] && [ -d "$public_dir" ] || fail "the public CLI directory is invalid"
 if [ -L "$public_cli" ]; then
-	[ "$(readlink "$public_cli")" = "$managed_cli" ] || fail "an unowned public shimpz command already exists"
+	if [ "$(readlink "$public_cli")" != "$managed_cli" ]; then
+		if confirm_public_replace; then
+			rm -f "$public_cli"
+			ln -s "$managed_cli" "$public_cli"
+		else
+			printf '  [i] Preserved the existing command at %s; use %s directly.\n' "$public_cli" "$managed_cli"
+		fi
+	fi
 elif [ -e "$public_cli" ]; then
-	fail "an unowned public shimpz command already exists"
+	if confirm_public_replace; then
+		rm -f "$public_cli"
+		ln -s "$managed_cli" "$public_cli"
+	else
+		printf '  [i] Preserved the existing command at %s; use %s directly.\n' "$public_cli" "$managed_cli"
+	fi
 else
 	ln -s "$managed_cli" "$public_cli"
 fi
-rm -f "$previous_cli"
-activated=0
 
 printf '  [ok] Shimpz Space installation completed successfully.\n'
 case ":$PATH:" in *":$public_dir:"*) ;; *) printf '  [i] Add %s to PATH to use shimpz in a new terminal.\n' "$public_dir" ;; esac
