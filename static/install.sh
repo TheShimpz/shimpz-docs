@@ -145,6 +145,9 @@ cleanup() {
 		[ ! -e "$managed_cli" ] || rm -f "$managed_cli"
 		[ ! -e "$previous_cli" ] || mv "$previous_cli" "$managed_cli"
 	fi
+	if [ -n "${candidate_target:-}" ] && [ -f "$candidate_target" ] && [ ! -L "$candidate_target" ]; then
+		rm -f "$candidate_target"
+	fi
 	[ ! -d "${temporary:-}" ] || rm -rf "$temporary"
 	exit "$status"
 }
@@ -201,10 +204,30 @@ previous_cli="$managed_dir/shimpz.previous"
 mkdir -p "$managed_dir"
 chmod 700 "$space_home" "$managed_dir"
 [ ! -L "$managed_dir" ] && [ -d "$managed_dir" ] || fail "the managed CLI directory is invalid"
-[ ! -e "$previous_cli" ] || fail "a previous bootstrap compensation artifact remains"
-if [ -e "$managed_cli" ]; then
+if [ -e "$previous_cli" ] || [ -L "$previous_cli" ]; then
+	[ -f "$previous_cli" ] && [ ! -L "$previous_cli" ] ||
+		fail "the previous bootstrap compensation artifact is invalid"
+	if [ -e "$managed_cli" ] || [ -L "$managed_cli" ]; then
+		[ -f "$managed_cli" ] && [ ! -L "$managed_cli" ] ||
+			fail "the managed CLI artifact is invalid"
+		if [ "$(file_hash "$managed_cli")" = "$expected_hash" ]; then
+			rm -f "$previous_cli"
+		else
+			rm -f "$managed_cli"
+			mv "$previous_cli" "$managed_cli"
+		fi
+	else
+		mv "$previous_cli" "$managed_cli"
+	fi
+fi
+if [ -e "$managed_cli" ] || [ -L "$managed_cli" ]; then
 	[ -f "$managed_cli" ] && [ ! -L "$managed_cli" ] || fail "the managed CLI artifact is invalid"
 	mv "$managed_cli" "$previous_cli"
+fi
+if [ -e "$candidate_target" ] || [ -L "$candidate_target" ]; then
+	[ -f "$candidate_target" ] && [ ! -L "$candidate_target" ] ||
+		fail "the stale candidate CLI artifact is invalid; run shimpz reset and retry"
+	rm -f "$candidate_target"
 fi
 cp "$candidate_cli" "$candidate_target"
 chmod 700 "$candidate_target"

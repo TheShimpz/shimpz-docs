@@ -69,10 +69,21 @@ def test_bootstrap_compensates_activation_and_refuses_foreign_commands() -> None
         'mv "$managed_cli" "$previous_cli"',
         'mv "$candidate_target" "$managed_cli"',
         '[ ! -e "$previous_cli" ] || mv "$previous_cli" "$managed_cli"',
+        'if [ "$(file_hash "$managed_cli")" = "$expected_hash" ]; then',
+        'mv "$previous_cli" "$managed_cli"',
+        '[ -f "$candidate_target" ] && [ ! -L "$candidate_target" ]',
+        'rm -f "$candidate_target"',
         'fail "an unowned public shimpz command already exists"',
         'ln -s "$managed_cli" "$public_cli"',
     ):
         check(contract in SCRIPT, f"bootstrap preserves compensation contract {contract}")
+    check(
+        SCRIPT.index(
+            'if [ -e "$candidate_target" ] || [ -L "$candidate_target" ]; then'
+        )
+        < SCRIPT.index('cp "$candidate_cli" "$candidate_target"'),
+        "bootstrap unlinks a verified stale candidate before copying",
+    )
 
 
 def test_bootstrap_recovers_only_a_verified_stale_docker_group() -> None:
