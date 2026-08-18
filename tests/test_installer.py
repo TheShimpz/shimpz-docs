@@ -37,6 +37,10 @@ def test_bootstrap_is_small_posix_and_self_describing() -> None:
         check(contract in help_result.stdout, f"help includes {contract}")
     version = subprocess.run(["sh", str(SCRIPT_PATH), "--version"], capture_output=True, text=True, check=False)
     check(version.returncode == 0 and version.stdout.strip() == "2.0.0", "version is exact")
+    check(
+        "/Applications/Docker.app/Contents/Resources/bin/docker" in SCRIPT,
+        "bootstrap admits Docker Desktop's exact macOS executable",
+    )
 
 
 def test_bootstrap_has_one_closed_digest_verified_handoff() -> None:

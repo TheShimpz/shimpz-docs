@@ -39,7 +39,7 @@ esac
 [ "$#" -le 1 ] || fail "the bootstrap accepts at most one option"
 
 resolve_docker() {
-	for candidate in /usr/bin/docker /usr/local/bin/docker /opt/homebrew/bin/docker; do
+	for candidate in /usr/bin/docker /Applications/Docker.app/Contents/Resources/bin/docker /usr/local/bin/docker /opt/homebrew/bin/docker; do
 		if [ -x "$candidate" ] && [ ! -L "$candidate" ]; then
 			printf '%s\n' "$candidate"
 			return 0
