@@ -56,10 +56,10 @@
       title="Terminal · cryptsetup check"
       lines={[
         { value: "cryptsetup --version" },
-        { value: "cryptsetup 2.7.5 flags: UDEV BLKID KEYRING KERNEL_CAPI", kind: "output" },
+        { value: "cryptsetup 2.4.3", kind: "output" },
       ]}
     />
-    <p>Continue when the version number is 2.4.0 or newer.</p>
+    <p>Continue when the version number is 2.4 or newer.</p>
   </li>
 
   <li>
