@@ -7,7 +7,7 @@
   <link rel="canonical" href="https://docs.shimpz.com/install/windows/" />
   <meta
     name="description"
-    content="Install stable Shimpz inside Ubuntu on WSL2 with Docker Desktop, systemd, and BitLocker."
+    content="Install stable Shimpz inside Ubuntu on WSL2 with Docker Desktop and systemd."
   />
 </svelte:head>
 
@@ -22,9 +22,7 @@
     <h1>Install on Windows</h1>
     <span class="platform-status is-supported">WSL2 · x64</span>
   </div>
-  <p class="docs-lede">
-    Shimpz runs inside Ubuntu on WSL2 and keeps its Docker volumes on a BitLocker-protected Windows disk.
-  </p>
+  <p class="docs-lede">Shimpz runs inside Ubuntu on WSL2 and uses Docker Desktop for its containers and volumes.</p>
 </header>
 
 <aside class="scope-note" aria-labelledby="terminal-title">
@@ -59,23 +57,12 @@
   </li>
 
   <li>
-    <h2>Turn on BitLocker</h2>
+    <h2>Protect Docker data with BitLocker (recommended)</h2>
     <p>
-      Use a Windows edition that provides BitLocker. Fully encrypt the Windows volume containing your user profile
-      and make sure protection is on; encryption that is suspended or still in progress is not accepted.
+      Enable BitLocker on the Windows volume that contains Docker Desktop's disk image. If you move that disk image,
+      protect its new volume too. BitLocker is an operating-system setting: Shimpz does not turn it on or verify it,
+      and installation is not blocked when it is off.
     </p>
-    <CodeBlock
-      label="Check BitLocker protection"
-      title="PowerShell · Administrator"
-      lines={[
-        {
-          value:
-            "Get-BitLockerVolume -MountPoint $env:SystemDrive | Select-Object VolumeStatus, ProtectionStatus, EncryptionPercentage",
-          prompt: ">",
-        },
-      ]}
-    />
-    <p>Continue only when the result is <code>FullyEncrypted</code>, <code>On</code>, and <code>100</code>.</p>
   </li>
 
   <li>
@@ -90,10 +77,7 @@
       <strong>Settings → Resources → WSL Integration</strong>.
     </p>
     <p>Use a Docker Desktop release that provides Docker Engine 25.0 or newer and Docker Compose 2.20.2 or newer.</p>
-    <p>
-      Do not install a second Docker Engine inside Ubuntu, and keep Docker Desktop's WSL data disk at its default
-      location. A custom data root is refused because the installer cannot prove that it is on the checked volume.
-    </p>
+    <p>Do not install a second Docker Engine inside Ubuntu.</p>
   </li>
 
   <li>

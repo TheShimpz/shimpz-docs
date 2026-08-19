@@ -24,10 +24,11 @@
 
 <ol class="step-list">
   <li>
-    <h2>Turn on FileVault</h2>
+    <h2>Protect the Mac with FileVault (recommended)</h2>
     <p>
       In <strong>System Settings → Privacy &amp; Security → FileVault</strong>, turn FileVault on and let encryption
-      finish. Shimpz refuses to start when FileVault is off or its state cannot be verified.
+      finish to protect Docker data if the Mac or its disk is stolen. FileVault is an operating-system setting:
+      Shimpz does not turn it on or verify it, and installation is not blocked when it is off.
     </p>
   </li>
 
@@ -45,10 +46,6 @@
     <p>
       Open <strong>Docker Desktop → Settings → Advanced</strong> and enable
       <strong>Allow the default Docker socket to be used</strong>. Shimpz stops safely if it cannot reach that socket.
-    </p>
-    <p>
-      Keep Docker Desktop's disk image at its default location. Shimpz verifies that <code>Docker.raw</code> is on
-      the FileVault-protected startup data filesystem and refuses custom or external locations.
     </p>
   </li>
 

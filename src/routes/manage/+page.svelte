@@ -49,8 +49,9 @@
     Reset removes the managed Assistants, Teams, Integrations, Admin state, and local Shimpz data. It cannot be
     undone. Disconnect provider Integrations first when possible. When the owned Admin is running, reset attests its
     loopback listener and requires the current Supervisor password before asking Admin to delete domain state. If no
-    managed runtime remains, the CLI can finish removing only the validated scheduler, files, and encrypted-storage
-    residue without a password; foreign or ambiguous state is preserved and reported as an error.
+    managed runtime remains, the CLI can finish removing only the validated scheduler and files, plus any owned
+    Linux encrypted-storage residue, without a password; foreign or ambiguous state is preserved and reported as an
+    error.
   </p>
   <CodeBlock
     label="Permanently reset Shimpz"
