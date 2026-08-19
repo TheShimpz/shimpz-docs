@@ -50,8 +50,9 @@
     undone. Disconnect provider Integrations first when possible. When the owned Admin is running, reset attests its
     loopback listener and requires the current Supervisor password before asking Admin to delete domain state. If no
     managed runtime remains, the CLI can finish removing only the validated scheduler and files, plus any owned
-    Linux encrypted-storage residue, without a password; foreign or ambiguous state is preserved and reported as an
-    error.
+    Linux encrypted-storage residue, without a password. Ambiguous or foreign state inside a Shimpz-owned resource
+    stops reset with an error. Unrecognized content outside the owned scope is preserved and listed in the successful
+    result.
   </p>
   <CodeBlock
     label="Permanently reset Shimpz"
