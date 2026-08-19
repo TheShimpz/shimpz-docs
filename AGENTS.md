@@ -30,7 +30,7 @@
   `corepack pnpm@11.9.0 exec svelte-check --tsconfig ./tsconfig.json`, and
   `corepack pnpm@11.9.0 build` as applicable.
 - A `static/install.sh` change cannot be committed without the umbrella checks
-  `python docs/tests/test_installer.py` and `python .tests/test-team-local-delivery.py`.
+  `python docs/tests/test_installer.py` and `python .tests/test-local-release-delivery.py`.
 
 ## Public documentation quality contract
 
