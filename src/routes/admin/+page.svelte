@@ -30,7 +30,7 @@
       lines={[{ value: "http://127.0.0.1:7777", prompt: "›" }]}
     />
     <p>
-      Open the exact address printed by the installer. The address above is the default; a configured
+      Open the exact address printed by <code>shimpz install</code>. The address above is the default; a configured
       <code>SHIMPZ_PORT</code> changes the port.
     </p>
     <p>
@@ -138,8 +138,8 @@
     lines={[{ value: "ssh -L 7777:127.0.0.1:7777 user@your-server" }]}
   />
   <p>
-    If the installer used another <code>SHIMPZ_PORT</code>, keep the local side at <code>7777</code> and change only
-    the remote destination. For example, an installed port of <code>49123</code> uses:
+    If <code>shimpz install</code> used another <code>SHIMPZ_PORT</code>, keep the local side at <code>7777</code> and
+    change only the remote destination. For example, an installed port of <code>49123</code> uses:
   </p>
   <CodeBlock
     label="Forward a custom installed Admin port"
