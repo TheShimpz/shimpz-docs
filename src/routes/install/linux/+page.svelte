@@ -42,12 +42,24 @@
 
   <li>
     <h2>Install the storage tools</h2>
-    <p>On Ubuntu or Debian, install the tools used to create and verify the LUKS2 volume:</p>
+    <p>
+      Shimpz requires <code>cryptsetup</code> 2.4 or newer to create and verify the LUKS2 volume. On Ubuntu or
+      Debian, install the storage tools:
+    </p>
     <CodeBlock
       label="Install encrypted storage tools"
       title="Terminal · Ubuntu or Debian"
       lines={[{ value: "sudo apt-get update && sudo apt-get install -y cryptsetup e2fsprogs util-linux" }]}
     />
+    <CodeBlock
+      label="Check the cryptsetup version"
+      title="Terminal · cryptsetup check"
+      lines={[
+        { value: "cryptsetup --version" },
+        { value: "cryptsetup 2.7.5 flags: UDEV BLKID KEYRING KERNEL_CAPI", kind: "output" },
+      ]}
+    />
+    <p>Continue when the version number is 2.4.0 or newer.</p>
   </li>
 
   <li>

@@ -21,6 +21,7 @@ test("static user journey names observable current outcomes", () => {
 
   assert.doesNotMatch(home, /href="\/admin\/"/);
   assert.match(`${admin}\n${install}`, /SHIMPZ_PORT/);
+  assert.match(install, /cryptsetup<\/code> 2\.4 or newer/);
   assert.match(admin, /https:\/\/local\.shimpz\.com/);
   assert.match(manage, /Shimpz Space is up to date/);
   assert.match(manage, /Shimpz Space was reset/);
