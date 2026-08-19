@@ -24,8 +24,9 @@
   </div>
 
   <p class="docs-lede">
-    Shimpz runs on your computer with Docker. The installer downloads tested stable images, prints the exact private
-    Admin address, and guides you through the rest. You do not need to clone code or build anything.
+    Shimpz runs on your computer with Docker. The bootstrap acquires the tested release-bound CLI; then
+    <code>shimpz install</code> downloads the stable images and prints the exact private Admin address. You do not
+    need to clone code or build anything.
   </p>
 </section>
 

@@ -21,24 +21,25 @@
 
 <section class="guide-section" aria-labelledby="install-recovery-title">
   <span class="section-label">Install and open</span>
-  <h2 id="install-recovery-title">The installer stopped</h2>
+  <h2 id="install-recovery-title">Installation stopped</h2>
   <p>
     First run <code>docker version</code> and <code>docker compose version</code> in the same environment where the
-    installer runs. If either command fails, repair Docker before running the Shimpz installer again. Use the check
-    for <a href="/install/linux/#check-docker-title">Linux</a>,
+    installation command runs. If <code>shimpz</code> is already installed, run <code>shimpz status</code> to inspect
+    the current Space. If either Docker command fails, repair Docker before running the installation command again.
+    Use the check for <a href="/install/linux/#check-docker-title">Linux</a>,
     <a href="/install/macos/#check-docker-title">macOS</a>, or
     <a href="/install/windows/#check-docker-title">Windows with WSL2</a>.
   </p>
   <p>
-    If Docker works and the installer reports that its existing Local Space failed runtime validation, read the
-    listed deletion scope. Answer <strong>Yes</strong> only when you intend to erase that complete Local Space and
-    install a fresh one. Answer <strong>No</strong> or press Enter to leave every local resource unchanged. Continue
-    with <a href="/manage/">Maintain your Space</a> for the full recovery and reset boundaries.
+    If Docker works and <code>shimpz install</code> reports that its existing Local Space failed runtime validation,
+    read the listed deletion scope. Answer <strong>Yes</strong> only when you intend to erase that complete Local Space
+    and install a fresh one. Answer <strong>No</strong> or press Enter to leave every local resource unchanged.
+    Continue with <a href="/manage/">Maintain your Space</a> for the full recovery and reset boundaries.
   </p>
 
   <h3>Admin does not open</h3>
   <p>
-    Use the exact Admin address printed by the installer; do not assume the port is <code>7777</code>. Compare the
+    Use the exact Admin address printed by <code>shimpz install</code>; do not assume the port is <code>7777</code>. Compare the
     visible result with the final step for <a href="/install/linux/#confirm-admin-title">Linux</a>,
     <a href="/install/macos/#confirm-admin-title">macOS</a>, or
     <a href="/install/windows/#confirm-admin-title">Windows with WSL2</a>.
@@ -80,8 +81,9 @@
   <span class="section-label">Maintenance</span>
   <h2 id="maintenance-recovery-title">An update failed or rolled back</h2>
   <p>
-    Read the installer error before retrying. If the replacement did not become healthy, Shimpz keeps or restores
-    the previous working version. Fix the reported cause, then return to <a href="/manage/">Maintain your Space</a>.
+    Read the error printed by <code>shimpz install</code> before retrying. If the replacement did not become healthy,
+    Shimpz keeps or restores the previous working version. Fix the reported cause, then return to
+    <a href="/manage/">Maintain your Space</a>.
   </p>
 
   <h3>You want to remove access or delete Local data</h3>

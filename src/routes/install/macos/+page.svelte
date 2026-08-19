@@ -71,7 +71,7 @@
   <li>
     <h2 id="confirm-admin-title">Confirm that Admin opens</h2>
     <p>
-      A successful installer prints the exact local Admin address. Open that address; it is
+      A successful <code>shimpz install</code> prints the exact local Admin address. Open that address; it is
       <code>http://127.0.0.1:7777</code> when <code>SHIMPZ_PORT</code> was not changed. Continue when you see the
       initial password setup or sign-in screen.
     </p>

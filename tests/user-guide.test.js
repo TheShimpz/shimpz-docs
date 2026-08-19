@@ -17,6 +17,7 @@ test("static user journey names observable current outcomes", () => {
     .map((platform) => text(`src/routes/install/${platform}/+page.svelte`))
     .join("\n");
   const manage = text("src/routes/manage/+page.svelte");
+  const help = text("src/routes/help/+page.svelte");
   const concepts = text("src/routes/concepts/+page.svelte");
 
   assert.doesNotMatch(home, /href="\/admin\/"/);
@@ -29,6 +30,10 @@ test("static user journey names observable current outcomes", () => {
   assert.match(manage, /If no\s+managed runtime remains/);
   assert.match(manage, /Ambiguous or foreign state inside a Shimpz-owned resource\s+stops reset with an error/);
   assert.match(manage, /Unrecognized content outside the owned scope is preserved and listed in the successful\s+result/);
+  assert.match(help, /<code>shimpz status<\/code>/);
+  assert.match(help, /<code>shimpz install<\/code>/);
+  assert.doesNotMatch(`${home}\n${install}\n${help}`, /installer (reports|prints|refuses)/i);
+  assert.equal((text("src/routes/install/linux/+page.svelte").match(/curl -fsSL/g) ?? []).length, 1);
   assert.match(assistant, /Team's complete response/);
   assert.match(assistant, /memory-only/);
   assert.doesNotMatch(assistant, /configured Secrets|Assistant's result|show me what it can read/);

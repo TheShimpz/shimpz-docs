@@ -51,6 +51,8 @@ test("static discovery artifacts cover every canonical public page", () => {
   }
 
   const llms = text("static/llms.txt");
+  assert.match(llms, /Maintain your Space.*with the `shimpz` CLI/);
+  assert.doesNotMatch(llms, /Maintain your Space.*with the installer/);
   const llmsURLs = [...llms.matchAll(/\]\((https:\/\/docs\.shimpz\.com\/[^)#]*)(?:#[^)]*)?\)/g)].map(
     (match) => match[1],
   );

@@ -51,8 +51,8 @@
       lines={[{ value: "printf '[boot]\\nsystemd=true\\n' | sudo tee /etc/wsl.conf >/dev/null" }]}
     />
     <p>
-      Close Ubuntu, run <code>wsl --shutdown</code> in PowerShell, then reopen Ubuntu. The installer refuses a WSL2
-      distribution that does not run systemd as PID 1.
+      Close Ubuntu, run <code>wsl --shutdown</code> in PowerShell, then reopen Ubuntu. <code>shimpz install</code>
+      refuses a WSL2 distribution that does not run systemd as PID 1.
     </p>
   </li>
 
@@ -106,9 +106,9 @@
   <li>
     <h2 id="confirm-admin-title">Confirm that Admin opens</h2>
     <p>
-      When the installer succeeds, open the exact address it prints in your normal Windows browser. The default is
-      <code>http://127.0.0.1:7777</code>; a configured <code>SHIMPZ_PORT</code> changes it. Continue when you see the
-      initial password setup or sign-in screen.
+      When <code>shimpz install</code> succeeds, open the exact address it prints in your normal Windows browser. The
+      default is <code>http://127.0.0.1:7777</code>; a configured <code>SHIMPZ_PORT</code> changes it. Continue when you
+      see the initial password setup or sign-in screen.
     </p>
   </li>
 </ol>

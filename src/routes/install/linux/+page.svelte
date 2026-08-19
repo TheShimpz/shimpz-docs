@@ -83,8 +83,9 @@
   <li>
     <h2>Install Shimpz</h2>
     <p>
-      Run the installer from the same terminal. It asks for administrator authorization and then asks you to create
-      the passphrase for the encrypted Local volume. Keep that passphrase in your password manager.
+      Run the bootstrap from the same terminal. It acquires the release-bound CLI, which asks for administrator
+      authorization and then asks you to create the passphrase for the encrypted Local volume. Keep that passphrase
+      in your password manager.
     </p>
     <CodeBlock
       label="Install Shimpz on Linux"
@@ -96,19 +97,24 @@
   <li>
     <h2>Unlock after a restart</h2>
     <p>
-      Shimpz never stores the volume passphrase and remains stopped after the host restarts. Run the same install
-      command again, enter the existing passphrase, and wait for the success message. Automatic update checks do not
-      prompt, use <code>sudo</code>, or start a locked Space.
+      Shimpz never stores the volume passphrase and remains stopped after the host restarts. Run the installed CLI,
+      enter the existing passphrase, and wait for the success message. Automatic update checks do not prompt, use
+      <code>sudo</code>, or start a locked Space.
     </p>
+    <CodeBlock
+      label="Unlock the Linux Space"
+      title="Terminal · Shimpz unlock"
+      lines={[{ value: "shimpz install" }]}
+    />
   </li>
 
   <li>
     <h2 id="confirm-admin-title">Confirm that Admin opens</h2>
     <p>
-      A successful installer prints the exact local Admin address. Open that address on the same computer; it is
-      <code>http://127.0.0.1:7777</code> when <code>SHIMPZ_PORT</code> was not changed. Continue when you see the
-      initial password setup or sign-in screen. For a remote server, use the SSH forwarding instructions on the next
-      page.
+      A successful <code>shimpz install</code> prints the exact local Admin address. Open that address on the same
+      computer; it is <code>http://127.0.0.1:7777</code> when <code>SHIMPZ_PORT</code> was not changed. Continue when
+      you see the initial password setup or sign-in screen. For a remote server, use the SSH forwarding instructions
+      on the next page.
     </p>
   </li>
 </ol>
