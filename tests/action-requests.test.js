@@ -53,6 +53,9 @@ test("static Action request guides cover the public SDK and settled safety bound
   assert.match(pages, /request-before-action/i);
   assert.match(pages, /Hosted continuation is memory-only/);
   assert.match(pages, /entire Team turn/);
+  assert.match(pages, /current browser surface is Local Admin/);
+  assert.match(pages, /retained Hosted projection has no (?:current )?public Store browser\s+consumer/);
+  assert.doesNotMatch(pages, /Admin or Store/);
 });
 
 test("static complete Action examples use SDK-supported TypedDict results", () => {

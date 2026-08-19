@@ -35,7 +35,11 @@
   <ol>
     <li>The Controller invokes the reviewed Action with its original input and no response transcript.</li>
     <li>The SDK reaches request ordinal 0, emits a canonical suspension, and terminates the process.</li>
-    <li>Team validates the declared capability and shows a challenge through Admin or Store.</li>
+    <li>
+      Team validates the declared capability and exposes the challenge through the available administrative surface.
+      The current browser surface is Local Admin; the retained Hosted projection has no public Store browser
+      consumer.
+    </li>
     <li>The authenticated Supervisor or Owner responds once before the 300-second expiry.</li>
     <li>Team re-invokes the exact immutable binding with the original input and a bounded response transcript.</li>
     <li>The SDK matches kind, ordinal, and request fingerprint, returns the recorded value, and continues.</li>
