@@ -31,7 +31,8 @@ After installation:
   shimpz reset
 
 Supported hosts:
-  Linux amd64, including Windows 11 through WSL2 with systemd.
+  Linux amd64.
+  64-bit Windows through Ubuntu on WSL2 with systemd.
   Apple Silicon macOS arm64.
   Docker Engine 25.0+ and Docker Compose 2.20.2+ are required.
 EOF
