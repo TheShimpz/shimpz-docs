@@ -29,8 +29,8 @@
 
 <p>
   The release-bound CLI checks the replacement before switching to it. If the new version does not become healthy,
-  it keeps or restores the previous working version. A successful run ends with
-  <strong>Shimpz Space is up to date</strong>.
+  it keeps or restores the previous working version. A successful run reports
+  <strong>Shimpz Space is ready</strong> with the local Admin address and the active release.
 </p>
 
 <p>

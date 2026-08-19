@@ -23,7 +23,7 @@ test("static user journey names observable current outcomes", () => {
   assert.match(`${admin}\n${install}`, /SHIMPZ_PORT/);
   assert.match(install, /cryptsetup<\/code> 2\.4 or newer/);
   assert.match(admin, /https:\/\/local\.shimpz\.com/);
-  assert.match(manage, /Shimpz Space is up to date/);
+  assert.match(manage, /Shimpz Space is ready/);
   assert.match(manage, /Shimpz Space was reset/);
   assert.match(manage, /attests its\s+loopback listener/);
   assert.match(manage, /If no\s+managed runtime remains/);
