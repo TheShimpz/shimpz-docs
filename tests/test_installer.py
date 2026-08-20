@@ -63,6 +63,24 @@ def test_bootstrap_has_one_closed_digest_verified_handoff() -> None:
     check(SCRIPT.count("curl -fsSL") == 1, "curl appears only in the usage example")
 
 
+def test_bootstrap_hides_successful_docker_details_without_hiding_failures() -> None:
+    for contract in (
+        'pull --quiet --platform "$platform" "$selector" >/dev/null 2>&1 || fail',
+        'image inspect --format \'{{range .RepoDigests}}{{println .}}{{end}}\' "$selector" 2>/dev/null',
+        'create --platform "$platform" "$release_ref" "$member" 2>/dev/null)" || fail',
+        'cp "$container_id:/release.env" "$release_metadata" >/dev/null 2>&1 || fail',
+        'cp "$container_id:$member" "$candidate_cli" >/dev/null 2>&1 || fail',
+        'rm "$container_id" >/dev/null 2>&1 || fail',
+    ):
+        check(contract in SCRIPT, f"bootstrap keeps successful Docker details private: {contract}")
+    for action in (
+        "verify access to ghcr.io and retry",
+        "verify Docker storage and retry",
+        "retry the installation",
+    ):
+        check(action in SCRIPT, f"bootstrap failure gives the next action: {action}")
+
+
 def test_bootstrap_compensates_activation_and_preserves_foreign_commands() -> None:
     for contract in (
         'previous_cli="$managed_dir/shimpz.previous"',

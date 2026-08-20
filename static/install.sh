@@ -174,9 +174,9 @@ trap cleanup EXIT HUP INT TERM
 
 printf '  [..] Resolving the atomic Local release\n'
 selector="$RELEASE_REPOSITORY:$RELEASE_CHANNEL"
-run_command "$docker" pull --quiet --platform "$platform" "$selector" >/dev/null
+run_command "$docker" pull --quiet --platform "$platform" "$selector" >/dev/null 2>&1 || fail "Docker could not download the stable Local release; verify access to ghcr.io and retry"
 release_ref=""
-for candidate in $(run_command "$docker" image inspect --format '{{range .RepoDigests}}{{println .}}{{end}}' "$selector"); do
+for candidate in $(run_command "$docker" image inspect --format '{{range .RepoDigests}}{{println .}}{{end}}' "$selector" 2>/dev/null); do
 	if valid_digest_ref "$candidate"; then
 		[ -z "$release_ref" ] || fail "Docker returned ambiguous Local release digests"
 		release_ref="$candidate"
@@ -184,13 +184,13 @@ for candidate in $(run_command "$docker" image inspect --format '{{range .RepoDi
 done
 [ -n "$release_ref" ] || fail "Docker returned no trusted Local release digest"
 
-container_id="$(run_command "$docker" create --platform "$platform" "$release_ref" "$member")"
-case "$container_id" in *[!0-9a-f]*|"") fail "Docker returned an invalid temporary container" ;; esac
+container_id="$(run_command "$docker" create --platform "$platform" "$release_ref" "$member" 2>/dev/null)" || fail "Docker could not create a temporary Local release container; verify Docker storage and retry"
+case "$container_id" in *[!0-9a-f]*|"") fail "Docker returned an invalid temporary Local release container; retry the installation" ;; esac
 release_metadata="$temporary/release.env"
 candidate_cli="$temporary/shimpz"
-run_command "$docker" cp "$container_id:/release.env" "$release_metadata" >/dev/null
-run_command "$docker" cp "$container_id:$member" "$candidate_cli" >/dev/null
-run_command "$docker" rm "$container_id" >/dev/null
+run_command "$docker" cp "$container_id:/release.env" "$release_metadata" >/dev/null 2>&1 || fail "Docker could not extract the Local release metadata; verify Docker storage and retry"
+run_command "$docker" cp "$container_id:$member" "$candidate_cli" >/dev/null 2>&1 || fail "Docker could not extract the Shimpz CLI; verify Docker storage and retry"
+run_command "$docker" rm "$container_id" >/dev/null 2>&1 || fail "Docker could not remove its temporary Local release container; retry the installation"
 container_id=""
 
 [ "$(wc -l < "$release_metadata" | tr -d ' ')" -eq 10 ] || fail "the atomic release metadata is not closed"
