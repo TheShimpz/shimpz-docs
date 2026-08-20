@@ -66,7 +66,7 @@ def test_bootstrap_has_one_closed_digest_verified_handoff() -> None:
 def test_bootstrap_hides_successful_docker_details_without_hiding_failures() -> None:
     for contract in (
         'pull --quiet --platform "$platform" "$selector" >/dev/null 2>&1 || fail',
-        'image inspect --format \'{{range .RepoDigests}}{{println .}}{{end}}\' "$selector" 2>/dev/null',
+        "image inspect --format '{{range .RepoDigests}}{{println .}}{{end}}' \"$selector\" 2>/dev/null",
         'create --platform "$platform" "$release_ref" "$member" 2>/dev/null)" || fail',
         'cp "$container_id:/release.env" "$release_metadata" >/dev/null 2>&1 || fail',
         'cp "$container_id:$member" "$candidate_cli" >/dev/null 2>&1 || fail',
