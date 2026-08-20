@@ -68,6 +68,7 @@ def test_bootstrap_compensates_activation_and_preserves_foreign_commands() -> No
         'previous_cli="$managed_dir/shimpz.previous"',
         'mv "$managed_cli" "$previous_cli"',
         'mv "$candidate_target" "$managed_cli"',
+        '[ "${lifecycle_started:-0}" -eq 0 ]',
         '[ ! -e "$previous_cli" ] || mv "$previous_cli" "$managed_cli"',
         'if [ "$(file_hash "$managed_cli")" = "$expected_hash" ]; then',
         'mv "$previous_cli" "$managed_cli"',
@@ -86,6 +87,16 @@ def test_bootstrap_compensates_activation_and_preserves_foreign_commands() -> No
         "bootstrap unlinks a verified stale candidate before copying",
     )
     install_index = SCRIPT.index('run_command "$managed_cli" install --release "$release_ref"')
+    lifecycle_index = SCRIPT.index("lifecycle_started=1")
+    check(
+        SCRIPT.index("activated=1") < lifecycle_index < install_index,
+        "bootstrap compensates activation only before lifecycle execution begins",
+    )
+    cleanup_index = SCRIPT.index('if [ "$status" -ne 0 ] && [ "${activated:-0}" -eq 1 ]')
+    check(
+        cleanup_index < SCRIPT.index('[ "${lifecycle_started:-0}" -eq 0 ]', cleanup_index),
+        "cleanup retains the release-bound CLI after lifecycle execution begins",
+    )
     check(
         install_index < SCRIPT.index("activated=0", install_index) < SCRIPT.index('public_dir="$HOME/.local/bin"'),
         "a successful Space install ends executable compensation before public command handling",

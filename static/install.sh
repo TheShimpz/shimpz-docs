@@ -149,7 +149,7 @@ cleanup() {
 	if [ "${container_id:-}" ]; then
 		run_command "$docker" rm "$container_id" >/dev/null 2>&1 || true
 	fi
-	if [ "$status" -ne 0 ] && [ "${activated:-0}" -eq 1 ]; then
+	if [ "$status" -ne 0 ] && [ "${activated:-0}" -eq 1 ] && [ "${lifecycle_started:-0}" -eq 0 ]; then
 		[ ! -e "$managed_cli" ] || rm -f "$managed_cli"
 		[ ! -e "$previous_cli" ] || mv "$previous_cli" "$managed_cli"
 	fi
@@ -169,6 +169,7 @@ temporary="$(mktemp -d "${TMPDIR:-/tmp}/shimpz-bootstrap.XXXXXX")"
 chmod 700 "$temporary"
 container_id=""
 activated=0
+lifecycle_started=0
 trap cleanup EXIT HUP INT TERM
 
 printf '  [..] Resolving the atomic Local release\n'
@@ -243,6 +244,7 @@ mv "$candidate_target" "$managed_cli"
 activated=1
 
 printf '  [..] Installing the release-bound Shimpz Space\n'
+lifecycle_started=1
 run_command "$managed_cli" install --release "$release_ref"
 rm -f "$previous_cli"
 activated=0
