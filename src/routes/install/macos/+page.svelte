@@ -44,8 +44,8 @@
       that it is running.
     </p>
     <p>
-      Open <strong>Docker Desktop → Settings → Advanced</strong> and enable
-      <strong>Allow the default Docker socket to be used</strong>. Shimpz stops safely if it cannot reach that socket.
+      Keep Docker Desktop's <code>desktop-linux</code> context selected. Shimpz uses that managed engine and stops
+      safely if another context is active.
     </p>
   </li>
 
