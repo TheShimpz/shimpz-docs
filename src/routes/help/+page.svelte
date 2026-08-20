@@ -1,3 +1,7 @@
+<script lang="ts">
+  import CodeBlock from "$lib/components/CodeBlock.svelte";
+</script>
+
 <svelte:head>
   <title>Recover a Local Shimpz Space — Shimpz docs</title>
   <link rel="canonical" href="https://docs.shimpz.com/help/" />
@@ -30,6 +34,16 @@
     <a href="/install/macos/#check-docker-title">macOS</a>, or
     <a href="/install/windows/#check-docker-title">Windows with WSL2</a>.
   </p>
+  <p>
+    If both Docker commands succeed but Shimpz reports Docker or a required host tool as unavailable or refused,
+    reacquire the current release-bound CLI before retrying. Run the installation command again from an interactive
+    terminal. The bootstrap verifies the CLI before it reconciles the Space.
+  </p>
+  <CodeBlock
+    label="Reacquire the current Shimpz CLI"
+    title="Terminal · Shimpz recovery"
+    lines={[{ value: "curl -fsSL https://install.shimpz.com | sh" }]}
+  />
   <p>
     If Docker works and <code>shimpz install</code> reports that its existing Local Space failed runtime validation,
     read the listed deletion scope. Answer <strong>Yes</strong> only when you intend to erase that complete Local Space
