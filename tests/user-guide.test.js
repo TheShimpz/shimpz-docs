@@ -29,6 +29,7 @@ test("static user journey names observable current outcomes", () => {
   assert.match(manage, /Shimpz Space is ready/);
   assert.match(manage, /Shimpz Space was reset/);
   assert.match(manage, /attests its\s+loopback listener/);
+  assert.match(manage, /Before initial password setup[\s\S]+without asking for one/);
   assert.match(manage, /If no\s+managed runtime remains/);
   assert.match(manage, /Ambiguous or foreign state inside a Shimpz-owned resource\s+stops reset with an error/);
   assert.match(manage, /Unrecognized content outside the owned scope is preserved and listed in the successful\s+result/);

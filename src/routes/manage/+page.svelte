@@ -39,7 +39,9 @@
   Space. <strong>Yes</strong> permanently removes every listed resource and the installed Local state before
   continuing in the same terminal. Any listed Team, Assistant, credential, setting, conversation, or Docker data is
   lost. <strong>No</strong>, Enter, or a non-interactive run leaves it unchanged. This recovery choice is available
-  only for a corrupt CLI-owned Space. A reset of a running, attested Space still requires the Supervisor password.
+  only for a corrupt CLI-owned Space. A running, attested Space requires the Supervisor password after that password
+  has been created; before initial setup, Team independently verifies that no Supervisor identity exists and reset
+  continues without a password prompt.
 </p>
 
 <section class="guide-section" aria-labelledby="reset-title">
@@ -48,10 +50,12 @@
   <p>
     Reset removes the managed Assistants, Teams, Integrations, Admin state, and local Shimpz data. It cannot be
     undone. Disconnect provider Integrations first when possible. When the owned Admin is running, reset attests its
-    loopback listener and requires the current Supervisor password before asking Admin to delete domain state. If no
-    managed runtime remains, the CLI can finish removing only the validated scheduler and files, plus any owned
-    Linux encrypted-storage residue, without a password. Ambiguous or foreign state inside a Shimpz-owned resource
-    stops reset with an error. Unrecognized content outside the owned scope is preserved and listed in the successful
+    loopback listener. If a Supervisor password has been created, reset requires that current password before asking
+    Admin to delete domain state. Before initial password setup, Admin and Team verify that no Supervisor identity
+    exists and reset continues without asking for one. If no managed runtime remains, the CLI can finish removing
+    only the validated scheduler and files, plus any owned Linux encrypted-storage residue, without a password.
+    Ambiguous or foreign state inside a Shimpz-owned resource stops reset with an error.
+    Unrecognized content outside the owned scope is preserved and listed in the successful
     result.
   </p>
   <CodeBlock
