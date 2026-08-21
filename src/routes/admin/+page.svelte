@@ -37,7 +37,18 @@
       When the installed port is not <code>7777</code>, use the printed address for normal Admin work and open
       <code>https://local.shimpz.com</code> when you need to authorize an Assistant Integration.
     </p>
-    <p>Create the initial Admin password when asked. Use at least 12 characters and do not reuse it elsewhere.</p>
+    <p>
+      Create the initial Admin password when asked. Use at least 15 characters and do not reuse it elsewhere. Then
+      scan the QR code with an authenticator app and enter its current six-digit code. This TOTP factor is required
+      before Admin creates your first Supervisor session.
+    </p>
+    <p>
+      A passkey is optional. To register one, open the same port as <code>http://localhost:7777</code> (or replace
+      <code>7777</code> with your configured port), complete password and TOTP verification, then choose
+      <strong>Create passkey</strong>. Passkeys require that exact <code>localhost</code> address or an admitted HTTPS
+      domain and remain bound to it. Return to the printed <code>127.0.0.1</code> address for automatic Integration
+      authorization; there, use your authenticator code instead of the <code>localhost</code>-bound passkey.
+    </p>
   </li>
 
   <li>
@@ -105,7 +116,7 @@
     registration is required for another domain.
   </p>
   <p>
-    At any other external HTTPS address admitted with your Admin password, Shimpz opens the provider in a new tab.
+    At any other external HTTPS address admitted after your password and authenticator, Shimpz opens the provider in a new tab.
     After approval, the fixed <code>shimpz.com</code> callback shows a short-lived, one-use completion code. Copy it,
     return to the original authenticated Admin tab, and paste it into the completion field. The code is not a
     provider token or OAuth authorization code, and you should never paste it into chat or another site.

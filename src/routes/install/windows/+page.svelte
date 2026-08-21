@@ -108,7 +108,7 @@
     <p>
       When <code>shimpz install</code> succeeds, open the exact address it prints in your normal Windows browser. The
       default is <code>http://127.0.0.1:7777</code>; a configured <code>SHIMPZ_PORT</code> changes it. Continue when you
-      see the initial password setup or sign-in screen.
+      see the initial password-and-authenticator setup or sign-in screen.
     </p>
   </li>
 </ol>

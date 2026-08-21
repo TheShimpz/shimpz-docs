@@ -39,9 +39,11 @@
   Space. <strong>Yes</strong> permanently removes every listed resource and the installed Local state before
   continuing in the same terminal. Any listed Team, Assistant, credential, setting, conversation, or Docker data is
   lost. <strong>No</strong>, Enter, or a non-interactive run leaves it unchanged. This recovery choice is available
-  only for a corrupt CLI-owned Space. A running, attested Space requires the Supervisor password after that password
-  has been created; before initial setup, Team independently verifies that no Supervisor identity exists and reset
-  continues without a password prompt.
+  only for a corrupt CLI-owned Space. A running, attested Space requires a fresh, two-minute host authorization
+  projected by the CLI. While the current Supervisor authentication record is usable, reset also requires that
+  password. Before initial setup, Admin and Team verify that no Supervisor identity exists and reset continues
+  without a password prompt. If the authentication record itself requires recovery, the host authorization can
+  proceed only through the existing Supervisor identity or Team's independent proof that none exists.
 </p>
 
 <section class="guide-section" aria-labelledby="stop-title">
@@ -71,10 +73,13 @@
   <p>
     Reset removes the managed Assistants, Teams, Integrations, Admin state, and local Shimpz data. It cannot be
     undone. Disconnect provider Integrations first when possible. When the owned Admin is running, reset attests its
-    loopback listener. If a Supervisor password has been created, reset requires that current password before asking
-    Admin to delete domain state. Before initial password setup, Admin and Team verify that no Supervisor identity
-    exists and reset continues without asking for one. If no managed runtime remains, the CLI can finish removing
-    only the validated scheduler and files, plus any owned Linux encrypted-storage residue, without a password.
+    loopback listener and projects a fresh, exact-Space host authorization that expires after two minutes. While the
+    current Supervisor authentication record is usable, reset requires that password as well before asking Admin to
+    delete domain state. Before initial password setup, Admin and Team verify that no Supervisor identity exists and
+    reset continues without asking for one. If the authentication record requires recovery, host authorization uses
+    the existing Supervisor identity when valid; otherwise Team independently requires that no identity exists. If
+    no managed runtime remains, the CLI can finish removing only the validated scheduler and files, plus any owned
+    Linux encrypted-storage residue, without a password.
     Ambiguous or foreign state inside a Shimpz-owned resource stops reset with an error.
     Unrecognized content outside the owned scope is preserved and listed in the successful
     result. Stopping first does not bypass reset authorization.
