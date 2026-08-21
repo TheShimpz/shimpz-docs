@@ -27,6 +27,11 @@ test("static user journey names observable current outcomes", () => {
   assert.match(install, /cryptsetup<\/code> 2\.4 or newer/);
   assert.match(admin, /https:\/\/local\.shimpz\.com/);
   assert.match(manage, /Shimpz Space is ready/);
+  assert.match(manage, /<code>shimpz stop<\/code>/);
+  assert.match(manage, /<code>shimpz start<\/code>/);
+  assert.match(manage, /Shimpz Space is stopped/);
+  assert.match(manage, /does not require the Supervisor password/);
+  assert.match(manage, /Stopping first does not bypass reset authorization/);
   assert.match(manage, /Shimpz Space was reset/);
   assert.match(manage, /attests its\s+loopback listener/);
   assert.match(manage, /Before initial password setup[\s\S]+without asking for one/);

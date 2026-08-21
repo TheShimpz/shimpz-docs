@@ -5,7 +5,7 @@
 <svelte:head>
   <title>Maintain your Shimpz Space — Shimpz docs</title>
   <link rel="canonical" href="https://docs.shimpz.com/manage/" />
-  <meta name="description" content="Update a stable Shimpz installation or remove its local data." />
+  <meta name="description" content="Update, stop, resume, or reset a Local Shimpz Space." />
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
@@ -16,8 +16,8 @@
   <span class="section-label">Maintenance</span>
   <h1>Manage the Space with the CLI</h1>
   <p class="docs-lede">
-    Running <code>shimpz install</code> again reconciles Shimpz to the current atomic release. Existing Teams,
-    Integrations, settings, and conversations remain in place.
+    Use the lifecycle command that matches your intent: reconcile the release, stop workloads without deleting
+    data, resume them, or permanently reset the complete Local Space.
   </p>
 </header>
 
@@ -44,6 +44,27 @@
   continues without a password prompt.
 </p>
 
+<section class="guide-section" aria-labelledby="stop-title">
+  <span class="section-label">Reversible stop</span>
+  <h2 id="stop-title">Stop workloads without deleting the Space</h2>
+  <p>
+    <code>shimpz stop</code> stops the owned Space services and installed Assistant workloads. It keeps every Team,
+    Assistant, Integration, setting, conversation, container, network, volume, and release binding. Stopping changes
+    only availability, so it does not require the Supervisor password. Automatic maintenance leaves an intentionally
+    stopped Space stopped.
+  </p>
+  <CodeBlock
+    label="Stop the Local Space"
+    title="Terminal · reversible stop"
+    lines={[{ value: "shimpz stop" }, { value: "shimpz status" }]}
+  />
+  <p>
+    The stop is complete when status prints <strong>Shimpz Space is stopped</strong>. Run <code>shimpz start</code>
+    to resume the same Space. Start reconciles the current atomic release and restores each valid installed
+    Assistant; if local configuration changed while stopped, it is reconciled before workloads start.
+  </p>
+</section>
+
 <section class="guide-section" aria-labelledby="reset-title">
   <span class="section-label">Permanent removal</span>
   <h2 id="reset-title">Reset only when you want to delete everything</h2>
@@ -56,7 +77,7 @@
     only the validated scheduler and files, plus any owned Linux encrypted-storage residue, without a password.
     Ambiguous or foreign state inside a Shimpz-owned resource stops reset with an error.
     Unrecognized content outside the owned scope is preserved and listed in the successful
-    result.
+    result. Stopping first does not bypass reset authorization.
   </p>
   <CodeBlock
     label="Permanently reset Shimpz"
