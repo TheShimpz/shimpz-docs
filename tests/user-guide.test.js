@@ -49,7 +49,8 @@ test("static user journey names observable current outcomes", () => {
   assert.match(help, /<code>shimpz status<\/code>/);
   assert.match(help, /<code>shimpz install<\/code>/);
   assert.match(help, /Supervisor authentication record requires recovery/);
-  assert.match(help, /previous working release remains active/);
+  assert.match(help, /installed release is unchanged/);
+  assert.match(help, /an intentionally stopped Space stays\s+stopped/);
   assert.match(help, /<code>shimpz reset<\/code> followed by <code>shimpz install<\/code>/);
   assert.doesNotMatch(`${home}\n${install}\n${help}`, /installer (reports|prints|refuses)/i);
   assert.equal((text("src/routes/install/linux/+page.svelte").match(/curl -fsSL/g) ?? []).length, 1);
