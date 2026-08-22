@@ -21,17 +21,32 @@
   </p>
 </header>
 
-<CodeBlock
-  label="Update Shimpz"
-  title="Terminal · stable update"
-  lines={[{ value: "shimpz install" }]}
-/>
-
-<p>
-  The release-bound CLI checks the replacement before switching to it. If the new version does not become healthy,
-  it keeps or restores the previous working version. A successful run reports
-  <strong>Shimpz Space is ready</strong> with the local Admin address and the active release.
-</p>
+<section class="guide-section" aria-labelledby="update-title">
+  <span class="section-label">Update scope</span>
+  <h2 id="update-title">Update the Space or the standalone CLI</h2>
+  <p>
+    Run <code>shimpz install</code> to reconcile the complete managed Shimpz Space, including its release-bound CLI.
+    The atomic Local release is the only update authority for that managed executable. The command checks the
+    replacement before switching to it. If the candidate fails admission or does not become healthy, Shimpz keeps
+    or restores the previous working release. Success reports <strong>Shimpz Space is ready</strong> with the local
+    Admin address and active release.
+  </p>
+  <CodeBlock
+    label="Update the managed Shimpz Space"
+    title="Terminal · managed Space update"
+    lines={[{ value: "shimpz install" }]}
+  />
+  <p>
+    Run <code>shimpz upgrade</code> only for a standalone CLI used outside a managed Local Space. It follows the
+    finalized standalone CLI release and never updates Admin, Team, Brain, network boundaries, or managed Space
+    state. A Space-managed CLI refuses this command and directs you back to <code>shimpz install</code>.
+  </p>
+  <CodeBlock
+    label="Update only a standalone Shimpz CLI"
+    title="Terminal · standalone CLI update"
+    lines={[{ value: "shimpz upgrade" }]}
+  />
+</section>
 
 <p>
   If the CLI-owned Local Space exists but its current Docker runtime fails validation, the CLI names

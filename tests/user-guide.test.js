@@ -31,6 +31,9 @@ test("static user journey names observable current outcomes", () => {
   assert.match(install, /cryptsetup<\/code> 2\.4 or newer/);
   assert.match(admin, /https:\/\/local\.shimpz\.com/);
   assert.match(manage, /Shimpz Space is ready/);
+  assert.match(manage, /<code>shimpz upgrade<\/code> only for a standalone CLI/);
+  assert.match(manage, /Space-managed CLI refuses this command/);
+  assert.match(manage, /never updates Admin, Team, Brain, network boundaries, or managed Space\s+state/);
   assert.match(manage, /<code>shimpz stop<\/code>/);
   assert.match(manage, /<code>shimpz start<\/code>/);
   assert.match(manage, /Shimpz Space is stopped/);
@@ -45,6 +48,9 @@ test("static user journey names observable current outcomes", () => {
   assert.match(manage, /Unrecognized content outside the owned scope is preserved and listed in the successful\s+result/);
   assert.match(help, /<code>shimpz status<\/code>/);
   assert.match(help, /<code>shimpz install<\/code>/);
+  assert.match(help, /Supervisor authentication record requires recovery/);
+  assert.match(help, /previous working release remains active/);
+  assert.match(help, /<code>shimpz reset<\/code> followed by <code>shimpz install<\/code>/);
   assert.doesNotMatch(`${home}\n${install}\n${help}`, /installer (reports|prints|refuses)/i);
   assert.equal((text("src/routes/install/linux/+page.svelte").match(/curl -fsSL/g) ?? []).length, 1);
   assert.match(assistant, /Team's complete response/);
