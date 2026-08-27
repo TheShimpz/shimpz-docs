@@ -147,9 +147,9 @@ test("static published shimpz.toml schema is the closed Spec v1 contract", () =>
 test("static manifest schema projection pins Developers authority", () => {
   assert.deepEqual(upstream, {
     repository: "https://github.com/TheShimpz/shimpz-developers",
-    commit: "6ea04da64f75abd652e0f2c6142b2f14141b04d7",
+    commit: "d396219270f6c9894a15b0a56f2c7477369e50b9",
     path: "protocol/assistant/v1/manifest.schema.json",
-    sha256: "31c0715e8cf6d21deea708bc6bae341eccbff2ee413a14ffb22df9d7e2678afb",
+    sha256: "0b53913e66d5f8182d662ecadd09f65b5e7b7c57c2fe906fa44aef5fc6e9313f",
   });
 });
 
@@ -191,7 +191,12 @@ test("static documented Cloudflare manifest keeps one coherent current tuple", (
 });
 
 test("static published shimpz.toml schema exposes only authored Spec v1 fields", () => {
-  assert.deepEqual(Object.keys(schema.properties).sort(), ["integrations", "network", "shimpz"]);
+  assert.deepEqual(Object.keys(schema.properties).sort(), [
+    "integrations",
+    "network",
+    "shimpz",
+    "stored_inputs",
+  ]);
   assert.deepEqual(schema.properties.shimpz, { $ref: "#/$defs/shimpz" });
   assert.deepEqual(schema.properties.network, { $ref: "#/$defs/network" });
   assert.deepEqual(schema.$defs.shimpz.properties.id, { $ref: "#/$defs/assistantIdentifier" });
@@ -207,4 +212,9 @@ test("static published shimpz.toml schema exposes only authored Spec v1 fields",
   assert.deepEqual(schema.$defs.integration.required, ["scopes"]);
   assert.equal(schema.$defs.integration.additionalProperties, false);
   assert.equal("provider" in schema.$defs.integration.properties, false);
+  assert.equal(schema.properties.stored_inputs.maxProperties, 8);
+  assert.equal(schema.properties.stored_inputs.propertyNames.$ref, "#/$defs/identifier");
+  assert.deepEqual(schema.$defs.storedInput.required, ["kind", "label", "description"]);
+  assert.equal(schema.$defs.storedInput.properties.kind.const, "password");
+  assert.equal(schema.$defs.storedInput.additionalProperties, false);
 });
