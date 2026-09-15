@@ -18,6 +18,7 @@
 
 - [Creator overview](https://docs.shimpz.com/developers/): Follow the complete build and publication learning path.
 - [Build your first Assistant](https://docs.shimpz.com/developers/assistants/quickstart/): Generate, validate, and run one Action locally.
+- [Test an unpublished Assistant in Local](https://docs.shimpz.com/developers/assistants/local/): Stage one exact local image, authorize it for a Team, and exercise its Actions without publishing.
 - [Project structure](https://docs.shimpz.com/developers/assistants/): Use the minimal file-backed Assistant shape.
 - [Assistant icon](https://docs.shimpz.com/developers/assistants/icons/): Provide the canonical immutable identity image.
 - [Define Actions](https://docs.shimpz.com/developers/assistants/spec/actions/): Declare typed one-shot Python Actions.

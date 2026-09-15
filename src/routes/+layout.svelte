@@ -69,6 +69,11 @@
           description: "Generate, validate, and run one Action",
         },
         {
+          href: "/developers/assistants/local/",
+          label: "Test in Local",
+          description: "Install an unpublished snapshot for one Team",
+        },
+        {
           href: "/developers/assistants/publish/",
           label: "Publish an Assistant",
           description: "Authorize one immutable release",

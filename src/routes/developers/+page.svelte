@@ -43,8 +43,14 @@
       </a>
     </li>
     <li>
+      <a class="docs-entry-link" href="/developers/assistants/local/">
+        <strong>4. Test the unpublished Assistant in Local</strong>
+        <span>Stage an exact image, authorize it for one Team, and exercise its normal Actions.</span>
+      </a>
+    </li>
+    <li>
       <a class="docs-entry-link" href="/developers/assistants/publish/">
-        <strong>4. Publish one immutable release</strong>
+        <strong>5. Publish one immutable release</strong>
         <span>Choose its visibility, authorize the exact source, and wait for an installable artifact.</span>
       </a>
     </li>
