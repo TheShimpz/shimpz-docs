@@ -16,7 +16,7 @@ test("static Local snapshot task documents the released CLI and Admin journey", 
     "shimpz assistant check",
     "shimpz assistant stage",
     "Local Assistant snapshot staged.",
-    "Staged on this machine",
+    "card marked <strong>LOCAL</strong>",
     "Install or replace",
     "Local Assistant installed",
     "docker image rm sha256:",
@@ -36,7 +36,8 @@ test("static Local snapshot task preserves provenance, locality, and secret boun
   assert.match(page, /WhatsApp token/);
   assert.match(page, /requested just in time and retained under that Team's custody/);
   assert.match(page, /Staging never asks for provider access/);
-  assert.match(page, /failed replacement leaves the current Assistant in place/);
+  assert.match(page, /failed Local-to-Local replacement leaves the current Assistant in place/);
+  assert.match(page, /published Assistant[\s\S]+removes all published Team state[\s\S]+safely retry/);
   assert.match(page, /successor fails[\s\S]+newly staged image remain/);
 });
 

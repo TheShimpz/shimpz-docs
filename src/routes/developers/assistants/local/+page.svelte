@@ -93,13 +93,22 @@
     <li>Open the Local Admin address printed by your installation, normally <code>https://local.shimpz.com</code>.</li>
     <li>Sign in as Supervisor and complete the required TOTP factor.</li>
     <li>Open <strong>Assistants</strong> and select the destination Team.</li>
-    <li>Under <strong>Staged on this machine</strong>, find the Assistant and compare its complete image ID.</li>
-    <li>Select <strong>Install or replace</strong> for that exact snapshot.</li>
+    <li>
+      Find the Assistant card marked <strong>LOCAL</strong>. If the same Assistant is published, the Local card is
+      the only version shown on this machine.
+    </li>
+    <li>Select <strong>Install or replace</strong>.</li>
+    <li>
+      In the dialog, read the unpublished-code disclosure, compare the complete image ID, and confirm that exact
+      snapshot.
+    </li>
   </ol>
   <p>
     Success is visible as <strong>Local Assistant installed</strong>. Team admits the embedded manifest, contract,
     source package, icon, platform, and runtime before it starts the workload. A failed install does not authorize a
-    partial snapshot; a failed replacement leaves the current Assistant in place.
+    partial snapshot. A failed Local-to-Local replacement leaves the current Assistant in place. Replacing a
+    published Assistant first admits the Local snapshot, then removes all published Team state and creates a fresh
+    Local binding; if that final install fails, the Assistant is absent and you can safely retry the same snapshot.
   </p>
 </section>
 
@@ -124,7 +133,10 @@
   <ol>
     <li>Edit the Assistant and rerun <code>shimpz assistant check</code>.</li>
     <li>Run <code>shimpz assistant stage</code> and record the new image ID.</li>
-    <li>Reload Local snapshots in Admin, compare that ID, and select <strong>Install or replace</strong>.</li>
+    <li>
+      Reload the Assistants page in Admin, compare that ID in the install dialog, and select
+      <strong>Install or replace</strong>.
+    </li>
     <li>Exercise the changed Action again through the Team.</li>
   </ol>
   <p>
