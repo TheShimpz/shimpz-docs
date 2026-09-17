@@ -19,7 +19,7 @@ test("static Local snapshot task documents the released CLI and Admin journey", 
     "Chat installs a fresh binding automatically",
     "card marked <strong>LOCAL</strong>",
     "Install or replace",
-    "docker image rm sha256:",
+    "automatic retirement",
   ]) {
     assert.match(page, new RegExp(contract.replaceAll(" ", "\\s+")));
   }
@@ -31,6 +31,9 @@ test("static Local snapshot task documents the released CLI and Admin journey", 
   assert.match(page, /does not switch to the published release/);
   assert.match(page, /dispatches the\s+original request once/);
   assert.match(page, /more\s+than 50 staged candidates/);
+  assert.match(page, /no manual image-removal command is required/);
+  assert.match(page, /shimpz assistant stage[\s\S]+again/);
+  assert.doesNotMatch(page, /docker image rm/);
   assert.match(page, /Do not run a global Docker image prune/);
 });
 

@@ -152,14 +152,19 @@
 
 <section class="guide-section" aria-labelledby="cleanup-title">
   <span class="section-label">Cleanup</span>
-  <h2 id="cleanup-title">Remove only the exact staged image you no longer need</h2>
+  <h2 id="cleanup-title">Uninstall without leaving an unused staged image behind</h2>
   <p>
     Uninstalling the Local Assistant removes Team-owned workload, binding, egress, icon, Integration, Stored Input,
-    continuation, and audit state. The host-staged image remains. Admin reports the exact next command in the form
-    <code>docker image rm sha256:&lt;64-hex-image-id&gt;</code>; copy that exact command only after no Team needs the
-    snapshot.
+    continuation, and audit state. Before that mutation starts, Team records the binding's exact image ID for
+    automatic retirement. It removes that image with force and parent pruning disabled as soon as no Team binding,
+    container, or dependent Docker image references it. A temporary Docker refusal stays in the durable cleanup
+    queue and is retried automatically; no manual image-removal command is required.
   </p>
-  <p>Do not run a global Docker image prune. Unrelated projects and another retained snapshot may share layers.</p>
+  <p>
+    To use the same Local build after its image is retired, run <code>shimpz assistant stage</code> again. Shimpz
+    never runs a global Docker image prune, because unrelated projects and another retained snapshot may share
+    layers. Do not run a global Docker image prune manually.
+  </p>
 </section>
 
 <section class="guide-section" aria-labelledby="limits-title">
