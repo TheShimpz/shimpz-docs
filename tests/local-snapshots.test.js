@@ -16,15 +16,20 @@ test("static Local snapshot task documents the released CLI and Admin journey", 
     "shimpz assistant check",
     "shimpz assistant stage",
     "Local Assistant snapshot staged.",
+    "Chat installs a fresh binding automatically",
     "card marked <strong>LOCAL</strong>",
     "Install or replace",
-    "Local Assistant installed",
     "docker image rm sha256:",
   ]) {
     assert.match(page, new RegExp(contract.replaceAll(" ", "\\s+")));
   }
   assert.match(page, /MFA-authenticated Local Supervisor/);
   assert.match(page, /same machine and Docker daemon as the Local Space/);
+  assert.match(page, /Local discovery uses only the staged\s+candidate/);
+  assert.match(page, /Local-only identity is eligible too/);
+  assert.match(page, /Automatic installation is fresh-only/);
+  assert.match(page, /does not switch to the published release/);
+  assert.match(page, /dispatches the\s+original request once/);
   assert.match(page, /more\s+than 50 staged candidates/);
   assert.match(page, /Do not run a global Docker image prune/);
 });
@@ -36,8 +41,8 @@ test("static Local snapshot task preserves provenance, locality, and secret boun
   assert.match(page, /WhatsApp token/);
   assert.match(page, /requested just in time and retained under that Team's custody/);
   assert.match(page, /Staging never asks for provider access/);
-  assert.match(page, /failed Local-to-Local replacement leaves the current Assistant in place/);
-  assert.match(page, /published Assistant[\s\S]+removes all published Team state[\s\S]+safely retry/);
+  assert.match(page, /does not replace it or delete its Integration and Stored Input state/);
+  assert.match(page, /confirm the destructive transition explicitly/);
   assert.match(page, /successor fails[\s\S]+newly staged image remain/);
 });
 

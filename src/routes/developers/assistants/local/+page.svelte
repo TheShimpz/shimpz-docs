@@ -16,7 +16,8 @@
     {
       kind: "output",
       prompt: "›",
-      value: "Next: open Local Admin and install this unpublished snapshot for a Team.",
+      value:
+        "Next: ask a Local Team for work that needs this Assistant. Chat installs a fresh binding automatically; existing bindings still require an explicit replacement in Admin.",
     },
   ];
 </script>
@@ -39,8 +40,8 @@
   <span class="section-label">Creator task · about 10 minutes</span>
   <h1>Run an unpublished Assistant through your Local Team</h1>
   <p class="docs-lede">
-    Stage one exact snapshot on your machine, authorize it for a Team in Local Admin, and exercise its normal
-    Actions before you publish—or keep it local permanently.
+    Stage one exact snapshot on your machine, request work in Team chat, and exercise its normal Actions before you
+    publish—or keep it local permanently.
   </p>
 </header>
 
@@ -87,28 +88,31 @@
 </aside>
 
 <section class="guide-section" aria-labelledby="install-title">
-  <span class="section-label">3 · Install</span>
-  <h2 id="install-title">Authorize the exact image for one Team</h2>
+  <span class="section-label">3 · Request the work</span>
+  <h2 id="install-title">Let chat install a fresh binding automatically</h2>
   <ol>
     <li>Open the Local Admin address printed by your installation, normally <code>https://local.shimpz.com</code>.</li>
     <li>Sign in as Supervisor and complete the required TOTP factor.</li>
-    <li>Open <strong>Assistants</strong> and select the destination Team.</li>
     <li>
-      Find the Assistant card marked <strong>LOCAL</strong>. If the same Assistant is published, the Local card is
-      the only version shown on this machine.
+      Open the destination Team and request work that strongly matches an Action declared by the staged Assistant.
     </li>
-    <li>Select <strong>Install or replace</strong>.</li>
     <li>
-      In the dialog, read the unpublished-code disclosure, compare the complete image ID, and confirm that exact
-      snapshot.
+      Watch the installation card. Chat captures the exact primary image on the server, Team fully admits it, and a
+      fresh binding is installed without another install prompt.
     </li>
   </ol>
   <p>
-    Success is visible as <strong>Local Assistant installed</strong>. Team admits the embedded manifest, contract,
-    source package, icon, platform, and runtime before it starts the workload. A failed install does not authorize a
-    partial snapshot. A failed Local-to-Local replacement leaves the current Assistant in place. Replacing a
-    published Assistant first admits the Local snapshot, then removes all published Team state and creates a fresh
-    Local binding; if that final install fails, the Assistant is absent and you can safely retry the same snapshot.
+    If the same <code>assistant_id</code> is both staged locally and published, Local discovery uses only the staged
+    candidate on this machine. A Local-only identity is eligible too. Team admits the exact image's embedded
+    manifest, contract, source package, icon, platform, capability labels, and runtime before it starts the workload.
+    A failed install does not authorize a partial snapshot, does not switch to the published release, and does not
+    dispatch the original task.
+  </p>
+  <p>
+    Automatic installation is fresh-only. If this Team already has that Assistant installed—from Store or Local—the
+    chat task does not replace it or delete its Integration and Stored Input state. Open <strong>Assistants</strong>,
+    find the card marked <strong>LOCAL</strong>, select <strong>Install or replace</strong>, compare the complete image
+    ID in the unpublished-code dialog, and confirm the destructive transition explicitly.
   </p>
 </section>
 
@@ -116,9 +120,10 @@
   <span class="section-label">4 · Exercise</span>
   <h2 id="exercise-title">Use the same Action path as an installed Assistant</h2>
   <p>
-    Open the destination Team and request work supported by one declared Action. Verify the Team's complete response
-    and the external result when the Action has one. Normal egress, Action validation, human requests, audit,
-    Integrations, and Stored Input boundaries apply after admission.
+    After every planned Assistant is running and its required Integrations are configured, chat dispatches the
+    original request once. Verify the Team's complete response and the external result when the Action has one.
+    Normal egress, Action validation, human requests, audit, Integrations, and Stored Input boundaries apply after
+    admission.
   </p>
   <p>
     Staging never asks for provider access. An OAuth Integration is configured only when its Action needs it. A
