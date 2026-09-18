@@ -20,6 +20,13 @@
         "Next: ask a Local Team for work that needs this Assistant. Chat installs a fresh binding automatically; existing bindings still require an explicit replacement in Admin.",
     },
   ];
+
+  const unstage: readonly CodeLine[] = [
+    { kind: "command", prompt: "$", value: "shimpz assistant unstage" },
+    { kind: "output", prompt: "›", value: "Local Assistant snapshots removed." },
+    { kind: "output", prompt: "›", value: "Assistant: <assistant-id>" },
+    { kind: "output", prompt: "›", value: "Next: run shimpz assistant stage to use this Assistant locally again." },
+  ];
 </script>
 
 <svelte:head>
@@ -145,24 +152,31 @@
     <li>Exercise the changed Action again through the Team.</li>
   </ol>
   <p>
-    A successful replacement may remove the old image only after no binding or container references it. If the
+    A successful Local replacement leaves both exact snapshots staged for deliberate reuse or removal. If the
     successor fails, the current binding and the newly staged image remain so you can inspect or retry them.
   </p>
 </section>
 
 <section class="guide-section" aria-labelledby="cleanup-title">
   <span class="section-label">Cleanup</span>
-  <h2 id="cleanup-title">Uninstall without leaving an unused staged image behind</h2>
+  <h2 id="cleanup-title">Keep snapshots after uninstall, or remove them explicitly</h2>
   <p>
     Uninstalling the Local Assistant removes Team-owned workload, binding, egress, icon, Integration, Stored Input,
-    continuation, and audit state. Before that mutation starts, Team records the binding's exact image ID for
-    automatic retirement. It removes that image with force and parent pruning disabled as soon as no Team binding,
-    container, or dependent Docker image references it. A temporary Docker refusal stays in the durable cleanup
-    queue and is retried automatically; no manual image-removal command is required.
+    continuation, and audit state. It deliberately keeps every Local snapshot staged on this machine, so chat can
+    install one again without rebuilding it. Published Assistant images remain lifecycle-managed by Team because an
+    immutable Store release can be resolved again.
+  </p>
+  <CodeBlock label="Permanently remove this Assistant's Local snapshots" title="Assistant project" lines={unstage} />
+  <p>
+    First uninstall this Assistant from every Team, then run <code>shimpz assistant unstage</code> from its project.
+    Add <code>--project /path/to/assistant</code> to select another working directory. The command removes every image
+    that has both the exact current Local-stage label and this project's exact <code>assistant_id</code>. It never uses
+    force or parent pruning, and Docker refuses removal while a container still references an image. Finding no
+    matching snapshot is already success.
   </p>
   <p>
-    To use the same Local build after its image is retired, run <code>shimpz assistant stage</code> again. Shimpz
-    never runs a global Docker image prune, because unrelated projects and another retained snapshot may share
+    Permanent removal means you must run <code>shimpz assistant stage</code> before using that Local Assistant again.
+    Shimpz never runs a global Docker image prune, because unrelated projects and another retained snapshot may share
     layers. Do not run a global Docker image prune manually.
   </p>
 </section>
@@ -175,7 +189,8 @@
     <dd>
       Confirm the CLI used the same machine and Docker daemon as the Local Space, then rerun
       <code>shimpz assistant stage</code> and reload snapshots. Local fails closed instead of truncating when more
-      than 50 staged candidates exist; remove exact unused image IDs and retry.
+      than 50 staged candidates exist; run <code>shimpz assistant unstage</code> from unused Assistant projects and
+      retry.
     </dd>
     <dt>The exact image is missing after staging</dt>
     <dd>Restage the trusted source. Team never pulls a replacement for a Local image.</dd>

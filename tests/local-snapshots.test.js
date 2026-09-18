@@ -19,7 +19,8 @@ test("static Local snapshot task documents the released CLI and Admin journey", 
     "Chat installs a fresh binding automatically",
     "card marked <strong>LOCAL</strong>",
     "Install or replace",
-    "automatic retirement",
+    "shimpz assistant unstage",
+    "Local Assistant snapshots removed.",
   ]) {
     assert.match(page, new RegExp(contract.replaceAll(" ", "\\s+")));
   }
@@ -31,8 +32,12 @@ test("static Local snapshot task documents the released CLI and Admin journey", 
   assert.match(page, /does not switch to the published release/);
   assert.match(page, /dispatches the\s+original request once/);
   assert.match(page, /more\s+than 50 staged candidates/);
-  assert.match(page, /no manual image-removal command is required/);
-  assert.match(page, /shimpz assistant stage[\s\S]+again/);
+  assert.match(page, /deliberately keeps every Local snapshot staged/);
+  assert.match(page, /First uninstall this Assistant from every Team/);
+  assert.match(page, /both the exact current Local-stage label and this project's exact/);
+  assert.match(page, /never uses\s+force or parent pruning/);
+  assert.match(page, /Finding no\s+matching snapshot is already success/);
+  assert.match(page, /shimpz assistant stage[\s\S]+before using that Local Assistant again/);
   assert.doesNotMatch(page, /docker image rm/);
   assert.match(page, /Do not run a global Docker image prune/);
 });
@@ -46,6 +51,7 @@ test("static Local snapshot task preserves provenance, locality, and secret boun
   assert.match(page, /Staging never asks for provider access/);
   assert.match(page, /does not replace it or delete its Integration and Stored Input state/);
   assert.match(page, /confirm the destructive transition explicitly/);
+  assert.match(page, /successful Local replacement leaves both exact snapshots staged/);
   assert.match(page, /successor fails[\s\S]+newly staged image remain/);
 });
 
