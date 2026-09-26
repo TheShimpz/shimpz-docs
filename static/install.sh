@@ -65,37 +65,26 @@ has_group() {
 	return 1
 }
 
-run_command() {
-	if [ -z "${docker_group:-}" ]; then
-		"$@"
-		return
-	fi
-	case "$#" in
-		1) SHIMPZ_RUN_0="$1" /usr/bin/sg "$docker_group" -c 'exec "$SHIMPZ_RUN_0"' ;;
-		2) SHIMPZ_RUN_0="$1" SHIMPZ_RUN_1="$2" /usr/bin/sg "$docker_group" -c 'exec "$SHIMPZ_RUN_0" "$SHIMPZ_RUN_1"' ;;
-		3) SHIMPZ_RUN_0="$1" SHIMPZ_RUN_1="$2" SHIMPZ_RUN_2="$3" /usr/bin/sg "$docker_group" -c 'exec "$SHIMPZ_RUN_0" "$SHIMPZ_RUN_1" "$SHIMPZ_RUN_2"' ;;
-		4) SHIMPZ_RUN_0="$1" SHIMPZ_RUN_1="$2" SHIMPZ_RUN_2="$3" SHIMPZ_RUN_3="$4" /usr/bin/sg "$docker_group" -c 'exec "$SHIMPZ_RUN_0" "$SHIMPZ_RUN_1" "$SHIMPZ_RUN_2" "$SHIMPZ_RUN_3"' ;;
-		5) SHIMPZ_RUN_0="$1" SHIMPZ_RUN_1="$2" SHIMPZ_RUN_2="$3" SHIMPZ_RUN_3="$4" SHIMPZ_RUN_4="$5" /usr/bin/sg "$docker_group" -c 'exec "$SHIMPZ_RUN_0" "$SHIMPZ_RUN_1" "$SHIMPZ_RUN_2" "$SHIMPZ_RUN_3" "$SHIMPZ_RUN_4"' ;;
-		6) SHIMPZ_RUN_0="$1" SHIMPZ_RUN_1="$2" SHIMPZ_RUN_2="$3" SHIMPZ_RUN_3="$4" SHIMPZ_RUN_4="$5" SHIMPZ_RUN_5="$6" /usr/bin/sg "$docker_group" -c 'exec "$SHIMPZ_RUN_0" "$SHIMPZ_RUN_1" "$SHIMPZ_RUN_2" "$SHIMPZ_RUN_3" "$SHIMPZ_RUN_4" "$SHIMPZ_RUN_5"' ;;
-		*) fail "internal command handoff has an unsupported argument count" ;;
-	esac
-}
-
-resolve_docker_access() {
-	docker_group=""
-	"$docker" info >/dev/null 2>&1 && return 0
+stale_docker_session() {
 	[ "$(uname -s)" = "Linux" ] || return 1
 	[ -S /var/run/docker.sock ] || return 1
-	[ -x /usr/bin/id ] && [ -x /usr/bin/stat ] && [ -x /usr/bin/sg ] || return 1
+	[ -x /usr/bin/id ] && [ -x /usr/bin/stat ] || return 1
 	candidate_group="$(/usr/bin/stat -c '%G' /var/run/docker.sock)"
 	[ -n "$candidate_group" ] && [ "$candidate_group" != UNKNOWN ] || return 1
 	account_name="$(/usr/bin/id -un)"
 	# shellcheck disable=SC2046 # Intentional group-list tokenization from fixed id output.
 	has_group "$candidate_group" $(/usr/bin/id -Gn "$account_name") || return 1
 	# shellcheck disable=SC2046 # Intentional group-list tokenization from fixed id output.
-	has_group "$candidate_group" $(/usr/bin/id -Gn) && return 1
-	docker_group="$candidate_group"
-	run_command "$docker" info >/dev/null 2>&1
+	! has_group "$candidate_group" $(/usr/bin/id -Gn)
+}
+
+resolve_docker_access() {
+	"$docker" info >/dev/null 2>&1 && return 0
+	# The Local CLI records this session's primary group as the encrypted volume owner, and its scheduled updates
+	# run in the login manager, so a group switch here would install a Space that later updates cannot open.
+	stale_docker_session &&
+		fail "this login session does not include the Docker group yet; sign out and back in (or restart), confirm docker version works without sudo, then run the installer again"
+	return 1
 }
 
 resolve_host() {
@@ -147,7 +136,7 @@ cleanup() {
 	status=$?
 	trap - EXIT HUP INT TERM
 	if [ "${container_id:-}" ]; then
-		run_command "$docker" rm "$container_id" >/dev/null 2>&1 || true
+		"$docker" rm "$container_id" >/dev/null 2>&1 || true
 	fi
 	if [ "$status" -ne 0 ] && [ "${activated:-0}" -eq 1 ] && [ "${lifecycle_started:-0}" -eq 0 ]; then
 		[ ! -e "$managed_cli" ] || rm -f "$managed_cli"
@@ -163,7 +152,7 @@ cleanup() {
 resolve_host
 docker="$(resolve_docker)" || fail "Docker is not installed in a supported system path"
 resolve_docker_access || fail "Docker is not running or this user cannot access it"
-run_command "$docker" compose version >/dev/null 2>&1 || fail "Docker Compose v2 is unavailable"
+"$docker" compose version >/dev/null 2>&1 || fail "Docker Compose v2 is unavailable"
 
 temporary="$(mktemp -d "${TMPDIR:-/tmp}/shimpz-bootstrap.XXXXXX")"
 chmod 700 "$temporary"
@@ -174,9 +163,9 @@ trap cleanup EXIT HUP INT TERM
 
 printf '  [..] Resolving the atomic Local release\n'
 selector="$RELEASE_REPOSITORY:$RELEASE_CHANNEL"
-run_command "$docker" pull --quiet --platform "$platform" "$selector" >/dev/null 2>&1 || fail "Docker could not download the stable Local release; verify access to ghcr.io and retry"
+"$docker" pull --quiet --platform "$platform" "$selector" >/dev/null 2>&1 || fail "Docker could not download the stable Local release; verify access to ghcr.io and retry"
 release_ref=""
-for candidate in $(run_command "$docker" image inspect --format '{{range .RepoDigests}}{{println .}}{{end}}' "$selector" 2>/dev/null); do
+for candidate in $("$docker" image inspect --format '{{range .RepoDigests}}{{println .}}{{end}}' "$selector" 2>/dev/null); do
 	if valid_digest_ref "$candidate"; then
 		[ -z "$release_ref" ] || fail "Docker returned ambiguous Local release digests"
 		release_ref="$candidate"
@@ -184,13 +173,13 @@ for candidate in $(run_command "$docker" image inspect --format '{{range .RepoDi
 done
 [ -n "$release_ref" ] || fail "Docker returned no trusted Local release digest"
 
-container_id="$(run_command "$docker" create --platform "$platform" "$release_ref" "$member" 2>/dev/null)" || fail "Docker could not create a temporary Local release container; verify Docker storage and retry"
+container_id="$("$docker" create --platform "$platform" "$release_ref" "$member" 2>/dev/null)" || fail "Docker could not create a temporary Local release container; verify Docker storage and retry"
 case "$container_id" in *[!0-9a-f]*|"") fail "Docker returned an invalid temporary Local release container; retry the installation" ;; esac
 release_metadata="$temporary/release.env"
 candidate_cli="$temporary/shimpz"
-run_command "$docker" cp "$container_id:/release.env" "$release_metadata" >/dev/null 2>&1 || fail "Docker could not extract the Local release metadata; verify Docker storage and retry"
-run_command "$docker" cp "$container_id:$member" "$candidate_cli" >/dev/null 2>&1 || fail "Docker could not extract the Shimpz CLI; verify Docker storage and retry"
-run_command "$docker" rm "$container_id" >/dev/null 2>&1 || fail "Docker could not remove its temporary Local release container; retry the installation"
+"$docker" cp "$container_id:/release.env" "$release_metadata" >/dev/null 2>&1 || fail "Docker could not extract the Local release metadata; verify Docker storage and retry"
+"$docker" cp "$container_id:$member" "$candidate_cli" >/dev/null 2>&1 || fail "Docker could not extract the Shimpz CLI; verify Docker storage and retry"
+"$docker" rm "$container_id" >/dev/null 2>&1 || fail "Docker could not remove its temporary Local release container; retry the installation"
 container_id=""
 
 [ "$(wc -l < "$release_metadata" | tr -d ' ')" -eq 10 ] || fail "the atomic release metadata is not closed"
@@ -245,7 +234,7 @@ activated=1
 
 printf '  [..] Installing the release-bound Shimpz Space\n'
 lifecycle_started=1
-run_command "$managed_cli" install --release "$release_ref"
+"$managed_cli" install --release "$release_ref"
 rm -f "$previous_cli"
 activated=0
 

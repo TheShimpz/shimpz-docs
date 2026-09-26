@@ -56,7 +56,7 @@ def test_bootstrap_has_one_closed_digest_verified_handoff() -> None:
         '"$managed_cli" install --release "$release_ref"',
     ):
         check(contract in SCRIPT, f"bootstrap preserves {contract}")
-    check(SCRIPT.count('run_command "$docker" pull') == 1, "bootstrap pulls only the atomic release")
+    check(SCRIPT.count('"$docker" pull') == 1, "bootstrap pulls only the atomic release")
     check("docker compose up" not in SCRIPT, "bootstrap does not own lifecycle or graph execution")
     check("--reset" not in SCRIPT, "bootstrap does not retain the retired reset option")
     check("eval " not in SCRIPT, "bootstrap never evaluates dynamically assembled shell")
@@ -104,7 +104,7 @@ def test_bootstrap_compensates_activation_and_preserves_foreign_commands() -> No
         < SCRIPT.index('cp "$candidate_cli" "$candidate_target"'),
         "bootstrap unlinks a verified stale candidate before copying",
     )
-    install_index = SCRIPT.index('run_command "$managed_cli" install --release "$release_ref"')
+    install_index = SCRIPT.index('"$managed_cli" install --release "$release_ref"')
     lifecycle_index = SCRIPT.index("lifecycle_started=1")
     check(
         SCRIPT.index("activated=1") < lifecycle_index < install_index,
@@ -121,26 +121,19 @@ def test_bootstrap_compensates_activation_and_preserves_foreign_commands() -> No
     )
 
 
-def test_bootstrap_recovers_only_a_verified_stale_docker_group() -> None:
+def test_bootstrap_rejects_a_stale_docker_group_session() -> None:
     for contract in (
         "[ -S /var/run/docker.sock ]",
         "candidate_group=\"$(/usr/bin/stat -c '%G' /var/run/docker.sock)\"",
         'account_name="$(/usr/bin/id -un)"',
-        'has_group "$candidate_group" $(/usr/bin/id -Gn "$account_name")',
-        'has_group "$candidate_group" $(/usr/bin/id -Gn) && return 1',
-        'docker_group="$candidate_group"',
-        '/usr/bin/sg "$docker_group" -c',
-        'run_command "$managed_cli" install --release "$release_ref"',
+        'has_group "$candidate_group" $(/usr/bin/id -Gn "$account_name") || return 1',
+        '! has_group "$candidate_group" $(/usr/bin/id -Gn)',
+        "sign out and back in (or restart), confirm docker version works without sudo",
+        '"$managed_cli" install --release "$release_ref"',
     ):
-        check(contract in SCRIPT, f"bootstrap preserves stale-session recovery {contract}")
-    for arity in (4, 6):
-        check(f"\t\t{arity}) SHIMPZ_RUN_0=" in SCRIPT, f"closed handoff supports required arity {arity}")
-    check(
-        'exec "$SHIMPZ_RUN_0" "$SHIMPZ_RUN_1" "$SHIMPZ_RUN_2" "$SHIMPZ_RUN_3"' in SCRIPT,
-        "four-argument handoff preserves argument boundaries",
-    )
-    check('"$SHIMPZ_RUN_4" "$SHIMPZ_RUN_5"' in SCRIPT, "six-argument handoff preserves argument boundaries")
-    check('command="' not in SCRIPT, "group handoff never assembles a command string")
+        check(contract in SCRIPT, f"bootstrap rejects a stale Docker group session: {contract}")
+    for retired in ("/usr/bin/sg", "run_command", "SHIMPZ_RUN_", "docker_group"):
+        check(retired not in SCRIPT, f"bootstrap never switches groups for Docker or the Local CLI: {retired}")
 
 
 def test_public_origin_serves_only_the_bootstrap_for_installer_host() -> None:

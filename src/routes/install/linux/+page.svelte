@@ -78,6 +78,10 @@
       title="Terminal · Docker check"
       lines={[{ value: "docker version" }, { value: "docker compose version" }]}
     />
+    <p>
+      Both commands must work without <code>sudo</code>. If you just added your user to the <code>docker</code> group,
+      sign out and back in, or restart, before installing Shimpz.
+    </p>
   </li>
 
   <li>
