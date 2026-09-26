@@ -150,6 +150,9 @@ cleanup() {
 }
 
 resolve_host
+if [ "$(uname -s)" = "Linux" ] && [ "$(/usr/bin/id -g)" != "$(/usr/bin/id -g "$(/usr/bin/id -un)")" ]; then
+	fail "run the installer from a normal login session, not a switched group such as sg docker; sign out and back in so the session includes the Docker group, then run it again"
+fi
 docker="$(resolve_docker)" || fail "Docker is not installed in a supported system path"
 resolve_docker_access || fail "Docker is not running or this user cannot access it"
 "$docker" compose version >/dev/null 2>&1 || fail "Docker Compose v2 is unavailable"

@@ -129,6 +129,8 @@ def test_bootstrap_rejects_a_stale_docker_group_session() -> None:
         'has_group "$candidate_group" $(/usr/bin/id -Gn "$account_name") || return 1',
         '! has_group "$candidate_group" $(/usr/bin/id -Gn)',
         "sign out and back in (or restart), confirm docker version works without sudo",
+        '[ "$(/usr/bin/id -g)" != "$(/usr/bin/id -g "$(/usr/bin/id -un)")" ]',
+        "not a switched group such as sg docker",
         '"$managed_cli" install --release "$release_ref"',
     ):
         check(contract in SCRIPT, f"bootstrap rejects a stale Docker group session: {contract}")
