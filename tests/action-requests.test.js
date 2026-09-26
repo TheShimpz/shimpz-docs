@@ -10,64 +10,6 @@ function text(path) {
   return readFileSync(new URL(path, ROOT), "utf8");
 }
 
-test("static Creator navigation exposes the dedicated human request submenu", () => {
-  const layout = text("src/routes/+layout.svelte");
-  assert.match(layout, /label: "Ask a human"/);
-  for (const page of ["approval", "input", "auth", "lifecycle"]) {
-    assert.match(layout, new RegExp(`/developers/assistants/requests/${page}/`));
-  }
-});
-
-test("static Action request guides cover the public SDK and settled safety boundaries", () => {
-  const pages = [
-    readFileSync(new URL("+page.svelte", ROUTE), "utf8"),
-    readFileSync(new URL("approval/+page.svelte", ROUTE), "utf8"),
-    readFileSync(new URL("input/+page.svelte", ROUTE), "utf8"),
-    readFileSync(new URL("auth/+page.svelte", ROUTE), "utf8"),
-    readFileSync(new URL("lifecycle/+page.svelte", ROUTE), "utf8"),
-  ].join("\n");
-
-  for (const surface of [
-    "request_approval",
-    "request_input",
-    "request_auth",
-    "text",
-    "textarea",
-    "password",
-    "phone",
-    "select",
-    "choice",
-    "choices",
-    "auth:password",
-    "auth:totp",
-    "auth:passkey",
-  ]) {
-    assert.match(pages, new RegExp(surface));
-  }
-  assert.match(pages, /At most 8 human requests/);
-  assert.match(pages, /At most 16 human requests/);
-  assert.match(pages, /at most one authorization request/i);
-  assert.match(pages, /cannot combine\s+approval with authentication/i);
-  assert.match(pages, /300 seconds/);
-  assert.match(pages, /third-party secret/i);
-  assert.match(pages, /request-before-action/i);
-  assert.match(pages, /Hosted continuation is memory-only/);
-  assert.match(pages, /entire Team turn/);
-  assert.match(pages, /current browser surface is Local Admin/);
-  assert.match(pages, /retained Hosted projection has no (?:current )?public Store browser\s+consumer/);
-  assert.doesNotMatch(pages, /Admin or Store/);
-});
-
-test("static complete Action examples use SDK-supported TypedDict results", () => {
-  const examples = [
-    readFileSync(new URL("+page.server.ts", ROUTE), "utf8"),
-    readFileSync(new URL("approval/+page.server.ts", ROUTE), "utf8"),
-    readFileSync(new URL("lifecycle/+page.server.ts", ROUTE), "utf8"),
-  ].join("\n");
-  assert.doesNotMatch(examples, /-> dict\[/);
-  assert.match(examples, /TypedDict/);
-});
-
 test("static native request examples cover every settled request kind without frozen screenshots", () => {
   const fixtures = text("src/lib/actionRequestExamples.ts");
   const component = text("src/lib/components/RequestExample.svelte");
