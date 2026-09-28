@@ -80,8 +80,10 @@
     <code>shimpz assistant stage --project /path/to/assistant</code>.
   </p>
   <p>
-    A successful stage leaves one untagged image in the host Docker daemon. Repeating the command for unchanged
-    source reuses the exact snapshot; changed source uses the layer cache and produces a new image ID.
+    A successful stage tags the image as this Assistant's current snapshot,
+    <code>shimpz-local/&lt;assistant_id&gt;:staged</code>, in the host Docker daemon. Repeating the command for
+    unchanged source reuses the current snapshot; changed source uses the layer cache and produces a new image ID that
+    becomes current. Only the current snapshot can be installed.
   </p>
 </section>
 
@@ -152,8 +154,9 @@
     <li>Exercise the changed Action again through the Team.</li>
   </ol>
   <p>
-    A successful Local replacement leaves both exact snapshots staged for deliberate reuse or removal. If the
-    successor fails, the current binding and the newly staged image remain so you can inspect or retry them.
+    After a successful Local replacement, the earlier snapshot is no longer current, and the running Local Space removes
+    it once no Team binds or runs it. If the successor fails, the current binding keeps its image and the newly staged
+    snapshot stays current, so you can inspect or retry it.
   </p>
 </section>
 
@@ -162,17 +165,18 @@
   <h2 id="cleanup-title">Keep snapshots after uninstall, or remove them explicitly</h2>
   <p>
     Uninstalling the Local Assistant removes Team-owned workload, binding, egress, icon, Integration, Stored Input,
-    continuation, and audit state. It deliberately keeps every Local snapshot staged on this machine, so chat can
-    install one again without rebuilding it. Published Assistant images remain lifecycle-managed by Team because an
-    immutable Store release can be resolved again.
+    continuation, and audit state. It keeps this Assistant's current snapshot staged on this machine, so chat can
+    install it again without rebuilding it. While the Local Space runs, it removes each earlier snapshot once no Team
+    binds or runs it. Published Assistant images remain lifecycle-managed by Team because an immutable
+    Store release can be resolved again.
   </p>
   <CodeBlock label="Permanently remove this Assistant's Local snapshots" title="Assistant project" lines={unstage} />
   <p>
     First uninstall this Assistant from every Team, then run <code>shimpz assistant unstage</code> from its project.
-    Add <code>--project /path/to/assistant</code> to select another working directory. The command removes every image
-    that has both the exact current Local-stage label and this project's exact <code>assistant_id</code>. It never uses
-    force or parent pruning, and Docker refuses removal while a container still references an image. Finding no
-    matching snapshot is already success.
+    Add <code>--project /path/to/assistant</code> to select another working directory. The command removes the current
+    snapshot and any earlier one that remains: every image that has both the exact current Local-stage label and this
+    project's exact <code>assistant_id</code>. It never uses force or parent pruning, and Docker refuses removal while a
+    container still references an image. Finding no matching snapshot is already success.
   </p>
   <p>
     Permanent removal means you must run <code>shimpz assistant stage</code> before using that Local Assistant again.
@@ -189,8 +193,8 @@
     <dd>
       Confirm the CLI used the same machine and Docker daemon as the Local Space, then rerun
       <code>shimpz assistant stage</code> and reload snapshots. Local fails closed instead of truncating when more
-      than 50 staged candidates exist; run <code>shimpz assistant unstage</code> from unused Assistant projects and
-      retry.
+      than 50 Assistants have a current snapshot; run <code>shimpz assistant unstage</code> from unused Assistant
+      projects and retry.
     </dd>
     <dt>The exact image is missing after staging</dt>
     <dd>Restage the trusted source. Team never pulls a replacement for a Local image.</dd>
