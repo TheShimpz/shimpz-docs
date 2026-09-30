@@ -39,8 +39,10 @@
     <li>The Brain selects a reviewed Action and supplies JSON arguments.</li>
     <li>The Controller validates those arguments against the generated input schema.</li>
     <li>
-      It resolves only declared Integrations and writes <code>{`{input, integrations}`}</code> to bounded stdin. A
-      replay also carries the bounded <code>responses</code> transcript.
+      It resolves only the Action's declared Integrations and Stored Input and writes
+      <code>{`{input, integrations, stored_inputs}`}</code> to bounded stdin. <code>stored_inputs</code> is always
+      present: it holds the Action's one declared Stored Input when that Team already keeps its value, and is empty
+      otherwise. A replay also carries the bounded <code>responses</code> transcript.
     </li>
     <li>It executes <code>/usr/local/bin/shimpz-action &lt;action-id&gt;</code> in the Assistant runtime.</li>
     <li>The SDK loads the reviewed project, selects the named Action, and runs its async body once.</li>

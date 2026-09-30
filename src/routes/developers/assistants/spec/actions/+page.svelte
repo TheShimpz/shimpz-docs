@@ -74,8 +74,9 @@
     {...data.contract}
   />
   <p>
-    The entry contains only the canonical Action id, declared Integrations and human-request capabilities, and the
-    two closed schemas. The Controller addresses the Action by id and validates every input and result against those
+    The entry contains only the canonical Action id, its declared Integrations, Stored Input ids, and human-request
+    capabilities, and the two closed schemas. Every list is present even when empty; an Action declares at most one
+    Stored Input. The Controller addresses the Action by id and validates every input and result against those
     reviewed schemas; Assistants do not declare HTTP transport.
   </p>
   <p>One Assistant contract contains between 1 and 128 Actions in canonical id order.</p>

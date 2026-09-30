@@ -21,6 +21,7 @@ async def run(domain: str, *, ctx: Context) -> ZoneResult:
 const contract = `{
   "id": "inspect-zone",
   "integrations": ["cloudflare"],
+  "stored_inputs": [],
   "human_requests": [],
   "input_schema": {
     "type": "object",
