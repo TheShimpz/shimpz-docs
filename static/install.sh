@@ -138,13 +138,6 @@ cleanup() {
 	if [ "${container_id:-}" ]; then
 		"$docker" rm "$container_id" >/dev/null 2>&1 || true
 	fi
-	if [ "$status" -ne 0 ] && [ "${activated:-0}" -eq 1 ] && [ "${lifecycle_started:-0}" -eq 0 ]; then
-		[ ! -e "$managed_cli" ] || rm -f "$managed_cli"
-		[ ! -e "$previous_cli" ] || mv "$previous_cli" "$managed_cli"
-	fi
-	if [ -n "${candidate_target:-}" ] && [ -f "$candidate_target" ] && [ ! -L "$candidate_target" ]; then
-		rm -f "$candidate_target"
-	fi
 	[ ! -d "${temporary:-}" ] || rm -rf "$temporary"
 	exit "$status"
 }
@@ -160,8 +153,6 @@ resolve_docker_access || fail "Docker is not running or this user cannot access 
 temporary="$(mktemp -d "${TMPDIR:-/tmp}/shimpz-bootstrap.XXXXXX")"
 chmod 700 "$temporary"
 container_id=""
-activated=0
-lifecycle_started=0
 trap cleanup EXIT HUP INT TERM
 
 printf '  [..] Resolving the atomic Local release\n'
@@ -195,52 +186,16 @@ chmod 700 "$candidate_cli"
 
 : "${HOME:?HOME is required}"
 case "$HOME" in /*) ;; *) fail "HOME must be an absolute path" ;; esac
-space_home="$HOME/.shimpz"
-managed_dir="$space_home/bin"
-managed_cli="$managed_dir/shimpz"
-candidate_target="$managed_dir/shimpz.candidate"
-previous_cli="$managed_dir/shimpz.previous"
-[ ! -L "$space_home" ] && { [ ! -e "$space_home" ] || [ -d "$space_home" ]; } ||
-	fail "the Local Space directory is invalid"
-mkdir -p "$managed_dir"
-chmod 700 "$space_home" "$managed_dir"
-[ ! -L "$managed_dir" ] && [ -d "$managed_dir" ] || fail "the managed CLI directory is invalid"
-if [ -e "$previous_cli" ] || [ -L "$previous_cli" ]; then
-	[ -f "$previous_cli" ] && [ ! -L "$previous_cli" ] ||
-		fail "the previous bootstrap compensation artifact is invalid"
-	if [ -e "$managed_cli" ] || [ -L "$managed_cli" ]; then
-		[ -f "$managed_cli" ] && [ ! -L "$managed_cli" ] ||
-			fail "the managed CLI artifact is invalid"
-		if [ "$(file_hash "$managed_cli")" = "$expected_hash" ]; then
-			rm -f "$previous_cli"
-		else
-			rm -f "$managed_cli"
-			mv "$previous_cli" "$managed_cli"
-		fi
-	else
-		mv "$previous_cli" "$managed_cli"
-	fi
-fi
-if [ -e "$managed_cli" ] || [ -L "$managed_cli" ]; then
-	[ -f "$managed_cli" ] && [ ! -L "$managed_cli" ] || fail "the managed CLI artifact is invalid"
-	mv "$managed_cli" "$previous_cli"
-fi
-if [ -e "$candidate_target" ] || [ -L "$candidate_target" ]; then
-	[ -f "$candidate_target" ] && [ ! -L "$candidate_target" ] ||
-		fail "the stale candidate CLI artifact is invalid; run shimpz reset and retry"
-	rm -f "$candidate_target"
-fi
-cp "$candidate_cli" "$candidate_target"
-chmod 700 "$candidate_target"
-mv "$candidate_target" "$managed_cli"
-activated=1
+"$candidate_cli" --version >/dev/null 2>&1 ||
+	fail "the release-bound CLI cannot run from ${TMPDIR:-/tmp}; set TMPDIR to a private directory that allows execution and retry"
 
+# The release-bound CLI activates itself as ~/.shimpz/bin/shimpz only under its lifecycle lock and after admission.
 printf '  [..] Installing the release-bound Shimpz Space\n'
-lifecycle_started=1
-"$managed_cli" install --release "$release_ref"
-rm -f "$previous_cli"
-activated=0
+"$candidate_cli" install --release "$release_ref"
 
+managed_cli="$HOME/.shimpz/bin/shimpz"
+[ -f "$managed_cli" ] && [ ! -L "$managed_cli" ] && [ -x "$managed_cli" ] ||
+	fail "the release-bound CLI did not install the managed command at $managed_cli"
 public_dir="$HOME/.local/bin"
 public_cli="$public_dir/shimpz"
 mkdir -p "$public_dir"

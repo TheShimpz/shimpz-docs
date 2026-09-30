@@ -3,8 +3,13 @@
 
 from __future__ import annotations
 
+import hashlib
+import os
+import platform
+import shlex
 import stat
 import subprocess
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -53,7 +58,7 @@ def test_bootstrap_has_one_closed_digest_verified_handoff() -> None:
         '[ "$(wc -l < "$release_metadata" | tr -d \' \')" -eq 10 ]',
         '[ "$(one_metadata_value schema)" = "local-v2" ]',
         '[ "$(file_hash "$candidate_cli")" = "$expected_hash" ]',
-        '"$managed_cli" install --release "$release_ref"',
+        '"$candidate_cli" install --release "$release_ref"',
     ):
         check(contract in SCRIPT, f"bootstrap preserves {contract}")
     check(SCRIPT.count('"$docker" pull') == 1, "bootstrap pulls only the atomic release")
@@ -81,44 +86,150 @@ def test_bootstrap_hides_successful_docker_details_without_hiding_failures() -> 
         check(action in SCRIPT, f"bootstrap failure gives the next action: {action}")
 
 
-def test_bootstrap_compensates_activation_and_preserves_foreign_commands() -> None:
+def test_bootstrap_delegates_executable_activation_and_preserves_foreign_commands() -> None:
+    for retired in ("shimpz.previous", "shimpz.candidate", "lifecycle_started", "activated=", 'mv "$'):
+        check(retired not in SCRIPT, f"the native lifecycle alone activates the managed CLI: {retired}")
     for contract in (
-        'previous_cli="$managed_dir/shimpz.previous"',
-        'mv "$managed_cli" "$previous_cli"',
-        'mv "$candidate_target" "$managed_cli"',
-        '[ "${lifecycle_started:-0}" -eq 0 ]',
-        '[ ! -e "$previous_cli" ] || mv "$previous_cli" "$managed_cli"',
-        'if [ "$(file_hash "$managed_cli")" = "$expected_hash" ]; then',
-        'mv "$previous_cli" "$managed_cli"',
-        '[ -f "$candidate_target" ] && [ ! -L "$candidate_target" ]',
-        'rm -f "$candidate_target"',
+        '"$candidate_cli" --version >/dev/null 2>&1 ||',
+        "set TMPDIR to a private directory that allows execution and retry",
+        '[ -f "$managed_cli" ] && [ ! -L "$managed_cli" ] && [ -x "$managed_cli" ] ||',
         "confirm_public_replace() {",
         "[ -r /dev/tty ] && [ -w /dev/tty ] || return 1",
         '[ "$answer" = "Yes" ]',
         "Preserved the existing command",
         'ln -s "$managed_cli" "$public_cli"',
     ):
-        check(contract in SCRIPT, f"bootstrap preserves compensation contract {contract}")
+        check(contract in SCRIPT, f"bootstrap preserves acquisition contract {contract}")
     check(
-        SCRIPT.index('if [ -e "$candidate_target" ] || [ -L "$candidate_target" ]; then')
-        < SCRIPT.index('cp "$candidate_cli" "$candidate_target"'),
-        "bootstrap unlinks a verified stale candidate before copying",
+        SCRIPT.index('"$candidate_cli" install --release "$release_ref"')
+        < SCRIPT.index('public_dir="$HOME/.local/bin"'),
+        "the public command is linked only after the release-bound CLI completed its installation",
     )
-    install_index = SCRIPT.index('"$managed_cli" install --release "$release_ref"')
-    lifecycle_index = SCRIPT.index("lifecycle_started=1")
-    check(
-        SCRIPT.index("activated=1") < lifecycle_index < install_index,
-        "bootstrap compensates activation only before lifecycle execution begins",
+
+
+DOCKER_SEARCH = (
+    "for candidate in /usr/bin/docker /Applications/Docker.app/Contents/Resources/bin/docker "
+    "/usr/local/bin/docker /opt/homebrew/bin/docker; do"
+)
+FAKE_DIGEST = "ab" * 32
+FAKE_REF = f"ghcr.io/theshimpz/shimpz-local-release@sha256:{FAKE_DIGEST}"
+
+
+def run_bootstrap(root: Path, cli_body: str, version_status: int = 0) -> tuple[subprocess.CompletedProcess[str], Path]:
+    """Run the bootstrap against a fake Docker whose release carries a stub release-bound CLI."""
+    home = root / "home"
+    home.mkdir(exist_ok=True)
+    cli = root / "release-cli"
+    cli.write_text(
+        "#!/bin/sh\n"
+        f'[ "$1" = --version ] && exit {version_status}\n'
+        f'printf \'%s\\n\' "$0" "$*" >> {shlex.quote(str(root / "calls"))}\n'
+        f"{cli_body}"
     )
-    cleanup_index = SCRIPT.index('if [ "$status" -ne 0 ] && [ "${activated:-0}" -eq 1 ]')
-    check(
-        cleanup_index < SCRIPT.index('[ "${lifecycle_started:-0}" -eq 0 ]', cleanup_index),
-        "cleanup retains the release-bound CLI after lifecycle execution begins",
+    digest = hashlib.sha256(cli.read_bytes()).hexdigest()
+    metadata = root / "release.env"
+    fields = (
+        ("schema", "local-v2"),
+        ("ordinal", "2"),
+        ("umbrella_revision", "a" * 40),
+        ("cli_revision", "b" * 40),
+        ("cli_linux_amd64_sha256", digest),
+        ("cli_macos_arm64_sha256", digest),
+        ("admin", "admin"),
+        ("team", "team"),
+        ("brain", "brain"),
+        ("egress", "egress"),
     )
-    check(
-        install_index < SCRIPT.index("activated=0", install_index) < SCRIPT.index('public_dir="$HOME/.local/bin"'),
-        "a successful Space install ends executable compensation before public command handling",
+    metadata.write_text("".join(f"{key}={value}\n" for key, value in fields))
+    docker = root / "docker"
+    docker.write_text(
+        "#!/bin/sh\n"
+        'case "$1" in\n'
+        "  info|pull|rm|compose) exit 0 ;;\n"
+        f"  image) printf '%s\\n' '{FAKE_REF}' ;;\n"
+        f"  create) printf '%s\\n' {'c' * 64} ;;\n"
+        f'  cp) case "$2" in *:/release.env) cp {shlex.quote(str(metadata))} "$3" ;;'
+        f' *) cp {shlex.quote(str(cli))} "$3" ;; esac ;;\n'
+        "  *) exit 1 ;;\n"
+        "esac\n"
     )
+    docker.chmod(0o755)
+    script = root / "install.sh"
+    check(SCRIPT.count(DOCKER_SEARCH) == 1, "the fixture replaces the complete Docker search list")
+    script.write_text(SCRIPT.replace(DOCKER_SEARCH, f"for candidate in {shlex.quote(str(docker))}; do"))
+    environment = {**os.environ, "HOME": str(home), "TMPDIR": str(root)}
+    result = subprocess.run(["sh", str(script)], env=environment, capture_output=True, text=True, check=False)
+    return result, home
+
+
+def behavioral_host() -> bool:
+    return (platform.system(), platform.machine()) in {("Linux", "x86_64"), ("Darwin", "arm64")}
+
+
+def test_refused_native_admission_leaves_the_managed_cli_untouched() -> None:
+    if not behavioral_host():
+        return
+    with tempfile.TemporaryDirectory() as raw:
+        root = Path(raw)
+        (root / "home" / ".shimpz" / "bin").mkdir(parents=True)
+        managed = root / "home" / ".shimpz" / "bin" / "shimpz"
+        managed.write_text("previous managed CLI\n")
+        managed.chmod(0o700)
+        result, home = run_bootstrap(
+            root,
+            'echo "another Shimpz lifecycle operation is already running" >&2\nexit 1\n',
+        )
+        check(result.returncode != 0, "a refused native install is reported as a failure")
+        check("another Shimpz lifecycle operation is already running" in result.stderr, "the refusal stays visible")
+        check(managed.read_text() == "previous managed CLI\n", "the previous managed CLI stays byte-identical")
+        check(sorted(path.name for path in managed.parent.iterdir()) == ["shimpz"], "no activation residue remains")
+        check(not (home / ".local" / "bin" / "shimpz").exists(), "no public command is linked after failure")
+
+
+def test_bootstrap_runs_the_verified_cli_from_outside_the_space_and_links_its_installation() -> None:
+    if not behavioral_host():
+        return
+    with tempfile.TemporaryDirectory() as raw:
+        root = Path(raw)
+        result, home = run_bootstrap(
+            root,
+            'mkdir -p "$HOME/.shimpz/bin"\ncp "$0" "$HOME/.shimpz/bin/shimpz"\nchmod 700 "$HOME/.shimpz/bin/shimpz"\n',
+        )
+        check(result.returncode == 0, f"bootstrap succeeds: {result.stderr}")
+        calls = (root / "calls").read_text().splitlines()
+        check(len(calls) == 2, "the release-bound CLI runs exactly once")
+        executable, arguments = calls
+        check(arguments == f"install --release {FAKE_REF}", "the CLI receives the exact verified release")
+        check(not executable.startswith(str(home)), "the bootstrap never runs the CLI from inside the Space")
+        public = home / ".local" / "bin" / "shimpz"
+        check(public.readlink() == home / ".shimpz" / "bin" / "shimpz", "the public command links the CLI")
+
+
+def test_bootstrap_stops_before_installing_when_the_verified_cli_cannot_run() -> None:
+    if not behavioral_host():
+        return
+    with tempfile.TemporaryDirectory() as raw:
+        root = Path(raw)
+        managed = root / "home" / ".shimpz" / "bin" / "shimpz"
+        managed.parent.mkdir(parents=True)
+        managed.write_text("previous managed CLI\n")
+        managed.chmod(0o700)
+        result, home = run_bootstrap(root, "exit 0\n", version_status=126)
+        check(result.returncode != 0, "an unrunnable release-bound CLI is reported as a failure")
+        check("set TMPDIR to a private directory that allows execution" in result.stderr, "the next action is named")
+        check(not (root / "calls").exists(), "the installation never starts")
+        check(managed.read_text() == "previous managed CLI\n", "the previous managed CLI stays byte-identical")
+        check(not os.path.lexists(home / ".local" / "bin" / "shimpz"), "no public command is linked")
+
+
+def test_bootstrap_refuses_to_link_a_missing_managed_cli() -> None:
+    if not behavioral_host():
+        return
+    with tempfile.TemporaryDirectory() as raw:
+        result, home = run_bootstrap(Path(raw), "exit 0\n")
+        check(result.returncode != 0, "a completed install without its managed CLI is not reported as success")
+        check("did not install the managed command" in result.stderr, "the missing managed CLI is named")
+        check(not os.path.lexists(home / ".local" / "bin" / "shimpz"), "no dangling public command is created")
 
 
 def test_bootstrap_rejects_a_stale_docker_group_session() -> None:
@@ -131,7 +242,7 @@ def test_bootstrap_rejects_a_stale_docker_group_session() -> None:
         "sign out and back in (or restart), confirm docker version works without sudo",
         '[ "$(/usr/bin/id -g)" != "$(/usr/bin/id -g "$(/usr/bin/id -un)")" ]',
         "not a switched group such as sg docker",
-        '"$managed_cli" install --release "$release_ref"',
+        '"$candidate_cli" install --release "$release_ref"',
     ):
         check(contract in SCRIPT, f"bootstrap rejects a stale Docker group session: {contract}")
     for retired in ("/usr/bin/sg", "run_command", "SHIMPZ_RUN_", "docker_group"):
