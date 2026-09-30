@@ -108,9 +108,11 @@
   <span class="section-label">Remove access</span>
   <h2 id="disconnect-title">Disconnect before uninstalling</h2>
   <p>
-    Disconnect any Integration to revoke its provider grant, then uninstall the Assistant. Third-party password
-    input is memory-only and is never a configured value to remove. Uninstalling the Assistant does not delete the
-    Team or its conversation history.
+    Disconnect any Integration to revoke its provider grant, then uninstall the Assistant. A third-party password you
+    type for a single request is not kept. A value the Assistant keeps as a Stored Input, such as a WhatsApp token,
+    stays encrypted for that Team: clear it under <strong>Assistant integrations</strong> in the chat, or uninstall
+    the Assistant, which removes it. Uninstalling the Assistant does not delete the Team or its conversation
+    history.
   </p>
 </section>
 

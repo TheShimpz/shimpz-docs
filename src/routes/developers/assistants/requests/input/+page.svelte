@@ -77,7 +77,15 @@
   <h2 id="password-title">password</h2>
   <p>
     Use only for an arbitrary third-party secret intentionally delegated to this exact Assistant Action. The value is
-    masked and memory-only. It is never a Shimpz Account password or Local Supervisor password.
+    masked and is never a Shimpz Account password or Local Supervisor password. An ordinary password request is
+    memory-only: the value exists only while that Action attempt runs.
+  </p>
+  <p>
+    A declared Stored Input is the exception. When the Action declares it and requests the value with
+    <code>stored_input="&lt;id&gt;"</code>, Team keeps the value encrypted under that Team after the Action returns a
+    valid result, and later invocations of that Action receive it without asking again. Call
+    <code>ctx.reject_stored_input(id)</code> when the provider rejects it; Team deletes it and the next run asks again.
+    Uninstalling the Assistant or deleting the Team removes it.
   </p>
   <CodeBlock label="Third-party secret input" title="Inside a declared Action" variant="code" {...data.password} />
   <aside class="scope-note" aria-labelledby="password-rules-title">

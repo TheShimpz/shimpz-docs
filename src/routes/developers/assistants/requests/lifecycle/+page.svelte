@@ -96,8 +96,9 @@
     <dd>Injected only for an Action that declared the Integration; reading it closes requests.</dd>
     <dt><code>input:password</code></dt>
     <dd>
-      A third-party secret deliberately delivered to Assistant code. Memory-only, final request, protected from
-      logs and results. Prefer an OAuth Integration whenever possible.
+      A third-party secret deliberately delivered to Assistant code. Memory-only for that Action attempt, unless the
+      Action declares a Stored Input, which Team keeps encrypted for that Team's later invocations. Final request,
+      protected from logs and results. Prefer an OAuth Integration whenever possible.
     </dd>
     <dt><code>request_auth</code> factor</dt>
     <dd>Owned by the Shimpz platform ceremony. It never enters Assistant input, transcript, logs, or results.</dd>
