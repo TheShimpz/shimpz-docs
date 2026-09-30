@@ -105,10 +105,13 @@
     If an update says that the selected release cannot use the existing Supervisor authentication record, the
     candidate was refused before its runtime replaced the existing Space. For an existing healthy Space, the
     installed release is unchanged: a running Space stays available and an intentionally stopped Space stays
-    stopped. The current pre-production recovery is
-    <code>shimpz reset</code> followed by <code>shimpz install</code>; there is no record migration or fallback. Reset
-    permanently deletes the complete managed Local Space, so first read the exact deletion scope under
-    <a href="/manage/#reset-title">Reset only when you want to delete everything</a>.
+    stopped. The current pre-production recovery is <code>shimpz reset --hard</code> followed by
+    <code>shimpz install</code>; there is no record migration or fallback. The hard reset is authorized by the host,
+    not by the Supervisor: it never contacts Admin or Team, always asks on the interactive terminal, lists the exact
+    Shimpz-owned scope it will delete, and continues only when you type <code>Yes</code>. Docker and operating-system
+    permissions still apply. It permanently deletes the complete managed Local Space and keeps the
+    <code>shimpz</code> command, its lifecycle lock, pulled images, and Creator credentials. Read the deletion scope
+    under <a href="/manage/#reset-title">Reset only when you want to delete everything</a> first.
   </p>
 
   <h3>You want to remove access or delete Local data</h3>
