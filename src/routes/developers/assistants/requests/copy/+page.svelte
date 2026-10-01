@@ -85,6 +85,14 @@
       A lowercase DNS hostname of at least two labels, using letters, digits, and inner hyphens.
       <code>max_length</code> defaults to and may not exceed 253.
     </dd>
+    <dt><code>dns_name(value, max_length=N)</code></dt>
+    <dd>
+      An exact DNS record name, such as <code>_acme-challenge.example.com</code> or <code>_dmarc</code>: one or more
+      dot-separated lowercase labels of letters, digits, <code>_</code>, and <code>-</code>, each 1 to 63 characters
+      that neither start nor end with <code>-</code>. A trailing dot and a <code>*</code> wildcard label are refused,
+      so a person always sees the exact name being authorized. <code>max_length</code> defaults to and may not exceed
+      253.
+    </dd>
     <dt><code>identifier(value, max_length=N)</code></dt>
     <dd>
       An opaque value that starts with a letter or digit and continues with letters, digits, <code>.</code>,
@@ -96,8 +104,8 @@
     Write each helper directly as a <code>text()</code> keyword argument with a literal maximum. Shimpz inserts the
     value exactly once, never translates or interprets it, and never sends it to the translator. A value outside its
     kind's form or maximum fails the request, so constrain the Action input to the parameter's form or choose a
-    separate message. For example, a DNS record name with a leading underscore or a wildcard is neither a
-    <code>domain</code> nor an <code>identifier</code>.
+    separate message. For example, show a DNS record name that may start with an underscore as a
+    <code>dns_name</code>, because it is neither a <code>domain</code> nor an <code>identifier</code>.
   </p>
 </section>
 
@@ -127,14 +135,14 @@
   <p>
     Before any Assistant code is imported, the SDK reads every <code>actions/*.py</code> file and every
     <code>lib/**/*.py</code> file and collects each <code>text()</code> call. Import the names with
-    <code>from shimpz import text, integer, domain, identifier</code> or call <code>shimpz.text(...)</code> after
+    <code>from shimpz import text, integer, domain, dns_name, identifier</code> or call <code>shimpz.text(...)</code> after
     <code>import shimpz</code>. These forms fail with a <code>file:line</code> diagnostic:
   </p>
   <CodeBlock label="Refused request copy" title="Refused forms" variant="code" {...data.refused} />
   <p>
     Importing <code>text</code> under another name or from another module, calling it through
     <code>import shimpz as ...</code>, and a local name that hides an imported <code>text</code>,
-    <code>integer</code>, <code>domain</code>, or <code>identifier</code> are refused as well. Rename the local
+    <code>integer</code>, <code>domain</code>, <code>dns_name</code>, or <code>identifier</code> are refused as well. Rename the local
     variable instead.
   </p>
 </section>
