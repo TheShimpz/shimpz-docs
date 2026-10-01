@@ -100,7 +100,10 @@
   <span class="section-label">3 · Request the work</span>
   <h2 id="install-title">Let chat install a fresh binding automatically</h2>
   <ol>
-    <li>Open the Local Admin address printed by your installation, normally <code>https://local.shimpz.com</code>.</li>
+    <li>
+      Open the exact Local Admin address that <code>shimpz install</code> or <code>shimpz status</code> prints, such
+      as <code>http://127.0.0.1:7777</code>; the port depends on your installation.
+    </li>
     <li>Sign in as Supervisor and complete the required TOTP factor.</li>
     <li>
       Open the destination Team and request work that strongly matches an Action declared by the staged Assistant.
