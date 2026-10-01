@@ -52,7 +52,11 @@
     <dt><code>name</code></dt>
     <dd>A display name from 1 to 80 characters, without surrounding whitespace or line breaks.</dd>
     <dt><code>summary</code></dt>
-    <dd>A single-line outcome description from 1 to 160 characters.</dd>
+    <dd>
+      A single-line outcome description from 1 to 160 characters. With SDK 0.5.0, which is not released yet, it joins
+      the <a href="/developers/assistants/requests/copy/">message catalog</a> and is translated with it, so it must be
+      NFC-normalized English without braces.
+    </dd>
     <dt><code>creators</code></dt>
     <dd>One to 16 unique Account-owned Creator handles, each beginning with <code>@</code>.</dd>
     <dt><code>github</code></dt>
@@ -86,7 +90,8 @@
     <dd>
       An optional table for a token-like third-party value that Team keeps encrypted for the Team after the first
       successful Action, at most eight per manifest. It holds <code>kind = "password"</code>, a <code>label</code> of
-      1 to 80 characters, and a <code>description</code> of 1 to 500 characters. An Action names the id it uses; see
+      1 to 80 characters, and a <code>description</code> of 1 to 500 characters, which are never translated. An Action
+      names the id it uses; see
       <a href="/developers/assistants/requests/input/#password-title">password input</a>.
     </dd>
     <dt><code>help_url</code></dt>

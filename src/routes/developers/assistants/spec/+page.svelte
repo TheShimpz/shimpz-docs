@@ -35,7 +35,11 @@
     <dt><code>shimpz.toml</code></dt>
     <dd>Version, identity, Genesis, exact outbound hosts, and optional OAuth Integration scopes.</dd>
     <dt><code>actions/*.py</code></dt>
-    <dd>Exactly one decorated <code>async def run</code> per direct file.</dd>
+    <dd>
+      Exactly one decorated <code>async def run</code> per direct file. Human request copy in these files and in
+      <code>lib/</code> is English <a href="/developers/assistants/requests/copy/"><code>shimpz.text</code></a> catalog
+      copy.
+    </dd>
     <dt><code>pyproject.toml</code></dt>
     <dd>Python version and direct dependencies, including the released <code>shimpz</code> SDK.</dd>
   </dl>
@@ -46,10 +50,19 @@
   <h2 id="build-title">Generated artifacts never pollute source</h2>
   <ol>
     <li>The SDK validates the project and every direct Action file.</li>
-    <li>It derives the canonical <code>shimpz.contract.json</code>.</li>
+    <li>Before any Assistant code is imported, it extracts the static English message catalog.</li>
+    <li>It derives the canonical <code>shimpz.contract.json</code>, which carries that catalog.</li>
     <li>The platform resolves and locks dependencies and creates the runtime/container files.</li>
+    <li>
+      The platform translates new messages and copies the language pack read-only to
+      <code>/opt/shimpz/shimpz.pack.json</code> after every stage that runs Assistant code.
+    </li>
     <li>The Controller admits only the reviewed immutable build.</li>
   </ol>
+  <p>
+    The catalog extraction and language pack require SDK 0.5.0 and the matching CLI and platform release, which are
+    not released yet.
+  </p>
 </section>
 
 <section class="guide-section" aria-labelledby="runtime-title">

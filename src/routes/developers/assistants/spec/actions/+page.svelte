@@ -79,7 +79,11 @@
     Stored Input. The Controller addresses the Action by id and validates every input and result against those
     reviewed schemas; Assistants do not declare HTTP transport.
   </p>
-  <p>One Assistant contract contains between 1 and 128 Actions in canonical id order.</p>
+  <p>
+    One Assistant contract contains between 1 and 128 Actions in canonical id order. With SDK 0.5.0, which is not
+    released yet, the contract also carries the Assistant's
+    <a href="/developers/assistants/requests/copy/">message catalog</a> beside its Actions.
+  </p>
 </section>
 
 <aside class="scope-note" aria-labelledby="boundary-title">
