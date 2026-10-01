@@ -67,6 +67,6 @@
 </aside>
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue human requests">
-  <a href="/developers/assistants/requests/"><span>Back</span><strong>Overview</strong></a>
+  <a href="/developers/assistants/requests/copy/"><span>Back</span><strong>Request copy</strong></a>
   <a href="/developers/assistants/requests/input/"><span>Next</span><strong>Inputs</strong></a>
 </nav>

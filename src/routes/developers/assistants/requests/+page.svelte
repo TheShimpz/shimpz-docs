@@ -80,5 +80,5 @@
 
 <nav class="docs-page-nav docs-page-nav-split" aria-label="Continue human requests">
   <a href="/developers/assistants/spec/network/"><span>Back</span><strong>Network access</strong></a>
-  <a href="/developers/assistants/requests/approval/"><span>Next</span><strong>Approval</strong></a>
+  <a href="/developers/assistants/requests/copy/"><span>Next</span><strong>Request copy</strong></a>
 </nav>
