@@ -85,7 +85,9 @@
     <code>stored_input="&lt;id&gt;"</code>, Team keeps the value encrypted under that Team after the Action returns a
     valid result, and later invocations of that Action receive it without asking again. Call
     <code>ctx.reject_stored_input(id)</code> when the provider rejects it; Team deletes it and the next run asks again.
-    Uninstalling the Assistant or deleting the Team removes it.
+    Uninstalling the Assistant or deleting the Team removes it. When the Stored Input declares
+    <a href="/developers/assistants/spec/manifest/#access-title"><code>help_url</code></a>, the Local Admin request
+    links to that page so the person can create the value there.
   </p>
   <CodeBlock label="Third-party secret input" title="Inside a declared Action" variant="code" {...data.password} />
   <aside class="scope-note" aria-labelledby="password-rules-title">

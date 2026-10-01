@@ -82,6 +82,21 @@
       <code>scopes</code> list from that provider's supported catalog. Both the provider and every scope must exist in
       the current published catalog. Provider endpoints and OAuth client configuration remain Controller-owned.
     </dd>
+    <dt><code>[stored_inputs.&lt;id&gt;]</code></dt>
+    <dd>
+      An optional table for a token-like third-party value that Team keeps encrypted for the Team after the first
+      successful Action, at most eight per manifest. It holds <code>kind = "password"</code>, a <code>label</code> of
+      1 to 80 characters, and a <code>description</code> of 1 to 500 characters. An Action names the id it uses; see
+      <a href="/developers/assistants/requests/input/#password-title">password input</a>.
+    </dd>
+    <dt><code>help_url</code></dt>
+    <dd>
+      An optional key of a <code>[stored_inputs.&lt;id&gt;]</code> table: the page where a person creates the value,
+      such as an API key page. It must be one canonical <code>https</code> URL of at most 2,048 characters on a public
+      DNS host, with a path and an optional query, and without a port, credentials, a fragment, or a <code>.</code> or
+      <code>..</code> segment, written exactly as a browser prints it: for example
+      <code>https://dashboard.exa.ai/api-keys</code>, not <code>https://dashboard.exa.ai</code>.
+    </dd>
   </dl>
 </section>
 
