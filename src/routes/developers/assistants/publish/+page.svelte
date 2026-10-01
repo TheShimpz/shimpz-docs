@@ -144,6 +144,12 @@
     <dd>Fix the first reported project field or file, rerun <code>shimpz assistant check</code>, then publish again.</dd>
     <dt>Dependency, test, scan, build, or signing failure</dt>
     <dd>Use the safe failure code and build-run URL. Fix authored source only when the failure belongs to it.</dd>
+    <dt><code>translation_failed</code></dt>
+    <dd>
+      A message could not be translated within its field. Shorten or simplify the
+      <a href="/developers/assistants/requests/copy/"><code>shimpz.text</code> copy</a>, then publish again. This
+      code requires SDK 0.5.0 and the matching CLI, which are not released yet.
+    </dd>
     <dt>The wait reaches 30 minutes</dt>
     <dd>The CLI instructs you to rerun the same <code>shimpz assistant publish</code> command with unchanged source.</dd>
   </dl>
