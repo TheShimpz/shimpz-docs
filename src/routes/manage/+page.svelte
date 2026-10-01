@@ -27,9 +27,11 @@
   <p>
     Run <code>shimpz update</code> to apply a newer atomic Local release to the complete managed Shimpz Space,
     including its release-bound CLI. The atomic Local release is the only update authority for that managed
-    executable. The command checks the replacement before switching to it. If the candidate fails admission or does
-    not become healthy, Shimpz keeps or restores the previous working release and remembers the failed release, so a
-    later update does not retry it. Success reports <strong>Shimpz Space is ready</strong> with the local Admin address and active
+    executable. The command checks the replacement before switching to it. If the candidate fails that admission
+    check, the installed release stays unchanged and nothing is remembered, so the next update checks the same
+    release again after you fix the reported cause. If an admitted candidate replaces the installed release but does
+    not become healthy, Shimpz restores the previous working release and remembers the failed release, so later
+    updates report it instead of retrying it until a different release is selected. Success reports <strong>Shimpz Space is ready</strong> with the local Admin address and active
     release. When no newer release exists, it reports that the installed release is current and changes nothing.
   </p>
   <CodeBlock
