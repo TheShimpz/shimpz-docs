@@ -95,9 +95,9 @@
   <span class="section-label">Maintenance</span>
   <h2 id="maintenance-recovery-title">An update failed or rolled back</h2>
   <p>
-    Read the error printed by <code>shimpz install</code> before retrying. If the replacement did not become healthy,
-    Shimpz keeps or restores the previous working version. Fix the reported cause, then return to
-    <a href="/manage/">Maintain your Space</a>.
+    Read the error printed by <code>shimpz update</code>, <code>shimpz start</code>, or <code>shimpz install</code>
+    before retrying. If the replacement did not become healthy, Shimpz keeps or restores the previous working version.
+    Fix the reported cause, then return to <a href="/manage/">Maintain your Space</a>.
   </p>
 
   <h3>The Supervisor authentication record requires recovery</h3>

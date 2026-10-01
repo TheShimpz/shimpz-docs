@@ -25,21 +25,30 @@
   <span class="section-label">Update scope</span>
   <h2 id="update-title">Update the Space or the standalone CLI</h2>
   <p>
-    Run <code>shimpz install</code> to reconcile the complete managed Shimpz Space, including its release-bound CLI.
-    The atomic Local release is the only update authority for that managed executable. The command checks the
-    replacement before switching to it. If the candidate fails admission or does not become healthy, Shimpz keeps
-    or restores the previous working release. Success reports <strong>Shimpz Space is ready</strong> with the local
-    Admin address and active release.
+    Run <code>shimpz update</code> to apply a newer atomic Local release to the complete managed Shimpz Space,
+    including its release-bound CLI. The atomic Local release is the only update authority for that managed
+    executable. The command checks the replacement before switching to it. If the candidate fails admission or does
+    not become healthy, Shimpz keeps or restores the previous working release and remembers the failed release, so a
+    later update does not retry it. Success reports <strong>Shimpz Space is ready</strong> with the local Admin address and active
+    release. When no newer release exists, it reports that the installed release is current and changes nothing.
   </p>
   <CodeBlock
     label="Update the managed Shimpz Space"
     title="Terminal · managed Space update"
-    lines={[{ value: "shimpz install" }]}
+    lines={[{ value: "shimpz update" }]}
   />
+  <p>
+    Update never resumes a Space you stopped with <code>shimpz stop</code>. For a stopped Space it only reports
+    whether a newer release is available and preserves the stopped intent; run <code>shimpz start</code> when you
+    want to resume the Space and apply the current release. Update also does not repair the installed release. Use
+    <code>shimpz install</code> to install or repair the complete Local Space; it clears a stopped intent and starts
+    the workloads.
+  </p>
   <p>
     Run <code>shimpz upgrade</code> only for a standalone CLI used outside a managed Local Space. It follows the
     finalized standalone CLI release and never updates Admin, Team, Brain, network boundaries, or managed Space
-    state. A Space-managed CLI refuses this command and directs you back to <code>shimpz install</code>.
+    state. A Space-managed CLI refuses this command and directs you to <code>shimpz update</code> to check its
+    atomic release.
   </p>
   <CodeBlock
     label="Update only a standalone Shimpz CLI"
