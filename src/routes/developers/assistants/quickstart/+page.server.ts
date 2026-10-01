@@ -18,11 +18,17 @@ const files = `hello-assistant/
 const verify = `shimpz assistant check
 shimpz assistant run hello-world --input '{"name":"Ada"}'`;
 
+const approval = `request: Send a greeting
+request: Greet Ada with a Hello World message.
+request: Approve this action? [y/N]
+y`;
+
 const result = `{"message":"Hello, Ada!"}`;
 
 export const load: PageServerLoad = async () => ({
   create: await highlightCode(create, "bash"),
   files: await highlightCode(files, "text"),
   verify: await highlightCode(verify, "bash"),
+  approval: await highlightCode(approval, "text"),
   result: await highlightCode(result, "json"),
 });
