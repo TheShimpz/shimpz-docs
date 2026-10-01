@@ -4,24 +4,24 @@ import type { PageServerLoad } from "./$types";
 
 const password = `ctx.request_auth(
     "password",
-    title="Confirm the DNS change",
-    description="Re-enter your platform password before publishing this change.",
+    title=text("Confirm the DNS change"),
+    description=text("Re-enter your platform password before publishing this change."),
 )
 
 return await publish_dns_change(change)`;
 
 const totp = `ctx.request_auth(
     "totp",
-    title="Confirm the credential rotation",
-    description="Use your configured second factor before rotating this credential.",
+    title=text("Confirm the credential rotation"),
+    description=text("Use your configured second factor before rotating this credential."),
 )
 
 return await rotate_credential(credential_id)`;
 
 const passkey = `ctx.request_auth(
     "passkey",
-    title="Confirm the production release",
-    description="Use a registered passkey before releasing to production.",
+    title=text("Confirm the production release"),
+    description=text("Use a registered passkey before releasing to production."),
 )
 
 return await release_to_production(release_id)`;

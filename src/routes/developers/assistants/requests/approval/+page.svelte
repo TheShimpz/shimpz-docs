@@ -49,8 +49,13 @@
   <span class="section-label">Request copy</span>
   <h2 id="copy-title">Make the consequence obvious without hidden context</h2>
   <ul>
-    <li><code>title</code>: an imperative summary of the action, at most 80 printable characters.</li>
-    <li><code>description</code>: the target, scope, and consequence, at most 500 printable characters.</li>
+    <li><code>title</code>: an imperative summary of the action, at most 80 characters.</li>
+    <li><code>description</code>: the target, scope, and consequence, at most 500 characters.</li>
+    <li>
+      Write both as <a href="/developers/assistants/requests/copy/"><code>shimpz.text</code> request copy</a>; each
+      parameter counts at its declared maximum, and the human sees the copy in their interface language.
+    </li>
+    <li>Name the target with a typed parameter, such as the zone above, so the scope survives translation exactly.</li>
     <li>Do not place secrets, tokens, internal prompts, or raw payloads in either field.</li>
     <li>Do not describe several unrelated effects behind one approval.</li>
   </ul>

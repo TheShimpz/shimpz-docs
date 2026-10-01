@@ -52,8 +52,11 @@
     <dd>Returns a list of unique declared option values inside <code>min_selections</code>/<code>max_selections</code>.</dd>
   </dl>
   <p>
-    Import <code>InputRequest</code> and, for option controls, <code>InputOption</code> from <code>shimpz</code>. Declare
-    each exact kind, such as <code>input:text</code>, in the Action's <code>human_requests</code> list.
+    Import <code>InputRequest</code>, <code>text</code>, and, for option controls, <code>InputOption</code> from
+    <code>shimpz</code>. Every title, description, label, placeholder, and option label or description is
+    <a href="/developers/assistants/requests/copy/"><code>shimpz.text</code> request copy</a>; option values stay
+    canonical and are never translated. Declare each exact kind, such as <code>input:text</code>, in the Action's
+    <code>human_requests</code> list.
   </p>
   <RequestExample id="input" examples={inputExamples} />
 </section>
@@ -133,10 +136,13 @@
   <span class="section-label">Closed bounds</span>
   <h2 id="bounds-title">Reference limits for humans and code generators</h2>
   <ul>
-    <li>Title 80, description 500, label 80, and placeholder 120 printable characters.</li>
+    <li>
+      Title 80, description 500, label 80, and placeholder 120 characters, counting each parameter at its declared
+      maximum.
+    </li>
     <li>Maximum value lengths: text 4096, textarea 16000, password 1024, phone 64.</li>
     <li>Option controls require 2–32 unique options.</li>
-    <li>Option value 128, label 80, and optional description 160 printable characters.</li>
+    <li>Option value 128, label 80, and optional description 160 characters.</li>
     <li><code>required=False</code> permits an empty string for select/choice and zero selections when allowed.</li>
   </ul>
 </section>
