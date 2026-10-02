@@ -97,8 +97,9 @@
   <p>
     Read the error printed by <code>shimpz update</code>, <code>shimpz start</code>, or <code>shimpz install</code>
     before retrying. If the candidate failed admission, the installed release was not replaced and the next update
-    checks the same release again. If the replacement did not become healthy, Shimpz restored the previous working
-    version and remembers the failed release, so later updates wait for a different release. Fix the reported cause,
+    checks the same release again. If the replacement did not become healthy, Shimpz attempted to restore the previous
+    working version and remembers the failed release, so later updates wait for a different release. The error states
+    whether the previous release was restored or the rollback also failed. Fix the reported cause,
     then return to <a href="/manage/">Maintain your Space</a>.
   </p>
 
