@@ -34,17 +34,18 @@
   <li>
     <h2>Install the Assistant</h2>
     <p>
-      Open <strong>Assistants</strong>, confirm the Team shown under <strong>Installation destination</strong>,
-      open the Assistant you want, and choose <strong>Install</strong>. Continue when Admin reports
-      <strong>Assistant installed</strong> and the Assistant remains available for that Team.
+      Select the Team in the Team list, open <strong>Assistants</strong>, and choose
+      <strong>Install or replace</strong> on the Assistant's catalog card. The confirmation dialog shows the
+      <strong>Destination Team</strong>; check that it is the Team you selected, then choose
+      <strong>Confirm install</strong>. Continue when Admin reports <strong>Assistant installed</strong>.
     </p>
   </li>
 
   <li>
     <h2>Ask for one useful result</h2>
     <p>
-      On the Assistant page, choose one declared Action that matches your goal. Open <strong>Chat</strong> and ask for
-      that outcome in normal language. For example, a DNS Assistant might receive:
+      Open <strong>Chat</strong> for the same Team and ask for the outcome in normal language, naming the installed
+      Assistant. For example, a DNS Assistant might receive:
     </p>
     <blockquote>Use the installed DNS Assistant to list the zones I can access.</blockquote>
     <p>If private access is necessary, the turn pauses and shows the exact requirement.</p>
