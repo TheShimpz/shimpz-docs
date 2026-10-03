@@ -119,6 +119,11 @@
           description: "Pause for one attributable human decision",
           children: [
             {
+              href: "/developers/assistants/requests/copy/",
+              label: "Request copy",
+              description: "Write English copy Shimpz translates",
+            },
+            {
               href: "/developers/assistants/requests/approval/",
               label: "Approval",
               description: "Confirm one described action",

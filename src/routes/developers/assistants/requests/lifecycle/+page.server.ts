@@ -4,7 +4,7 @@ import type { PageServerLoad } from "./$types";
 
 const safeOrder = `from typing import TypedDict
 
-from shimpz import Context, InputOption, InputRequest, action
+from shimpz import Context, InputOption, InputRequest, action, text
 
 
 class PublishedRecord(TypedDict):
@@ -21,19 +21,19 @@ async def run(zone: str, *, ctx: Context) -> PublishedRecord:
     mode = ctx.request_input(
         InputRequest(
             kind="choice",
-            title="Choose the DNS mode",
-            description="Select exactly one routing behavior.",
-            label="Mode",
+            title=text("Choose the DNS mode"),
+            description=text("Select exactly one routing behavior."),
+            label=text("Mode"),
             options=(
-                InputOption("proxied", "Proxied"),
-                InputOption("dns-only", "DNS only"),
+                InputOption("proxied", text("Proxied")),
+                InputOption("dns-only", text("DNS only")),
             ),
         )
     )
     ctx.request_auth(
         "password",
-        title="Confirm the DNS publication",
-        description="Reauthenticate before this external write.",
+        title=text("Confirm the DNS publication"),
+        description=text("Reauthenticate before this external write."),
     )
 
     # Secret/action phase: no more human requests are allowed.

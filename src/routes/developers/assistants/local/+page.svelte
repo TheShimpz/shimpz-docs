@@ -8,11 +8,30 @@
     { kind: "output", prompt: "✓", value: "Assistant is valid." },
   ];
 
+  const prepare: readonly CodeLine[] = [
+    { kind: "command", prompt: "$", value: "shimpz assistant prepare" },
+    { kind: "output", prompt: "›", value: "Language pack prepared." },
+    { kind: "output", prompt: "›", value: "Assistant: <assistant-id> <version>" },
+    { kind: "output", prompt: "›", value: "Messages: <count>" },
+    { kind: "output", prompt: "›", value: "Catalog: sha256:<64 hexadecimal characters>" },
+    { kind: "output", prompt: "›", value: "Pack: sha256:<64 hexadecimal characters>" },
+    {
+      kind: "output",
+      prompt: "›",
+      value: "Next: run 'shimpz assistant stage' to build a Local snapshot with this pack.",
+    },
+  ];
+
   const stage: readonly CodeLine[] = [
     { kind: "command", prompt: "$", value: "shimpz assistant stage" },
     { kind: "output", prompt: "›", value: "Local Assistant snapshot staged." },
     { kind: "output", prompt: "›", value: "Assistant: <assistant-id> <version>" },
     { kind: "output", prompt: "›", value: "Image: sha256:<64 hexadecimal characters>" },
+    {
+      kind: "output",
+      prompt: "›",
+      value: "Earlier snapshots of this Assistant are removed by the Local Space once no Team uses them.",
+    },
     {
       kind: "output",
       prompt: "›",
@@ -56,7 +75,17 @@
   <span id="before-title" class="kicker">Before you start</span>
   <p>
     You need a running Local Space, its MFA-enabled Supervisor, the current native <code>shimpz</code> CLI, Docker,
-    and an Assistant project you trust. Run every terminal command from that independent Assistant repository.
+    a Shimpz Account with an enabled Creator profile, and an Assistant project you trust. Run every terminal command
+    from that independent Assistant repository.
+  </p>
+</aside>
+
+<aside class="scope-note" aria-labelledby="availability-title">
+  <span id="availability-title" class="kicker">Not released yet</span>
+  <p>
+    The language-pack step requires SDK 0.5.0 and the CLI release that adds <code>shimpz assistant prepare</code>.
+    Neither is released yet; until both are, the released CLI stages without a language pack and Team shows request
+    copy as written.
   </p>
 </aside>
 
@@ -70,8 +99,27 @@
   </p>
 </section>
 
+<section class="guide-section" aria-labelledby="prepare-title">
+  <span class="section-label">2 · Prepare</span>
+  <h2 id="prepare-title">Prepare the language pack for the current messages</h2>
+  <CodeBlock label="Prepare the language pack" title="Assistant project" lines={prepare} />
+  <p>
+    The values inside angle brackets vary. The command extracts the static message catalog—every
+    <a href="/developers/assistants/requests/copy/"><code>shimpz.text</code> message</a> plus the manifest
+    <code>summary</code>—without running Assistant code, and submits only that English catalog to Developers.
+    Source code, Action input, and parameter values are never sent. When it needs to, it signs you in through the
+    browser authorization for the <code>assistant:publish</code> scope, which requires an enabled Creator profile, and
+    waits up to 15 minutes while Shimpz translates the messages it has not translated before.
+  </p>
+  <p>
+    The CLI verifies the returned language pack against the catalog and keeps it in its own cache, outside the
+    project. Repeating the command for unchanged messages reuses that pack and contacts no service. Preparation
+    counts against a per-Creator quota and publishes nothing.
+  </p>
+</section>
+
 <section class="guide-section" aria-labelledby="stage-title">
-  <span class="section-label">2 · Stage</span>
+  <span class="section-label">3 · Stage</span>
   <h2 id="stage-title">Build one exact snapshot in your Docker daemon</h2>
   <CodeBlock label="Stage an unpublished Local snapshot" title="Assistant project" lines={stage} />
   <p>
@@ -85,6 +133,11 @@
     unchanged source reuses the current snapshot; changed source uses the layer cache and produces a new image ID that
     becomes current. Only the current snapshot can be installed.
   </p>
+  <p>
+    Staging contacts no Shimpz service. It refuses to start unless the CLI cache holds the pack prepared for the
+    project's current messages, and it copies that pack read-only into the image after every stage that runs
+    Assistant code. Team then shows each request in the Supervisor's interface language.
+  </p>
 </section>
 
 <aside class="scope-note" aria-labelledby="trust-title">
@@ -97,7 +150,7 @@
 </aside>
 
 <section class="guide-section" aria-labelledby="install-title">
-  <span class="section-label">3 · Request the work</span>
+  <span class="section-label">4 · Request the work</span>
   <h2 id="install-title">Let chat install a fresh binding automatically</h2>
   <ol>
     <li>
@@ -129,7 +182,7 @@
 </section>
 
 <section class="guide-section" aria-labelledby="exercise-title">
-  <span class="section-label">4 · Exercise</span>
+  <span class="section-label">5 · Exercise</span>
   <h2 id="exercise-title">Use the same Action path as an installed Assistant</h2>
   <p>
     After every planned Assistant is running and its required Integrations are configured, chat dispatches the
@@ -149,6 +202,10 @@
   <h2 id="iterate-title">Restage changed source, then replace deliberately</h2>
   <ol>
     <li>Edit the Assistant and rerun <code>shimpz assistant check</code>.</li>
+    <li>
+      If you added or changed any <code>shimpz.text</code> message or the manifest <code>summary</code>, run
+      <code>shimpz assistant prepare</code> again.
+    </li>
     <li>Run <code>shimpz assistant stage</code> and record the new image ID.</li>
     <li>
       Reload the Assistants page in Admin, compare that ID in the install dialog, and select
@@ -192,6 +249,16 @@
   <span class="section-label">Scope and recovery</span>
   <h2 id="limits-title">Keep the snapshot in its one Local boundary</h2>
   <dl>
+    <dt>Stage reports that no language pack is prepared</dt>
+    <dd>
+      The messages changed since the last preparation. Run <code>shimpz assistant prepare</code>, then stage again.
+    </dd>
+    <dt>Prepare reports that a message could not be translated</dt>
+    <dd>
+      Shorten or simplify the <code>shimpz.text</code> copy so every translation fits its field, then prepare
+      again. If translation is still running when the wait ends, rerun the same command later; it resumes the earlier
+      preparation without counting it again.
+    </dd>
     <dt>The snapshot does not appear in Admin</dt>
     <dd>
       Confirm the CLI used the same machine and Docker daemon as the Local Space, then rerun
@@ -204,8 +271,8 @@
     <dt>You need Hosted, another Space, Store discovery, or distribution</dt>
     <dd>
       <a href="/developers/assistants/publish/">Publish a separate immutable release through Developers</a>.
-      Local staging needs no Account, Creator profile, Developers request, Store listing, or Neuron operation, but
-      it also creates none of their distribution or trust evidence.
+      Local staging needs no publication, Store listing, or Neuron operation, and its language-pack preparation
+      sends only the English message catalog. It creates none of their distribution or trust evidence.
     </dd>
   </dl>
 </section>

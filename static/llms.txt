@@ -25,6 +25,7 @@
 - [Integrations and OAuth](https://docs.shimpz.com/developers/assistants/spec/integrations/): Request reviewed provider scopes without owning tokens.
 - [Network access](https://docs.shimpz.com/developers/assistants/spec/network/): Declare exact outbound hosts.
 - [Human requests](https://docs.shimpz.com/developers/assistants/requests/): Choose approval, input, or platform authentication.
+- [Request copy](https://docs.shimpz.com/developers/assistants/requests/copy/): Write English shimpz.text copy with typed parameters that Shimpz translates (requires the unreleased SDK 0.5.0).
 - [Approval](https://docs.shimpz.com/developers/assistants/requests/approval/): Ask for one attributable human approval.
 - [Inputs](https://docs.shimpz.com/developers/assistants/requests/input/): Collect one bounded closed field.
 - [Authentication](https://docs.shimpz.com/developers/assistants/requests/auth/): Request fresh platform assurance.

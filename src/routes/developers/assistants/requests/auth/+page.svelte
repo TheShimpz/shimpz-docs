@@ -46,9 +46,10 @@
     Declare the exact capability — <code>auth:password</code>, <code>auth:totp</code>, or
     <code>auth:passkey</code> — in <code>@action(human_requests=[...])</code>. The SDK call returns
     <code>None</code> only after fresh, request-bound assurance succeeds. Rejection, cancellation, expiry, or an
-    unavailable ceremony terminates the Action automatically. Local may let its Supervisor correct a rejected
-    password inside the same pending ceremony; the Action remains paused and receives nothing until
-    assurance succeeds or the request terminates. Hosted invalid-factor behavior remains terminal.
+    unavailable ceremony terminates the Action automatically. The <code>title</code> and <code>description</code> are
+    <a href="/developers/assistants/requests/copy/"><code>shimpz.text</code> request copy</a>. Local may let its
+    Supervisor correct a rejected password inside the same pending ceremony; the Action remains paused and receives
+    nothing until assurance succeeds or the request terminates. Hosted invalid-factor behavior remains terminal.
   </p>
   <p>
     An Action declares and issues at most one authorization request: either <code>approval</code> or one

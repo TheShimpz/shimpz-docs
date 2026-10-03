@@ -26,10 +26,16 @@
   <h2 id="build-title">Delivery details stay out of the repository</h2>
   <ol>
     <li>The SDK validates <code>shimpz.toml</code> and every direct <code>actions/*.py</code> file.</li>
-    <li>It generates the canonical machine contract.</li>
+    <li>It statically extracts the English message catalog without importing Assistant code.</li>
+    <li>It generates the canonical machine contract, including that catalog.</li>
     <li>The platform resolves and locks dependencies and creates the runtime/container files.</li>
-    <li>The immutable artifact is admitted against the reviewed manifest and contract.</li>
+    <li>
+      The platform adds the language pack for the catalog; a Local snapshot uses the pack that
+      <code>shimpz assistant prepare</code> keeps in the CLI cache.
+    </li>
+    <li>The immutable artifact is admitted against the reviewed manifest, contract, and language pack.</li>
   </ol>
+  <p>The catalog and language-pack steps require SDK 0.5.0 and the matching CLI, which are not released yet.</p>
 </section>
 
 <section class="guide-section" aria-labelledby="invoke-title">

@@ -6,10 +6,10 @@ const examples = {
   text: `resource = ctx.request_input(
     InputRequest(
         kind="text",
-        title="Identify the resource",
-        description="Enter the exact resource name to inspect.",
-        label="Resource name",
-        placeholder="api.example.com",
+        title=text("Identify the resource"),
+        description=text("Enter the exact resource name to inspect."),
+        label=text("Resource name"),
+        placeholder=text("api.example.com"),
         min_length=3,
         max_length=253,
     )
@@ -17,9 +17,9 @@ const examples = {
   textarea: `note = ctx.request_input(
     InputRequest(
         kind="textarea",
-        title="Describe the incident",
-        description="Add the context needed to prepare the response.",
-        label="Incident context",
+        title=text("Describe the incident"),
+        description=text("Add the context needed to prepare the response."),
+        label=text("Incident context"),
         min_length=20,
         max_length=2000,
     )
@@ -27,9 +27,9 @@ const examples = {
   password: `provider_secret = ctx.request_input(
     InputRequest(
         kind="password",
-        title="Connect the provider",
-        description="Provide the third-party API secret for this connection.",
-        label="Provider API secret",
+        title=text("Connect the provider"),
+        description=text("Provide the third-party API secret for this connection."),
+        label=text("Provider API secret"),
         min_length=1,
         max_length=256,
     )
@@ -40,10 +40,10 @@ return await connect_provider(provider_secret)`,
   phone: `phone = ctx.request_input(
     InputRequest(
         kind="phone",
-        title="Choose an escalation contact",
-        description="Enter the phone number that should receive this escalation.",
-        label="Escalation phone",
-        placeholder="+1 415 555 0100",
+        title=text("Choose an escalation contact"),
+        description=text("Enter the phone number that should receive this escalation."),
+        label=text("Escalation phone"),
+        placeholder=text("+1 415 555 0100"),
         min_length=7,
         max_length=32,
     )
@@ -51,37 +51,37 @@ return await connect_provider(provider_secret)`,
   select: `environment = ctx.request_input(
     InputRequest(
         kind="select",
-        title="Choose the environment",
-        description="Select the one environment this read should inspect.",
-        label="Environment",
+        title=text("Choose the environment"),
+        description=text("Select the one environment this read should inspect."),
+        label=text("Environment"),
         options=(
-            InputOption("production", "Production"),
-            InputOption("staging", "Staging"),
+            InputOption("production", text("Production")),
+            InputOption("staging", text("Staging")),
         ),
     )
 )`,
   choice: `mode = ctx.request_input(
     InputRequest(
         kind="choice",
-        title="Choose the DNS mode",
-        description="Select exactly one routing behavior.",
-        label="Mode",
+        title=text("Choose the DNS mode"),
+        description=text("Select exactly one routing behavior."),
+        label=text("Mode"),
         options=(
-            InputOption("proxied", "Proxied", "Route traffic through Cloudflare."),
-            InputOption("dns-only", "DNS only", "Publish only the DNS answer."),
+            InputOption("proxied", text("Proxied"), text("Route traffic through Cloudflare.")),
+            InputOption("dns-only", text("DNS only"), text("Publish only the DNS answer.")),
         ),
     )
 )`,
   choices: `channels = ctx.request_input(
     InputRequest(
         kind="choices",
-        title="Choose notification channels",
-        description="Select one or two channels for this incident.",
-        label="Channels",
+        title=text("Choose notification channels"),
+        description=text("Select one or two channels for this incident."),
+        label=text("Channels"),
         options=(
-            InputOption("email", "Email"),
-            InputOption("sms", "SMS"),
-            InputOption("voice", "Voice call"),
+            InputOption("email", text("Email")),
+            InputOption("sms", text("SMS")),
+            InputOption("voice", text("Voice call")),
         ),
         min_selections=1,
         max_selections=2,

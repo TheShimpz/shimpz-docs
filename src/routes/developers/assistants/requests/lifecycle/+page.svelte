@@ -69,7 +69,10 @@
   <ul>
     <li>Build request copy and options from original Action inputs or already replayed responses.</li>
     <li>Do not use current time, randomness, unordered external data, mutable globals, or network reads.</li>
-    <li>Keep option values stable; changing copy, bounds, order, or kind changes the canonical fingerprint.</li>
+    <li>
+      Keep option values stable; changing a message, a parameter value, bounds, order, or kind changes the canonical
+      fingerprint. The display language never changes it, because copy travels as catalog references.
+    </li>
     <li>A changed Assistant image, Integration generation, Team context, principal, or fingerprint fails closed.</li>
   </ul>
 </section>
@@ -103,7 +106,10 @@
     <dt><code>request_auth</code> factor</dt>
     <dd>Owned by the Shimpz platform ceremony. It never enters Assistant input, transcript, logs, or results.</dd>
     <dt>Public request metadata</dt>
-    <dd>Bounded title, description, labels, options, Assistant identity, Action identity, and expiry only.</dd>
+    <dd>
+      Catalog references for the title, description, labels, and options, their typed parameter values, Assistant
+      identity, Action identity, and expiry only. Parameter values are never sent to the translator.
+    </dd>
   </dl>
 </section>
 
@@ -123,7 +129,8 @@
 <aside class="scope-note" aria-labelledby="llm-title">
   <span id="llm-title" class="kicker">Checklist for code generators</span>
   <p>
-    Declare every exact kind. Use the narrowest presentation. Keep copy printable and secret-free. Put every request
+    Declare every exact kind. Use the narrowest presentation. Write copy as literal English <code>shimpz.text</code>
+    templates with typed, secret-free parameters. Put every request
     before token access and side effects. Keep descriptors deterministic. Treat password as third-party,
     non-returnable, and the final request across the whole Team turn. Use <code>request_auth</code> for Shimpz
     authentication. Never implement retry after denial.
