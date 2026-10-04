@@ -53,8 +53,8 @@
     <dd>A display name from 1 to 80 characters, without surrounding whitespace or line breaks.</dd>
     <dt><code>summary</code></dt>
     <dd>
-      A single-line outcome description from 1 to 160 characters. With SDK 0.5.0, which is not released yet, it joins
-      the <a href="/developers/assistants/requests/copy/">message catalog</a> and is translated with it, so it must be
+      A single-line outcome description from 1 to 160 characters. With SDK 0.5.2, it joins the
+      <a href="/developers/assistants/requests/copy/">message catalog</a> and is translated with it, so it must be
       NFC-normalized English without braces.
     </dd>
     <dt><code>creators</code></dt>

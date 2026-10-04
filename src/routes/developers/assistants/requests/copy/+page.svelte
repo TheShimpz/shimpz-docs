@@ -31,11 +31,12 @@
 </header>
 
 <aside class="scope-note" aria-labelledby="availability-title">
-  <span id="availability-title" class="kicker">Not released yet</span>
+  <span id="availability-title" class="kicker">Availability</span>
   <p>
-    This page describes SDK 0.5.0 and the CLI release that adds <code>shimpz assistant prepare</code>. Neither is
-    released yet: the released SDK and CLI do not provide <code>shimpz.text</code>, language packs, or translated
-    request copy.
+    This page describes SDK 0.5.2 and CLI 0.5.64 or newer, which provide <code>shimpz.text</code> and
+    <code>shimpz assistant prepare</code>. As of October 4, 2026, Developers does not yet serve language-pack
+    preparation, so <code>shimpz assistant prepare</code> cannot obtain a pack for new or changed messages. It still
+    reuses a valid pack already cached for the same messages.
   </p>
 </aside>
 

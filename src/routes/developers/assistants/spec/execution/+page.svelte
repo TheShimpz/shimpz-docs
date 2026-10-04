@@ -35,7 +35,10 @@
     </li>
     <li>The immutable artifact is admitted against the reviewed manifest, contract, and language pack.</li>
   </ol>
-  <p>The catalog and language-pack steps require SDK 0.5.0 and the matching CLI, which are not released yet.</p>
+  <p>
+    The catalog and language-pack steps require SDK 0.5.2 and CLI 0.5.64 or newer. As of October 4, 2026, Developers
+    does not yet serve the language-pack preparation that a Local snapshot needs for new or changed messages.
+  </p>
 </section>
 
 <section class="guide-section" aria-labelledby="invoke-title">

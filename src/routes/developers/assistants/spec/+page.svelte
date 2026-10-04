@@ -60,8 +60,9 @@
     <li>The Controller admits only the reviewed immutable build.</li>
   </ol>
   <p>
-    The catalog extraction and language pack require SDK 0.5.0 and the matching CLI and platform release, which are
-    not released yet.
+    The catalog extraction and language pack require SDK 0.5.2 and CLI 0.5.64 or newer. As of October 4, 2026,
+    Developers does not yet serve the language-pack preparation that a Local snapshot needs for new or changed
+    messages.
   </p>
 </section>
 

@@ -148,7 +148,7 @@
     <dd>
       A message could not be translated within its field. Shorten or simplify the
       <a href="/developers/assistants/requests/copy/"><code>shimpz.text</code> copy</a>, then publish again. This
-      code requires SDK 0.5.0 and the matching CLI, which are not released yet.
+      code requires SDK 0.5.2 and CLI 0.5.64 or newer.
     </dd>
     <dt>The wait reaches 30 minutes</dt>
     <dd>The CLI instructs you to rerun the same <code>shimpz assistant publish</code> command with unchanged source.</dd>

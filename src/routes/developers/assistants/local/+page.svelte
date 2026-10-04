@@ -81,11 +81,12 @@
 </aside>
 
 <aside class="scope-note" aria-labelledby="availability-title">
-  <span id="availability-title" class="kicker">Not released yet</span>
+  <span id="availability-title" class="kicker">Availability</span>
   <p>
-    The language-pack step requires SDK 0.5.0 and the CLI release that adds <code>shimpz assistant prepare</code>.
-    Neither is released yet; until both are, the released CLI stages without a language pack and Team shows request
-    copy as written.
+    The language-pack step requires SDK 0.5.2 and CLI 0.5.64 or newer, which adds
+    <code>shimpz assistant prepare</code>. As of October 4, 2026, Developers does not yet serve language-pack
+    preparation, so <code>shimpz assistant prepare</code> cannot obtain a pack for new or changed messages, and the
+    CLI refuses to stage a snapshot without one. A valid pack already cached for the same messages is still reused.
   </p>
 </aside>
 
