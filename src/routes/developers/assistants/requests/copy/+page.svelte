@@ -33,10 +33,9 @@
 <aside class="scope-note" aria-labelledby="availability-title">
   <span id="availability-title" class="kicker">Availability</span>
   <p>
-    This page describes SDK 0.5.2 and CLI 0.5.64 or newer, which provide <code>shimpz.text</code> and
-    <code>shimpz assistant prepare</code>. As of October 4, 2026, Developers does not yet serve language-pack
-    preparation, so <code>shimpz assistant prepare</code> cannot obtain a pack for new or changed messages. It still
-    reuses a valid pack already cached for the same messages.
+    This page describes SDK 0.5.2 and CLI 0.5.65 or newer. A publication is translated by Shimpz. A Local snapshot
+    is translated when you stage it with your own OpenAI API key; without one, it shows your English text in every
+    interface language.
   </p>
 </aside>
 
@@ -176,14 +175,14 @@
     </dd>
     <dt>Language pack</dt>
     <dd>
-      For a Local snapshot, <code>shimpz assistant prepare</code> keeps it in the CLI cache. For a publication, the
-      build places it in the final image. It is never part of the source package.
+      For a Local snapshot, <code>shimpz assistant stage</code> makes it and places it in the final image. For a
+      publication, the Developers build does. It is never part of the source package.
     </dd>
   </dl>
   <p>
     Do not write, commit, or edit a catalog, contract, or pack in the Assistant repository. Change the
-    <code>text()</code> calls instead; <a href="/developers/assistants/local/">Test in Local</a> shows when to prepare
-    again.
+    <code>text()</code> calls instead; <a href="/developers/assistants/local/">Test in Local</a> shows how staging
+    translates them.
   </p>
 </section>
 

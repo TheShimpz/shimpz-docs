@@ -8,25 +8,16 @@
     { kind: "output", prompt: "✓", value: "Assistant is valid." },
   ];
 
-  const prepare: readonly CodeLine[] = [
-    { kind: "command", prompt: "$", value: "shimpz assistant prepare" },
-    { kind: "output", prompt: "›", value: "Language pack prepared." },
-    { kind: "output", prompt: "›", value: "Assistant: <assistant-id> <version>" },
-    { kind: "output", prompt: "›", value: "Messages: <count>" },
-    { kind: "output", prompt: "›", value: "Catalog: sha256:<64 hexadecimal characters>" },
-    { kind: "output", prompt: "›", value: "Pack: sha256:<64 hexadecimal characters>" },
-    {
-      kind: "output",
-      prompt: "›",
-      value: "Next: run 'shimpz assistant stage' to build a Local snapshot with this pack.",
-    },
-  ];
-
   const stage: readonly CodeLine[] = [
     { kind: "command", prompt: "$", value: "shimpz assistant stage" },
     { kind: "output", prompt: "›", value: "Local Assistant snapshot staged." },
     { kind: "output", prompt: "›", value: "Assistant: <assistant-id> <version>" },
     { kind: "output", prompt: "›", value: "Image: sha256:<64 hexadecimal characters>" },
+    {
+      kind: "output",
+      prompt: "›",
+      value: "Language: translated through OpenAI (gpt-6-luna) from this workstation",
+    },
     {
       kind: "output",
       prompt: "›",
@@ -75,18 +66,16 @@
   <span id="before-title" class="kicker">Before you start</span>
   <p>
     You need a running Local Space, its MFA-enabled Supervisor, the current native <code>shimpz</code> CLI, Docker,
-    a Shimpz Account with an enabled Creator profile, and an Assistant project you trust. Run every terminal command
-    from that independent Assistant repository.
+    and an Assistant project you trust. No Shimpz Account, Creator profile, or sign-in is needed. Run every terminal
+    command from that independent Assistant repository.
   </p>
 </aside>
 
 <aside class="scope-note" aria-labelledby="availability-title">
   <span id="availability-title" class="kicker">Availability</span>
   <p>
-    The language-pack step requires SDK 0.5.2 and CLI 0.5.64 or newer, which adds
-    <code>shimpz assistant prepare</code>. As of October 4, 2026, Developers does not yet serve language-pack
-    preparation, so <code>shimpz assistant prepare</code> cannot obtain a pack for new or changed messages, and the
-    CLI refuses to stage a snapshot without one. A valid pack already cached for the same messages is still reused.
+    This page describes SDK 0.5.2 and CLI 0.5.65 or newer, whose <code>shimpz assistant stage</code> makes the
+    language pack on your machine. Earlier CLIs required a separate preparation step that needed a Creator sign-in.
   </p>
 </aside>
 
@@ -100,22 +89,22 @@
   </p>
 </section>
 
-<section class="guide-section" aria-labelledby="prepare-title">
-  <span class="section-label">2 · Prepare</span>
-  <h2 id="prepare-title">Prepare the language pack for the current messages</h2>
-  <CodeBlock label="Prepare the language pack" title="Assistant project" lines={prepare} />
+<section class="guide-section" aria-labelledby="translate-title">
+  <span class="section-label">2 · Translate (optional)</span>
+  <h2 id="translate-title">Let staging translate your messages</h2>
   <p>
-    The values inside angle brackets vary. The command extracts the static message catalog—every
-    <a href="/developers/assistants/requests/copy/"><code>shimpz.text</code> message</a> plus the manifest
-    <code>summary</code>—without running Assistant code, and submits only that English catalog to Developers.
-    Source code, Action input, and parameter values are never sent. When it needs to, it signs you in through the
-    browser authorization for the <code>assistant:publish</code> scope, which requires an enabled Creator profile, and
-    waits up to 15 minutes while Shimpz translates the messages it has not translated before.
+    Every <a href="/developers/assistants/requests/copy/"><code>shimpz.text</code> message</a> and the manifest
+    <code>summary</code> are English. To show them in each person's interface language, save your own OpenAI API key
+    in the file <code>~/.config/shimpz/openai-api-key</code> (<code>$XDG_CONFIG_HOME/shimpz/openai-api-key</code> when
+    that variable is set, or <code>%APPDATA%\shimpz\openai-api-key</code> on Windows), readable only by you, for
+    example with <code>chmod 600</code>. On Windows the CLI does not check the file's permissions, so keep it in your
+    private profile.
   </p>
   <p>
-    The CLI verifies the returned language pack against the catalog and keeps it in its own cache, outside the
-    project. Repeating the command for unchanged messages reuses that pack and contacts no service. Preparation
-    counts against a per-Creator quota and publishes nothing.
+    Staging then sends only the English text of each new or changed message to OpenAI, never source code, Action
+    input, or parameter values, and remembers every admitted translation in the CLI cache, so an unchanged message is
+    never translated again. The provider bills your key. Without the file, staging still works and every interface
+    language shows your English text; staging tells you so.
   </p>
 </section>
 
@@ -135,9 +124,10 @@
     becomes current. Only the current snapshot can be installed.
   </p>
   <p>
-    Staging contacts no Shimpz service. It refuses to start unless the CLI cache holds the pack prepared for the
-    project's current messages, and it copies that pack read-only into the image after every stage that runs
-    Assistant code. Team then shows each request in the Supervisor's interface language.
+    Staging contacts no Shimpz service and needs no sign-in. It copies the language pack read-only into the image
+    after every stage that runs Assistant code, and the <code>Language</code> line reports whether the messages were
+    translated or stay in English. Team then shows each request in the Supervisor's interface language, using that
+    pack.
   </p>
 </section>
 
@@ -203,10 +193,6 @@
   <h2 id="iterate-title">Restage changed source, then replace deliberately</h2>
   <ol>
     <li>Edit the Assistant and rerun <code>shimpz assistant check</code>.</li>
-    <li>
-      If you added or changed any <code>shimpz.text</code> message or the manifest <code>summary</code>, run
-      <code>shimpz assistant prepare</code> again.
-    </li>
     <li>Run <code>shimpz assistant stage</code> and record the new image ID.</li>
     <li>
       Reload the Assistants page in Admin, compare that ID in the install dialog, and select
@@ -250,15 +236,15 @@
   <span class="section-label">Scope and recovery</span>
   <h2 id="limits-title">Keep the snapshot in its one Local boundary</h2>
   <dl>
-    <dt>Stage reports that no language pack is prepared</dt>
+    <dt>Stage reports that a message could not be translated</dt>
     <dd>
-      The messages changed since the last preparation. Run <code>shimpz assistant prepare</code>, then stage again.
+      Shorten or simplify the <code>shimpz.text</code> copy so every translation fits its field, then stage again.
+      Messages already translated are not sent again.
     </dd>
-    <dt>Prepare reports that a message could not be translated</dt>
+    <dt>Stage reports a problem with the OpenAI key or provider</dt>
     <dd>
-      Shorten or simplify the <code>shimpz.text</code> copy so every translation fits its field, then prepare
-      again. If translation is still running when the wait ends, rerun the same command later; it resumes the earlier
-      preparation without counting it again.
+      Replace the key or fix the file's ownership and permissions, wait and stage again when the provider limited or
+      was unavailable, or remove the key file to stage with English text.
     </dd>
     <dt>The snapshot does not appear in Admin</dt>
     <dd>

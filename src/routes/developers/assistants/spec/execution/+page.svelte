@@ -30,14 +30,13 @@
     <li>It generates the canonical machine contract, including that catalog.</li>
     <li>The platform resolves and locks dependencies and creates the runtime/container files.</li>
     <li>
-      The platform adds the language pack for the catalog; a Local snapshot uses the pack that
-      <code>shimpz assistant prepare</code> keeps in the CLI cache.
+      The platform adds the language pack for the catalog; for a Local snapshot, <code>shimpz assistant stage</code>
+      makes it on your machine.
     </li>
     <li>The immutable artifact is admitted against the reviewed manifest, contract, and language pack.</li>
   </ol>
   <p>
-    The catalog and language-pack steps require SDK 0.5.2 and CLI 0.5.64 or newer. As of October 4, 2026, Developers
-    does not yet serve the language-pack preparation that a Local snapshot needs for new or changed messages.
+    The catalog and language-pack steps require SDK 0.5.2 and CLI 0.5.65 or newer.
   </p>
 </section>
 
