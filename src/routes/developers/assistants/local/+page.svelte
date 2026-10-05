@@ -103,7 +103,7 @@
   <p>
     Staging then sends only the English text of each new or changed message to OpenAI, never source code, Action
     input, or parameter values, and remembers every admitted translation in the CLI cache, so an unchanged message is
-    never translated again. The provider bills your key. Without the file, staging still works and every interface
+    not translated again while its remembered translation stays valid. The provider bills your key. Without the file, staging still works and every interface
     language shows your English text; staging tells you so.
   </p>
 </section>
@@ -126,8 +126,8 @@
   <p>
     Staging contacts no Shimpz service and needs no sign-in. It copies the language pack read-only into the image
     after every stage that runs Assistant code, and the <code>Language</code> line reports whether the messages were
-    translated or stay in English. Team then shows each request in the Supervisor's interface language, using that
-    pack.
+    translated or stay in English. Team then shows each request in the Supervisor's interface language when the
+    messages were translated, and in English when they were not.
   </p>
 </section>
 
