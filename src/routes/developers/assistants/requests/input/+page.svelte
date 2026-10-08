@@ -85,10 +85,13 @@
   </p>
   <p>
     A declared Stored Input is the exception. When the Action declares it and requests the value with
-    <code>stored_input="&lt;id&gt;"</code>, Team keeps the value encrypted under that Team after the Action returns a
-    valid result, and later invocations of that Action receive it without asking again. Call
-    <code>ctx.reject_stored_input(id)</code> when the provider rejects it; Team deletes it and the next run asks again.
-    Uninstalling the Assistant or deleting the Team removes it. When the Stored Input declares
+    <code>stored_input="&lt;id&gt;"</code>, Team keeps the value encrypted under that Team as soon as the person enters
+    it, and every later invocation of an Action that declares it receives it without asking again. An Action may
+    declare several Stored Inputs, such as an access token and an app secret; request them together with
+    <code>ctx.request_stored_inputs(...)</code>, which asks for each missing one in turn and returns the values only once
+    Team holds all of them. Call <code>ctx.reject_stored_input(id)</code> for exactly the value the provider rejected;
+    Team deletes only that one and the next run asks for it again. Uninstalling the Assistant or deleting the Team
+    removes them. When a Stored Input declares
     <a href="/developers/assistants/spec/manifest/#access-title"><code>help_url</code></a>, the Local Admin request
     links to that page so the person can create the value there.
   </p>
@@ -97,7 +100,8 @@
     <span id="password-rules-title" class="kicker">Secret-last rules</span>
     <p>
       Password must be the final human request in the entire Team turn, not merely in this Action. After any Action
-      receives one, a later request from any Action in the same turn is blocked. Do not log it, include it in copy,
+      receives one, a later request from any Action in the same turn is blocked. Stored Inputs requested together count
+      as one final request: no request may follow them. Do not log it, include it in copy,
       return it, place it in an exception, or retain it. Use an OAuth
       <a href="/developers/assistants/spec/integrations/">Integration</a> when the provider supports one.
     </p>

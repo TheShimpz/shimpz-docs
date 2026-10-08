@@ -88,10 +88,10 @@
     </dd>
     <dt><code>[stored_inputs.&lt;id&gt;]</code></dt>
     <dd>
-      An optional table for a token-like third-party value that Team keeps encrypted for the Team after the first
-      successful Action, at most eight per manifest. It holds <code>kind = "password"</code>, a <code>label</code> of
-      1 to 80 characters, and a <code>description</code> of 1 to 500 characters, which are never translated. An Action
-      names the id it uses; see
+      An optional table for a token-like third-party value that Team keeps encrypted for the Team once a person enters
+      it, at most eight per manifest. It holds <code>kind = "password"</code>, a <code>label</code> of 1 to 80
+      characters, and a <code>description</code> of 1 to 500 characters, which are never translated. Each Action names
+      the ids it uses, any number of them, and receives only those; several Actions may share one. See
       <a href="/developers/assistants/requests/input/#password-title">password input</a>.
     </dd>
     <dt><code>help_url</code></dt>
