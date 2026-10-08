@@ -125,7 +125,7 @@
   <CodeBlock label="Messages chosen before the request" title="Inside a declared Action" variant="code" {...data.reused} />
   <p>
     A message used in several fields must fit the smallest of them. The manifest <code>summary</code> joins the same
-    catalog with a 160-character bound, so it cannot contain braces.
+    catalog with an 80-character bound, so it cannot contain braces and every translation of it fits 80 characters.
   </p>
 </section>
 

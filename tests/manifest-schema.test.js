@@ -147,9 +147,9 @@ test("static published shimpz.toml schema is the closed Spec v1 contract", () =>
 test("static manifest schema projection pins Developers authority", () => {
   assert.deepEqual(upstream, {
     repository: "https://github.com/TheShimpz/shimpz-developers",
-    commit: "60aa95d713e06d6ca423bec26d55b7f5b9dc77fe",
+    commit: "fb99c5cb8ff7e654dd7ff229f807a944c86e16db",
     path: "protocol/assistant/v1/manifest.schema.json",
-    sha256: "55391bdf4a3e6342955a38c0c73b26d938172bb3487cc3522bc474da8bf9368a",
+    sha256: "2dc6e665b925e52dac685cd85fe4595194cdd5b765304fd3e2d36684784ab220",
   });
 });
 

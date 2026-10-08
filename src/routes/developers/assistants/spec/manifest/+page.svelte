@@ -53,9 +53,9 @@
     <dd>A display name from 1 to 80 characters, without surrounding whitespace or line breaks.</dd>
     <dt><code>summary</code></dt>
     <dd>
-      A single-line outcome description from 1 to 160 characters. With SDK 0.5.2, it joins the
-      <a href="/developers/assistants/requests/copy/">message catalog</a> and is translated with it, so it must be
-      NFC-normalized English without braces.
+      A short, single-line outcome description from 1 to 80 characters, shown in full under the Assistant's name. With
+      SDK 0.6.0, it joins the <a href="/developers/assistants/requests/copy/">message catalog</a> and is translated with
+      it, so it must be NFC-normalized English without braces, and every translation must fit 80 characters too.
     </dd>
     <dt><code>creators</code></dt>
     <dd>One to 16 unique Account-owned Creator handles, each beginning with <code>@</code>.</dd>
