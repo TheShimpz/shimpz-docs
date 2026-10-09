@@ -210,7 +210,7 @@ case "$HOME" in /*) ;; *) fail "HOME must be an absolute path" ;; esac
 
 # The release-bound CLI activates itself as ~/.shimpz/bin/shimpz only under its lifecycle lock and after admission.
 printf '  [..] Installing the release-bound Shimpz Space\n'
-"$candidate_cli" install --release "$release_ref"
+"$candidate_cli" install "$release_ref"
 
 managed_cli="$HOME/.shimpz/bin/shimpz"
 [ -f "$managed_cli" ] && [ ! -L "$managed_cli" ] && [ -x "$managed_cli" ] ||

@@ -58,7 +58,7 @@ def test_bootstrap_has_one_closed_digest_verified_handoff() -> None:
         '[ "$(wc -l < "$release_metadata" | tr -d \' \')" -eq 10 ]',
         '[ "$(one_metadata_value schema)" = "local-v2" ]',
         '[ "$(file_hash "$candidate_cli")" = "$expected_hash" ]',
-        '"$candidate_cli" install --release "$release_ref"',
+        '"$candidate_cli" install "$release_ref"',
     ):
         check(contract in SCRIPT, f"bootstrap preserves {contract}")
     check(SCRIPT.count('"$docker" pull') == 1, "bootstrap pulls only the atomic release")
@@ -98,7 +98,7 @@ def test_bootstrap_delegates_executable_activation_and_preserves_foreign_command
     ):
         check(contract in SCRIPT, f"bootstrap preserves acquisition contract {contract}")
     check(
-        SCRIPT.index('"$candidate_cli" install --release "$release_ref"')
+        SCRIPT.index('"$candidate_cli" install "$release_ref"')
         < SCRIPT.index('public_dir="$HOME/.local/bin"'),
         "the public command is linked only after the release-bound CLI completed its installation",
     )
@@ -234,7 +234,7 @@ def test_bootstrap_runs_the_verified_cli_from_outside_the_space_and_links_its_in
         calls = (root / "calls").read_text().splitlines()
         check(len(calls) == 4 and calls[1] == "--version", "the verified CLI is probed, then installs exactly once")
         executable, arguments = calls[2:]
-        check(arguments == f"install --release {FAKE_REF}", "the CLI receives the exact verified release")
+        check(arguments == f"install {FAKE_REF}", "the CLI receives the exact verified release")
         check(not executable.startswith(str(home)), "the bootstrap never runs the CLI from inside the Space")
         public = home / ".local" / "bin" / "shimpz"
         check(public.readlink() == home / ".shimpz" / "bin" / "shimpz", "the public command links the CLI")
@@ -318,7 +318,7 @@ def test_bootstrap_rejects_a_stale_docker_group_session() -> None:
         "sign out and back in (or restart), confirm docker version works without sudo",
         '[ "$(/usr/bin/id -g)" != "$(/usr/bin/id -g "$(/usr/bin/id -un)")" ]',
         "not a switched group such as sg docker",
-        '"$candidate_cli" install --release "$release_ref"',
+        '"$candidate_cli" install "$release_ref"',
     ):
         check(contract in SCRIPT, f"bootstrap rejects a stale Docker group session: {contract}")
     check("/usr/bin/sg" not in SCRIPT, "bootstrap never switches groups for Docker or the Local CLI")
