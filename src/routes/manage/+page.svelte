@@ -49,15 +49,15 @@
     the workloads.
   </p>
   <p>
-    Run <code>shimpz upgrade</code> only for a standalone CLI used outside a managed Local Space. It follows the
-    finalized standalone CLI release and never updates Admin, Team, Brain, network boundaries, or managed Space
-    state. A Space-managed CLI refuses this command and directs you to <code>shimpz update</code> to check its
-    atomic release.
+    To upgrade a standalone CLI used outside a managed Local Space, reinstall it with
+    <code>cargo install --locked shimpz-cli</code> (Rust 1.97.1 or newer). <code>shimpz upgrade</code> prints this
+    command and never replaces the CLI itself. A standalone upgrade never updates Admin, Team, Brain, network
+    boundaries, or managed Space state. A Space-managed CLI is updated only through <code>shimpz update</code>.
   </p>
   <CodeBlock
-    label="Update only a standalone Shimpz CLI"
-    title="Terminal · standalone CLI update"
-    lines={[{ value: "shimpz upgrade" }]}
+    label="Upgrade a standalone Shimpz CLI"
+    title="Terminal · standalone CLI upgrade"
+    lines={[{ value: "cargo install --locked shimpz-cli" }]}
   />
 </section>
 
