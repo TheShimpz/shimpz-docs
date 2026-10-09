@@ -60,8 +60,8 @@
     <li>The Controller bounds and validates the direct JSON result before the Brain can use it.</li>
   </ol>
   <p>
-    Each invocation has an 8-second execution deadline. The encoded request and direct response are each limited to
-    512 KiB before schema and private-value validation.
+    Each invocation has an 8-second execution deadline. The encoded request is limited to 512 KiB, or 12 MiB when it
+    carries delivered file content, and the direct response to 512 KiB, before schema and private-value validation.
   </p>
 </section>
 
