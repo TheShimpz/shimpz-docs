@@ -5,6 +5,10 @@ set -eu
 BOOTSTRAP_VERSION="2.0.0"
 RELEASE_REPOSITORY="ghcr.io/theshimpz/shimpz-local-release"
 RELEASE_CHANNEL="stable"
+# The public half of the key that signs every published Local release (ADR-0103); the Local CLI pins the same key.
+RELEASE_SIGNING_KEY='-----BEGIN PUBLIC KEY-----
+OWNER-PROVIDED-P256-SPKI-BASE64
+-----END PUBLIC KEY-----'
 
 fail() {
 	printf '  [error] Shimpz could not continue: %s\n' "$*" >&2
@@ -34,7 +38,7 @@ Supported hosts:
   Linux amd64.
   64-bit Windows through Ubuntu on WSL2 with systemd.
   Apple Silicon macOS arm64.
-  Docker Engine 25.0+ and Docker Compose 2.20.2+ are required.
+  Docker Engine 25.0+, Docker Compose 2.20.2+, and /usr/bin/openssl are required.
 EOF
 }
 
@@ -136,7 +140,7 @@ cleanup() {
 	status=$?
 	trap - EXIT HUP INT TERM
 	if [ "${container_id:-}" ]; then
-		"$docker" rm "$container_id" >/dev/null 2>&1 || true
+		"$docker" rm --volumes "$container_id" >/dev/null 2>&1 || true
 	fi
 	[ ! -d "${temporary:-}" ] || rm -rf "$temporary"
 	exit "$status"
@@ -149,6 +153,7 @@ fi
 docker="$(resolve_docker)" || fail "Docker is not installed in a supported system path"
 resolve_docker_access || fail "Docker is not running or this user cannot access it"
 "$docker" compose version >/dev/null 2>&1 || fail "Docker Compose v2 is unavailable"
+[ -x /usr/bin/openssl ] || fail "OpenSSL is required at /usr/bin/openssl to verify the Local release signature"
 
 temporary="$(mktemp -d "${TMPDIR:-/tmp}/shimpz-bootstrap.XXXXXX")"
 chmod 700 "$temporary"
@@ -173,8 +178,21 @@ release_metadata="$temporary/release.env"
 candidate_cli="$temporary/shimpz"
 "$docker" cp "$container_id:/release.env" "$release_metadata" >/dev/null 2>&1 || fail "Docker could not extract the Local release metadata; verify Docker storage and retry"
 "$docker" cp "$container_id:$member" "$candidate_cli" >/dev/null 2>&1 || fail "Docker could not extract the Shimpz CLI; verify Docker storage and retry"
-"$docker" rm "$container_id" >/dev/null 2>&1 || fail "Docker could not remove its temporary Local release container; retry the installation"
+"$docker" rm --volumes "$container_id" >/dev/null 2>&1 || fail "Docker could not remove its temporary Local release container; retry the installation"
 container_id=""
+for copied in "$release_metadata" "$candidate_cli"; do
+	[ -f "$copied" ] && [ ! -L "$copied" ] || fail "the Local release carries a file of an invalid type; do not install this release"
+done
+[ "$(wc -c < "$release_metadata" | tr -d ' ')" -le 2048 ] || fail "the atomic release metadata is not closed"
+
+# Nothing from the release is trusted before its signature over the exact metadata and state epoch label verifies.
+labels="$("$docker" image inspect --format '{{index .Config.Labels "org.shimpz.local.state-epoch"}}|{{index .Config.Labels "org.shimpz.local.release-signature"}}' "$release_ref" 2>/dev/null)" ||
+	fail "Docker could not read the Local release labels; retry the installation"
+{ cat "$release_metadata"; printf 'state_epoch=%s\n' "${labels%%|*}"; } >"$temporary/release.signed"
+printf '%s\n' "$RELEASE_SIGNING_KEY" >"$temporary/release-key.pem"
+printf '%s' "${labels#*|}" | /usr/bin/openssl base64 -d -A >"$temporary/release.sig" 2>/dev/null &&
+	/usr/bin/openssl dgst -sha256 -verify "$temporary/release-key.pem" -signature "$temporary/release.sig" "$temporary/release.signed" >/dev/null 2>&1 ||
+	fail "the Local release signature is invalid; do not install this release"
 
 [ "$(wc -l < "$release_metadata" | tr -d ' ')" -eq 10 ] || fail "the atomic release metadata is not closed"
 [ "$(one_metadata_value schema)" = "local-v2" ] || fail "the atomic release schema is unsupported"

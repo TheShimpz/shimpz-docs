@@ -75,7 +75,7 @@ def test_bootstrap_hides_successful_docker_details_without_hiding_failures() -> 
         'create --platform "$platform" "$release_ref" "$member" 2>/dev/null)" || fail',
         'cp "$container_id:/release.env" "$release_metadata" >/dev/null 2>&1 || fail',
         'cp "$container_id:$member" "$candidate_cli" >/dev/null 2>&1 || fail',
-        'rm "$container_id" >/dev/null 2>&1 || fail',
+        'rm --volumes "$container_id" >/dev/null 2>&1 || fail',
     ):
         check(contract in SCRIPT, f"bootstrap keeps successful Docker details private: {contract}")
     for action in (
@@ -113,17 +113,47 @@ DOCKER_SEARCH = (
 )
 FAKE_DIGEST = "ab" * 32
 FAKE_REF = f"ghcr.io/theshimpz/shimpz-local-release@sha256:{FAKE_DIGEST}"
+PINNED_KEY = SCRIPT.split("RELEASE_SIGNING_KEY='", 1)[1].split("'\n", 1)[0]
 
 
-def run_bootstrap(root: Path, cli_body: str, version_status: int = 0) -> tuple[subprocess.CompletedProcess[str], Path]:
-    """Run the bootstrap against a fake Docker whose release carries a stub release-bound CLI."""
+def generate_key(root: Path, name: str) -> tuple[Path, str]:
+    """A test P-256 private key file and its public PEM, made with the same OpenSSL the bootstrap uses."""
+    private = root / f"{name}.pem"
+    curve = ["-algorithm", "EC", "-pkeyopt", "ec_paramgen_curve:P-256"]
+    subprocess.run(["/usr/bin/openssl", "genpkey", *curve, "-out", str(private)], check=True, capture_output=True)
+    public = subprocess.run(
+        ["/usr/bin/openssl", "pkey", "-in", str(private), "-pubout"], check=True, capture_output=True, text=True
+    )
+    return private, public.stdout
+
+
+def sign(private: Path, message: bytes) -> str:
+    """The base64 DER ECDSA P-256 SHA-256 signature publish.yml would put in the release signature label."""
+    signature = subprocess.run(
+        ["/usr/bin/openssl", "dgst", "-sha256", "-sign", str(private)], input=message, check=True, capture_output=True
+    ).stdout
+    return (
+        subprocess.run(["/usr/bin/openssl", "base64", "-A"], input=signature, check=True, capture_output=True)
+        .stdout.decode()
+        .strip()
+    )
+
+
+def run_bootstrap(
+    root: Path, cli_body: str, version_status: int = 0, signer: str = "release", link_cli: bool = False
+) -> tuple[subprocess.CompletedProcess[str], Path]:
+    """Run the bootstrap against a fake Docker whose release carries a stub release-bound CLI.
+
+    The release is signed by `signer`: the pinned test key (`release`), another key (`other`), or nothing (`none`).
+    The stub records every invocation, its version probe included, in `calls`.
+    """
     home = root / "home"
     home.mkdir(exist_ok=True)
     cli = root / "release-cli"
     cli.write_text(
         "#!/bin/sh\n"
-        f'[ "$1" = --version ] && exit {version_status}\n'
         f'printf \'%s\\n\' "$0" "$*" >> {shlex.quote(str(root / "calls"))}\n'
+        f'[ "$1" = --version ] && exit {version_status}\n'
         f"{cli_body}"
     )
     digest = hashlib.sha256(cli.read_bytes()).hexdigest()
@@ -141,22 +171,30 @@ def run_bootstrap(root: Path, cli_body: str, version_status: int = 0) -> tuple[s
         ("egress", "egress"),
     )
     metadata.write_text("".join(f"{key}={value}\n" for key, value in fields))
+    release_key, public_key = generate_key(root, "release-key")
+    signature = "<no value>"
+    if signer != "none":
+        signing_key = release_key if signer == "release" else generate_key(root, "other-key")[0]
+        signature = sign(signing_key, metadata.read_bytes() + b"state_epoch=2\n")
     docker = root / "docker"
     docker.write_text(
         "#!/bin/sh\n"
         'case "$1" in\n'
         "  info|pull|rm|compose) exit 0 ;;\n"
-        f"  image) printf '%s\\n' '{FAKE_REF}' ;;\n"
+        f"  image) case \"$4\" in *Labels*) printf '%s\\n' '2|{signature}' ;;"
+        f" *) printf '%s\\n' '{FAKE_REF}' ;; esac ;;\n"
         f"  create) printf '%s\\n' {'c' * 64} ;;\n"
         f'  cp) case "$2" in *:/release.env) cp {shlex.quote(str(metadata))} "$3" ;;'
-        f' *) cp {shlex.quote(str(cli))} "$3" ;; esac ;;\n'
+        f' *) {"ln -s" if link_cli else "cp"} {shlex.quote(str(cli))} "$3" ;; esac ;;\n'
         "  *) exit 1 ;;\n"
         "esac\n"
     )
     docker.chmod(0o755)
     script = root / "install.sh"
     check(SCRIPT.count(DOCKER_SEARCH) == 1, "the fixture replaces the complete Docker search list")
-    script.write_text(SCRIPT.replace(DOCKER_SEARCH, f"for candidate in {shlex.quote(str(docker))}; do"))
+    check(SCRIPT.count(PINNED_KEY) == 1, "the fixture replaces the complete pinned signing key")
+    fixture = SCRIPT.replace(DOCKER_SEARCH, f"for candidate in {shlex.quote(str(docker))}; do")
+    script.write_text(fixture.replace(PINNED_KEY, public_key.rstrip("\n")))
     environment = {**os.environ, "HOME": str(home), "TMPDIR": str(root)}
     result = subprocess.run(["sh", str(script)], env=environment, capture_output=True, text=True, check=False)
     return result, home
@@ -197,12 +235,53 @@ def test_bootstrap_runs_the_verified_cli_from_outside_the_space_and_links_its_in
         )
         check(result.returncode == 0, f"bootstrap succeeds: {result.stderr}")
         calls = (root / "calls").read_text().splitlines()
-        check(len(calls) == 2, "the release-bound CLI runs exactly once")
-        executable, arguments = calls
+        check(len(calls) == 4 and calls[1] == "--version", "the verified CLI is probed, then installs exactly once")
+        executable, arguments = calls[2:]
         check(arguments == f"install --release {FAKE_REF}", "the CLI receives the exact verified release")
         check(not executable.startswith(str(home)), "the bootstrap never runs the CLI from inside the Space")
         public = home / ".local" / "bin" / "shimpz"
         check(public.readlink() == home / ".shimpz" / "bin" / "shimpz", "the public command links the CLI")
+
+
+def test_bootstrap_runs_nothing_from_a_release_without_the_pinned_signature() -> None:
+    if not behavioral_host():
+        return
+    for signer in ("none", "other"):
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            result, home = run_bootstrap(root, "exit 0\n", signer=signer)
+            check(result.returncode != 0, f"a release signed by {signer} is refused")
+            check("the Local release signature is invalid" in result.stderr, "the signature refusal is named")
+            check(not (root / "calls").exists(), "the release-bound CLI never runs")
+            check(not os.path.lexists(home / ".shimpz"), "nothing is installed")
+            check(not os.path.lexists(home / ".local" / "bin" / "shimpz"), "no public command is linked")
+
+
+def test_bootstrap_verifies_the_signature_before_trusting_the_release() -> None:
+    for contract in (
+        "RELEASE_SIGNING_KEY='-----BEGIN PUBLIC KEY-----\n",
+        "[ -x /usr/bin/openssl ] || fail",
+        '{{index .Config.Labels "org.shimpz.local.state-epoch"}}|'
+        '{{index .Config.Labels "org.shimpz.local.release-signature"}}',
+        "printf 'state_epoch=%s\\n' \"${labels%%|*}\"",
+        '/usr/bin/openssl dgst -sha256 -verify "$temporary/release-key.pem"',
+    ):
+        check(contract in SCRIPT, f"bootstrap verifies the release signature: {contract}")
+    verified = SCRIPT.index("/usr/bin/openssl dgst -sha256 -verify")
+    for later in ("one_metadata_value schema", '"$(file_hash "$candidate_cli")"', '"$candidate_cli" --version'):
+        check(verified < SCRIPT.index(later), f"the signature verifies before {later}")
+
+
+def test_bootstrap_runs_nothing_from_a_linked_release_file() -> None:
+    if not behavioral_host():
+        return
+    with tempfile.TemporaryDirectory() as raw:
+        root = Path(raw)
+        result, home = run_bootstrap(root, "exit 0\n", link_cli=True)
+        check(result.returncode != 0, "a linked release-bound CLI is refused")
+        check("a file of an invalid type" in result.stderr, "the refusal is named")
+        check(not (root / "calls").exists(), "the linked CLI never runs")
+        check(not os.path.lexists(home / ".shimpz"), "nothing is installed")
 
 
 def test_bootstrap_stops_before_installing_when_the_verified_cli_cannot_run() -> None:
@@ -217,7 +296,7 @@ def test_bootstrap_stops_before_installing_when_the_verified_cli_cannot_run() ->
         result, home = run_bootstrap(root, "exit 0\n", version_status=126)
         check(result.returncode != 0, "an unrunnable release-bound CLI is reported as a failure")
         check("set TMPDIR to a private directory that allows execution" in result.stderr, "the next action is named")
-        check(not (root / "calls").exists(), "the installation never starts")
+        check((root / "calls").read_text().splitlines()[1::2] == ["--version"], "the installation never starts")
         check(managed.read_text() == "previous managed CLI\n", "the previous managed CLI stays byte-identical")
         check(not os.path.lexists(home / ".local" / "bin" / "shimpz"), "no public command is linked")
 
