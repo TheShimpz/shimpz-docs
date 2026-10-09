@@ -6,11 +6,7 @@
   const publicCommand: readonly CodeLine[] = [
     { kind: "command", prompt: "$", value: "shimpz assistant check" },
     { kind: "output", prompt: "✓", value: "Assistant is valid." },
-    { kind: "command", prompt: "$", value: "shimpz assistant publish --visibility public" },
-  ];
-
-  const privateCommand: readonly CodeLine[] = [
-    { kind: "command", prompt: "$", value: "shimpz assistant publish --visibility private" },
+    { kind: "command", prompt: "$", value: "shimpz assistant publish" },
   ];
 
   const progressStates = [
@@ -28,7 +24,7 @@
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/publish/" />
   <meta
     name="description"
-    content="Publish a validated Shimpz Assistant as one private or public immutable release."
+    content="Publish a validated Shimpz Assistant as one immutable public release."
   />
 </svelte:head>
 
@@ -41,8 +37,8 @@
   <span class="section-label">Creator task · up to 30 minutes</span>
   <h1>Publish one exact Assistant release</h1>
   <p class="docs-lede">
-    Validate the current source, choose who can discover it, authorize that immutable release, and wait until its
-    signed artifact is installable.
+    Validate the current source, authorize that immutable release, and wait until its signed artifact is
+    installable.
   </p>
 </header>
 
@@ -58,25 +54,18 @@
   <aside class="scope-note" aria-labelledby="immutable-title">
     <span id="immutable-title" class="kicker">Immutable boundary</span>
     <p>
-      Creator consent is bound to the exact Assistant id, version, and source digest. Visibility is a separate
-      immutable publication setting. Changed source or a different visibility requires a new version; Shimpz does
-      not overwrite or reclassify an existing release.
+      Creator consent is bound to the exact Assistant id, version, and source digest. Changed source requires a new
+      version; Shimpz does not overwrite an existing release.
     </p>
   </aside>
 </section>
 
-<section class="guide-section" aria-labelledby="visibility-title">
-  <span class="section-label">Visibility</span>
-  <h2 id="visibility-title">Choose how Teams can discover the release</h2>
-  <dl>
-    <dt><code>private</code></dt>
-    <dd>Unlisted. Only an exact authorized resolution can find and install the release.</dd>
-    <dt><code>public</code></dt>
-    <dd>Eligible for Store discovery after a separate review approves it.</dd>
-  </dl>
+<section class="guide-section" aria-labelledby="discovery-title">
+  <span class="section-label">Discovery</span>
+  <h2 id="discovery-title">Every release is public after review</h2>
   <p>
-    Visibility controls discovery, not Team authority. In both cases, the Team verifies and authorizes the exact
-    artifact before installation.
+    Every publication is public. A release appears in the Store only after a separate review approves it. Review
+    controls discovery, not Team authority: the Team verifies and authorizes the exact artifact before installation.
   </p>
 </section>
 
@@ -84,8 +73,6 @@
   <span class="section-label">One command</span>
   <h2 id="command-title">Validate, authorize, and publish</h2>
   <CodeBlock label="Public Assistant publication" title="Assistant project" lines={publicCommand} />
-  <p>For an unlisted release, choose private explicitly:</p>
-  <CodeBlock label="Private Assistant publication" title="Assistant project" lines={privateCommand} />
   <p>
     <code>shimpz assistant publish</code> builds the canonical source package, validates its generated contract, obtains
     <code>identity:read</code> and <code>assistant:publish</code> authorization when needed, records your exact Creator
@@ -127,8 +114,7 @@
   <blockquote><p><code>Assistant published and installable.</code></p></blockquote>
   <p>
     The result includes source and OCI digests, review state, build run, signature, provenance, and the Developers
-    portal URL. A private release can be installable without a Store listing. A public release appears in the Store
-    only after its review state becomes <code>approved</code>.
+    portal URL. The release appears in the Store only after its review state becomes <code>approved</code>.
   </p>
 </section>
 
@@ -138,8 +124,8 @@
   <dl>
     <dt><code>creator_consent_required</code></dt>
     <dd>One or more attributed Creators have not consented to this exact id, version, and source digest.</dd>
-    <dt><code>version_already_published</code> or <code>visibility_already_set</code></dt>
-    <dd>Do not mutate or reclassify that release. Choose a new version for changed source or visibility.</dd>
+    <dt><code>version_already_published</code></dt>
+    <dd>Do not mutate that release. Choose a new version for changed source.</dd>
     <dt>Validation fails before upload</dt>
     <dd>Fix the first reported project field or file, rerun <code>shimpz assistant check</code>, then publish again.</dd>
     <dt>Dependency, test, scan, build, or signing failure</dt>

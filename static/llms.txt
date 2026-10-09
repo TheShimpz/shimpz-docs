@@ -30,7 +30,7 @@
 - [Inputs](https://docs.shimpz.com/developers/assistants/requests/input/): Collect one bounded closed field.
 - [Authentication](https://docs.shimpz.com/developers/assistants/requests/auth/): Request fresh Supervisor password assurance.
 - [Replay and lifecycle](https://docs.shimpz.com/developers/assistants/requests/lifecycle/): Understand replay, denial, expiry, and limits.
-- [Publish an Assistant](https://docs.shimpz.com/developers/assistants/publish/): Authorize one immutable private or public release.
+- [Publish an Assistant](https://docs.shimpz.com/developers/assistants/publish/): Authorize one immutable public release.
 
 ## Reference
 

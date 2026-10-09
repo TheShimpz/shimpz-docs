@@ -51,7 +51,7 @@
     <li>
       <a class="docs-entry-link" href="/developers/assistants/publish/">
         <strong>5. Publish one immutable release</strong>
-        <span>Choose its visibility, authorize the exact source, and wait for an installable artifact.</span>
+        <span>Authorize the exact source and wait for an installable artifact.</span>
       </a>
     </li>
   </ul>

@@ -86,7 +86,7 @@
   </p>
   <p>
     When the exact source is ready, follow <a href="/developers/assistants/publish/">Publish an Assistant</a> to
-    choose visibility, authorize the release, and verify its installable artifact.
+    authorize the release and verify its installable artifact.
   </p>
   <ul>
     <li><a href="/specs/source-package/v1/README.md">Source package v1 overview</a></li>
