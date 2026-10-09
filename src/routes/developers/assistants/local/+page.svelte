@@ -74,7 +74,7 @@
 <aside class="scope-note" aria-labelledby="availability-title">
   <span id="availability-title" class="kicker">Availability</span>
   <p>
-    This page describes SDK 0.7.1 and CLI 0.8.1 or newer, whose <code>shimpz assistant stage</code> makes the
+    This page describes SDK 0.7.1 and CLI 0.9.0 or newer, whose <code>shimpz assistant stage</code> makes the
     language pack on your machine.
   </p>
 </aside>

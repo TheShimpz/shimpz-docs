@@ -36,7 +36,7 @@
     <li>The immutable artifact is admitted against the reviewed manifest, contract, and language pack.</li>
   </ol>
   <p>
-    The catalog and language-pack steps require SDK 0.7.1 and CLI 0.8.1 or newer.
+    The catalog and language-pack steps require SDK 0.7.1 and CLI 0.9.0 or newer.
   </p>
 </section>
 

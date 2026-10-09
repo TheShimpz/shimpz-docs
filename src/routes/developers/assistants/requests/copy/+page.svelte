@@ -33,7 +33,7 @@
 <aside class="scope-note" aria-labelledby="availability-title">
   <span id="availability-title" class="kicker">Availability</span>
   <p>
-    This page describes SDK 0.7.1 and CLI 0.8.1 or newer. A publication is translated by Shimpz. A Local snapshot
+    This page describes SDK 0.7.1 and CLI 0.9.0 or newer. A publication is translated by Shimpz. A Local snapshot
     is translated when you stage it with your own OpenAI API key; without one, it shows your English text in every
     interface language.
   </p>

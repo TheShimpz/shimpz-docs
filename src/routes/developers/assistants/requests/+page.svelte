@@ -54,7 +54,7 @@
     Every exact kind must appear in <code>@action(human_requests=[...])</code>. An undeclared kind is rejected before
     a modal appears. Titles, descriptions, labels, placeholders, and options are bounded English
     <a href="/developers/assistants/requests/copy/"><code>shimpz.text</code> messages</a> that Team shows in each
-    person's interface language; they never grant authority. These examples require SDK 0.7.1 and CLI 0.8.1 or
+    person's interface language; they never grant authority. These examples require SDK 0.7.1 and CLI 0.9.0 or
     newer. The provider operation at the end is an illustrative helper that the Creator implements.
   </p>
 </section>

@@ -60,7 +60,7 @@
     <li>The Controller admits only the reviewed immutable build.</li>
   </ol>
   <p>
-    The catalog extraction and language pack require SDK 0.7.1 and CLI 0.8.1 or newer. A Local snapshot's pack is
+    The catalog extraction and language pack require SDK 0.7.1 and CLI 0.9.0 or newer. A Local snapshot's pack is
     made by <code>shimpz assistant stage</code> on your machine.
   </p>
 </section>
