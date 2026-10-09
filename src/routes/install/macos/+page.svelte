@@ -40,8 +40,8 @@
         href="https://docs.docker.com/desktop/setup/install/mac-install/"
         target="_blank"
         rel="noopener noreferrer">Docker Desktop for Mac</a
-      > with Docker Engine 25.0 or newer and Docker Compose 2.20.2 or newer, open it, and wait until Docker reports
-      that it is running.
+      > with Docker Engine 25.0 or newer, runc 1.2.8+, 1.3.3+, or 1.4.0+ (shown by <code>docker version</code>), and
+      Docker Compose 2.20.2 or newer, open it, and wait until Docker reports that it is running.
     </p>
     <p>
       Keep Docker Desktop's <code>desktop-linux</code> context selected. Shimpz uses that managed engine and stops
