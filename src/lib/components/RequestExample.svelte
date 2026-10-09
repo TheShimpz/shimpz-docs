@@ -67,7 +67,7 @@
           <ActionRequestFields request={selected.request} resetKey={selected.id} {labels} />
         </fieldset>
         {#snippet footer()}
-          <Button type="button" variant="secondary" disabled>Deny and stop</Button>
+          <Button type="button" variant="secondary" disabled>Cancel</Button>
           <Button type="button" disabled>{selected.primaryLabel}</Button>
         {/snippet}
       </DialogFrame>

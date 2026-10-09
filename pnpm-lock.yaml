@@ -21,8 +21,8 @@ importers:
         specifier: ^5.2.7
         version: 5.2.7
       '@shimpz/frontend':
-        specifier: https://codeload.github.com/TheShimpz/shimpz-frontend/tar.gz/f3bd0a0b9a8996ba085898b00c9c61ddd13b6d19
-        version: https://codeload.github.com/TheShimpz/shimpz-frontend/tar.gz/f3bd0a0b9a8996ba085898b00c9c61ddd13b6d19(svelte@5.56.9)
+        specifier: https://codeload.github.com/TheShimpz/shimpz-frontend/tar.gz/caa906eac9492f81063d996dab447510a67f313f
+        version: https://codeload.github.com/TheShimpz/shimpz-frontend/tar.gz/caa906eac9492f81063d996dab447510a67f313f(svelte@5.56.9)
     devDependencies:
       '@sveltejs/adapter-static':
         specifier: ^3.0.10
@@ -238,9 +238,9 @@ packages:
   '@shikijs/vscode-textmate@10.0.2':
     resolution: {integrity: sha512-83yeghZ2xxin3Nj8z1NMd/NCuca+gsYXswywDy5bHvwlWL8tpTQmzGeUuHd9FC3E/SBEMvzJRwWEOz5gGes9Qg==}
 
-  '@shimpz/frontend@https://codeload.github.com/TheShimpz/shimpz-frontend/tar.gz/f3bd0a0b9a8996ba085898b00c9c61ddd13b6d19':
-    resolution: {gitHosted: true, integrity: sha512-ZJvuGNcywp3iT+n41lDxZW0LWhRHlvu7R0XqvgFeUGfrTrGP5ankSmW+VvdZSKARoo9NXfVCgdiIi+cfd/UTQw==, tarball: https://codeload.github.com/TheShimpz/shimpz-frontend/tar.gz/f3bd0a0b9a8996ba085898b00c9c61ddd13b6d19}
-    version: 0.4.0
+  '@shimpz/frontend@https://codeload.github.com/TheShimpz/shimpz-frontend/tar.gz/caa906eac9492f81063d996dab447510a67f313f':
+    resolution: {gitHosted: true, integrity: sha512-fFAp4HZB0eclgY5JRpfSGjVmpgmI21g1O406Q6ZVxyqrooDL+Af4P1ETZ/mjWXBDdSG95/QYGnG7EmKjkLuSjw==, tarball: https://codeload.github.com/TheShimpz/shimpz-frontend/tar.gz/caa906eac9492f81063d996dab447510a67f313f}
+    version: 0.5.3
     engines: {node: 24.x}
     peerDependencies:
       svelte: ^5.56.8
@@ -957,7 +957,7 @@ snapshots:
 
   '@shikijs/vscode-textmate@10.0.2': {}
 
-  '@shimpz/frontend@https://codeload.github.com/TheShimpz/shimpz-frontend/tar.gz/f3bd0a0b9a8996ba085898b00c9c61ddd13b6d19(svelte@5.56.9)':
+  '@shimpz/frontend@https://codeload.github.com/TheShimpz/shimpz-frontend/tar.gz/caa906eac9492f81063d996dab447510a67f313f(svelte@5.56.9)':
     dependencies:
       '@fontsource-variable/inter': 5.3.0
       '@fontsource/ibm-plex-mono': 5.3.0
