@@ -1,6 +1,6 @@
 {
   "repository": "https://github.com/TheShimpz/shimpz-developers",
-  "commit": "fb99c5cb8ff7e654dd7ff229f807a944c86e16db",
+  "commit": "0f14a21afba3a058b6ad9146b64c24db294966c9",
   "path": "protocol/assistant/v1/manifest.schema.json",
-  "sha256": "2dc6e665b925e52dac685cd85fe4595194cdd5b765304fd3e2d36684784ab220"
+  "sha256": "a4cf40cd472bafb26023bae45426496ee9e97a1cded6b4f389117cad4c83181f"
 }

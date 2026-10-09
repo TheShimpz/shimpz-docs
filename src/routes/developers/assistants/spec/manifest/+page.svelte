@@ -28,7 +28,7 @@
 
 <section class="guide-section" aria-labelledby="example-title">
   <span class="section-label">Complete example</span>
-  <h2 id="example-title">Two required tables and optional Integration tables</h2>
+  <h2 id="example-title">Two required tables and optional link and Integration tables</h2>
   <CodeBlock label="Assistant security intent" title="shimpz.toml" variant="code" {...data.manifest} />
 </section>
 
@@ -57,10 +57,29 @@
       SDK 0.6.0, it joins the <a href="/developers/assistants/requests/copy/">message catalog</a> and is translated with
       it, so it must be NFC-normalized English without braces, and every translation must fit 80 characters too.
     </dd>
+    <dt><code>description</code></dt>
+    <dd>
+      A plain-language paragraph from 1 to 400 characters, shown under the summary on the Assistant's page. Write it on
+      one line, without surrounding whitespace. Like the summary, it joins the message catalog and is translated into
+      every interface language, so it must be NFC-normalized English without braces; every translation must fit 500
+      characters.
+    </dd>
     <dt><code>creators</code></dt>
     <dd>One to 16 unique Account-owned Creator handles, each beginning with <code>@</code>.</dd>
     <dt><code>github</code></dt>
     <dd>The exact HTTPS URL of the public GitHub repository.</dd>
+    <dt><code>[shimpz.links]</code></dt>
+    <dd>
+      An optional table of the Creator's public pages, shown as the Creator's links on the Assistant's page. Its keys
+      are <code>site</code>, <code>github</code>, <code>x</code>, <code>youtube</code>, <code>linkedin</code>, and
+      <code>instagram</code>, each at most once, and the table needs at least one when it is present. Each value is an
+      <code>https</code> URL of at most 256 characters in the form required for <code>help_url</code>, on the kind's
+      own host: <code>github.com</code> for <code>github</code>, <code>x.com</code> for <code>x</code>,
+      <code>youtube.com</code> or <code>www.youtube.com</code> for <code>youtube</code>, <code>linkedin.com</code> or
+      <code>www.linkedin.com</code> for <code>linkedin</code>, <code>instagram.com</code> or
+      <code>www.instagram.com</code> for <code>instagram</code>, and any public host for <code>site</code>. Nothing
+      verifies these links, and they are separate from the repository named by <code>github</code> above.
+    </dd>
     <dt><code>genesis</code></dt>
     <dd>
       Bounded behavior and Action-composition guidance loaded by the Brain. Genesis never grants
@@ -90,7 +109,9 @@
     <dd>
       An optional table for a token-like third-party value that Team keeps encrypted for the Team once a person enters
       it, at most eight per manifest. It holds <code>kind = "password"</code>, a <code>label</code> of 1 to 80
-      characters, and a <code>description</code> of 1 to 500 characters, which are never translated. Each Action names
+      characters, and a <code>description</code> of 1 to 500 characters. The label joins the message catalog and is
+      translated like the summary, so it must be NFC-normalized English without braces, and every translation must fit
+      120 characters; the description is never translated. Each Action names
       the ids it uses, any number of them, and receives only those; several Actions may share one. See
       <a href="/developers/assistants/requests/input/#password-title">password input</a>.
     </dd>

@@ -74,6 +74,8 @@ function assertManifestExample(source) {
   for (const key of schema.$defs.network.required) assert.ok(network.keys.has(key), `[network] includes ${key}`);
   assertKnownKeys(metadata.keys, schema.$defs.shimpz.properties);
   assertKnownKeys(network.keys, schema.$defs.network.properties);
+  const links = tables.get("shimpz.links");
+  if (links) assertKnownKeys(links.keys, schema.$defs.links.properties);
 
   const id = metadata.source.match(/^id = "([^"]+)"$/m)?.[1];
   assert.ok(id, "manifest example declares a string id");
@@ -147,9 +149,9 @@ test("static published shimpz.toml schema is the closed Spec v1 contract", () =>
 test("static manifest schema projection pins Developers authority", () => {
   assert.deepEqual(upstream, {
     repository: "https://github.com/TheShimpz/shimpz-developers",
-    commit: "fb99c5cb8ff7e654dd7ff229f807a944c86e16db",
+    commit: "0f14a21afba3a058b6ad9146b64c24db294966c9",
     path: "protocol/assistant/v1/manifest.schema.json",
-    sha256: "2dc6e665b925e52dac685cd85fe4595194cdd5b765304fd3e2d36684784ab220",
+    sha256: "a4cf40cd472bafb26023bae45426496ee9e97a1cded6b4f389117cad4c83181f",
   });
 });
 
@@ -163,6 +165,19 @@ test("static published manifest examples contain both required tables and a vali
   }
   for (const key of schema.$defs.network.required) {
     assert.match(manifestGuide, new RegExp(`<dt><code>${key}</code></dt>`));
+  }
+  assert.match(manifestGuide, /<dt><code>\[shimpz\.links\]<\/code><\/dt>/);
+  const description = manifestGuide.match(
+    /<dt><code>description<\/code><\/dt>\s*<dd>([\s\S]*?)<\/dd>/,
+  )?.[1];
+  assert.ok(description, "the guide documents the Assistant description");
+  assert.match(description, new RegExp(`1 to ${schema.$defs.shimpz.properties.description.maxLength} characters`));
+  const linksDescription = manifestGuide.match(
+    /<dt><code>\[shimpz\.links\]<\/code><\/dt>\s*<dd>([\s\S]*?)<\/dd>/,
+  )?.[1];
+  assert.ok(linksDescription, "the guide documents the Creator links");
+  for (const kind of Object.keys(schema.$defs.links.properties)) {
+    assert.match(linksDescription, new RegExp(`<code>${kind}</code>`));
   }
   const idDescription = manifestGuide.match(
     /<dt><code>id<\/code><\/dt>\s*<dd>([\s\S]*?)<\/dd>/,
@@ -206,4 +221,17 @@ test("static published shimpz.toml schema exposes only authored Spec v1 fields",
   assert.deepEqual(schema.$defs.storedInput.required, ["kind", "label", "description"]);
   assert.equal(schema.$defs.storedInput.properties.kind.const, "password");
   assert.equal(schema.$defs.storedInput.additionalProperties, false);
+  assert.ok(schema.$defs.shimpz.required.includes("description"));
+  assert.equal(schema.$defs.shimpz.properties.description.maxLength, 400);
+  assert.deepEqual(schema.$defs.shimpz.properties.links, { $ref: "#/$defs/links" });
+  assert.equal(schema.$defs.links.additionalProperties, false);
+  assert.equal(schema.$defs.links.minProperties, 1);
+  assert.deepEqual(Object.keys(schema.$defs.links.properties), [
+    "site",
+    "github",
+    "x",
+    "youtube",
+    "linkedin",
+    "instagram",
+  ]);
 });
