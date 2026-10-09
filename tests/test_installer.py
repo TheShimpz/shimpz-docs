@@ -98,8 +98,7 @@ def test_bootstrap_delegates_executable_activation_and_preserves_foreign_command
     ):
         check(contract in SCRIPT, f"bootstrap preserves acquisition contract {contract}")
     check(
-        SCRIPT.index('"$candidate_cli" install "$release_ref"')
-        < SCRIPT.index('public_dir="$HOME/.local/bin"'),
+        SCRIPT.index('"$candidate_cli" install "$release_ref"') < SCRIPT.index('public_dir="$HOME/.local/bin"'),
         "the public command is linked only after the release-bound CLI completed its installation",
     )
 
