@@ -24,4 +24,6 @@ COPY Caddyfile /etc/caddy/Caddyfile
 # The upstream binary carries cap_net_bind_service for ports below 1024. This image listens only on
 # 8080, so remove the file capability; otherwise a Compose-level `cap_drop: ALL` makes exec fail.
 RUN setcap -r /usr/bin/caddy
+# Caddy runs as an unprivileged identity; its /config and /data are tmpfs mounts the graph gives this uid.
+USER 65532:65532
 EXPOSE 8080
