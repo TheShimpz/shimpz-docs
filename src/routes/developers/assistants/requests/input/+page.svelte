@@ -27,8 +27,7 @@
   <h1>Collect one closed field at the moment it matters</h1>
   <p class="docs-lede">
     Build an <code>InputRequest</code> for the narrowest presentation. Local Admin renders the native control,
-    validates its declared bounds, and returns a string or list of strings only after the human submits it. The
-    retained Hosted projection has no current public Store browser consumer.
+    validates its declared bounds, and returns a string or list of strings only after the human submits it.
   </p>
 </header>
 

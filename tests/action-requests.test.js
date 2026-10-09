@@ -10,7 +10,7 @@ function text(path) {
   return readFileSync(new URL(path, ROOT), "utf8");
 }
 
-test("static native request examples cover every settled request kind without frozen screenshots", () => {
+test("static native request examples cover every request kind a Space presents without frozen screenshots", () => {
   const fixtures = text("src/lib/actionRequestExamples.ts");
   const component = text("src/lib/components/RequestExample.svelte");
   const pages = ["approval", "input", "auth"]
@@ -26,8 +26,6 @@ test("static native request examples cover every settled request kind without fr
     "input-choice",
     "input-choices",
     "auth-password",
-    "auth-totp",
-    "auth-passkey",
   ];
   for (const id of ids) {
     assert.match(fixtures, new RegExp(`id: "${id}"`));

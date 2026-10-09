@@ -35,12 +35,8 @@
   <ol>
     <li>The Controller invokes the reviewed Action with its original input and no response transcript.</li>
     <li>The SDK reaches request ordinal 0, emits a canonical suspension, and terminates the process.</li>
-    <li>
-      Team validates the declared capability and exposes the challenge through the available administrative surface.
-      The current browser surface is Local Admin; the retained Hosted projection has no public Store browser
-      consumer.
-    </li>
-    <li>The authenticated Supervisor or Owner responds once before the 300-second expiry.</li>
+    <li>Team validates the declared capability and exposes the challenge in Local Admin.</li>
+    <li>The authenticated Supervisor responds once before the 300-second expiry.</li>
     <li>Team re-invokes the exact immutable binding with the original input and a bounded response transcript.</li>
     <li>The SDK matches kind, ordinal, and request fingerprint, returns the recorded value, and continues.</li>
     <li>A later request repeats the cycle; a terminal result is accepted only after every response was consumed.</li>
@@ -103,7 +99,7 @@
       calls to its host; the Action never receives it. Prefer an OAuth Integration whenever possible.
     </dd>
     <dt><code>request_auth</code> factor</dt>
-    <dd>Owned by the Shimpz platform ceremony. It never enters Assistant input, transcript, logs, or results.</dd>
+    <dd>Verified by Admin and Team. It never enters Assistant input, transcript, logs, or results.</dd>
     <dt>Public request metadata</dt>
     <dd>
       Catalog references for the title, description, labels, and options, their typed parameter values, Assistant
@@ -121,7 +117,6 @@
     <li>Each challenge expires 300 seconds after Team creates it.</li>
     <li>Password input must be the last request across the entire Team turn and is never durably resumed.</li>
     <li>Local can restore only a non-secret paused request after a controller restart.</li>
-    <li>Hosted continuation is memory-only; infrastructure loss stops the operation safely.</li>
   </ul>
 </section>
 

@@ -24,11 +24,11 @@
 - [Define Actions](https://docs.shimpz.com/developers/assistants/spec/actions/): Declare typed one-shot Python Actions.
 - [Integrations and OAuth](https://docs.shimpz.com/developers/assistants/spec/integrations/): Request reviewed provider scopes without owning tokens.
 - [Network access](https://docs.shimpz.com/developers/assistants/spec/network/): Declare exact outbound hosts.
-- [Human requests](https://docs.shimpz.com/developers/assistants/requests/): Choose approval, input, or platform authentication.
+- [Human requests](https://docs.shimpz.com/developers/assistants/requests/): Choose approval, input, or Supervisor authentication.
 - [Request copy](https://docs.shimpz.com/developers/assistants/requests/copy/): Write English shimpz.text copy with typed parameters that Shimpz translates (requires SDK 0.7.1 and CLI 0.8.1 or newer).
 - [Approval](https://docs.shimpz.com/developers/assistants/requests/approval/): Ask for one attributable human approval.
 - [Inputs](https://docs.shimpz.com/developers/assistants/requests/input/): Collect one bounded closed field.
-- [Authentication](https://docs.shimpz.com/developers/assistants/requests/auth/): Request fresh platform assurance.
+- [Authentication](https://docs.shimpz.com/developers/assistants/requests/auth/): Request fresh Supervisor password assurance.
 - [Replay and lifecycle](https://docs.shimpz.com/developers/assistants/requests/lifecycle/): Understand replay, denial, expiry, and limits.
 - [Publish an Assistant](https://docs.shimpz.com/developers/assistants/publish/): Authorize one immutable private or public release.
 

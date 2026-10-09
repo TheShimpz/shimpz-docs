@@ -32,7 +32,7 @@ async def run(zone: str, *, ctx: Context) -> CreatedRecord:
     ctx.request_auth(
         "password",
         title=text("Confirm this DNS change"),
-        description=text("Re-enter your platform credential to authorize this action."),
+        description=text("Re-enter your Supervisor password to authorize this action."),
     )
     return await create_record(zone, mode)
 `;

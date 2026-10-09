@@ -25,7 +25,7 @@
     selectionHint: selected.request.kind === "input:choices"
       ? `Choose from ${selected.request.min_selections} to ${selected.request.max_selections} options.`
       : "",
-    passwordLabel: "Current platform password",
+    passwordLabel: "Supervisor password",
     totpLabel: "Authenticator code",
     totpPlaceholder: "000000",
   });

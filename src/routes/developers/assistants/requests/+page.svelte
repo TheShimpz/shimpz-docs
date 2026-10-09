@@ -11,7 +11,7 @@
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/requests/" />
   <meta
     name="description"
-    content="Pause a Shimpz Action for attributable approval, closed input, or platform authentication."
+    content="Pause a Shimpz Action for attributable approval, closed input, or Supervisor authentication."
   />
 </svelte:head>
 
@@ -23,7 +23,7 @@
   <span class="section-label">Human-in-the-loop SDK</span>
   <h1>Pause an Action for one accountable human decision</h1>
   <p class="docs-lede">
-    An Action can request approval, one closed input field, or fresh platform authentication. Shimpz pauses the
+    An Action can request approval, one closed input field, or fresh Supervisor authentication. Shimpz pauses the
     operation, identifies the exact Assistant and Action to the human, and resumes only after a valid response.
   </p>
 </header>
@@ -37,7 +37,7 @@
     <dt><a href="/developers/assistants/requests/input/"><code>ctx.request_input(...)</code></a></dt>
     <dd>Collect exactly one text, selection, phone, or third-party secret value.</dd>
     <dt><a href="/developers/assistants/requests/auth/"><code>ctx.request_auth(...)</code></a></dt>
-    <dd>Ask Shimpz to prove a platform assurance class without exposing the factor to the Action.</dd>
+    <dd>Ask Shimpz to prove an assurance class without exposing the factor to the Action.</dd>
   </dl>
 </section>
 
