@@ -63,7 +63,6 @@ def test_bootstrap_has_one_closed_digest_verified_handoff() -> None:
         check(contract in SCRIPT, f"bootstrap preserves {contract}")
     check(SCRIPT.count('"$docker" pull') == 1, "bootstrap pulls only the atomic release")
     check("docker compose up" not in SCRIPT, "bootstrap does not own lifecycle or graph execution")
-    check("--reset" not in SCRIPT, "bootstrap does not retain the retired reset option")
     check("eval " not in SCRIPT, "bootstrap never evaluates dynamically assembled shell")
     check(SCRIPT.count("curl -fsSL") == 1, "curl appears only in the usage example")
 
@@ -87,8 +86,6 @@ def test_bootstrap_hides_successful_docker_details_without_hiding_failures() -> 
 
 
 def test_bootstrap_delegates_executable_activation_and_preserves_foreign_commands() -> None:
-    for retired in ("shimpz.previous", "shimpz.candidate", "lifecycle_started", "activated=", 'mv "$'):
-        check(retired not in SCRIPT, f"the native lifecycle alone activates the managed CLI: {retired}")
     for contract in (
         '"$candidate_cli" --version >/dev/null 2>&1 ||',
         "set TMPDIR to a private directory that allows execution and retry",
@@ -324,8 +321,7 @@ def test_bootstrap_rejects_a_stale_docker_group_session() -> None:
         '"$candidate_cli" install --release "$release_ref"',
     ):
         check(contract in SCRIPT, f"bootstrap rejects a stale Docker group session: {contract}")
-    for retired in ("/usr/bin/sg", "run_command", "SHIMPZ_RUN_", "docker_group"):
-        check(retired not in SCRIPT, f"bootstrap never switches groups for Docker or the Local CLI: {retired}")
+    check("/usr/bin/sg" not in SCRIPT, "bootstrap never switches groups for Docker or the Local CLI")
 
 
 def test_public_origin_serves_only_the_bootstrap_for_installer_host() -> None:

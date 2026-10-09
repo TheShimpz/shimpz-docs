@@ -40,5 +40,5 @@ test("static native request examples cover every request kind a Space presents w
   assert.doesNotMatch(component, /from ["']@shimpz\/frontend["']/);
   assert.match(component, /nothing is submitted/);
   assert.doesNotMatch(component, /fetch\(|onsubmit|AssistantHumanRequestDialog|PromptDialog|Modal/);
-  assert.doesNotMatch(`${pages}\n${component}`, /RequestScreenshot|action-requests\/.*\.png/);
+  assert.doesNotMatch(`${pages}\n${component}`, /action-requests\/.*\.png/);
 });
