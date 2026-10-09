@@ -93,8 +93,9 @@
   <span class="section-label">2 · Translate (optional)</span>
   <h2 id="translate-title">Let staging translate your messages</h2>
   <p>
-    Every <a href="/developers/assistants/requests/copy/"><code>shimpz.text</code> message</a> and the manifest
-    <code>summary</code> are English. To show them in each person's interface language, save your own OpenAI API key
+    Every <a href="/developers/assistants/requests/copy/"><code>shimpz.text</code> message</a>, the manifest
+    <code>summary</code> and <code>description</code>, each Action <code>description</code>, and each Stored Input
+    <code>label</code> are English. To show them in each person's interface language, save your own OpenAI API key
     in the file <code>~/.config/shimpz/openai-api-key</code> (<code>$XDG_CONFIG_HOME/shimpz/openai-api-key</code> when
     that variable is set, or <code>%APPDATA%\shimpz\openai-api-key</code> on Windows), readable only by you, for
     example with <code>chmod 600</code>. On Windows the CLI does not check the file's permissions, so keep it in your

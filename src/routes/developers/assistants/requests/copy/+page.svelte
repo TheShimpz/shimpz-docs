@@ -124,8 +124,12 @@
   </p>
   <CodeBlock label="Messages chosen before the request" title="Inside a declared Action" variant="code" {...data.reused} />
   <p>
-    A message used in several fields must fit the smallest of them. The manifest <code>summary</code> joins the same
-    catalog with an 80-character bound, so it cannot contain braces and every translation of it fits 80 characters.
+    A message used in several fields must fit the smallest of them. The text shown on the Assistant's page joins the
+    same catalog as parameterless messages, so none of it can contain braces: the manifest <code>summary</code> with an
+    80-character bound, the manifest <code>description</code> with a 500-character bound, and each Action
+    <code>description</code> and each Stored Input <code>label</code> with a 120-character bound. Their English text
+    stays within 80, 400, 80, and 80 characters, so every translation fits. A Stored Input <code>description</code> is
+    not translated.
   </p>
 </section>
 
