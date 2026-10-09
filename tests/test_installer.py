@@ -136,12 +136,18 @@ def sign(private: Path, message: bytes) -> str:
 
 
 def run_bootstrap(
-    root: Path, cli_body: str, version_status: int = 0, signer: str = "release", link_cli: bool = False
+    root: Path,
+    cli_body: str,
+    version_status: int = 0,
+    signer: str = "release",
+    link_cli: bool = False,
+    kept_lines: int | None = None,
 ) -> tuple[subprocess.CompletedProcess[str], Path]:
     """Run the bootstrap against a fake Docker whose release carries a stub release-bound CLI.
 
     The release is signed by `signer`: the pinned test key (`release`), another key (`other`), or nothing (`none`).
-    The stub records every invocation, its version probe included, in `calls`.
+    The stub records every invocation, its version probe included, in `calls`; Docker records each one in
+    `docker-calls`. `kept_lines` runs only that many leading lines, as a truncated download would deliver them.
     """
     home = root / "home"
     home.mkdir(exist_ok=True)
@@ -175,6 +181,7 @@ def run_bootstrap(
     docker = root / "docker"
     docker.write_text(
         "#!/bin/sh\n"
+        f"printf '%s\\n' \"$1\" >> {shlex.quote(str(root / 'docker-calls'))}\n"
         'case "$1" in\n'
         "  info|pull|rm|compose) exit 0 ;;\n"
         f"  image) case \"$4\" in *Labels*) printf '%s\\n' '2|{signature}' ;;"
@@ -190,7 +197,10 @@ def run_bootstrap(
     check(SCRIPT.count(DOCKER_SEARCH) == 1, "the fixture replaces the complete Docker search list")
     check(SCRIPT.count(PINNED_KEY) == 1, "the fixture replaces the complete pinned signing key")
     fixture = SCRIPT.replace(DOCKER_SEARCH, f"for candidate in {shlex.quote(str(docker))}; do")
-    script.write_text(fixture.replace(PINNED_KEY, public_key.rstrip("\n")))
+    fixture = fixture.replace(PINNED_KEY, public_key.rstrip("\n"))
+    if kept_lines is not None:
+        fixture = "".join(fixture.splitlines(keepends=True)[:kept_lines])
+    script.write_text(fixture)
     environment = {**os.environ, "HOME": str(home), "TMPDIR": str(root)}
     result = subprocess.run(["sh", str(script)], env=environment, capture_output=True, text=True, check=False)
     return result, home
@@ -218,6 +228,23 @@ def test_refused_native_admission_leaves_the_managed_cli_untouched() -> None:
         check(managed.read_text() == "previous managed CLI\n", "the previous managed CLI stays byte-identical")
         check(sorted(path.name for path in managed.parent.iterdir()) == ["shimpz"], "no activation residue remains")
         check(not (home / ".local" / "bin" / "shimpz").exists(), "no public command is linked after failure")
+
+
+def test_a_truncated_bootstrap_runs_nothing() -> None:
+    if not behavioral_host():
+        return
+    complete = len(SCRIPT.splitlines())
+    with tempfile.TemporaryDirectory() as raw:
+        root = Path(raw)
+        run_bootstrap(root, "exit 0\n")
+        check((root / "docker-calls").exists(), "the fixture observes Docker when the download is complete")
+    for kept in range(1, complete):
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            _, home = run_bootstrap(root, "exit 0\n", kept_lines=kept)
+            check(not (root / "docker-calls").exists(), f"a download cut after line {kept} never reaches Docker")
+            check(not (root / "calls").exists(), f"a download cut after line {kept} runs no release-bound CLI")
+            check(not os.path.lexists(home / ".local" / "bin" / "shimpz"), "no public command is linked")
 
 
 def test_bootstrap_runs_the_verified_cli_from_outside_the_space_and_links_its_installation() -> None:

@@ -43,14 +43,6 @@ Supported hosts:
 EOF
 }
 
-case "${1:-}" in
-	"") ;;
-	--help|-h) usage; exit 0 ;;
-	--version) printf '%s\n' "$BOOTSTRAP_VERSION"; exit 0 ;;
-	*) usage >&2; fail "unknown option: $1" ;;
-esac
-[ "$#" -le 1 ] || fail "the bootstrap accepts at most one option"
-
 resolve_docker() {
 	for candidate in /usr/bin/docker /Applications/Docker.app/Contents/Resources/bin/docker /usr/local/bin/docker /opt/homebrew/bin/docker; do
 		if [ -x "$candidate" ] && [ ! -L "$candidate" ]; then
@@ -147,97 +139,110 @@ cleanup() {
 	exit "$status"
 }
 
-resolve_host
-if [ "$(uname -s)" = "Linux" ] && [ "$(/usr/bin/id -g)" != "$(/usr/bin/id -g "$(/usr/bin/id -un)")" ]; then
-	fail "run the installer from a normal login session, not a switched group such as sg docker; sign out and back in so the session includes the Docker group, then run it again"
-fi
-docker="$(resolve_docker)" || fail "Docker is not installed in a supported system path"
-resolve_docker_access || fail "Docker is not running or this user cannot access it"
-"$docker" compose version >/dev/null 2>&1 || fail "Docker Compose v2 is unavailable"
-[ -x /usr/bin/openssl ] || fail "OpenSSL is required at /usr/bin/openssl to verify the Local release signature"
+# Nothing runs until the final line, so a truncated download executes no partial bootstrap.
+main() {
+	case "${1:-}" in
+		"") ;;
+		--help|-h) usage; exit 0 ;;
+		--version) printf '%s\n' "$BOOTSTRAP_VERSION"; exit 0 ;;
+		*) usage >&2; fail "unknown option: $1" ;;
+	esac
+	[ "$#" -le 1 ] || fail "the bootstrap accepts at most one option"
 
-temporary="$(mktemp -d "${TMPDIR:-/tmp}/shimpz-bootstrap.XXXXXX")"
-chmod 700 "$temporary"
-container_id=""
-trap cleanup EXIT HUP INT TERM
-
-printf '  [..] Resolving the atomic Local release\n'
-selector="$RELEASE_REPOSITORY:$RELEASE_CHANNEL"
-"$docker" pull --quiet --platform "$platform" "$selector" >/dev/null 2>&1 || fail "Docker could not download the stable Local release; verify access to ghcr.io and retry"
-release_ref=""
-for candidate in $("$docker" image inspect --format '{{range .RepoDigests}}{{println .}}{{end}}' "$selector" 2>/dev/null); do
-	if valid_digest_ref "$candidate"; then
-		[ -z "$release_ref" ] || fail "Docker returned ambiguous Local release digests"
-		release_ref="$candidate"
+	resolve_host
+	if [ "$(uname -s)" = "Linux" ] && [ "$(/usr/bin/id -g)" != "$(/usr/bin/id -g "$(/usr/bin/id -un)")" ]; then
+		fail "run the installer from a normal login session, not a switched group such as sg docker; sign out and back in so the session includes the Docker group, then run it again"
 	fi
-done
-[ -n "$release_ref" ] || fail "Docker returned no trusted Local release digest"
+	docker="$(resolve_docker)" || fail "Docker is not installed in a supported system path"
+	resolve_docker_access || fail "Docker is not running or this user cannot access it"
+	"$docker" compose version >/dev/null 2>&1 || fail "Docker Compose v2 is unavailable"
+	[ -x /usr/bin/openssl ] || fail "OpenSSL is required at /usr/bin/openssl to verify the Local release signature"
 
-container_id="$("$docker" create --platform "$platform" "$release_ref" "$member" 2>/dev/null)" || fail "Docker could not create a temporary Local release container; verify Docker storage and retry"
-case "$container_id" in *[!0-9a-f]*|"") fail "Docker returned an invalid temporary Local release container; retry the installation" ;; esac
-release_metadata="$temporary/release.env"
-candidate_cli="$temporary/shimpz"
-"$docker" cp "$container_id:/release.env" "$release_metadata" >/dev/null 2>&1 || fail "Docker could not extract the Local release metadata; verify Docker storage and retry"
-"$docker" cp "$container_id:$member" "$candidate_cli" >/dev/null 2>&1 || fail "Docker could not extract the Shimpz CLI; verify Docker storage and retry"
-"$docker" rm --volumes "$container_id" >/dev/null 2>&1 || fail "Docker could not remove its temporary Local release container; retry the installation"
-container_id=""
-for copied in "$release_metadata" "$candidate_cli"; do
-	[ -f "$copied" ] && [ ! -L "$copied" ] || fail "the Local release carries a file of an invalid type; do not install this release"
-done
-[ "$(wc -c < "$release_metadata" | tr -d ' ')" -le 2048 ] || fail "the atomic release metadata is not closed"
+	temporary="$(mktemp -d "${TMPDIR:-/tmp}/shimpz-bootstrap.XXXXXX")"
+	chmod 700 "$temporary"
+	container_id=""
+	trap cleanup EXIT HUP INT TERM
 
-# Nothing from the release is trusted before its signature over the exact metadata and state epoch label verifies.
-labels="$("$docker" image inspect --format '{{index .Config.Labels "org.shimpz.local.state-epoch"}}|{{index .Config.Labels "org.shimpz.local.release-signature"}}' "$release_ref" 2>/dev/null)" ||
-	fail "Docker could not read the Local release labels; retry the installation"
-{ cat "$release_metadata"; printf 'state_epoch=%s\n' "${labels%%|*}"; } >"$temporary/release.signed"
-printf '%s\n' "$RELEASE_SIGNING_KEY" >"$temporary/release-key.pem"
-printf '%s' "${labels#*|}" | /usr/bin/openssl base64 -d -A >"$temporary/release.sig" 2>/dev/null &&
-	/usr/bin/openssl dgst -sha256 -verify "$temporary/release-key.pem" -signature "$temporary/release.sig" "$temporary/release.signed" >/dev/null 2>&1 ||
-	fail "the Local release signature is invalid; do not install this release"
+	printf '  [..] Resolving the atomic Local release\n'
+	selector="$RELEASE_REPOSITORY:$RELEASE_CHANNEL"
+	"$docker" pull --quiet --platform "$platform" "$selector" >/dev/null 2>&1 || fail "Docker could not download the stable Local release; verify access to ghcr.io and retry"
+	release_ref=""
+	for candidate in $("$docker" image inspect --format '{{range .RepoDigests}}{{println .}}{{end}}' "$selector" 2>/dev/null); do
+		if valid_digest_ref "$candidate"; then
+			[ -z "$release_ref" ] || fail "Docker returned ambiguous Local release digests"
+			release_ref="$candidate"
+		fi
+	done
+	[ -n "$release_ref" ] || fail "Docker returned no trusted Local release digest"
 
-[ "$(wc -l < "$release_metadata" | tr -d ' ')" -eq 10 ] || fail "the atomic release metadata is not closed"
-[ "$(one_metadata_value schema)" = "local-v2" ] || fail "the atomic release schema is unsupported"
-expected_hash="$(one_metadata_value "$hash_key")"
-[ "${#expected_hash}" -eq 64 ] || fail "the release-bound CLI hash is invalid"
-case "$expected_hash" in *[!0-9a-f]*) fail "the release-bound CLI hash is invalid" ;; esac
-[ "$(file_hash "$candidate_cli")" = "$expected_hash" ] || fail "the release-bound CLI failed SHA-256 verification"
-chmod 700 "$candidate_cli"
+	container_id="$("$docker" create --platform "$platform" "$release_ref" "$member" 2>/dev/null)" || fail "Docker could not create a temporary Local release container; verify Docker storage and retry"
+	case "$container_id" in *[!0-9a-f]*|"") fail "Docker returned an invalid temporary Local release container; retry the installation" ;; esac
+	release_metadata="$temporary/release.env"
+	candidate_cli="$temporary/shimpz"
+	"$docker" cp "$container_id:/release.env" "$release_metadata" >/dev/null 2>&1 || fail "Docker could not extract the Local release metadata; verify Docker storage and retry"
+	"$docker" cp "$container_id:$member" "$candidate_cli" >/dev/null 2>&1 || fail "Docker could not extract the Shimpz CLI; verify Docker storage and retry"
+	"$docker" rm --volumes "$container_id" >/dev/null 2>&1 || fail "Docker could not remove its temporary Local release container; retry the installation"
+	container_id=""
+	for copied in "$release_metadata" "$candidate_cli"; do
+		[ -f "$copied" ] && [ ! -L "$copied" ] || fail "the Local release carries a file of an invalid type; do not install this release"
+	done
+	[ "$(wc -c < "$release_metadata" | tr -d ' ')" -le 2048 ] || fail "the atomic release metadata is not closed"
 
-: "${HOME:?HOME is required}"
-case "$HOME" in /*) ;; *) fail "HOME must be an absolute path" ;; esac
-"$candidate_cli" --version >/dev/null 2>&1 ||
-	fail "the release-bound CLI cannot run from ${TMPDIR:-/tmp}; set TMPDIR to a private directory that allows execution and retry"
+	# Nothing from the release is trusted before its signature over the exact metadata and state epoch label verifies.
+	labels="$("$docker" image inspect --format '{{index .Config.Labels "org.shimpz.local.state-epoch"}}|{{index .Config.Labels "org.shimpz.local.release-signature"}}' "$release_ref" 2>/dev/null)" ||
+		fail "Docker could not read the Local release labels; retry the installation"
+	{ cat "$release_metadata"; printf 'state_epoch=%s\n' "${labels%%|*}"; } >"$temporary/release.signed"
+	printf '%s\n' "$RELEASE_SIGNING_KEY" >"$temporary/release-key.pem"
+	printf '%s' "${labels#*|}" | /usr/bin/openssl base64 -d -A >"$temporary/release.sig" 2>/dev/null &&
+		/usr/bin/openssl dgst -sha256 -verify "$temporary/release-key.pem" -signature "$temporary/release.sig" "$temporary/release.signed" >/dev/null 2>&1 ||
+		fail "the Local release signature is invalid; do not install this release"
 
-# The release-bound CLI activates itself as ~/.shimpz/bin/shimpz only under its lifecycle lock and after admission.
-printf '  [..] Installing the release-bound Shimpz Space\n'
-"$candidate_cli" install "$release_ref"
+	[ "$(wc -l < "$release_metadata" | tr -d ' ')" -eq 10 ] || fail "the atomic release metadata is not closed"
+	[ "$(one_metadata_value schema)" = "local-v2" ] || fail "the atomic release schema is unsupported"
+	expected_hash="$(one_metadata_value "$hash_key")"
+	[ "${#expected_hash}" -eq 64 ] || fail "the release-bound CLI hash is invalid"
+	case "$expected_hash" in *[!0-9a-f]*) fail "the release-bound CLI hash is invalid" ;; esac
+	[ "$(file_hash "$candidate_cli")" = "$expected_hash" ] || fail "the release-bound CLI failed SHA-256 verification"
+	chmod 700 "$candidate_cli"
 
-managed_cli="$HOME/.shimpz/bin/shimpz"
-[ -f "$managed_cli" ] && [ ! -L "$managed_cli" ] && [ -x "$managed_cli" ] ||
-	fail "the release-bound CLI did not install the managed command at $managed_cli"
-public_dir="$HOME/.local/bin"
-public_cli="$public_dir/shimpz"
-mkdir -p "$public_dir"
-[ ! -L "$public_dir" ] && [ -d "$public_dir" ] || fail "the public CLI directory is invalid"
-if [ -L "$public_cli" ]; then
-	if [ "$(readlink "$public_cli")" != "$managed_cli" ]; then
+	: "${HOME:?HOME is required}"
+	case "$HOME" in /*) ;; *) fail "HOME must be an absolute path" ;; esac
+	"$candidate_cli" --version >/dev/null 2>&1 ||
+		fail "the release-bound CLI cannot run from ${TMPDIR:-/tmp}; set TMPDIR to a private directory that allows execution and retry"
+
+	# The release-bound CLI activates itself as ~/.shimpz/bin/shimpz only under its lifecycle lock and after admission.
+	printf '  [..] Installing the release-bound Shimpz Space\n'
+	"$candidate_cli" install "$release_ref"
+
+	managed_cli="$HOME/.shimpz/bin/shimpz"
+	[ -f "$managed_cli" ] && [ ! -L "$managed_cli" ] && [ -x "$managed_cli" ] ||
+		fail "the release-bound CLI did not install the managed command at $managed_cli"
+	public_dir="$HOME/.local/bin"
+	public_cli="$public_dir/shimpz"
+	mkdir -p "$public_dir"
+	[ ! -L "$public_dir" ] && [ -d "$public_dir" ] || fail "the public CLI directory is invalid"
+	if [ -L "$public_cli" ]; then
+		if [ "$(readlink "$public_cli")" != "$managed_cli" ]; then
+			if confirm_public_replace; then
+				rm -f "$public_cli"
+				ln -s "$managed_cli" "$public_cli"
+			else
+				printf '  [i] Preserved the existing command at %s; use %s directly.\n' "$public_cli" "$managed_cli"
+			fi
+		fi
+	elif [ -e "$public_cli" ]; then
 		if confirm_public_replace; then
 			rm -f "$public_cli"
 			ln -s "$managed_cli" "$public_cli"
 		else
 			printf '  [i] Preserved the existing command at %s; use %s directly.\n' "$public_cli" "$managed_cli"
 		fi
-	fi
-elif [ -e "$public_cli" ]; then
-	if confirm_public_replace; then
-		rm -f "$public_cli"
-		ln -s "$managed_cli" "$public_cli"
 	else
-		printf '  [i] Preserved the existing command at %s; use %s directly.\n' "$public_cli" "$managed_cli"
+		ln -s "$managed_cli" "$public_cli"
 	fi
-else
-	ln -s "$managed_cli" "$public_cli"
-fi
 
-printf '  [ok] Shimpz Space installation completed successfully.\n'
-case ":$PATH:" in *":$public_dir:"*) ;; *) printf '  [i] Add %s to PATH to use shimpz in a new terminal.\n' "$public_dir" ;; esac
+	printf '  [ok] Shimpz Space installation completed successfully.\n'
+	case ":$PATH:" in *":$public_dir:"*) ;; *) printf '  [i] Add %s to PATH to use shimpz in a new terminal.\n' "$public_dir" ;; esac
+}
+
+main "$@"
