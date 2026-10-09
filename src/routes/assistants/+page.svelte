@@ -99,6 +99,10 @@
   <h2 id="problems-title">Check the visible state first</h2>
   <ul>
     <li><strong>No Assistant in chat:</strong> return to Assistants and confirm it is installed in this Team.</li>
+    <li>
+      <strong>Install refused for a full Team:</strong> a Team holds at most 16 Assistants. Uninstall one from this
+      Team, or install into another Team.
+    </li>
     <li><strong>No authorization window:</strong> allow pop-ups for the local Admin and send the message again.</li>
     <li><strong>Wrong Integration:</strong> disconnect it, then authorize the correct provider identity.</li>
     <li><strong>Model keeps thinking:</strong> verify the Team's model API key, then retry the message once.</li>

@@ -169,7 +169,8 @@
     Automatic installation is fresh-only. If this Team already has that Assistant installed—from Store or Local—the
     chat task does not replace it or delete its Integration and Stored Input state. Open <strong>Assistants</strong>,
     find the card marked <strong>LOCAL</strong>, select <strong>Install or replace</strong>, compare the complete image
-    ID in the unpublished-code dialog, and confirm the destructive transition explicitly.
+    ID in the unpublished-code dialog, and confirm the destructive transition explicitly. A Team holds at most 16
+    Assistants, so Team refuses a fresh install into a full Team.
   </p>
 </section>
 
