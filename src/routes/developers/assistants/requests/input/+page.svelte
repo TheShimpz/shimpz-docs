@@ -88,9 +88,10 @@
     an app secret; request them together with <code>ctx.request_stored_inputs(...)</code>, which asks for each missing
     one in turn and returns once Team holds all of them. Call <code>ctx.reject_stored_input(id)</code> for exactly the value the provider rejected;
     Team deletes only that one and the next run asks for it again. Uninstalling the Assistant or deleting the Team
-    removes them. When a Stored Input declares
-    <a href="/developers/assistants/spec/manifest/#access-title"><code>help_url</code></a>, the Local Admin request
-    links to that page so the person can create the value there.
+    removes them. Every Stored Input declares a help-text <code>description</code> and a
+    <a href="/developers/assistants/spec/manifest/#access-title"><code>help_url</code></a>: wherever Admin asks for
+    the value, and on the Assistant's page, the person reads in their own language what the secret is and how to get
+    it, followed by one link to the page where it is made.
   </p>
   <CodeBlock label="Third-party secret input" title="Inside a declared Action" variant="code" {...data.password} />
   <aside class="scope-note" aria-labelledby="password-rules-title">

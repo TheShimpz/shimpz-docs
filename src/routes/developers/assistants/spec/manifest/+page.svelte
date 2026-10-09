@@ -109,9 +109,12 @@
     <dd>
       An optional table for a token-like third-party value that Team keeps encrypted for the Team once a person enters
       it, at most eight per manifest. It holds <code>kind = "password"</code>, a <code>label</code> of 1 to 80
-      characters, and a <code>description</code> of 1 to 500 characters. The label joins the message catalog and is
-      translated like the summary, so it must be NFC-normalized English without braces, and every translation must fit
-      120 characters; the description is never translated. It also declares where Team places the value in provider
+      characters, a help-text <code>description</code> of 1 to 400 characters, and a required <code>help_url</code>.
+      The description is what a person reads wherever the value is asked for: in plain language, what the secret is and
+      the steps to get it, written for someone who has never made one. The label and the description join the message
+      catalog and are translated like the summary, so both must be NFC-normalized English without braces, and every
+      translation must fit 120 and 500 characters. A provider permission name such as <code>ads_read</code> is kept by
+      translation intent, not guaranteed, so the linked page stays the authority. It also declares where Team places the value in provider
       calls: one <code>host</code> from <code>allowed_hosts</code>, exactly one <code>header</code> (with an optional
       <code>scheme</code> such as <code>"Bearer"</code>) or <code>query</code> parameter, and an optional
       <code>hmac</code> naming another Stored Input of the same host, which places the lowercase hexadecimal HMAC-SHA256
@@ -123,8 +126,10 @@
     </dd>
     <dt><code>help_url</code></dt>
     <dd>
-      An optional key of a <code>[stored_inputs.&lt;id&gt;]</code> table: the page where a person creates the value,
-      such as an API key page. It must be one canonical <code>https</code> URL of at most 2,048 characters on a public
+      A required key of a <code>[stored_inputs.&lt;id&gt;]</code> table: the closest official page where a person
+      creates or finds the value, such as an API key page, or the provider's documentation when making it takes several
+      steps. Admin shows it after the description as one "How to get it" link that opens in a new tab. It must be one
+      canonical <code>https</code> URL of at most 2,048 characters on a public
       DNS host, with a path and an optional query, and without a port, credentials, a fragment, or a <code>.</code> or
       <code>..</code> segment, written exactly as a browser prints it: for example
       <code>https://dashboard.exa.ai/api-keys</code>, not <code>https://dashboard.exa.ai</code>.

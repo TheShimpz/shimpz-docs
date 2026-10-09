@@ -126,10 +126,10 @@
   <p>
     A message used in several fields must fit the smallest of them. The text shown on the Assistant's page joins the
     same catalog as parameterless messages, so none of it can contain braces: the manifest <code>summary</code> with an
-    80-character bound, the manifest <code>description</code> with a 500-character bound, and each Action
-    <code>description</code> and each Stored Input <code>label</code> with a 120-character bound. Their English text
-    stays within 80, 400, 80, and 80 characters, so every translation fits. A Stored Input <code>description</code> is
-    not translated.
+    80-character bound, the manifest <code>description</code> and each Stored Input <code>description</code> with a
+    500-character bound, and each Action <code>description</code> and each Stored Input <code>label</code> with a
+    120-character bound. Their English text stays within 80, 400, 400, 80, and 80 characters, so every translation
+    fits.
   </p>
 </section>
 
@@ -163,8 +163,7 @@
   </p>
   <p>
     Request kinds, option values, parameters, Assistant and Action names, identifiers, URLs, scopes, schema values,
-    and Genesis are never translated. Stored Input <code>label</code> and <code>description</code> declarations in
-    <code>shimpz.toml</code> stay as written.
+    and Genesis are never translated, and neither is a Stored Input <code>help_url</code>.
   </p>
 </section>
 
