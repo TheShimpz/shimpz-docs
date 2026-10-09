@@ -22,7 +22,7 @@
   <h1>Define one Action per file</h1>
   <p class="docs-lede">
     A direct <code>actions/*.py</code> file contains exactly one decorated <code>async def run</code>.
-    Its filename, parameters, Integration ids, and return annotation become the reviewed contract.
+    Its filename, description, parameters, Integration ids, and return annotation become the reviewed contract.
   </p>
 </header>
 
@@ -34,9 +34,25 @@
     <li><code>inspect_zone.py</code> becomes the Action id <code>inspect-zone</code>.</li>
     <li>The only decorated function is named <code>run</code> and is asynchronous.</li>
     <li><code>integrations=[...]</code> lists only Integration ids declared in <code>shimpz.toml</code>.</li>
+    <li>
+      <code>effect="read_only"</code> declares that the Action has no business side effect; an Action without it is
+      mutating.
+    </li>
+    <li>
+      <code>description="..."</code> is required: one line of 1 to 80 characters that says what the Action does for
+      the person.
+    </li>
     <li>Typed parameters become required Brain input; <code>ctx</code> is invocation context.</li>
     <li>The typed return value defines the output the Brain may receive.</li>
   </ul>
+  <p>
+    The description is shown beside the Action id on the Assistant's page. Write it as a string literal directly in
+    <code>@action(...)</code>: the SDK reads it with the
+    <a href="/developers/assistants/requests/copy/">message catalog</a> before any Assistant code is imported and
+    refuses a computed value, such as a variable, a concatenation, or an f-string. It joins that catalog and is
+    translated into every interface language, so it must be NFC-normalized English without braces, and every
+    translation must fit 120 characters.
+  </p>
   <p>
     <code>fetch_zone</code> represents the Creator's provider client; replace that illustrative helper with your own
     implementation.
@@ -74,9 +90,9 @@
     {...data.contract}
   />
   <p>
-    The entry contains only the canonical Action id, its declared Integrations, Stored Input ids, and human-request
-    capabilities, and the two closed schemas. Every list is present even when empty; an Action declares at most one
-    Stored Input. The Controller addresses the Action by id and validates every input and result against those
+    The entry contains the canonical Action id and description, its declared Integrations, Stored Input ids, file
+    inputs, and human-request capabilities, its effect class, and the two closed schemas, plus any declared verifier
+    and idempotency. Every list is present even when empty; an Action declares at most eight Stored Inputs. The Controller addresses the Action by id and validates every input and result against those
     reviewed schemas; Assistants do not declare HTTP transport.
   </p>
   <p>

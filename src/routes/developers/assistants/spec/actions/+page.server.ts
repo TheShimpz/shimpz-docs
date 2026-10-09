@@ -12,7 +12,11 @@ class ZoneResult(TypedDict):
     status: str
 
 
-@action(integrations=["cloudflare"])
+@action(
+    integrations=["cloudflare"],
+    effect="read_only",
+    description="Show whether one of your domains is active on Cloudflare.",
+)
 async def run(domain: str, *, ctx: Context) -> ZoneResult:
     token = ctx.integrations.cloudflare.access_token
     result = await fetch_zone(domain, token)
@@ -20,9 +24,12 @@ async def run(domain: str, *, ctx: Context) -> ZoneResult:
 
 const contract = `{
   "id": "inspect-zone",
+  "description": "Show whether one of your domains is active on Cloudflare.",
   "integrations": ["cloudflare"],
   "stored_inputs": [],
+  "input_files": [],
   "human_requests": [],
+  "effect": "read_only",
   "input_schema": {
     "type": "object",
     "properties": {"domain": {"type": "string"}},

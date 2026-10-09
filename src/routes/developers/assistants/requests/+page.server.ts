@@ -14,6 +14,7 @@ class CreatedRecord(TypedDict):
 
 @action(
     human_requests=["input:choice", "auth:password"],
+    description="Create a DNS record in one of your zones.",
 )
 async def run(zone: str, *, ctx: Context) -> CreatedRecord:
     mode = ctx.request_input(

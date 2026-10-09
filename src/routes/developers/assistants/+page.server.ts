@@ -22,7 +22,7 @@ class EchoResult(TypedDict):
     message: str
 
 
-@action()
+@action(description="Repeat your message back to you.")
 async def run(message: str) -> EchoResult:
     return {"message": message}`;
 

@@ -13,7 +13,10 @@ class PublishedChanges(TypedDict):
     change_id: str
 
 
-@action(human_requests=["approval"])
+@action(
+    human_requests=["approval"],
+    description="Publish reviewed DNS changes to one of your zones.",
+)
 async def run(zone: Zone, change_id: str, count: int, *, ctx: Context) -> PublishedChanges:
     ctx.request_approval(
         title=text("Publish the reviewed DNS changes"),

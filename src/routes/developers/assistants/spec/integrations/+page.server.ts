@@ -15,7 +15,10 @@ class ZoneResult(TypedDict):
     status: str
 
 
-@action(integrations=["cloudflare"])
+@action(
+    integrations=["cloudflare"],
+    description="Show whether one of your domains is active on Cloudflare.",
+)
 async def run(domain: str, *, ctx: Context) -> ZoneResult:
     access_token = ctx.integrations.cloudflare.access_token
     response = await fetch_zone(domain, access_token)

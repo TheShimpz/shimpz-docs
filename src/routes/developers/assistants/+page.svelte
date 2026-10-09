@@ -42,8 +42,10 @@
   <h2 id="action-title">One file, one async run function</h2>
   <CodeBlock label="Minimal Echo Action" title="actions/echo.py" variant="code" {...data.action} />
   <p>
-    The filename becomes the Action id: underscores are replaced with hyphens. Type annotations become
-    closed input and output schemas; helper code stays in <code>lib/</code>.
+    The filename becomes the Action id: underscores are replaced with hyphens. The required
+    <a href="/developers/assistants/spec/actions/#declare-title"><code>description</code></a> says in one line what
+    the Action does for the person. Type annotations become closed input and output schemas; helper code stays in
+    <code>lib/</code>.
   </p>
 </section>
 
