@@ -124,7 +124,7 @@
   <h3 id="oauth-bad-gateway-title">Bad Gateway means authorization did not start</h3>
   <p>
     If the provider tab shows <strong>Bad Gateway</strong> before Cloudflare asks for consent, authorization did not
-    start and no provider grant was created. Shimpz fails closed when its hosted broker cannot reach the private
+    start and no provider grant was created. Shimpz fails closed when its platform broker cannot reach the private
     OAuth operation boundary. Close that tab and retry from the original Admin chat after service is restored; do
     not add a wildcard callback or paste credentials to work around it.
   </p>

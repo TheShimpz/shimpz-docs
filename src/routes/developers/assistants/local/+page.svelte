@@ -256,7 +256,7 @@
     </dd>
     <dt>The exact image is missing after staging</dt>
     <dd>Restage the trusted source. Team never pulls a replacement for a Local image.</dd>
-    <dt>You need Hosted, another Space, Store discovery, or distribution</dt>
+    <dt>You need another Space, Store discovery, or distribution</dt>
     <dd>
       <a href="/developers/assistants/publish/">Publish a separate immutable release through Developers</a>.
       Local staging needs no publication, Store listing, or Neuron operation, and its language-pack preparation

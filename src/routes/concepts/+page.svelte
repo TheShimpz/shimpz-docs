@@ -17,8 +17,8 @@
 <dl>
   <dt><strong>Space</strong></dt>
   <dd>
-    One complete Shimpz installation. A Local Space runs on infrastructure you control; a Hosted Space runs on
-    Shimpz-managed infrastructure.
+    One complete Shimpz installation that runs on infrastructure you control. Shimpz.com runs the shared platform it
+    uses: the Store catalog, Developers publication, these Docs and the installer, and the OAuth broker.
   </dd>
 
   <dt><strong>Team</strong></dt>
@@ -39,14 +39,6 @@
   <dt><strong>Integration</strong></dt>
   <dd>An OAuth connection you authorize directly with its provider.</dd>
 </dl>
-
-<aside class="scope-note" aria-labelledby="infrastructure-title">
-  <span id="infrastructure-title" class="kicker">What about PostgreSQL?</span>
-  <p>
-    PostgreSQL and the internal controllers are platform infrastructure. They are not Integrations, Assistants,
-    or Store items, and you do not connect them through OAuth. Shimpz operates them as part of the Space.
-  </p>
-</aside>
 
 <section class="guide-section" aria-labelledby="flow-title">
   <span class="section-label">One message</span>
