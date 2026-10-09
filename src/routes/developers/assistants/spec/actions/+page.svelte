@@ -53,10 +53,6 @@
     translated into every interface language, so it must be NFC-normalized English without braces, and every
     translation must fit 120 characters.
   </p>
-  <p>
-    <code>fetch_zone</code> represents the Creator's provider client; replace that illustrative helper with your own
-    implementation.
-  </p>
 </section>
 
 <section class="guide-section" aria-labelledby="types-title">
