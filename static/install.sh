@@ -7,7 +7,8 @@ RELEASE_REPOSITORY="ghcr.io/theshimpz/shimpz-local-release"
 RELEASE_CHANNEL="stable"
 # The public half of the key that signs every published Local release (ADR-0103); the Local CLI pins the same key.
 RELEASE_SIGNING_KEY='-----BEGIN PUBLIC KEY-----
-OWNER-PROVIDED-P256-SPKI-BASE64
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEsiSmhIGW2Txt7M3SuXQEEJZWqPQj
+lNkkH59ClG3czSQKkziiKEvnRwYqaVYk5Yosa6AUalFtdQz5XknSlGHPLw==
 -----END PUBLIC KEY-----'
 
 fail() {
