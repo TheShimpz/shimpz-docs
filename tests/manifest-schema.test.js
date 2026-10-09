@@ -218,7 +218,10 @@ test("static published shimpz.toml schema exposes only authored Spec v1 fields",
   assert.equal("provider" in schema.$defs.integration.properties, false);
   assert.equal(schema.properties.stored_inputs.maxProperties, 8);
   assert.equal(schema.properties.stored_inputs.propertyNames.$ref, "#/$defs/identifier");
-  assert.deepEqual(schema.$defs.storedInput.required, ["kind", "label", "description"]);
+  assert.deepEqual(schema.$defs.storedInput.required, ["kind", "label", "description", "host"]);
+  for (const placement of ["host", "header", "query", "scheme", "hmac"]) {
+    assert.equal(placement in schema.$defs.storedInput.properties, true);
+  }
   assert.equal(schema.$defs.storedInput.properties.kind.const, "password");
   assert.equal(schema.$defs.storedInput.additionalProperties, false);
   assert.ok(schema.$defs.shimpz.required.includes("description"));

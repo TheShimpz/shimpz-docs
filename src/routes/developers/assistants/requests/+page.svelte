@@ -64,7 +64,7 @@
   <p>
     A request ends the current operating-system process. Shimpz later re-runs the same immutable Action with a
     verified response transcript. Everything before a request may execute again, so keep that prefix deterministic
-    and free of external side effects. Issue all requests before reading an Integration token or changing anything.
+    and free of external side effects. Issue all requests before the first provider call or any change.
   </p>
 </aside>
 

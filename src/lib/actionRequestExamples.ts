@@ -76,9 +76,10 @@ export const inputExamples: ActionRequestExample[] = [
       min_length: 1,
       max_length: 256,
       required: true,
+      stored_input: "provider-api-key",
     },
     primaryLabel: "Send response",
-    caption: "password masks an arbitrary third-party secret; it is not a Shimpz authentication ceremony.",
+    caption: "password names a Stored Input that Team keeps for the provider calls it makes; the Action never sees it.",
   },
   {
     id: "input-phone",

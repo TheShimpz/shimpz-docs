@@ -24,7 +24,7 @@ const examples = {
         max_length=2000,
     )
 )`,
-  password: `provider_secret = ctx.request_input(
+  password: `ctx.request_input(
     InputRequest(
         kind="password",
         title=text("Connect the provider"),
@@ -32,11 +32,12 @@ const examples = {
         label=text("Provider API secret"),
         min_length=1,
         max_length=256,
+        stored_input="provider-api-key",
     )
 )
 
-# Password input is the final human request. Never return provider_secret.
-return await connect_provider(provider_secret)`,
+# Team holds the key now and places it in every call to its declared host.
+response = await ctx.fetch("GET", "https://api.example.com/v1/status")`,
   phone: `phone = ctx.request_input(
     InputRequest(
         kind="phone",

@@ -37,9 +37,8 @@ async def run(zone: str, *, ctx: Context) -> PublishedRecord:
         description=text("Reauthenticate before this external write."),
     )
 
-    # Secret/action phase: no more human requests are allowed.
-    token = ctx.integrations.cloudflare.access_token
-    return await publish_record(zone, mode, token)
+    # Provider phase: Team adds the Integration bearer, and no human request may follow.
+    return await publish_record(ctx, zone, mode)
 `;
 
 export const load: PageServerLoad = async () => ({

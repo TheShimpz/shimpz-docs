@@ -7,9 +7,9 @@
 </script>
 
 <svelte:head>
-  <title>Integrations and ctx.integrations — Shimpz docs</title>
+  <title>Integrations and OAuth — Shimpz docs</title>
   <link rel="canonical" href="https://docs.shimpz.com/developers/assistants/spec/integrations/" />
-  <meta name="description" content="Request reviewed OAuth scopes and consume a bounded Integration token." />
+  <meta name="description" content="Request reviewed OAuth scopes; Team adds the bearer to every provider call." />
 </svelte:head>
 
 <nav class="docs-breadcrumb" aria-label="Breadcrumb">
@@ -34,7 +34,7 @@
     The current catalog registers <code>cloudflare</code> with <code>zone.read</code>,
     <code>dns.read</code>, <code>dns.write</code>, and <code>offline_access</code>. Unknown providers,
     unsupported scopes, duplicates, and empty lists fail admission. A DNS mutation Action must separately
-    declare and perform <code>auth:password</code> before it reads the bearer token; that ceremony both proves the
+    declare and perform <code>auth:password</code> before its first provider call; that ceremony both proves the
     mechanism and authorizes the exact pending Action. The scope declaration alone does not satisfy that gate. Shimpz is pre-production and
     <code>dns.write</code> is not yet enabled on the Cloudflare OAuth client, so a four-scope grant cannot currently
     be completed and DNS mutation Actions cannot execute.
@@ -43,35 +43,36 @@
 
 <section class="guide-section" aria-labelledby="consume-title">
   <span class="section-label">Action boundary</span>
-  <h2 id="consume-title">Attach and read the Integration in one Action file</h2>
+  <h2 id="consume-title">Attach the Integration and call the provider through Team</h2>
   <CodeBlock label="Action-scoped Integration access" title="actions/inspect_zone.py" variant="code" {...data.action} />
   <p>
     An Action receives only Integrations listed in its <code>@action(integrations=[...])</code> declaration.
     One Action may list at most four Integration ids, and every Integration declared in <code>shimpz.toml</code> must
-    be used by at least one Action. Read the bearer token from
-    <code>ctx.integrations.&lt;provider&gt;.access_token</code>. The <code>fetch_zone</code> call is an illustrative
-    placeholder for the Creator's provider client.
+    be used by at least one Action. The Action never reads the bearer token: it asks Team for each call with
+    <code>await ctx.fetch(...)</code>, and Team adds <code>Authorization: Bearer</code> only on that provider's
+    reviewed API hosts, which must also be in <code>allowed_hosts</code>.
   </p>
 </section>
 
 <section class="guide-section" aria-labelledby="flow-title">
   <span class="section-label">Token flow</span>
-  <h2 id="flow-title">Private material enters at the last boundary</h2>
+  <h2 id="flow-title">The token never enters the Assistant</h2>
   <ol>
     <li>The Controller resolves provider metadata from its reviewed catalog.</li>
     <li>The person authorizes the exact scopes; Shimpz stores tokens encrypted and refreshes them.</li>
-    <li>Immediately before execution, the Controller injects a bearer token only for the selected Action.</li>
-    <li>The SDK exposes that token through <code>ctx.integrations</code> in the isolated process.</li>
-    <li>Outputs containing injected tokens are rejected before the Brain receives them.</li>
+    <li>The Action sends each provider call to Team over its execution channel, without any credential.</li>
+    <li>Team adds the bearer token only to calls an Action that declares the Integration makes to the provider's
+      reviewed API hosts, sends it through the Assistant's egress policy, and audits the call.</li>
+    <li>Team refuses a response that echoes the token, so it never reaches the Action or the Brain.</li>
   </ol>
 </section>
 
 <aside class="scope-note" aria-labelledby="secrets-title">
   <span id="secrets-title" class="kicker">No static Secrets surface</span>
   <p>
-    OAuth credentials use Integrations. When OAuth is unavailable, an Action may explicitly declare a final
-    <a href="/developers/assistants/requests/input/#password-title"><code>input:password</code></a> request for a
-    third-party secret. Never put client secrets, access tokens, refresh tokens, or private values in
+    OAuth credentials use Integrations. When OAuth is unavailable, declare a
+    <a href="/developers/assistants/requests/input/#password-title">Stored Input</a> with the header or query
+    parameter where Team places it. Never put client secrets, access tokens, refresh tokens, or private values in
     <code>shimpz.toml</code>, source, logs, arguments, or returned data.
   </p>
 </aside>

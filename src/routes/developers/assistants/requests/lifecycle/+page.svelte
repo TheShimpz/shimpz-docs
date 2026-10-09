@@ -57,9 +57,9 @@
     {...data.safeOrder}
   />
   <p>
-    Reading an Integration access token closes the human-request phase. The SDK rejects every later request. This
-    makes the boundary visible in code, but it cannot prove that arbitrary outbound traffic had no side effect;
-    Creator code must still obey request-before-action. The final provider helper is illustrative Creator code.
+    The first <code>ctx.fetch</code> call closes the human-request phase: the SDK rejects every later request, and Team
+    refuses one, so a replay never repeats a provider call. An Action that declares an authorization request may call
+    a provider only after that request is answered. The final provider helper is illustrative Creator code.
   </p>
 </section>
 
@@ -96,12 +96,11 @@
   <h2 id="secret-title">Keep every sensitive value at its narrowest authority</h2>
   <dl>
     <dt>Integration token</dt>
-    <dd>Injected only for an Action that declared the Integration; reading it closes requests.</dd>
+    <dd>Never enters the Assistant: Team adds it to a declaring Action's calls to the provider's API hosts.</dd>
     <dt><code>input:password</code></dt>
     <dd>
-      A third-party secret deliberately delivered to Assistant code. Memory-only for that Action attempt, unless the
-      Action declares a Stored Input, which Team keeps encrypted for that Team's later invocations. Final request,
-      protected from logs and results. Prefer an OAuth Integration whenever possible.
+      Always a declared Stored Input that Team keeps encrypted for that Team and places in the declaring Action's
+      calls to its host; the Action never receives it. Prefer an OAuth Integration whenever possible.
     </dd>
     <dt><code>request_auth</code> factor</dt>
     <dd>Owned by the Shimpz platform ceremony. It never enters Assistant input, transcript, logs, or results.</dd>
@@ -131,8 +130,8 @@
   <p>
     Declare every exact kind. Use the narrowest presentation. Write copy as literal English <code>shimpz.text</code>
     templates with typed, secret-free parameters. Put every request
-    before token access and side effects. Keep descriptors deterministic. Treat password as third-party,
-    non-returnable, and the final request across the whole Team turn. Use <code>request_auth</code> for Shimpz
+    before the first provider call and side effects. Keep descriptors deterministic. Name a declared Stored Input in
+    every password request. Use <code>request_auth</code> for Shimpz
     authentication. Never implement retry after denial.
   </p>
 </aside>

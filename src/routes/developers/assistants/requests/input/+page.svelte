@@ -79,17 +79,14 @@
   <span class="section-label">Third-party secret</span>
   <h2 id="password-title">password</h2>
   <p>
-    Use only for an arbitrary third-party secret intentionally delegated to this exact Assistant Action. The value is
-    masked and is never a Shimpz Account password or Local Supervisor password. An ordinary password request is
-    memory-only: the value exists only while that Action attempt runs.
-  </p>
-  <p>
-    A declared Stored Input is the exception. When the Action declares it and requests the value with
-    <code>stored_input="&lt;id&gt;"</code>, Team keeps the value encrypted under that Team as soon as the person enters
-    it, and every later invocation of an Action that declares it receives it without asking again. An Action may
-    declare several Stored Inputs, such as an access token and an app secret; request them together with
-    <code>ctx.request_stored_inputs(...)</code>, which asks for each missing one in turn and returns the values only once
-    Team holds all of them. Call <code>ctx.reject_stored_input(id)</code> for exactly the value the provider rejected;
+    Use only for a third-party credential intentionally delegated to this Assistant. The value is masked and is never a
+    Shimpz Account password or Local Supervisor password. Every password request names a declared Stored Input with
+    <code>stored_input="&lt;id&gt;"</code>: Team keeps the value encrypted under that Team as soon as the person enters
+    it, never asks for it again, and never gives it to the Action. Instead, Team places it where the Stored Input's
+    <a href="/developers/assistants/spec/manifest/#access-title">placement</a> says in every
+    <code>ctx.fetch</code> call to that host. An Action may declare several Stored Inputs, such as an access token and
+    an app secret; request them together with <code>ctx.request_stored_inputs(...)</code>, which asks for each missing
+    one in turn and returns once Team holds all of them. Call <code>ctx.reject_stored_input(id)</code> for exactly the value the provider rejected;
     Team deletes only that one and the next run asks for it again. Uninstalling the Assistant or deleting the Team
     removes them. When a Stored Input declares
     <a href="/developers/assistants/spec/manifest/#access-title"><code>help_url</code></a>, the Local Admin request
@@ -97,12 +94,10 @@
   </p>
   <CodeBlock label="Third-party secret input" title="Inside a declared Action" variant="code" {...data.password} />
   <aside class="scope-note" aria-labelledby="password-rules-title">
-    <span id="password-rules-title" class="kicker">Secret-last rules</span>
+    <span id="password-rules-title" class="kicker">Request before calls</span>
     <p>
-      Password must be the final human request in the entire Team turn, not merely in this Action. After any Action
-      receives one, a later request from any Action in the same turn is blocked. Stored Inputs requested together count
-      as one final request: no request may follow them. Do not log it, include it in copy,
-      return it, place it in an exception, or retain it. Use an OAuth
+      Request every Stored Input before the Action's first provider call: no human request may follow a call. Never
+      put a credential in copy, input, or source. Use an OAuth
       <a href="/developers/assistants/spec/integrations/">Integration</a> when the provider supports one.
     </p>
   </aside>

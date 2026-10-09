@@ -18,9 +18,9 @@ class ZoneResult(TypedDict):
     description="Show whether one of your domains is active on Cloudflare.",
 )
 async def run(domain: str, *, ctx: Context) -> ZoneResult:
-    token = ctx.integrations.cloudflare.access_token
-    result = await fetch_zone(domain, token)
-    return {"zone_id": result["id"], "status": result["status"]}`;
+    response = await ctx.fetch("GET", f"https://api.cloudflare.com/client/v4/zones?name={domain}")
+    zone = response.json()["result"][0]
+    return {"zone_id": zone["id"], "status": zone["status"]}`;
 
 const contract = `{
   "id": "inspect-zone",

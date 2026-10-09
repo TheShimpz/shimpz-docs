@@ -52,8 +52,10 @@
     {...data.oneHost}
   />
   <p>
-    Do not include <code>https://</code>, a port, path, query, fragment, wildcard, or trailing slash.
-    HTTPS and WSS are the only admitted protocols; a second API hostname is a second explicit list item.
+    Do not include <code>https://</code>, a port, path, query, fragment, wildcard, or trailing slash. A second API
+    hostname is a second explicit list item. An Assistant has no network route of its own: every Action reaches these
+    hosts only through Team with <code>await ctx.fetch(...)</code>, over HTTPS on port 443, and Team's egress policy
+    admits only the hosts listed here.
   </p>
 </section>
 
@@ -65,7 +67,9 @@
     <li>At most 32 unique hosts per Assistant.</li>
     <li>No IP addresses, single-label names, wildcards, URLs, or localhost.</li>
     <li>No reserved internal or test suffixes such as <code>.local</code>, <code>.internal</code>, or <code>.test</code>.</li>
-    <li>Redirects do not silently expand the list; the final host must also be declared and admitted.</li>
+    <li>Team follows no redirect; a call to the redirect target must name a declared host.</li>
+    <li>A call carries at most a 256 KiB body and receives at most a 4 MiB response, and an Action makes at most
+      sixteen calls per invocation.</li>
     <li>An Integration-backed API host, such as <code>api.cloudflare.com</code>, must still appear in this list.</li>
   </ul>
 </section>

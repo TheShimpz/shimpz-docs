@@ -67,12 +67,13 @@
 
 <section class="guide-section" aria-labelledby="runtime-title">
   <span class="section-label">Runtime</span>
-  <h2 id="runtime-title">Invocation contains input, Integrations, and bounded replay</h2>
+  <h2 id="runtime-title">Invocation contains input and bounded replay, never a credential</h2>
   <p>
-    The Controller validates Action input, resolves only declared OAuth bearer tokens, and invokes
-    <code>/usr/local/bin/shimpz-action &lt;action-id&gt;</code> over bounded stdin. The first invocation contains input
-    and Integrations; a replay also contains completed human-request responses. An Action returns one validated JSON
-    object over stdout.
+    The Controller validates Action input and invokes <code>/usr/local/bin/shimpz-action &lt;action-id&gt;</code>. The
+    invocation is the first input line and contains input and the ids of the Stored Inputs Team holds; a replay also
+    contains completed human-request responses. The Action asks Team for each provider call with
+    <code>ctx.fetch</code>, one line out and one reply line in, and Team adds every declared credential. An Action
+    returns one validated JSON object as its last output line.
   </p>
 </section>
 

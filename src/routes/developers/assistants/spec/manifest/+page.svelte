@@ -111,8 +111,14 @@
       it, at most eight per manifest. It holds <code>kind = "password"</code>, a <code>label</code> of 1 to 80
       characters, and a <code>description</code> of 1 to 500 characters. The label joins the message catalog and is
       translated like the summary, so it must be NFC-normalized English without braces, and every translation must fit
-      120 characters; the description is never translated. Each Action names
-      the ids it uses, any number of them, and receives only those; several Actions may share one. See
+      120 characters; the description is never translated. It also declares where Team places the value in provider
+      calls: one <code>host</code> from <code>allowed_hosts</code>, exactly one <code>header</code> (with an optional
+      <code>scheme</code> such as <code>"Bearer"</code>) or <code>query</code> parameter, and an optional
+      <code>hmac</code> naming another Stored Input of the same host, which places the lowercase hexadecimal HMAC-SHA256
+      keyed by this value over that one, as Meta's <code>appsecret_proof</code>. Team-owned headers such as
+      <code>Host</code> or <code>Content-Length</code> and a field another Stored Input uses on the same host are
+      refused. Each Action names the ids it uses, any number of them, and only its calls carry them; several Actions
+      may share one. See
       <a href="/developers/assistants/requests/input/#password-title">password input</a>.
     </dd>
     <dt><code>help_url</code></dt>
