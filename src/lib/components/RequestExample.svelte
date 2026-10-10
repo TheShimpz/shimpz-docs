@@ -7,7 +7,7 @@
   import SelectField from "@shimpz/frontend/components/SelectField";
   import { themeClass } from "@shimpz/frontend/theme";
 
-  import type { ActionRequestExample } from "$lib/actionRequestExamples";
+  import type { ActionRequestExample } from "#lib/actionRequestExamples.js";
 
   let {
     id,

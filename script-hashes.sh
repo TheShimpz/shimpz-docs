@@ -1,5 +1,5 @@
 #!/bin/sh
-# Every prerendered page must carry its hash-bound script policy (svelte.config.js). The served script-src admits
+# Every prerendered page must carry its hash-bound script policy (vite.config.ts). The served script-src admits
 # exactly the union of those hashes, so no page needs 'unsafe-inline' and the image build fails closed when a page is
 # missing its policy. Run from the build root after `pnpm run build`: renders security-headers.conf, with SCRIPT_HASHES
 # replaced by that union, into ./served-security-headers.conf.

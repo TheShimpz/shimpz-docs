@@ -1,4 +1,4 @@
-import { highlightCode } from "$lib/server/highlight";
+import { highlightCode } from "#lib/server/highlight.js";
 
 import type { PageServerLoad } from "./$types";
 

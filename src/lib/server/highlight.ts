@@ -1,6 +1,6 @@
 import { codeToTokens, type BundledLanguage } from "shiki";
 
-import type { HighlightedCode } from "$lib/code";
+import type { HighlightedCode } from "#lib/code.js";
 
 const CODE_THEME = "synthwave-84";
 

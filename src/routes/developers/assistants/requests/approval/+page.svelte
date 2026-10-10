@@ -1,7 +1,7 @@
 <script lang="ts">
-  import CodeBlock from "$lib/components/CodeBlock.svelte";
-  import RequestExample from "$lib/components/RequestExample.svelte";
-  import { approvalExamples } from "$lib/actionRequestExamples";
+  import CodeBlock from "#lib/components/CodeBlock.svelte";
+  import RequestExample from "#lib/components/RequestExample.svelte";
+  import { approvalExamples } from "#lib/actionRequestExamples.js";
 
   import type { PageData } from "./$types";
 

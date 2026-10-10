@@ -1,7 +1,7 @@
 <script lang="ts">
-  import CodeBlock from "$lib/components/CodeBlock.svelte";
+  import CodeBlock from "#lib/components/CodeBlock.svelte";
 
-  import type { CodeLine } from "$lib/code";
+  import type { CodeLine } from "#lib/code.js";
 
   const validate: readonly CodeLine[] = [
     { kind: "command", prompt: "$", value: "shimpz assistant check" },

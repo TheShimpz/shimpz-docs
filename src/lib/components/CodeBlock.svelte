@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onDestroy } from "svelte";
 
-  import type { CodeLine, HighlightedCode } from "$lib/code";
+  import type { CodeLine, HighlightedCode } from "#lib/code.js";
 
   type BaseProps = {
     label: string;
