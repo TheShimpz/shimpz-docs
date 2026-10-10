@@ -5,6 +5,7 @@
 !installer.conf
 !security-headers.conf
 !script-hashes.sh
+!bootstrap-pnpm.sh
 !package.json
 !pnpm-lock.yaml
 !pnpm-workspace.yaml

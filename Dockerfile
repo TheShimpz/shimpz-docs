@@ -5,29 +5,16 @@
 # ── stage 1: prerender the static site ──────────────────────────────────────────────────────────
 FROM node:26.11.1-bookworm-slim@sha256:86f07bc9c5dce4578cf37e5a418b7bfc7f817cda25cde66e2b66e95ed86c4567 AS web
 ARG SOURCE_DATE_EPOCH=0
-# pnpm is the npm registry's JavaScript release, admitted only by this exact digest and run by this Node.js; with
-# pmOnFail=error (pnpm-workspace.yaml) it never downloads another pnpm when packageManager disagrees.
-ARG PNPM_SHA256=2b567aa66026238078ac2e0a33bec3febd60e962987aac697456f3180819b287
-RUN node --input-type=module -e ' \
-      import { createHash } from "node:crypto"; \
-      import { writeFileSync } from "node:fs"; \
-      const response = await fetch("https://registry.npmjs.org/pnpm/-/pnpm-11.9.0.tgz"); \
-      if (!response.ok) throw new Error(`pnpm download failed: ${response.status}`); \
-      const bytes = Buffer.from(await response.arrayBuffer()); \
-      const digest = createHash("sha256").update(bytes).digest("hex"); \
-      if (digest !== process.env.PNPM_SHA256) throw new Error(`pnpm digest mismatch: ${digest}`); \
-      writeFileSync("/tmp/pnpm.tgz", bytes);' \
- && mkdir /opt/pnpm \
- && tar -xzf /tmp/pnpm.tgz -C /opt/pnpm --strip-components=1 --no-same-owner \
- && rm /tmp/pnpm.tgz \
- && ln -s /opt/pnpm/bin/pnpm.mjs /usr/local/bin/pnpm \
- && node --version && pnpm --version \
- && test "$(node --version)" = v26.11.1 \
- && test "$(pnpm --version)" = 11.9.0
 WORKDIR /w
 # No dependency install script runs: the shared frontend package ships its sources and the build needs none.
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile --ignore-scripts
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml bootstrap-pnpm.sh ./
+# The exact pnpm the manifest names, its registry tarball verified by bootstrap-pnpm.sh (Node.js 26 bundles no
+# Corepack); with pmOnFail=error (pnpm-workspace.yaml) it never downloads another pnpm when packageManager disagrees.
+ENV PATH="/opt/pnpm/bin:$PATH"
+RUN sh bootstrap-pnpm.sh /tmp/pnpm-cache /opt/pnpm \
+ && rm -rf /tmp/pnpm-cache \
+ && node --version && pnpm --version \
+ && pnpm install --frozen-lockfile --ignore-scripts
 COPY . .
 RUN pnpm run build \
  && find /w/build -depth -exec touch -h -d "@${SOURCE_DATE_EPOCH}" {} + \
