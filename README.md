@@ -8,6 +8,6 @@ Served at
 **install.shimpz.com**.
 
 ```sh
-pnpm install && pnpm run build   # Node.js 24 → ./build (static)
+pnpm install --frozen-lockfile --ignore-scripts && pnpm run build   # Node.js 24 → ./build (static)
 docker build -t shimpz-docs .    # multi-arch static site on :8080
 ```

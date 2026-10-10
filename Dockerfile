@@ -6,10 +6,11 @@
 FROM node:24-slim@sha256:235600a8101ab264e117b1768e925532262668dc9b581ef1dd7d96ced463b8e7 AS web
 ARG SOURCE_DATE_EPOCH=0
 WORKDIR /w
+# No dependency install script runs: the shared frontend package ships its sources and the build needs none.
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN corepack enable \
  && corepack prepare pnpm@11.9.0 --activate \
- && pnpm install --frozen-lockfile
+ && pnpm install --frozen-lockfile --ignore-scripts
 COPY . .
 RUN pnpm run build \
  && find /w/build -depth -exec touch -h -d "@${SOURCE_DATE_EPOCH}" {} + \
