@@ -26,7 +26,7 @@
 
 ## Validation
 
-- Run `pnpm test`, `pnpm exec svelte-check --tsconfig ./tsconfig.json`, and `pnpm build` as applicable, with
+- Run `pnpm test`, `pnpm check`, and `pnpm build` as applicable, with
   pnpm 11.9.0 on Node.js 26.
 - A `static/install.sh` change cannot be committed without the umbrella checks
   `python docs/tests/test_installer.py` and `python .tests/test-local-release-delivery.py`.
