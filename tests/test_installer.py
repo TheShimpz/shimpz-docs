@@ -11,6 +11,7 @@ import stat
 import subprocess
 import tempfile
 import time
+from dataclasses import dataclass
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -138,22 +139,34 @@ def sign(private: Path, message: bytes) -> str:
     )
 
 
+@dataclass(frozen=True)
+class SignedRelease:
+    """The fake release's signed metadata.
+
+    It is signed by `signer`: the pinned test key (`release`), another key (`other`), or nothing (`none`). It
+    carries `ordinal` and the `(issued_at, expires)` window, by default issued a minute ago.
+    """
+
+    signer: str = "release"
+    ordinal: int = MIN_ORDINAL
+    window: tuple[int, int] | None = None
+
+
+CURRENT_RELEASE = SignedRelease()
+
+
 def run_bootstrap(
     root: Path,
     cli_body: str,
     version_status: int = 0,
-    signer: str = "release",
     link_cli: bool = False,
     kept_lines: int | None = None,
-    ordinal: int = MIN_ORDINAL,
-    window: tuple[int, int] | None = None,
+    release: SignedRelease = CURRENT_RELEASE,
 ) -> tuple[subprocess.CompletedProcess[str], Path]:
-    """Run the bootstrap against a fake Docker whose release carries a stub release-bound CLI.
+    """Run the bootstrap against a fake Docker whose `release` carries a stub release-bound CLI.
 
-    The release is signed by `signer`: the pinned test key (`release`), another key (`other`), or nothing (`none`).
     The stub records every invocation, its version probe included, in `calls`; Docker records each one in
     `docker-calls`. `kept_lines` runs only that many leading lines, as a truncated download would deliver them.
-    The signed metadata carries `ordinal` and the `(issued_at, expires)` window, by default issued a minute ago.
     """
     home = root / "home"
     home.mkdir(exist_ok=True)
@@ -166,10 +179,10 @@ def run_bootstrap(
     )
     digest = hashlib.sha256(cli.read_bytes()).hexdigest()
     metadata = root / "release.env"
-    issued_at, expires = window or (int(time.time()) - 60, int(time.time()) - 60 + VALIDITY_SECONDS)
+    issued_at, expires = release.window or (int(time.time()) - 60, int(time.time()) - 60 + VALIDITY_SECONDS)
     fields = (
         ("schema", "local-v2"),
-        ("ordinal", str(ordinal)),
+        ("ordinal", str(release.ordinal)),
         ("umbrella_revision", "a" * 40),
         ("cli_revision", "b" * 40),
         ("cli_linux_amd64_sha256", digest),
@@ -184,8 +197,8 @@ def run_bootstrap(
     metadata.write_text("".join(f"{key}={value}\n" for key, value in fields))
     release_key, public_key = generate_key(root, "release-key")
     signature = "<no value>"
-    if signer != "none":
-        signing_key = release_key if signer == "release" else generate_key(root, "other-key")[0]
+    if release.signer != "none":
+        signing_key = release_key if release.signer == "release" else generate_key(root, "other-key")[0]
         signature = sign(signing_key, metadata.read_bytes() + b"state_epoch=2\n")
     docker = root / "docker"
     docker.write_text(
@@ -281,7 +294,7 @@ def test_bootstrap_runs_nothing_from_a_release_without_the_pinned_signature() ->
     for signer in ("none", "other"):
         with tempfile.TemporaryDirectory() as raw:
             root = Path(raw)
-            result, home = run_bootstrap(root, "exit 0\n", signer=signer)
+            result, home = run_bootstrap(root, "exit 0\n", release=SignedRelease(signer=signer))
             check(result.returncode != 0, f"a release signed by {signer} is refused")
             check("the Local release signature is invalid" in result.stderr, "the signature refusal is named")
             check(not (root / "calls").exists(), "the release-bound CLI never runs")
@@ -302,7 +315,7 @@ def test_bootstrap_runs_nothing_from_an_old_expired_or_future_release() -> None:
     ):
         with tempfile.TemporaryDirectory() as raw:
             root = Path(raw)
-            result, home = run_bootstrap(root, "exit 0\n", **changes)
+            result, home = run_bootstrap(root, "exit 0\n", release=SignedRelease(**changes))
             check(result.returncode != 0 and refusal in result.stderr, f"a signed set is refused: {refusal}")
             check(not (root / "calls").exists(), "the release-bound CLI never runs")
             check(not os.path.lexists(home / ".shimpz"), "nothing is installed")
@@ -310,7 +323,7 @@ def test_bootstrap_runs_nothing_from_an_old_expired_or_future_release() -> None:
     for window in ((now + 240, now + 240 + VALIDITY_SECONDS), (now - VALIDITY_SECONDS, now - 60)):
         with tempfile.TemporaryDirectory() as raw:
             root = Path(raw)
-            run_bootstrap(root, "exit 0\n", window=window)
+            run_bootstrap(root, "exit 0\n", release=SignedRelease(window=window))
             check((root / "calls").exists(), f"a set within the clock tolerance reaches its CLI: {window}")
 
 
