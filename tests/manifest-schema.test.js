@@ -149,9 +149,9 @@ test("static published shimpz.toml schema is the closed Spec v1 contract", () =>
 test("static manifest schema projection pins Developers authority", () => {
   assert.deepEqual(upstream, {
     repository: "https://github.com/TheShimpz/shimpz-developers",
-    commit: "0481f431e7c8a8c5cf4e194aba096406dc85af46",
+    commit: "35f92a09afe39f17c79833ca33d0578b6b13cf18",
     path: "protocol/assistant/v1/manifest.schema.json",
-    sha256: "0aba5612a9c7c6a0fa45eb07f0d753d3197448de9122f6417edc449838bfb305",
+    sha256: "91e46ba60a962ca0a3d336d2a425248320328692d0af8624459d584f7da0abd9",
   });
 });
 
@@ -218,7 +218,7 @@ test("static published shimpz.toml schema exposes only authored Spec v1 fields",
   assert.equal("provider" in schema.$defs.integration.properties, false);
   assert.equal(schema.properties.stored_inputs.maxProperties, 8);
   assert.equal(schema.properties.stored_inputs.propertyNames.$ref, "#/$defs/identifier");
-  assert.deepEqual(schema.$defs.storedInput.required, ["kind", "label", "description", "help_url", "host"]);
+  assert.deepEqual(schema.$defs.storedInput.required, ["kind", "label", "description", "help_url", "host", "routes"]);
   assert.equal(schema.$defs.storedInput.properties.description.maxLength, 400);
   assert.deepEqual(schema.$defs.storedInput.properties.help_url, { $ref: "#/$defs/helpUrl" });
   for (const placement of ["host", "header", "query", "scheme", "hmac"]) {
