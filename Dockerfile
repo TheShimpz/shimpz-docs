@@ -15,18 +15,8 @@ RUN pnpm run build \
  && find /w/build -depth -exec touch -h -d "@${SOURCE_DATE_EPOCH}" {} + \
  && rm -rf /root/.cache/node /root/.local/share/pnpm /root/.npm
 # adapter-static writes the prerendered site to /w/build
-# Every prerendered page must carry its hash-bound script policy (svelte.config.js). Caddy's script-src header admits
-# exactly the union of those hashes, so no page needs 'unsafe-inline' and the build fails closed when one is missing.
-RUN <<'EOF'
-set -eu
-pages="$(find build -name '*.html' | wc -l)"
-policies="$(grep -rhoE --include='*.html' '<meta http-equiv="content-security-policy" content="[^"]*"' build)"
-test "$pages" -gt 0
-test "$(printf '%s\n' "$policies" | wc -l)" -eq "$pages"
-printf '%s' "$(printf '%s\n' "$policies" | grep -oE "'sha256-[A-Za-z0-9+/]{43}='" | sort -u | paste -sd' ' -)" >script-hashes
-test -s script-hashes
-touch -d "@${SOURCE_DATE_EPOCH}" script-hashes
-EOF
+# Collect each prerendered page's script hash for the Caddy script-src header (script-hashes.sh).
+RUN sh script-hashes.sh
 
 # ── stage 2: serve ──────────────────────────────────────────────────────────────────────────────
 FROM caddy:2.11.4-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648 AS serve

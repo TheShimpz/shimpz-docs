@@ -2,6 +2,7 @@
 !.dockerignore
 !Dockerfile
 !Caddyfile
+!script-hashes.sh
 !package.json
 !pnpm-lock.yaml
 !pnpm-workspace.yaml
