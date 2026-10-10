@@ -32,6 +32,19 @@ allowed_hosts = ["api.cloudflare.com"]
 [integrations.cloudflare]
 scopes = ["zone.read", "dns.read", "dns.write", "offline_access"]`;
 
-export const load: PageServerLoad = async () => ({
-  manifest: await highlightCode(manifest, "toml"),
-});
+const routes = `[stored_inputs.exa-api-key]
+kind = "password"
+label = "Exa API key"
+description = "Lets this Assistant search the web. Create it in the Exa dashboard."
+help_url = "https://dashboard.exa.ai/api-keys"
+host = "api.exa.ai"
+header = "x-api-key"
+routes = [{ method = "POST", path = "/search" }, { method = "POST", path = "/contents" }]`;
+
+export const load: PageServerLoad = async () => {
+  const [highlightedManifest, highlightedRoutes] = await Promise.all([
+    highlightCode(manifest, "toml"),
+    highlightCode(routes, "toml"),
+  ]);
+  return { manifest: highlightedManifest, routes: highlightedRoutes };
+};

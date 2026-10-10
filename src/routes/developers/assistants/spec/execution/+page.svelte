@@ -65,6 +65,45 @@
   </p>
 </section>
 
+<section class="guide-section" aria-labelledby="routes-call-title">
+  <span class="section-label">Provider calls</span>
+  <h2 id="routes-call-title">Team checks each credential's routes before it sends a call</h2>
+  <p>
+    An Action reaches a provider only through <code>await ctx.fetch(...)</code>. Before Team places any Stored Input
+    on a call, it matches the call against the
+    <a href="/developers/assistants/spec/manifest/#routes-title"><code>routes</code></a> of every Stored Input the
+    Action declares for that host.
+  </p>
+  <ol>
+    <li>
+      Team reads the path exactly as sent, before the query, and never normalizes it. A path with percent-encoding, an
+      empty or <code>.</code> or <code>..</code> segment, a character outside the unreserved set, or a trailing
+      <code>/</code> matches no route.
+    </li>
+    <li>
+      A segment that names a credential endpoint, such as <code>api-keys</code> or <code>access_token</code>, is
+      refused even where a <code>*</code> would match it.
+    </li>
+    <li>
+      A route matches when its method is the call's method, it has as many segments as the path, and each literal
+      equals the call's segment, while each <code>*</code> takes exactly one.
+    </li>
+    <li>
+      On a route with <code>query</code> selectors, the call must carry each selector exactly once, under the exact
+      name, with one of the listed raw values. Such a call is also refused when its query contains <code>;</code> or
+      a parameter name outside the unreserved set.
+    </li>
+    <li>
+      Every Stored Input declared for the host must admit the call. If one does not, Team sends nothing, places no
+      credential, and <code>ctx.fetch</code> raises <code>FetchError</code> with code <code>refused</code>.
+    </li>
+  </ol>
+  <p>
+    Widen a route only to an endpoint your Actions actually call, and keep the routes of Stored Inputs that share a
+    host identical.
+  </p>
+</section>
+
 <section class="guide-section" aria-labelledby="isolation-title">
   <span class="section-label">Isolation</span>
   <h2 id="isolation-title">Authority stays outside the workload</h2>

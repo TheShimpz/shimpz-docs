@@ -120,8 +120,9 @@
       <code>hmac</code> naming another Stored Input of the same host, which places the lowercase hexadecimal HMAC-SHA256
       keyed by this value over that one, as Meta's <code>appsecret_proof</code>. Team-owned headers such as
       <code>Host</code> or <code>Content-Length</code> and a field another Stored Input uses on the same host are
-      refused. Each Action names the ids it uses, any number of them, and only its calls carry them; several Actions
-      may share one. See
+      refused. The required <a href="#routes-title"><code>routes</code></a> list names the only endpoints on that host
+      that ever receive the value. Each Action names the ids it uses, any number of them, and only its calls carry
+      them; several Actions may share one. See
       <a href="/developers/assistants/requests/input/#password-title">password input</a>.
     </dd>
     <dt><code>help_url</code></dt>
@@ -135,6 +136,61 @@
       <code>https://dashboard.exa.ai/api-keys</code>, not <code>https://dashboard.exa.ai</code>.
     </dd>
   </dl>
+</section>
+
+<section class="guide-section" aria-labelledby="routes-title">
+  <span class="section-label">Stored Input routes</span>
+  <h2 id="routes-title">Name every endpoint that receives the value</h2>
+  <p>
+    A Stored Input reaches its <code>host</code> only on the calls its <code>routes</code> admit. List each method
+    and path your Actions send it on, and nothing more: a key that only searches must never travel to an endpoint
+    that changes billing or reads other credentials.
+  </p>
+  <CodeBlock label="Stored Input with reviewed routes" title="shimpz.toml" variant="code" {...data.routes} />
+  <dl>
+    <dt><code>routes</code></dt>
+    <dd>
+      A required key of a <code>[stored_inputs.&lt;id&gt;]</code> table: 1 to 32 inline tables
+      <code>{`{ method, path, query }`}</code>, with no two sharing the same <code>method</code> and
+      <code>path</code>. <code>query</code> is optional.
+    </dd>
+    <dt><code>method</code></dt>
+    <dd>One of <code>GET</code>, <code>HEAD</code>, <code>POST</code>, <code>PUT</code>, <code>PATCH</code>, or <code>DELETE</code>.</dd>
+    <dt><code>path</code></dt>
+    <dd>
+      At most 512 characters of <code>/</code>-prefixed segments. A segment is either a literal of 1 to 64 unreserved
+      characters (<code>A-Z</code>, <code>a-z</code>, <code>0-9</code>, <code>-</code>, <code>.</code>,
+      <code>_</code>, <code>~</code>) other than <code>.</code> and <code>..</code>, or <code>*</code>, which matches
+      exactly one segment of 1 to 256 of those characters, such as a numeric object id. There is no root path, empty
+      or trailing segment, partial wildcard such as <code>v*</code>, or wildcard spanning several segments:
+      <code>/v23.0/*/messages</code> matches <code>/v23.0/1234567890/messages</code> but not
+      <code>/v23.0/1/2/messages</code>.
+    </dd>
+    <dt><code>query</code></dt>
+    <dd>
+      Optional selectors for a provider parameter that changes what an endpoint returns or acts on, such as Meta's
+      <code>fields</code> on an object that can also return a token. Each is <code>{`{ name, values }`}</code>: a
+      name of 1 to 64 unreserved characters, unique without regard to case, and 1 to 16 unique values of at most 256
+      characters. Write each value exactly as your Action's query encoder sends it, with reserved characters
+      percent-encoded in uppercase hexadecimal: Python's <code>urlencode</code> sends <code>id,name</code> as
+      <code>id%2Cname</code>. A call on that route must carry each selector exactly once, under that exact name,
+      with one listed value; other parameters stay free. At most 8 selectors per route.
+    </dd>
+  </dl>
+  <p>
+    A route may never name an endpoint that issues, lists, or exchanges credentials. A literal segment is refused
+    when, lowercased and without <code>-</code>, <code>_</code>, <code>.</code>, and <code>~</code>, it contains
+    <code>apikey</code>, <code>authoriz</code>, <code>credential</code>, <code>oauth</code>, <code>password</code>,
+    <code>secret</code>, or <code>token</code>, so <code>/v1/api-keys</code> and <code>/oauth/access_token</code>
+    fail validation. Team applies the same test to every segment of each call, so a <code>*</code> never reaches
+    such an endpoint either.
+  </p>
+  <p>
+    Team places a credential only when <strong>every</strong> Stored Input the Action declares for the call's host
+    admits the call. When two Stored Inputs share a host, such as Meta's access token and its app secret, give them
+    the same routes; otherwise a call outside either list is refused before any credential is placed. See
+    <a href="/developers/assistants/spec/execution/#routes-call-title">how Team matches each call</a>.
+  </p>
 </section>
 
 <aside class="scope-note" aria-labelledby="validation-title">

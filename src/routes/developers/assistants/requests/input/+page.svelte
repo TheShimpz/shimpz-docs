@@ -83,7 +83,9 @@
     <code>stored_input="&lt;id&gt;"</code>: Team keeps the value encrypted under that Team as soon as the person enters
     it, never asks for it again, and never gives it to the Action. Instead, Team places it where the Stored Input's
     <a href="/developers/assistants/spec/manifest/#access-title">placement</a> says in every
-    <code>ctx.fetch</code> call to that host. An Action may declare several Stored Inputs, such as an access token and
+    <code>ctx.fetch</code> call to that host that its reviewed
+    <a href="/developers/assistants/spec/manifest/#routes-title"><code>routes</code></a> admit. An Action may declare
+    several Stored Inputs, such as an access token and
     an app secret; request them together with <code>ctx.request_stored_inputs(...)</code>, which asks for each missing
     one in turn and returns once Team holds all of them. Call <code>ctx.reject_stored_input(id)</code> for exactly the value the provider rejected;
     Team deletes only that one and the next run asks for it again. Uninstalling the Assistant or deleting the Team
