@@ -5,6 +5,11 @@ set -eu
 BOOTSTRAP_VERSION="2.0.0"
 RELEASE_REPOSITORY="ghcr.io/theshimpz/shimpz-local-release"
 RELEASE_CHANNEL="stable"
+# The oldest signed release ordinal a fresh install accepts, and the signed validity window rules (ADR-0103, amended
+# 2026-10-09): at most 30 days long, with five minutes of host clock tolerance at either end.
+MIN_ORDINAL=37916614251
+VALIDITY_SECONDS=2592000
+CLOCK_SKEW_SECONDS=300
 # The public half of the key that signs every published Local release (ADR-0103); the Local CLI pins the same key.
 RELEASE_SIGNING_KEY='-----BEGIN PUBLIC KEY-----
 MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEsiSmhIGW2Txt7M3SuXQEEJZWqPQj
@@ -119,6 +124,14 @@ one_metadata_value() {
 	printf '%s\n' "$values"
 }
 
+# A positive decimal without leading zeros, short enough for shell arithmetic.
+metadata_number() {
+	number="$(one_metadata_value "$1")"
+	case "$number" in 0*|*[!0-9]*) fail "the atomic release has invalid $1 metadata" ;; esac
+	[ "${#number}" -le 15 ] || fail "the atomic release has invalid $1 metadata"
+	printf '%s\n' "$number"
+}
+
 file_hash() {
 	if [ -x /usr/bin/sha256sum ]; then
 		/usr/bin/sha256sum "$1" | awk '{print $1}'
@@ -197,8 +210,20 @@ main() {
 		/usr/bin/openssl dgst -sha256 -verify "$temporary/release-key.pem" -signature "$temporary/release.sig" "$temporary/release.signed" >/dev/null 2>&1 ||
 		fail "the Local release signature is invalid; do not install this release"
 
-	[ "$(wc -l < "$release_metadata" | tr -d ' ')" -eq 10 ] || fail "the atomic release metadata is not closed"
+	[ "$(wc -l < "$release_metadata" | tr -d ' ')" -eq 12 ] || fail "the atomic release metadata is not closed"
 	[ "$(one_metadata_value schema)" = "local-v2" ] || fail "the atomic release schema is unsupported"
+	ordinal="$(metadata_number ordinal)"
+	issued_at="$(metadata_number issued_at)"
+	expires="$(metadata_number expires)"
+	[ "$ordinal" -ge "$MIN_ORDINAL" ] || fail "the stable Local release is older than this installer accepts; do not install this release"
+	[ "$expires" -gt "$issued_at" ] && [ $((expires - issued_at)) -le "$VALIDITY_SECONDS" ] ||
+		fail "the atomic release has an invalid validity window"
+	now="$(date -u +%s)"
+	case "$now" in ""|*[!0-9]*) fail "the host clock is unavailable" ;; esac
+	[ "$issued_at" -le $((now + CLOCK_SKEW_SECONDS)) ] ||
+		fail "the stable Local release was issued later than this host's clock; correct the host clock and retry"
+	[ "$now" -lt $((expires + CLOCK_SKEW_SECONDS)) ] ||
+		fail "the stable Local release has expired; correct this host's clock if it is wrong, or retry after the release is renewed"
 	expected_hash="$(one_metadata_value "$hash_key")"
 	[ "${#expected_hash}" -eq 64 ] || fail "the release-bound CLI hash is invalid"
 	case "$expected_hash" in *[!0-9a-f]*) fail "the release-bound CLI hash is invalid" ;; esac

@@ -10,6 +10,7 @@ import shlex
 import stat
 import subprocess
 import tempfile
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -55,7 +56,7 @@ def test_bootstrap_has_one_closed_digest_verified_handoff() -> None:
         'platform="linux/amd64"',
         'member="/cli/x86_64-unknown-linux-musl/shimpz"',
         'member="/cli/aarch64-apple-darwin/shimpz"',
-        '[ "$(wc -l < "$release_metadata" | tr -d \' \')" -eq 10 ]',
+        '[ "$(wc -l < "$release_metadata" | tr -d \' \')" -eq 12 ]',
         '[ "$(one_metadata_value schema)" = "local-v2" ]',
         '[ "$(file_hash "$candidate_cli")" = "$expected_hash" ]',
         '"$candidate_cli" install "$release_ref"',
@@ -110,6 +111,8 @@ DOCKER_SEARCH = (
 FAKE_DIGEST = "ab" * 32
 FAKE_REF = f"ghcr.io/theshimpz/shimpz-local-release@sha256:{FAKE_DIGEST}"
 PINNED_KEY = SCRIPT.split("RELEASE_SIGNING_KEY='", 1)[1].split("'\n", 1)[0]
+MIN_ORDINAL = int(SCRIPT.split("\nMIN_ORDINAL=", 1)[1].split("\n", 1)[0])
+VALIDITY_SECONDS = 30 * 86_400
 
 
 def generate_key(root: Path, name: str) -> tuple[Path, str]:
@@ -142,12 +145,15 @@ def run_bootstrap(
     signer: str = "release",
     link_cli: bool = False,
     kept_lines: int | None = None,
+    ordinal: int = MIN_ORDINAL,
+    window: tuple[int, int] | None = None,
 ) -> tuple[subprocess.CompletedProcess[str], Path]:
     """Run the bootstrap against a fake Docker whose release carries a stub release-bound CLI.
 
     The release is signed by `signer`: the pinned test key (`release`), another key (`other`), or nothing (`none`).
     The stub records every invocation, its version probe included, in `calls`; Docker records each one in
     `docker-calls`. `kept_lines` runs only that many leading lines, as a truncated download would deliver them.
+    The signed metadata carries `ordinal` and the `(issued_at, expires)` window, by default issued a minute ago.
     """
     home = root / "home"
     home.mkdir(exist_ok=True)
@@ -160,9 +166,10 @@ def run_bootstrap(
     )
     digest = hashlib.sha256(cli.read_bytes()).hexdigest()
     metadata = root / "release.env"
+    issued_at, expires = window or (int(time.time()) - 60, int(time.time()) - 60 + VALIDITY_SECONDS)
     fields = (
         ("schema", "local-v2"),
-        ("ordinal", "2"),
+        ("ordinal", str(ordinal)),
         ("umbrella_revision", "a" * 40),
         ("cli_revision", "b" * 40),
         ("cli_linux_amd64_sha256", digest),
@@ -171,6 +178,8 @@ def run_bootstrap(
         ("team", "team"),
         ("brain", "brain"),
         ("egress", "egress"),
+        ("issued_at", str(issued_at)),
+        ("expires", str(expires)),
     )
     metadata.write_text("".join(f"{key}={value}\n" for key, value in fields))
     release_key, public_key = generate_key(root, "release-key")
@@ -278,6 +287,31 @@ def test_bootstrap_runs_nothing_from_a_release_without_the_pinned_signature() ->
             check(not (root / "calls").exists(), "the release-bound CLI never runs")
             check(not os.path.lexists(home / ".shimpz"), "nothing is installed")
             check(not os.path.lexists(home / ".local" / "bin" / "shimpz"), "no public command is linked")
+
+
+def test_bootstrap_runs_nothing_from_an_old_expired_or_future_release() -> None:
+    if not behavioral_host():
+        return
+    now = int(time.time())
+    for refusal, changes in (
+        ("older than this installer accepts", {"ordinal": MIN_ORDINAL - 1}),
+        ("has expired", {"window": (now - VALIDITY_SECONDS - 600, now - 600)}),
+        ("issued later than this host's clock", {"window": (now + 3_600, now + 7_200)}),
+        ("invalid validity window", {"window": (now - 60, now - 60 + VALIDITY_SECONDS + 1)}),
+        ("invalid validity window", {"window": (now - 60, now - 60)}),
+    ):
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            result, home = run_bootstrap(root, "exit 0\n", **changes)
+            check(result.returncode != 0 and refusal in result.stderr, f"a signed set is refused: {refusal}")
+            check(not (root / "calls").exists(), "the release-bound CLI never runs")
+            check(not os.path.lexists(home / ".shimpz"), "nothing is installed")
+    # Inside the clock tolerance a just-issued or just-expired set still installs as far as its CLI.
+    for window in ((now + 240, now + 240 + VALIDITY_SECONDS), (now - VALIDITY_SECONDS, now - 60)):
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            run_bootstrap(root, "exit 0\n", window=window)
+            check((root / "calls").exists(), f"a set within the clock tolerance reaches its CLI: {window}")
 
 
 def test_bootstrap_verifies_the_signature_before_trusting_the_release() -> None:
