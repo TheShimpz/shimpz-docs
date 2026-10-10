@@ -1,9 +1,9 @@
-# syntax=docker/dockerfile:1@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
+# syntax=docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
 # shimpz-docs — docs.shimpz.com. Prerendered SvelteKit (adapter-static) served as plain static files.
 # Multi-arch by construction (node + caddy are both multi-arch), so it runs native on any host.
 
 # ── stage 1: prerender the static site ──────────────────────────────────────────────────────────
-FROM node:24-slim@sha256:235600a8101ab264e117b1768e925532262668dc9b581ef1dd7d96ced463b8e7 AS web
+FROM node:24-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20 AS web
 ARG SOURCE_DATE_EPOCH=0
 WORKDIR /w
 # No dependency install script runs: the shared frontend package ships its sources and the build needs none.
@@ -20,7 +20,7 @@ RUN pnpm run build \
 RUN sh script-hashes.sh
 
 # ── stage 2: serve ──────────────────────────────────────────────────────────────────────────────
-FROM caddy:2.11.4-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648 AS serve
+FROM caddy:2.11.4-alpine@sha256:6aeddd44c3078b0f9a35206472a11420648a79c184603ef95957d0a20044cb2b AS serve
 ARG SOURCE_DATE_EPOCH=0
 COPY --from=web /w/build /srv
 COPY Caddyfile /etc/caddy/Caddyfile
