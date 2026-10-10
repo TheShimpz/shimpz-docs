@@ -22,6 +22,12 @@ RUN pnpm run build \
 # adapter-static writes the prerendered site to /w/build. Bind the served script-src to each prerendered page's script
 # hash (script-hashes.sh renders the security-header snippet and fails when a page has no policy).
 RUN sh script-hashes.sh
+# Precompress every compressible file the origin would gzip (its gzip_types, at least gzip_min_length bytes) once, at
+# maximum level and without a name or time in the header, so nginx serves it by gzip_static instead of per request.
+RUN find build -type f -size +511c \( -name '*.html' -o -name '*.css' -o -name '*.js' -o -name '*.mjs' \
+      -o -name '*.json' -o -name '*.xml' -o -name '*.txt' -o -name '*.md' -o -name '*.py' -o -name '*.sh' \
+      -o -name '*.sha256' -o -name '*.svg' -o -name '*.webmanifest' \) -exec gzip -9 -k -n {} + \
+ && find build -type f -name '*.gz' -exec touch -h -d "@${SOURCE_DATE_EPOCH}" {} +
 
 # ── stage 2: serve ──────────────────────────────────────────────────────────────────────────────
 FROM nginxinc/nginx-unprivileged:1.30.5-alpine3.24@sha256:15c994d10d6d78658721c3bcafff14cb281fba2a4bdf9d5ba92c416a472516e3 AS serve

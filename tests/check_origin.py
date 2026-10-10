@@ -144,6 +144,9 @@ def test_assets_have_their_type_and_compress(origin: Origin, immutable: Path) ->
         check(packed.header("content-encoding") == "gzip", f"{path} compresses when asked")
         check(packed.header("vary") == "Accept-Encoding", f"{path} varies by encoding")
         check(gzip.decompress(packed.body) == content, f"{path} decompresses to the file")
+        precompressed = files[0].with_name(f"{files[0].name}.gz").read_bytes()
+        check(packed.body == precompressed, f"{path} is the build's precompressed file")
+        check(packed.header("content-length") == str(len(precompressed)), f"{path} has its precompressed length")
 
 
 def main(arguments: list[str]) -> None:
