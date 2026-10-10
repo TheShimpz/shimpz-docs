@@ -18,16 +18,16 @@
   atomically with their implementation and retain no compatibility instructions.
 - The installer is only the fail-closed acquisition bootstrap. The release-bound CLI emits and owns the canonical
   Local graph, lifecycle, reset semantics, storage admission, and architecture/platform checks.
-- Use Node.js 24 and the pinned pnpm release. User-visible Svelte behavior requires Playwright against the built
+- Use Node.js 26 for every Node.js workload this repository runs, and the pinned pnpm release (`packageManager`),
+  run directly by that Node.js without Corepack. User-visible Svelte behavior requires Playwright against the built
   site.
 - Tests that support workers use half of local processors and all GitHub Actions runner processors. Do not add
   Cypress or an experimental component-test runner.
 
 ## Validation
 
-- Run `corepack pnpm@11.9.0 test`,
-  `corepack pnpm@11.9.0 exec svelte-check --tsconfig ./tsconfig.json`, and
-  `corepack pnpm@11.9.0 build` as applicable.
+- Run `pnpm test`, `pnpm exec svelte-check --tsconfig ./tsconfig.json`, and `pnpm build` as applicable, with
+  pnpm 11.9.0 on Node.js 26.
 - A `static/install.sh` change cannot be committed without the umbrella checks
   `python docs/tests/test_installer.py` and `python .tests/test-local-release-delivery.py`.
 

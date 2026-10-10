@@ -3,18 +3,35 @@
 # Multi-arch by construction (node + caddy are both multi-arch), so it runs native on any host.
 
 # ── stage 1: prerender the static site ──────────────────────────────────────────────────────────
-FROM node:24-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20 AS web
+FROM node:26.11.1-bookworm-slim@sha256:86f07bc9c5dce4578cf37e5a418b7bfc7f817cda25cde66e2b66e95ed86c4567 AS web
 ARG SOURCE_DATE_EPOCH=0
+# pnpm is the npm registry's JavaScript release, admitted only by this exact digest and run by this Node.js; with
+# pmOnFail=error (pnpm-workspace.yaml) it never downloads another pnpm when packageManager disagrees.
+ARG PNPM_SHA256=2b567aa66026238078ac2e0a33bec3febd60e962987aac697456f3180819b287
+RUN node --input-type=module -e ' \
+      import { createHash } from "node:crypto"; \
+      import { writeFileSync } from "node:fs"; \
+      const response = await fetch("https://registry.npmjs.org/pnpm/-/pnpm-11.9.0.tgz"); \
+      if (!response.ok) throw new Error(`pnpm download failed: ${response.status}`); \
+      const bytes = Buffer.from(await response.arrayBuffer()); \
+      const digest = createHash("sha256").update(bytes).digest("hex"); \
+      if (digest !== process.env.PNPM_SHA256) throw new Error(`pnpm digest mismatch: ${digest}`); \
+      writeFileSync("/tmp/pnpm.tgz", bytes);' \
+ && mkdir /opt/pnpm \
+ && tar -xzf /tmp/pnpm.tgz -C /opt/pnpm --strip-components=1 --no-same-owner \
+ && rm /tmp/pnpm.tgz \
+ && ln -s /opt/pnpm/bin/pnpm.mjs /usr/local/bin/pnpm \
+ && node --version && pnpm --version \
+ && test "$(node --version)" = v26.11.1 \
+ && test "$(pnpm --version)" = 11.9.0
 WORKDIR /w
 # No dependency install script runs: the shared frontend package ships its sources and the build needs none.
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN corepack enable \
- && corepack prepare pnpm@11.9.0 --activate \
- && pnpm install --frozen-lockfile --ignore-scripts
+RUN pnpm install --frozen-lockfile --ignore-scripts
 COPY . .
 RUN pnpm run build \
  && find /w/build -depth -exec touch -h -d "@${SOURCE_DATE_EPOCH}" {} + \
- && rm -rf /root/.cache/node /root/.local/share/pnpm /root/.npm
+ && rm -rf /root/.cache /root/.local/share/pnpm
 # adapter-static writes the prerendered site to /w/build
 # Collect each prerendered page's script hash for the Caddy script-src header (script-hashes.sh).
 RUN sh script-hashes.sh
