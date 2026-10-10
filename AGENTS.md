@@ -32,7 +32,7 @@
   `python docs/tests/test_installer.py` and `python .tests/test-local-release-delivery.py`.
 - A change to the served origin (`Dockerfile`, `nginx.conf`, `installer.conf`, `security-headers.conf`,
   `script-hashes.sh`) cannot be committed without building the image and running
-  `SHIMPZ_DOCS_TEST_IMAGE=<image> python docs/tests/test_origin.py` against it.
+  `SHIMPZ_DOCS_TEST_IMAGE=<image> sh docs/tests/test-origin.sh` against it.
 
 ## Public documentation quality contract
 
