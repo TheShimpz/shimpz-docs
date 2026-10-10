@@ -1,7 +1,9 @@
 *
 !.dockerignore
 !Dockerfile
-!Caddyfile
+!nginx.conf
+!installer.conf
+!security-headers.conf
 !script-hashes.sh
 !package.json
 !pnpm-lock.yaml

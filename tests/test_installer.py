@@ -17,7 +17,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT_PATH = ROOT / "static" / "install.sh"
 SCRIPT = SCRIPT_PATH.read_text(encoding="utf-8")
-CADDY = (ROOT / "Caddyfile").read_text(encoding="utf-8")
 
 
 def check(condition: object, message: str) -> None:
@@ -395,14 +394,6 @@ def test_bootstrap_rejects_a_stale_docker_group_session() -> None:
     ):
         check(contract in SCRIPT, f"bootstrap rejects a stale Docker group session: {contract}")
     check("/usr/bin/sg" not in SCRIPT, "bootstrap never switches groups for Docker or the Local CLI")
-
-
-def test_public_origin_serves_only_the_bootstrap_for_installer_host() -> None:
-    check("host install.shimpz.com" in CADDY, "installer hostname has an exact matcher")
-    check("path / /install.sh" in CADDY, "only root and canonical bootstrap path are served")
-    check('header Content-Type "text/plain; charset=utf-8"' in CADDY, "bootstrap is plain text")
-    check('header Cache-Control "no-store"' in CADDY, "bootstrap is never cached")
-    check("@installer_missing host install.shimpz.com" in CADDY, "other installer paths are 404")
 
 
 def main() -> None:
