@@ -96,8 +96,8 @@
   <h2 id="reset-title">Reset only when you want to delete everything</h2>
   <p>
     Reset removes the managed Assistants, Teams, Integrations, Admin state, and local Shimpz data. It cannot be
-    undone. Disconnect provider Integrations first when possible. When the owned Admin is running, reset attests its
-    loopback listener and projects a fresh, exact-Space host authorization that expires after two minutes. While the
+    undone. It does not revoke grants at a provider: revoke them in the provider's account settings. When the owned
+    Admin is running, reset attests its loopback listener and projects a fresh, exact-Space host authorization that expires after two minutes. While the
     current Supervisor authentication record is usable, reset requires that password as well before asking Admin to
     delete domain state. Before initial password setup, Admin and Team verify that no Supervisor identity exists and
     reset continues without asking for one. If the authentication record requires recovery, host authorization uses

@@ -76,8 +76,9 @@
   <span class="section-label">Integration</span>
   <h2 id="integration-recovery-title">The provider identity is wrong</h2>
   <p>
-    Disconnect that Integration before authorizing the intended provider identity. Use
-    <a href="/assistants/#disconnect-title">Disconnect before uninstalling</a> to remove access deliberately.
+    Uninstall the Assistant from this Team, install it again, and authorize the intended provider identity. Use
+    <a href="/assistants/#remove-access-title">Revoke at the provider, then uninstall</a> to remove access
+    deliberately.
   </p>
 
   <h3>The provider tab shows Bad Gateway</h3>
@@ -115,7 +116,8 @@
 
   <h3>You want to remove access or delete Local data</h3>
   <p>
-    Disconnect provider Integrations and uninstall the affected Assistant when that is enough. Use
+    Uninstall the affected Assistant, and revoke its grants in the provider's account settings, when that is enough.
+    Use
     <a href="/manage/#reset-title">reset</a> only when you intend to delete every managed Team, Assistant,
     Integration, setting, conversation, and local Shimpz data.
   </p>

@@ -100,16 +100,20 @@
       Team, or install into another Team.
     </li>
     <li><strong>No authorization window:</strong> allow pop-ups for the local Admin and send the message again.</li>
-    <li><strong>Wrong Integration:</strong> disconnect it, then authorize the correct provider identity.</li>
+    <li>
+      <strong>Wrong Integration:</strong> uninstall the Assistant from this Team, install it again, and authorize the
+      correct provider identity; revoke the old grant in the provider's own account settings.
+    </li>
     <li><strong>Model keeps thinking:</strong> verify the Team's model API key, then retry the message once.</li>
   </ul>
 </section>
 
-<section class="guide-section" aria-labelledby="disconnect-title">
+<section class="guide-section" aria-labelledby="remove-access-title">
   <span class="section-label">Remove access</span>
-  <h2 id="disconnect-title">Disconnect before uninstalling</h2>
+  <h2 id="remove-access-title">Revoke at the provider, then uninstall</h2>
   <p>
-    Disconnect any Integration to revoke its provider grant, then uninstall the Assistant. A third-party password you
+    Uninstalling the Assistant deletes its Integrations from this Team. To revoke a grant at the provider as well,
+    remove the Shimpz authorization in the provider's own account settings. A third-party password you
     type for a single request is not kept. A value the Assistant keeps as a Stored Input, such as a WhatsApp token,
     stays encrypted for that Team: clear it under <strong>Assistant integrations</strong> in the chat, or uninstall
     the Assistant, which removes it. Uninstalling the Assistant does not delete the Team or its conversation
