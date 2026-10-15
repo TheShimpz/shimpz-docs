@@ -7,10 +7,6 @@
   />
 </svelte:head>
 
-<nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/">Use Shimpz</a><span aria-hidden="true">/</span><strong>Add an Assistant</strong>
-</nav>
-
 <header class="docs-page-header">
   <span class="section-label">First useful result</span>
   <h1>Add one capability to your Team</h1>
@@ -120,8 +116,3 @@
     history.
   </p>
 </section>
-
-<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the user guide">
-  <a href="/admin/"><span>Back</span><strong>Create your first Team</strong></a>
-  <a href="/manage/"><span>Next</span><strong>Maintain your Space</strong></a>
-</nav>

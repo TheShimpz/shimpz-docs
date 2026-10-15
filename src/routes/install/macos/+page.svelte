@@ -8,11 +8,6 @@
   <meta name="description" content="Install stable Shimpz on an Apple Silicon Mac with Docker Desktop." />
 </svelte:head>
 
-<nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/">Use Shimpz</a><span aria-hidden="true">/</span><span>Installation</span
-  ><span aria-hidden="true">/</span><strong>macOS</strong>
-</nav>
-
 <header class="docs-page-header">
   <span class="section-label">Installation guide</span>
   <div class="platform-heading">
@@ -85,7 +80,3 @@
     Shimpz controller image; do not weaken an organization security policy yourself.
   </p>
 </aside>
-
-<nav class="docs-page-nav" aria-label="Continue the user guide">
-  <a href="/admin/"><span>Next</span><strong>Create your first Team</strong></a>
-</nav>

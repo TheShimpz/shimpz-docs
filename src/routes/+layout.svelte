@@ -12,6 +12,8 @@
   type NavigationSection = {
     label: string;
     items: NavigationItem[];
+    // A reader picks one page of a choice section, such as the installation guide for their computer.
+    choice?: boolean;
   };
 
   function flattenNavigation(items: NavigationItem[]): NavigationItem[] {
@@ -41,6 +43,7 @@
     },
     {
       label: "Installation",
+      choice: true,
       items: [
         { href: "/install/linux/", label: "Linux", description: "amd64 · Supported" },
         { href: "/install/macos/", label: "macOS", description: "Apple Silicon · Supported" },
@@ -177,12 +180,23 @@
   );
   const navigationTitleId = $derived(isDeveloperGuide ? "developer-navigation-title" : "user-navigation-title");
 
-  const guidePages = $derived(navigation.flatMap((section) => flattenNavigation(section.items)));
-  const position = $derived(guidePages.findIndex((item) => item.href === page.url.pathname));
-  const currentLabel = $derived(guidePages[position]?.label ?? "Overview");
-  // The Creator guide reads in sidebar order, so each page's Back and Next follow from it.
-  const previousPage = $derived(isDeveloperGuide && position > 0 ? guidePages[position - 1] : undefined);
-  const nextPage = $derived(isDeveloperGuide && position >= 0 ? guidePages[position + 1] : undefined);
+  // Each guide reads in sidebar order as a sequence of stops: one page, or every page of a choice section at once.
+  const stops = $derived(
+    navigation.flatMap((section) => {
+      const pages = flattenNavigation(section.items);
+      return section.choice ? [{ section, pages }] : pages.map((item) => ({ section, pages: [item] }));
+    }),
+  );
+  const stop = $derived(stops.findIndex((entry) => entry.pages.some((item) => item.href === page.url.pathname)));
+  const current = $derived(stops[stop]?.pages.find((item) => item.href === page.url.pathname));
+  const currentLabel = $derived(current?.label ?? "Overview");
+  // Back and Next lead to the neighboring stops; a choice has no one page to lead to, so that link is left out, and
+  // the pages of a choice never lead to one another.
+  const onlyPage = (index: number) => (stops[index]?.pages.length === 1 ? stops[index].pages[0] : undefined);
+  const previousPage = $derived(stop > 0 ? onlyPage(stop - 1) : undefined);
+  const nextPage = $derived(stop >= 0 ? onlyPage(stop + 1) : undefined);
+  // The user guide's breadcrumb names the guide, then the choice the page belongs to, if any.
+  const breadcrumbSection = $derived(stops[stop]?.section.choice ? stops[stop].section.label : undefined);
 
   let { children } = $props();
 </script>
@@ -310,12 +324,19 @@
   </aside>
 
   <main id="main-content" tabindex="-1" class="docs-prose min-w-0 flex-1 max-w-3xl">
+    {#if !isDeveloperGuide && current && stop > 0}
+      <nav class="docs-breadcrumb" aria-label="Breadcrumb">
+        <a href="/">{guideLabel}</a><span aria-hidden="true">/</span>{#if breadcrumbSection}<span
+            >{breadcrumbSection}</span
+          ><span aria-hidden="true">/</span>{/if}<strong>{current.label}</strong>
+      </nav>
+    {/if}
     {@render children()}
     {#if previousPage || nextPage}
       <nav
         class="docs-page-nav"
         class:docs-page-nav-split={previousPage && nextPage}
-        aria-label="Continue the Creator guide"
+        aria-label={isDeveloperGuide ? "Continue the Creator guide" : "Continue the user guide"}
       >
         {#if previousPage}<a href={previousPage.href}><span>Back</span><strong>{previousPage.label}</strong></a>{/if}
         {#if nextPage}<a href={nextPage.href}><span>Next</span><strong>{nextPage.label}</strong></a>{/if}

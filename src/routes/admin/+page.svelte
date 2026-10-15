@@ -8,10 +8,6 @@
   <meta name="description" content="Open Shimpz, create your first Team, and configure its Brain." />
 </svelte:head>
 
-<nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/">Use Shimpz</a><span aria-hidden="true">/</span><strong>Create your first Team</strong>
-</nav>
-
 <header class="docs-page-header">
   <span class="section-label">After installation</span>
   <h1>Create your first Team</h1>
@@ -158,7 +154,3 @@
     lines={[{ value: "ssh -L 7777:127.0.0.1:49123 user@your-server" }]}
   />
 </section>
-
-<nav class="docs-page-nav" aria-label="Continue the user guide">
-  <a href="/assistants/"><span>Next</span><strong>Add an Assistant</strong></a>
-</nav>

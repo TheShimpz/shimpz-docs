@@ -11,10 +11,6 @@
   />
 </svelte:head>
 
-<nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/">Use Shimpz</a><span aria-hidden="true">/</span><strong>Help and recovery</strong>
-</nav>
-
 <header class="docs-page-header">
   <span class="section-label">Local recovery</span>
   <h1>Start with what you can see</h1>
@@ -124,7 +120,3 @@
     Integration, setting, conversation, and local Shimpz data.
   </p>
 </section>
-
-<nav class="docs-page-nav" aria-label="Leave recovery">
-  <a href="/"><span>Return</span><strong>Use Shimpz</strong></a>
-</nav>

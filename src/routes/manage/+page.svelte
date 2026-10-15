@@ -8,10 +8,6 @@
   <meta name="description" content="Update, stop, resume, or reset a Local Shimpz Space." />
 </svelte:head>
 
-<nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/">Use Shimpz</a><span aria-hidden="true">/</span><strong>Maintain your Space</strong>
-</nav>
-
 <header class="docs-page-header">
   <span class="section-label">Maintenance</span>
   <h1>Manage the Space with the CLI</h1>
@@ -119,7 +115,3 @@
   />
   <p>Reset is complete only when the CLI prints <strong>Shimpz Space was reset successfully</strong>.</p>
 </section>
-
-<nav class="docs-page-nav" aria-label="Continue the user guide">
-  <a href="/concepts/"><span>Next</span><strong>Core concepts</strong></a>
-</nav>

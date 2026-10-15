@@ -11,11 +11,6 @@
   />
 </svelte:head>
 
-<nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/">Use Shimpz</a><span aria-hidden="true">/</span><span>Installation</span
-  ><span aria-hidden="true">/</span><strong>Windows</strong>
-</nav>
-
 <header class="docs-page-header">
   <span class="section-label">Installation guide</span>
   <div class="platform-heading">
@@ -115,7 +110,3 @@
     </p>
   </li>
 </ol>
-
-<nav class="docs-page-nav" aria-label="Continue the user guide">
-  <a href="/admin/"><span>Next</span><strong>Create your first Team</strong></a>
-</nav>

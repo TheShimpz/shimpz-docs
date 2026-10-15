@@ -4,10 +4,6 @@
   <meta name="description" content="Understand Space, Team, Brain, Assistant, Action, and Integration in plain language." />
 </svelte:head>
 
-<nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/">Use Shimpz</a><span aria-hidden="true">/</span><strong>Core concepts</strong>
-</nav>
-
 <header class="docs-page-header">
   <span class="section-label">Six useful names</span>
   <h1>Know what owns what</h1>
@@ -51,7 +47,3 @@
     <li>The Brain turns the result into the Team's answer.</li>
   </ol>
 </section>
-
-<nav class="docs-page-nav" aria-label="Return to the beginning">
-  <a href="/"><span>Back to</span><strong>Get started</strong></a>
-</nav>
