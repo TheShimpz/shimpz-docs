@@ -95,30 +95,34 @@
   });
 </script>
 
+{#snippet copyButton(value: string, index: number, target: string)}
+  <button
+    type="button"
+    class:copied={statusFor(index) === "copied"}
+    class:error={statusFor(index) === "error"}
+    class="terminal-copy"
+    onclick={() => copyValue(value, index)}
+    aria-label={`${buttonText(index)} ${target}`}
+  >
+    {#if statusFor(index) === "copied"}
+      <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 10 3.5 3.5L16 5" /></svg>
+    {:else}
+      <svg viewBox="0 0 20 20" aria-hidden="true">
+        <rect x="6.5" y="6.5" width="9" height="9"></rect>
+        <path d="M4.5 12.5h-1v-9h9v1"></path>
+      </svg>
+    {/if}
+    <span aria-live="polite">{buttonText(index)}</span>
+  </button>
+{/snippet}
+
 <div class="terminal" role="group" aria-label={props.label}>
   <div class="terminal-bar">
     <span class="terminal-lights" aria-hidden="true"><i></i><i></i><i></i></span>
     <span class="terminal-title">{props.title}</span>
     {#if props.variant === "code"}
       <span class="terminal-language">{props.language}</span>
-      <button
-        type="button"
-        class:copied={statusFor(BLOCK_COPY_INDEX) === "copied"}
-        class:error={statusFor(BLOCK_COPY_INDEX) === "error"}
-        class="terminal-copy"
-        onclick={() => copyValue(blockSource, BLOCK_COPY_INDEX)}
-        aria-label={`${buttonText(BLOCK_COPY_INDEX)} entire ${props.label}`}
-      >
-        {#if statusFor(BLOCK_COPY_INDEX) === "copied"}
-          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 10 3.5 3.5L16 5" /></svg>
-        {:else}
-          <svg viewBox="0 0 20 20" aria-hidden="true">
-            <rect x="6.5" y="6.5" width="9" height="9"></rect>
-            <path d="M4.5 12.5h-1v-9h9v1"></path>
-          </svg>
-        {/if}
-        <span aria-live="polite">{buttonText(BLOCK_COPY_INDEX)}</span>
-      </button>
+      {@render copyButton(blockSource, BLOCK_COPY_INDEX, `entire ${props.label}`)}
     {/if}
   </div>
 
@@ -134,24 +138,7 @@
       <div class:terminal-output={line.kind === "output"} class:terminal-command={line.kind !== "output"}>
         <span aria-hidden="true">{line.prompt ?? (line.kind === "output" ? "›" : "$")}</span>
         <code>{line.value}</code>
-        <button
-          type="button"
-          class:copied={statusFor(index) === "copied"}
-          class:error={statusFor(index) === "error"}
-          class="terminal-copy"
-          onclick={() => copyValue(line.value, index)}
-          aria-label={`${buttonText(index)} line ${index + 1} from ${props.label}`}
-        >
-          {#if statusFor(index) === "copied"}
-            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 10 3.5 3.5L16 5" /></svg>
-          {:else}
-            <svg viewBox="0 0 20 20" aria-hidden="true">
-              <rect x="6.5" y="6.5" width="9" height="9"></rect>
-              <path d="M4.5 12.5h-1v-9h9v1"></path>
-            </svg>
-          {/if}
-          <span aria-live="polite">{buttonText(index)}</span>
-        </button>
+        {@render copyButton(line.value, index, `line ${index + 1} from ${props.label}`)}
       </div>
     {/each}
   {/if}
