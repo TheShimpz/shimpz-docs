@@ -17,11 +17,6 @@
   />
 </svelte:head>
 
-<nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/assistants/requests/">Human requests</a><span aria-hidden="true">/</span>
-  <strong>Inputs</strong>
-</nav>
-
 <header class="docs-page-header">
   <span class="section-label">request_input</span>
   <h1>Collect one closed field at the moment it matters</h1>

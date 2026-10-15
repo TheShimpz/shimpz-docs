@@ -12,11 +12,6 @@
   <meta name="description" content="Structure a file-backed Python Shimpz Assistant." />
 </svelte:head>
 
-<nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/">Creator overview</a><span aria-hidden="true">/</span>
-  <strong>Project structure</strong>
-</nav>
-
 <header class="docs-page-header">
   <span class="section-label">Minimal source</span>
   <h1>Give every Action one obvious home</h1>

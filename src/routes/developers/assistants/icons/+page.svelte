@@ -15,11 +15,6 @@
   />
 </svelte:head>
 
-<nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/">Creator overview</a><span aria-hidden="true">/</span>
-  <strong>Assistant icon</strong>
-</nav>
-
 <header class="docs-page-header">
   <span class="section-label">Visual identity</span>
   <h1>Publish one icon that stays sharp everywhere</h1>

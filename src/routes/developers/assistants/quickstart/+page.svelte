@@ -12,11 +12,6 @@
   <meta name="description" content="Generate, validate, and run your first Python Shimpz Assistant without Docker." />
 </svelte:head>
 
-<nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/">Creator overview</a><span aria-hidden="true">/</span>
-  <strong>Build your first Assistant</strong>
-</nav>
-
 <header class="docs-page-header">
   <span class="section-label">About 5 minutes · No Docker</span>
   <h1>Build and run your first Assistant</h1>

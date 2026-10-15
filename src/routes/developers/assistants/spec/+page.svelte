@@ -13,10 +13,6 @@
   />
 </svelte:head>
 
-<nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/">Creator overview</a><span aria-hidden="true">/</span><strong>Assistant Spec v1</strong>
-</nav>
-
 <header class="docs-page-header">
   <span class="section-label">One reviewed contract</span>
   <h1>Author source; let Shimpz generate delivery</h1>

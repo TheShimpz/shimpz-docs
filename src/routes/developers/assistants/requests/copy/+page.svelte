@@ -15,11 +15,6 @@
   />
 </svelte:head>
 
-<nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/assistants/requests/">Human requests</a><span aria-hidden="true">/</span>
-  <strong>Request copy</strong>
-</nav>
-
 <header class="docs-page-header">
   <span class="section-label">shimpz.text reference</span>
   <h1>Write request copy once, in English, for every interface language</h1>

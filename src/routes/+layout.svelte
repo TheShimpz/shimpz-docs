@@ -195,7 +195,15 @@
   const onlyPage = (index: number) => (stops[index]?.pages.length === 1 ? stops[index].pages[0] : undefined);
   const previousPage = $derived(stop > 0 ? onlyPage(stop - 1) : undefined);
   const nextPage = $derived(stop >= 0 ? onlyPage(stop + 1) : undefined);
-  // The user guide's breadcrumb names the guide, then the choice the page belongs to, if any.
+  // A breadcrumb leads back to the guide: the user guide by its name, then the choice the page belongs to, if any; the
+  // Creator guide to the page that lists this one among its topics, otherwise to its first page, the Creator overview.
+  const breadcrumbHome = $derived(
+    isDeveloperGuide
+      ? (navigation
+          .flatMap((section) => section.items)
+          .find((item) => item.children?.some((child) => child.href === page.url.pathname)) ?? stops[0].pages[0])
+      : { href: "/", label: guideLabel },
+  );
   const breadcrumbSection = $derived(stops[stop]?.section.choice ? stops[stop].section.label : undefined);
 
   let { children } = $props();
@@ -324,11 +332,11 @@
   </aside>
 
   <main id="main-content" tabindex="-1" class="docs-prose min-w-0 flex-1 max-w-3xl">
-    {#if !isDeveloperGuide && current && stop > 0}
+    {#if current && stop > 0}
       <nav class="docs-breadcrumb" aria-label="Breadcrumb">
-        <a href="/">{guideLabel}</a><span aria-hidden="true">/</span>{#if breadcrumbSection}<span
-            >{breadcrumbSection}</span
-          ><span aria-hidden="true">/</span>{/if}<strong>{current.label}</strong>
+        <a href={breadcrumbHome.href}>{breadcrumbHome.label}</a><span aria-hidden="true">/</span>
+        {#if breadcrumbSection}<span>{breadcrumbSection}</span><span aria-hidden="true">/</span>{/if}
+        <strong>{current.label}</strong>
       </nav>
     {/if}
     {@render children()}

@@ -12,11 +12,6 @@
   <meta name="description" content="Declare exact public hosts with the Assistant allowed_hosts field." />
 </svelte:head>
 
-<nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/">Creator overview</a><span aria-hidden="true">/</span>
-  <strong>Network access</strong>
-</nav>
-
 <header class="docs-page-header">
   <span class="section-label">Outbound access</span>
   <h1>Allow exact destinations, not “the internet”</h1>

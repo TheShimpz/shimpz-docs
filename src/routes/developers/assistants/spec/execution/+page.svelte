@@ -7,11 +7,6 @@
   />
 </svelte:head>
 
-<nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/assistants/spec/">Assistant Spec v1</a><span aria-hidden="true">/</span>
-  <strong>Execution model</strong>
-</nav>
-
 <header class="docs-page-header">
   <span class="section-label">Runtime boundary</span>
   <h1>Pre-build once; invoke one Action at a time</h1>

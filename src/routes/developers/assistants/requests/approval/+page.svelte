@@ -14,11 +14,6 @@
   <meta name="description" content="Ask an authenticated human to approve one fully described Action." />
 </svelte:head>
 
-<nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/assistants/requests/">Human requests</a><span aria-hidden="true">/</span>
-  <strong>Approval</strong>
-</nav>
-
 <header class="docs-page-header">
   <span class="section-label">request_approval</span>
   <h1>Ask before one externally visible action</h1>

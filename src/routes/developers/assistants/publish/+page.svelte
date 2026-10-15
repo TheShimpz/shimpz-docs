@@ -28,11 +28,6 @@
   />
 </svelte:head>
 
-<nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/">Creator overview</a><span aria-hidden="true">/</span>
-  <strong>Publish</strong>
-</nav>
-
 <header class="docs-page-header">
   <span class="section-label">Creator task · up to 30 minutes</span>
   <h1>Publish one exact Assistant release</h1>

@@ -15,11 +15,6 @@
   />
 </svelte:head>
 
-<nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/assistants/requests/">Human requests</a><span aria-hidden="true">/</span>
-  <strong>Replay and lifecycle</strong>
-</nav>
-
 <header class="docs-page-header">
   <span class="section-label">Deterministic continuation</span>
   <h1>Write a replay-safe prefix and an action-only suffix</h1>

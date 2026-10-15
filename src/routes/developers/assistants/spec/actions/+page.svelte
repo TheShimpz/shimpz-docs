@@ -12,11 +12,6 @@
   <meta name="description" content="Define one callable async Action per Python file." />
 </svelte:head>
 
-<nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/">Creator overview</a><span aria-hidden="true">/</span>
-  <strong>Actions</strong>
-</nav>
-
 <header class="docs-page-header">
   <span class="section-label">Callable behavior</span>
   <h1>Define one Action per file</h1>

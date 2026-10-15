@@ -48,11 +48,6 @@
   />
 </svelte:head>
 
-<nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/">Creator overview</a><span aria-hidden="true">/</span>
-  <strong>Test in Local</strong>
-</nav>
-
 <header class="docs-page-header">
   <span class="section-label">Creator task · about 10 minutes</span>
   <h1>Run an unpublished Assistant through your Local Team</h1>

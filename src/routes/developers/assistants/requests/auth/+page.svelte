@@ -17,11 +17,6 @@
   />
 </svelte:head>
 
-<nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/assistants/requests/">Human requests</a><span aria-hidden="true">/</span>
-  <strong>Authentication</strong>
-</nav>
-
 <header class="docs-page-header">
   <span class="section-label">request_auth</span>
   <h1>Ask Shimpz to prove authority without receiving the factor</h1>

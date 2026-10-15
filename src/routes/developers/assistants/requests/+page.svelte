@@ -15,10 +15,6 @@
   />
 </svelte:head>
 
-<nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/">Creator overview</a><span aria-hidden="true">/</span><strong>Human requests</strong>
-</nav>
-
 <header class="docs-page-header">
   <span class="section-label">Human-in-the-loop SDK</span>
   <h1>Pause an Action for one accountable human decision</h1>

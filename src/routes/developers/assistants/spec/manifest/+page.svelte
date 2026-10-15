@@ -12,11 +12,6 @@
   <meta name="description" content="Declare a Shimpz Assistant's identity and security intent." />
 </svelte:head>
 
-<nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <a href="/developers/assistants/spec/">Assistant Spec v1</a><span aria-hidden="true">/</span>
-  <strong>shimpz.toml</strong>
-</nav>
-
 <header class="docs-page-header">
   <span class="section-label">Manifest and Genesis</span>
   <h1>Declare identity and the smallest security boundary</h1>
