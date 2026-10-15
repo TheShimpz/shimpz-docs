@@ -38,8 +38,7 @@
 <aside class="scope-note" aria-labelledby="availability-title">
   <span id="availability-title" class="kicker">Version</span>
   <p>
-    This page describes the starter that CLI 0.9.0 generates, which pins SDK 0.7.1. An earlier CLI generates a
-    starter that the current contract refuses, so update the CLI before you start.
+    This page describes the starter that CLI 0.9.0 generates, which pins SDK 0.7.1.
   </p>
 </aside>
 
