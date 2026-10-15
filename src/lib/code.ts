@@ -4,7 +4,7 @@ export type CodeLine = {
   prompt?: string;
 };
 
-export type HighlightedToken = {
+type HighlightedToken = {
   content: string;
   color?: string;
   fontStyle?: number;
