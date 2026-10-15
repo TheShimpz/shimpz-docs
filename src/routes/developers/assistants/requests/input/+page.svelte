@@ -147,8 +147,3 @@
     <li><code>required=False</code> permits an empty string for select/choice and zero selections when allowed.</li>
   </ul>
 </section>
-
-<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue human requests">
-  <a href="/developers/assistants/requests/approval/"><span>Back</span><strong>Approval</strong></a>
-  <a href="/developers/assistants/requests/auth/"><span>Next</span><strong>Authentication</strong></a>
-</nav>

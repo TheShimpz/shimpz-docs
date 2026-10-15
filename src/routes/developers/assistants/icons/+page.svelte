@@ -80,8 +80,3 @@
     imply endorsement.
   </p>
 </aside>
-
-<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec">
-  <a href="/developers/assistants/"><span>Back</span><strong>Project structure</strong></a>
-  <a href="/developers/assistants/spec/actions/"><span>Next</span><strong>Actions</strong></a>
-</nav>

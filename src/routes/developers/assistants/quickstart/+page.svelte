@@ -103,8 +103,3 @@
     <dd>Read the first reported file and field, correct it, then run <code>shimpz assistant check</code> again.</dd>
   </dl>
 </section>
-
-<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Creator guide">
-  <a href="/developers/"><span>Back</span><strong>Creator overview</strong></a>
-  <a href="/developers/assistants/"><span>Next</span><strong>Project structure</strong></a>
-</nav>

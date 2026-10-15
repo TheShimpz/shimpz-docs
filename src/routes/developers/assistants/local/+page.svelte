@@ -265,8 +265,3 @@
     </dd>
   </dl>
 </section>
-
-<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Creator guide">
-  <a href="/developers/assistants/quickstart/"><span>Back</span><strong>Build your first Assistant</strong></a>
-  <a href="/developers/assistants/publish/"><span>Next</span><strong>Publish an Assistant</strong></a>
-</nav>

@@ -82,8 +82,3 @@
     never be reached.
   </p>
 </aside>
-
-<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec">
-  <a href="/developers/assistants/spec/integrations/"><span>Back</span><strong>Integrations</strong></a>
-  <a href="/developers/assistants/requests/"><span>Next</span><strong>Human requests</strong></a>
-</nav>

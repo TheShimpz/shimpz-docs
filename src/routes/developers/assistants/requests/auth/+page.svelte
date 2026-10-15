@@ -96,8 +96,3 @@
     Action receives no reusable credential.
   </p>
 </aside>
-
-<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue human requests">
-  <a href="/developers/assistants/requests/input/"><span>Back</span><strong>Inputs</strong></a>
-  <a href="/developers/assistants/requests/lifecycle/"><span>Next</span><strong>Replay and lifecycle</strong></a>
-</nav>

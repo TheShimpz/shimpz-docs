@@ -91,7 +91,3 @@
     <li>Every input and output is validated again when an Action runs.</li>
   </ol>
 </section>
-
-<nav class="docs-page-nav" aria-label="Continue the Creator guide">
-  <a href="/developers/assistants/quickstart/"><span>Next</span><strong>Build your first Assistant</strong></a>
-</nav>

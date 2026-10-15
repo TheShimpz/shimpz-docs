@@ -123,8 +123,3 @@
     Its source contract is the manifest plus file-backed Actions.
   </p>
 </aside>
-
-<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec">
-  <a href="/developers/assistants/spec/manifest/"><span>Back</span><strong>shimpz.toml</strong></a>
-  <a href="/developers/"><span>Overview</span><strong>Creator overview</strong></a>
-</nav>

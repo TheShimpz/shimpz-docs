@@ -177,11 +177,12 @@
   );
   const navigationTitleId = $derived(isDeveloperGuide ? "developer-navigation-title" : "user-navigation-title");
 
-  const currentLabel = $derived(
-    navigation
-      .flatMap((section) => flattenNavigation(section.items))
-      .find((item) => item.href === page.url.pathname)?.label ?? "Overview",
-  );
+  const guidePages = $derived(navigation.flatMap((section) => flattenNavigation(section.items)));
+  const position = $derived(guidePages.findIndex((item) => item.href === page.url.pathname));
+  const currentLabel = $derived(guidePages[position]?.label ?? "Overview");
+  // The Creator guide reads in sidebar order, so each page's Back and Next follow from it.
+  const previousPage = $derived(isDeveloperGuide && position > 0 ? guidePages[position - 1] : undefined);
+  const nextPage = $derived(isDeveloperGuide && position >= 0 ? guidePages[position + 1] : undefined);
 
   let { children } = $props();
 </script>
@@ -310,6 +311,16 @@
 
   <main id="main-content" tabindex="-1" class="docs-prose min-w-0 flex-1 max-w-3xl">
     {@render children()}
+    {#if previousPage || nextPage}
+      <nav
+        class="docs-page-nav"
+        class:docs-page-nav-split={previousPage && nextPage}
+        aria-label="Continue the Creator guide"
+      >
+        {#if previousPage}<a href={previousPage.href}><span>Back</span><strong>{previousPage.label}</strong></a>{/if}
+        {#if nextPage}<a href={nextPage.href}><span>Next</span><strong>{nextPage.label}</strong></a>{/if}
+      </nav>
+    {/if}
   </main>
 </div>
 

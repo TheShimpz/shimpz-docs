@@ -76,8 +76,3 @@
     <code>shimpz.toml</code>, source, logs, arguments, or returned data.
   </p>
 </aside>
-
-<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec">
-  <a href="/developers/assistants/spec/actions/"><span>Back</span><strong>Actions</strong></a>
-  <a href="/developers/assistants/spec/network/"><span>Next</span><strong>Network access</strong></a>
-</nav>

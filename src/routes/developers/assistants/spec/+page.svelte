@@ -110,8 +110,3 @@
     dynamic approvals, author-written HTTP servers, runtime commands, and health endpoints are rejected.
   </p>
 </aside>
-
-<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec">
-  <a href="/developers/assistants/publish/"><span>Back</span><strong>Publish an Assistant</strong></a>
-  <a href="/developers/assistants/spec/manifest/"><span>Next</span><strong>shimpz.toml</strong></a>
-</nav>

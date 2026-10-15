@@ -56,8 +56,3 @@
     builds the immutable runtime. Do not hand-edit or commit those artifacts.
   </p>
 </aside>
-
-<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Assistant Spec">
-  <a href="/developers/assistants/quickstart/"><span>Back</span><strong>Build your first Assistant</strong></a>
-  <a href="/developers/assistants/icons/"><span>Next</span><strong>Assistant icon</strong></a>
-</nav>

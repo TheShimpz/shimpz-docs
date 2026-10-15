@@ -140,8 +140,3 @@
     <dd>The CLI instructs you to rerun the same <code>shimpz assistant publish</code> command with unchanged source.</dd>
   </dl>
 </section>
-
-<nav class="docs-page-nav docs-page-nav-split" aria-label="Continue the Creator guide">
-  <a href="/developers/assistants/requests/lifecycle/"><span>Back</span><strong>Replay and lifecycle</strong></a>
-  <a href="/developers/assistants/spec/"><span>Next</span><strong>Assistant Spec v1</strong></a>
-</nav>
