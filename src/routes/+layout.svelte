@@ -20,15 +20,6 @@
     return items.flatMap((item) => [item, ...flattenNavigation(item.children ?? [])]);
   }
 
-  function isCurrentPath(pathname: string, href: string): boolean {
-    return pathname === href || (href.endsWith("/") && pathname === href.slice(0, -1));
-  }
-
-  function isPathInBranch(pathname: string, href: string): boolean {
-    const branchPath = href.endsWith("/") ? href : `${href}/`;
-    return isCurrentPath(pathname, href) || pathname.startsWith(branchPath);
-  }
-
   const userNavigation: NavigationSection[] = [
     {
       label: "Start here",
@@ -215,15 +206,17 @@
       <li class="docs-nav-group">
         <span class="docs-nav-group-label">{section.label}</span>
         <ul class="docs-nav-list">
+          <!-- Every navigation path ends in a slash, as every served path does (trailingSlash "always"), so a page's
+               branch is every path under its own. -->
           {#each section.items as item}
-            {@const submenuOpen = Boolean(item.children?.length && isPathInBranch(page.url.pathname, item.href))}
+            {@const submenuOpen = Boolean(item.children?.length && page.url.pathname.startsWith(item.href))}
             <li class:has-submenu={Boolean(item.children?.length)} class:is-submenu-open={submenuOpen}>
               <a
                 href={item.href}
                 class="docs-nav-link"
-                class:is-branch-current={submenuOpen && !isCurrentPath(page.url.pathname, item.href)}
+                class:is-branch-current={submenuOpen && page.url.pathname !== item.href}
                 class:is-submenu-open={submenuOpen}
-                aria-current={isCurrentPath(page.url.pathname, item.href) ? "page" : undefined}
+                aria-current={page.url.pathname === item.href ? "page" : undefined}
               >
                 <span class="docs-nav-rail" aria-hidden="true"></span>
                 <span><strong>{item.label}</strong><small>{item.description}</small></span>
