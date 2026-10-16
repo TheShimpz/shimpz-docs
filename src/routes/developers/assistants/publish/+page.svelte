@@ -41,7 +41,7 @@
   <span class="section-label">Before you publish</span>
   <h2 id="before-title">Make identity and behavior final</h2>
   <ul>
-    <li>Replace the starter <code>@your-github-username</code> with your verified Creator handle.</li>
+    <li>Replace the starter <code>@your-creator-handle</code> with your verified Creator handle.</li>
     <li>Choose a deliberate, unreleased semantic version in <code>shimpz.toml</code>.</li>
     <li>Test representative Actions and make the manifest, icon, network, and Integration declarations final.</li>
     <li>Run the command from the Assistant project whose exact source you intend to publish.</li>
