@@ -66,7 +66,7 @@
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Docker Engine installation documentation (opens in a new tab)">Docker Engine</a
-      > 25.0 or newer with runc 1.2.8+, 1.3.3+, or 1.4.0+ (shown by <code>docker version</code>) and Docker Compose
+      > 28.0 or newer with runc 1.2.8+, 1.3.3+, or 1.4.0+ (shown by <code>docker version</code>) and Docker Compose
       2.20.2 or newer, then confirm both commands work:
     </p>
     <CodeBlock

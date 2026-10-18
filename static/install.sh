@@ -44,7 +44,7 @@ Supported hosts:
   Linux amd64.
   64-bit Windows through Ubuntu on WSL2 with systemd.
   Apple Silicon macOS arm64.
-  Docker Engine 25.0+, Docker Compose 2.20.2+, and /usr/bin/openssl are required.
+  Docker Engine 28.0+, Docker Compose 2.20.2+, and /usr/bin/openssl are required.
 EOF
 }
 

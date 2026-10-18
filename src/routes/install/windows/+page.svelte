@@ -72,7 +72,7 @@
       <strong>Settings → Resources → WSL Integration</strong>.
     </p>
     <p>
-      Use a Docker Desktop release that provides Docker Engine 25.0 or newer, runc 1.2.8+, 1.3.3+, or 1.4.0+ (shown
+      Use a Docker Desktop release that provides Docker Engine 28.0 or newer, runc 1.2.8+, 1.3.3+, or 1.4.0+ (shown
       by <code>docker version</code>), and Docker Compose 2.20.2 or newer.
     </p>
     <p>Do not install a second Docker Engine inside Ubuntu.</p>
