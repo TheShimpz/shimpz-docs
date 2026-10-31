@@ -58,7 +58,7 @@
       with English <a href="/developers/assistants/requests/copy/"><code>shimpz.text</code> request copy</a> before
       it greets.
     </li>
-    <li><code>pyproject.toml</code> pins Python 3.14 and the Shimpz SDK.</li>
+    <li><code>pyproject.toml</code> pins Python 3.15 and the Shimpz SDK.</li>
     <li><code>icon.png</code> is the Assistant identity image included in the immutable source package.</li>
   </ul>
 </section>
@@ -93,7 +93,7 @@
     <dt><code>shimpz: command not found</code></dt>
     <dd>Install the CLI, open a new terminal, and run <code>shimpz --version</code> before retrying.</dd>
     <dt>SDK or Python download fails</dt>
-    <dd>Check network access and retry once. The CLI manages its own Python 3.14 and <code>uv</code>.</dd>
+    <dd>Check network access and retry once. The CLI manages its own Python 3.15 and <code>uv</code>.</dd>
     <dt>Assistant validation fails</dt>
     <dd>Read the first reported file and field, correct it, then run <code>shimpz assistant check</code> again.</dd>
   </dl>
